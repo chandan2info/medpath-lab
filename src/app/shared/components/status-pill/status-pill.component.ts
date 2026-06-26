@@ -7,33 +7,8 @@ import { SampleStatus } from '../../models/lis.models';
   standalone: true,
   imports: [NgClass],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <span
-      class="lis-pill"
-      [ngClass]="pillClass()"
-      [attr.aria-label]="'Status: ' + status()"
-    >
-      {{ label() }}
-    </span>
-  `,
-  styles: [`
-    .lis-pill {
-      display: inline-flex;
-      align-items: center;
-      padding: 2px 8px;
-      border-radius: 20px;
-      font-size: 10px;
-      font-weight: 500;
-      line-height: 1.6;
-      white-space: nowrap;
-    }
-    .pill-pending  { background: var(--pill-pending-bg,  #FAEEDA); color: var(--pill-pending-color,  #633806); }
-    .pill-process  { background: var(--pill-process-bg,  #E6F1FB); color: var(--pill-process-color,  #0C447C); }
-    .pill-ready    { background: var(--pill-ready-bg,    #E1F5EE); color: var(--pill-ready-color,    #085041); }
-    .pill-critical { background: var(--pill-critical-bg, #FCEBEB); color: var(--pill-critical-color, #791F1F); }
-    .pill-stat     { background: var(--pill-stat-bg,     #E24B4A); color: var(--pill-stat-color,     #ffffff); }
-    .pill-dispatched { background: #E1F5EE; color: #085041; }
-  `],
+    templateUrl: './status-pill.component.html',
+    styleUrl: './status-pill.component.css',
 })
 export class StatusPillComponent {
   readonly status = input.required<SampleStatus | 'stat'>();

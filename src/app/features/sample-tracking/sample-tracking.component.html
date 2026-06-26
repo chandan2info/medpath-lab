@@ -1,0 +1,145 @@
+<!-- Toolbar -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Sample collection & tracking</h1>
+        <nav aria-label="Breadcrumb"><ol class="breadcrumb">
+          <li><a routerLink="/dashboard/home">Home</a></li>
+          <li aria-current="page">Sample tracking</li>
+        </ol></nav>
+      </div>
+      <div class="header-actions">
+        <button class="lis-btn lis-btn--secondary lis-btn--sm">
+          <i class="ti ti-printer" aria-hidden="true"></i> Print all labels
+        </button>
+        <button class="lis-btn lis-btn--primary lis-btn--sm">
+          <i class="ti ti-plus" aria-hidden="true"></i> Add sample
+        </button>
+      </div>
+    </div>
+
+    <div class="tracking-toolbar">
+      <div class="ts-search" role="search">
+        <i class="ti ti-search" aria-hidden="true"></i>
+        <input type="search" placeholder="Search by patient name or sample ID…" [(ngModel)]="searchQ"
+          aria-label="Search samples" />
+      </div>
+      <div class="filter-pills" role="group" aria-label="Filter samples by status">
+        @for (f of filterOpts; track f.value) {
+          <button type="button" class="filter-pill"
+            [class.filter-pill--active]="activeFilter() === f.value"
+            (click)="activeFilter.set(f.value)"
+            [attr.aria-pressed]="activeFilter() === f.value"
+          >{{ f.label }}</button>
+        }
+      </div>
+    </div>
+
+    <div class="tracking-body">
+      <!-- Sample table -->
+      <div class="sample-table-wrap">
+        <table class="sample-tbl" role="table" aria-label="Sample list">
+          <thead>
+            <tr>
+              <th scope="col">Sample ID</th>
+              <th scope="col">Patient</th>
+              <th scope="col">Tube(s)</th>
+              <th scope="col">Tests ordered</th>
+              <th scope="col">Priority</th>
+              <th scope="col">Status</th>
+              <th scope="col">ETA</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of filteredSamples(); track s.id) {
+              <tr (click)="selectSample(s)" [class.row--selected]="selectedSample()?.id === s.id"
+                [attr.aria-selected]="selectedSample()?.id === s.id">
+                <td><span class="lis-mono">{{ s.id }}</span></td>
+                <td>
+                  {{ s.patientName }}
+                  <div style="font-size:10px;color:var(--text-secondary)">{{ s.patientId }}</div>
+                </td>
+                <td>
+                  <div style="display:flex;gap:3px;align-items:center">
+                    @for (tube of s.tubes; track tube.id) {
+                      <span class="tube-dot" [style.background]="tube.color" [attr.title]="tube.label"></span>
+                    }
+                  </div>
+                </td>
+                <td style="font-size:12px">{{ s.tests.join(' · ') }}</td>
+                <td>
+                  @if (s.priority === 'stat') {
+                    <lis-status-pill status="stat" />
+                  } @else {
+                    <span class="prio-label">Routine</span>
+                  }
+                </td>
+                <td><lis-status-pill [status]="s.status" /></td>
+                <td [class.eta-urgent]="s.etaLabel === 'Now'">{{ s.etaLabel }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Detail panel -->
+      @if (selectedSample()) {
+        <aside class="detail-panel lis-card" aria-label="Sample detail">
+          <div class="lis-card__header">
+            <div>
+              <div style="font-size:13px;font-weight:500;color:var(--text-primary)">{{ selectedSample()!.patientName }}</div>
+              <div class="lis-mono" style="margin-top:2px">{{ selectedSample()!.id }}</div>
+            </div>
+            @if (selectedSample()!.priority === 'stat') { <lis-status-pill status="stat" /> }
+          </div>
+
+          <div class="det-pat">
+            <div class="det-av" aria-hidden="true">{{ initials(selectedSample()!.patientName) }}</div>
+            <div>
+              <div style="font-size:12px;font-weight:500;color:var(--text-primary)">{{ selectedSample()!.patientName }}</div>
+              <div style="font-size:10px;color:var(--text-secondary)">{{ selectedSample()!.patientId }} · {{ selectedSample()!.tests.join(', ') }}</div>
+            </div>
+          </div>
+
+          <div class="det-section">Sample info</div>
+          <div class="det-row"><span class="det-lbl">Collected at</span><span class="det-val">{{ selectedSample()!.collectedAt }}</span></div>
+          <div class="det-row"><span class="det-lbl">Priority</span>
+            <span class="det-val" [class.det-val--urgent]="selectedSample()!.priority === 'stat'">
+              {{ selectedSample()!.priority.toUpperCase() }}
+            </span>
+          </div>
+          <div class="det-row"><span class="det-lbl">Status</span>
+            <lis-status-pill [status]="selectedSample()!.status" />
+          </div>
+
+          <div class="det-section">Tubes assigned</div>
+          <div class="tube-list">
+            @for (tube of selectedSample()!.tubes; track tube.id) {
+              <div class="tube-card">
+                <div class="tube-body" [style.background]="tube.color"></div>
+                <div class="tube-info">
+                  <div class="tube-label">{{ tube.label }}</div>
+                  <div class="tube-tests">{{ tube.tests.join(' · ') }}</div>
+                </div>
+                <div class="barcode" [attr.aria-label]="'Barcode for tube ' + tube.id">
+                  <div class="bc-bars" aria-hidden="true">
+                    @for (w of barcodeWidths; track $index) {
+                      <div class="bc-bar" [style.width.px]="w"></div>
+                    }
+                  </div>
+                  <div class="bc-num">{{ tube.id }}</div>
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="det-actions">
+            <a routerLink="/dashboard/results" class="lis-btn lis-btn--primary lis-btn--full">
+              <i class="ti ti-writing" aria-hidden="true"></i> Enter results
+            </a>
+            <button type="button" class="lis-btn lis-btn--secondary lis-btn--full">
+              <i class="ti ti-printer" aria-hidden="true"></i> Reprint labels
+            </button>
+          </div>
+        </aside>
+      }
+    </div>

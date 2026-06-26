@@ -1,0 +1,267 @@
+<div class="page-header">
+      <div>
+        <h1 class="page-title">Patient registration</h1>
+        <nav aria-label="Breadcrumb">
+          <ol class="breadcrumb">
+            <li><a routerLink="/dashboard/home">Home</a></li>
+            <li aria-current="page">New registration</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="pid-badge" aria-label="Assigned patient ID">
+        <i class="ti ti-id-badge" aria-hidden="true"></i>
+        <div>
+          <div class="pid-label">Patient ID assigned</div>
+          <div class="pid-value lis-mono">PAT-2406-0319</div>
+        </div>
+        <span class="lis-badge">New patient</span>
+      </div>
+    </div>
+
+    <!-- Stepper -->
+    <div class="stepper" role="list" aria-label="Registration steps">
+      @for (step of steps; track step.n) {
+        <div class="step" [class.step--done]="currentStep() > step.n" [class.step--active]="currentStep() === step.n" role="listitem">
+          <div class="step-num" [attr.aria-label]="currentStep() > step.n ? step.label + ' complete' : step.label">
+            @if (currentStep() > step.n) { <i class="ti ti-check" aria-hidden="true"></i> }
+            @else { {{ step.n }} }
+          </div>
+          <span class="step-label">{{ step.label }}</span>
+        </div>
+        @if (step.n < steps.length) {
+          <i class="ti ti-chevron-right step-arrow" aria-hidden="true"></i>
+        }
+      }
+    </div>
+
+    <div class="reg-layout">
+      <!-- Left: form -->
+      <div class="reg-main">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+          <!-- Step 1 — Demographics -->
+          <div class="lis-card reg-card">
+            <div class="lis-card__header">
+              <i class="ti ti-user" style="color:var(--lis-primary,#1D9E75);font-size:15px" aria-hidden="true"></i>
+              <h2 class="lis-card__title">Personal details</h2>
+              @if (currentStep() > 1) { <span class="lis-badge"><i class="ti ti-check" style="font-size:10px"></i> Done</span> }
+              @else { <span class="lis-badge lis-badge--warn">Step 1</span> }
+            </div>
+            <div class="form-grid">
+              <div class="lis-field">
+                <label for="firstName">First name <span class="req">*</span></label>
+                <input id="firstName" formControlName="firstName" [class.input-error]="isInvalid('firstName')" />
+                @if (isInvalid('firstName')) { <span class="err-msg" role="alert">Required</span> }
+              </div>
+              <div class="lis-field">
+                <label for="lastName">Last name <span class="req">*</span></label>
+                <input id="lastName" formControlName="lastName" />
+              </div>
+              <div class="lis-field">
+                <label for="dob">Date of birth <span class="req">*</span></label>
+                <input id="dob" type="date" formControlName="dob" (change)="calcAge()" />
+              </div>
+              <div class="lis-field">
+                <label for="age">Age (auto)</label>
+                <input id="age" [value]="ageDisplay()" readonly />
+              </div>
+              <div class="lis-field">
+                <label>Gender <span class="req">*</span></label>
+                <div class="lis-seg" role="group" aria-label="Select gender">
+                  @for (g of ['Male','Female','Other']; track g) {
+                    <button type="button" class="lis-seg__opt"
+                      [class.lis-seg__opt--active]="form.value.gender === g"
+                      (click)="form.patchValue({gender: g})"
+                      [attr.aria-pressed]="form.value.gender === g"
+                    >{{ g }}</button>
+                  }
+                </div>
+              </div>
+              <div class="lis-field">
+                <label for="bloodGroup">Blood group</label>
+                <select id="bloodGroup" formControlName="bloodGroup">
+                  @for (bg of bloodGroups; track bg) { <option [value]="bg">{{ bg }}</option> }
+                </select>
+              </div>
+              <div class="lis-field">
+                <label for="mobile">Mobile <span class="req">*</span></label>
+                <input id="mobile" formControlName="mobile" type="tel" />
+              </div>
+              <div class="lis-field">
+                <label for="email">Email</label>
+                <input id="email" formControlName="email" type="email" />
+              </div>
+              <div class="lis-field form-full">
+                <label for="address">Address</label>
+                <textarea id="address" formControlName="address"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2 — Clinical info -->
+          <div class="lis-card reg-card">
+            <div class="lis-card__header">
+              <i class="ti ti-stethoscope" style="color:var(--lis-primary,#1D9E75);font-size:15px" aria-hidden="true"></i>
+              <h2 class="lis-card__title">Clinical information</h2>
+              <span class="lis-badge lis-badge--warn">Step 2</span>
+            </div>
+            <div class="form-grid">
+              <div class="lis-field">
+                <label for="refDoctor">Referring doctor <span class="req">*</span></label>
+                <select id="refDoctor" formControlName="refDoctor">
+                  @for (d of doctors; track d) { <option [value]="d">{{ d }}</option> }
+                  <option value="new">+ Add new doctor</option>
+                </select>
+              </div>
+              <div class="lis-field">
+                <label>Visit type</label>
+                <div class="lis-seg" role="group" aria-label="Select visit type">
+                  @for (v of ['Walk-in','Appointment','Home visit']; track v) {
+                    <button type="button" class="lis-seg__opt"
+                      [class.lis-seg__opt--active]="form.value.visitType === v"
+                      (click)="form.patchValue({visitType: v})"
+                      [attr.aria-pressed]="form.value.visitType === v"
+                    >{{ v }}</button>
+                  }
+                </div>
+              </div>
+              <div class="lis-field">
+                <label>Fasting status</label>
+                <div class="lis-seg" role="group" aria-label="Select fasting status">
+                  @for (f of ['Fasting','Non-fasting','Unknown']; track f) {
+                    <button type="button" class="lis-seg__opt"
+                      [class.lis-seg__opt--active]="form.value.fasting === f"
+                      (click)="form.patchValue({fasting: f})"
+                      [attr.aria-pressed]="form.value.fasting === f"
+                    >{{ f }}</button>
+                  }
+                </div>
+              </div>
+              <div class="lis-field">
+                <label for="collection">Sample collection</label>
+                <select id="collection" formControlName="collection">
+                  <option>At lab counter</option>
+                  <option>Home collection</option>
+                </select>
+              </div>
+              <div class="lis-field form-full">
+                <label for="clinicalNotes">Clinical notes / symptoms</label>
+                <textarea id="clinicalNotes" formControlName="clinicalNotes" placeholder="e.g. fatigue, weight gain, palpitations — 3 months…"></textarea>
+              </div>
+              <div class="lis-field form-full">
+                <label for="medications">Known conditions / medications</label>
+                <textarea id="medications" formControlName="medications" placeholder="e.g. Type 2 diabetes, on Metformin 500mg…"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="lis-btn lis-btn--secondary">Back</button>
+            <button type="button" class="lis-btn lis-btn--primary" (click)="nextStep()">
+              Next: Select tests <i class="ti ti-arrow-right" aria-hidden="true"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Right: test order panel -->
+      <aside class="order-panel lis-card" aria-label="Test order">
+        <div class="lis-card__header">
+          <i class="ti ti-test-pipe" style="color:var(--lis-primary,#1D9E75);font-size:15px" aria-hidden="true"></i>
+          <h2 class="lis-card__title">Test order</h2>
+          <span class="lis-badge">{{ selectedTests().length }} added</span>
+        </div>
+
+        <!-- Search -->
+        <div class="order-search">
+          <i class="ti ti-search" aria-hidden="true"></i>
+          <input
+            type="search" placeholder="Search test…" aria-label="Search tests"
+            [value]="testQuery()"
+            (input)="testQuery.set($any($event.target).value)"
+          />
+        </div>
+
+        <!-- Category filter -->
+        <div class="cat-pills" role="group" aria-label="Test categories">
+          @for (cat of categories; track cat) {
+            <button type="button"
+              class="cat-pill"
+              [class.cat-pill--active]="activeCategory() === cat"
+              (click)="activeCategory.set(cat)"
+              [attr.aria-pressed]="activeCategory() === cat"
+            >{{ cat }}</button>
+          }
+        </div>
+
+        <!-- Test list -->
+        <div class="test-scroll" role="list" aria-label="Available tests">
+          @for (t of filteredTests(); track t.id) {
+            <div class="test-row" role="listitem"
+              [class.test-row--selected]="isSelected(t.id)"
+              (click)="toggleTest(t)"
+              [attr.aria-pressed]="isSelected(t.id)"
+              [attr.aria-label]="t.name + ', ' + t.category + ', ₹' + t.price"
+            >
+              <div class="test-info">
+                <div class="test-name">{{ t.name }}</div>
+                <div class="test-meta">{{ t.category }} · {{ t.tatHours }}h TAT</div>
+              </div>
+              <div class="test-price">₹{{ t.price }}</div>
+              <div class="test-tog" [attr.aria-hidden]="true">
+                @if (isSelected(t.id)) { <i class="ti ti-check"></i> }
+                @else { <i class="ti ti-plus"></i> }
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Priority -->
+        <div class="priority-sec">
+          <div class="priority-label">Priority</div>
+          <div class="priority-row" role="group" aria-label="Order priority">
+            @for (p of ['Routine','Urgent','STAT']; track p) {
+              <button type="button" class="prio-btn"
+                [class.prio-btn--active]="priority() === p"
+                [class.prio-btn--stat]="p === 'STAT' && priority() === 'STAT'"
+                (click)="priority.set(p)"
+                [attr.aria-pressed]="priority() === p"
+              >{{ p }}</button>
+            }
+          </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="order-summary">
+          <div class="sum-hd">Ordered tests</div>
+          <div class="sum-items" role="list" aria-label="Selected tests">
+            @if (selectedTests().length === 0) {
+              <div class="sum-empty">No tests selected yet.</div>
+            }
+            @for (t of selectedTests(); track t.id) {
+              <div class="sum-item" role="listitem">
+                <span class="sum-name">{{ t.name }}</span>
+                <span class="sum-price">₹{{ t.price }}</span>
+                <button type="button" class="sum-del" (click)="toggleTest(t)" [attr.aria-label]="'Remove ' + t.name">
+                  <i class="ti ti-x" aria-hidden="true"></i>
+                </button>
+              </div>
+            }
+          </div>
+          <div class="sum-foot">
+            <div class="sum-row"><span>Tests</span><span>{{ selectedTests().length }}</span></div>
+            <div class="sum-row"><span>Est. TAT</span><span>{{ maxTat() }}h</span></div>
+            <div class="sum-row sum-row--grand"><span>Total</span><span>₹{{ total().toLocaleString('en-IN') }}</span></div>
+          </div>
+        </div>
+
+        <div class="order-actions">
+          <a routerLink="/dashboard/billing" class="lis-btn lis-btn--primary lis-btn--full">
+            <i class="ti ti-file-invoice" aria-hidden="true"></i> Save & go to billing
+          </a>
+          <button type="button" class="lis-btn lis-btn--secondary lis-btn--full">
+            <i class="ti ti-device-floppy" aria-hidden="true"></i> Save draft
+          </button>
+        </div>
+      </aside>
+    </div>

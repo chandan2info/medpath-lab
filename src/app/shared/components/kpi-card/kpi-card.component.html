@@ -1,0 +1,26 @@
+<div class="kpi-card" role="region" [attr.aria-label]="card().label">
+      <div class="kpi-label">
+        <i class="ti ti-{{ card().icon }}" aria-hidden="true"></i>
+        {{ card().label }}
+      </div>
+      <div class="kpi-value">{{ card().value }}</div>
+      @if (card().delta) {
+        <div
+          class="kpi-delta"
+          [ngClass]="card().deltaUp ? 'kpi-delta--up' : 'kpi-delta--neutral'"
+        >
+          {{ card().delta }}
+        </div>
+      }
+      @if (card().barPct !== undefined) {
+        <div class="kpi-bar" role="progressbar"
+          [attr.aria-valuenow]="card().barPct"
+          aria-valuemin="0" aria-valuemax="100">
+          <div
+            class="kpi-bar__fill"
+            [ngClass]="'kpi-bar__fill--' + (card().barColor ?? 'teal')"
+            [style.width.%]="card().barPct"
+          ></div>
+        </div>
+      }
+    </div>

@@ -1,0 +1,31 @@
+<section id="features" class="features-section" aria-label="Platform features">
+      <div class="section-inner">
+        <!-- Header -->
+        <div class="section-header">
+          <span class="section-eyebrow">Why CryptoFlow</span>
+          <h2 class="section-title">
+            Everything you need to<br/>
+            <span class="title-accent">trade with confidence</span>
+          </h2>
+          <p class="section-desc">
+            CryptoFlow gives you the edge with advanced tools designed for both beginners exploring the market and professional traders who demand precision.
+          </p>
+        </div>
+
+        <!-- Features grid -->
+        <div class="features-grid" role="list">
+          @for (f of features; track f.title) {
+            <article class="feature-card" role="listitem" [attr.aria-label]="f.title">
+              <div class="feature-icon-wrap {{ f.color }}" aria-hidden="true">
+                <i class="ti ti-{{ f.icon }}"></i>
+              </div>
+              <h3 class="feature-title">{{ f.title }}</h3>
+              <p class="feature-desc">{{ f.description }}</p>
+              <a href="#" class="feature-link" [attr.aria-label]="'Learn more about ' + f.title">
+                Learn more <i class="ti ti-arrow-right" aria-hidden="true"></i>
+              </a>
+            </article>
+          }
+        </div>
+      </div>
+    </section>

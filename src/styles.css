@@ -3575,3 +3575,223 @@
     display: none;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   MedPath LIS DESIGN TOKENS
+   All LIS-specific CSS variables.
+   ThemeService (core/services/theme.service.ts) drives
+   the light/dark switch by toggling [data-theme="dark"]
+   on <html>.  Components reference these vars — never
+   raw hex values — so dark mode is automatic.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── LIS Light (default) ─────────────────────────────────── */
+:root {
+  /* Brand greens */
+  --lis-primary:       #1D9E75;
+  --lis-primary-mid:   #5DCAA5;
+  --lis-primary-light: #9FE1CB;
+  --lis-primary-xlight:#E1F5EE;
+  --lis-primary-deep:  #085041;
+  --lis-sidebar-bg:    #04342C;
+
+  /* Semantic */
+  --lis-warning:       #EF9F27;
+  --lis-danger:        #E24B4A;
+
+  /* Surfaces (alias to global tokens) */
+  --card-bg:           var(--bg-surface);
+  --body-bg:           var(--bg-surface-alt);
+  --border-color:      var(--border);
+  --text-primary:      var(--text-base);
+  --text-secondary:    var(--text-muted);
+
+  /* LIS typography */
+  --font-family:       var(--font-sans);
+  --lis-mono:          var(--font-mono);
+
+  /* LIS layout */
+  --lis-topbar-height: 52px;
+  --lis-card-radius:   10px;
+
+  /* Status pill colours (light) */
+  --pill-pending-bg:   #FAEEDA;
+  --pill-pending-color:#633806;
+  --pill-process-bg:   #E6F1FB;
+  --pill-process-color:#0C447C;
+  --pill-ready-bg:     #E1F5EE;
+  --pill-ready-color:  #085041;
+  --pill-critical-bg:  #FCEBEB;
+  --pill-critical-color:#791F1F;
+  --pill-stat-bg:      #E24B4A;
+  --pill-stat-color:   #ffffff;
+
+  /* Topbar */
+  --topbar-bg:         #ffffff;
+}
+
+/* ── LIS Dark overrides ──────────────────────────────────── */
+[data-theme="dark"] {
+  --lis-primary:       #2DC58F;
+  --lis-primary-mid:   #45B892;
+  --lis-primary-light: #1F5046;
+  --lis-primary-xlight:rgba(29,158,117,0.12);
+  --lis-primary-deep:  #9FE1CB;
+  --lis-sidebar-bg:    #031f19;
+
+  --card-bg:           var(--bg-surface);
+  --body-bg:           var(--bg-page);
+  --border-color:      var(--border);
+  --text-primary:      var(--text-base);
+  --text-secondary:    var(--text-muted);
+  --topbar-bg:         var(--bg-surface);
+
+  /* Status pills (dark) */
+  --pill-pending-bg:   rgba(239,159,39,0.15);
+  --pill-pending-color:#f9c74f;
+  --pill-process-bg:   rgba(12,68,124,0.3);
+  --pill-process-color:#7ec8fd;
+  --pill-ready-bg:     rgba(29,158,117,0.18);
+  --pill-ready-color:  #9FE1CB;
+  --pill-critical-bg:  rgba(226,75,74,0.18);
+  --pill-critical-color:#f87171;
+  --pill-stat-bg:      #7f1d1d;
+  --pill-stat-color:   #fca5a5;
+}
+
+/* ── Shared LIS utility classes ─────────────────────────── */
+/* Used across all LIS feature components */
+
+.lis-mono {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+}
+
+/* Card */
+.lis-card {
+  background: var(--card-bg);
+  border: 0.5px solid var(--border-color);
+  border-radius: var(--lis-card-radius);
+  overflow: hidden;
+}
+.lis-card__header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 14px;
+  border-bottom: 0.5px solid var(--border-color);
+}
+.lis-card__title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin: 0;
+}
+.lis-card__body {
+  padding: 13px 14px;
+}
+
+/* Badge */
+.lis-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 500;
+  background: var(--lis-primary-xlight);
+  color: var(--lis-primary-deep);
+  border: 0.5px solid var(--lis-primary-mid);
+}
+.lis-badge--danger {
+  background: #FCEBEB;
+  color: #791F1F;
+  border-color: #F09595;
+}
+.lis-badge--warn {
+  background: #FAEEDA;
+  color: #633806;
+  border-color: #E5C07B;
+}
+
+/* Buttons */
+.lis-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font-family);
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+  transition: filter 0.15s;
+  white-space: nowrap;
+}
+.lis-btn--primary {
+  background: var(--lis-primary);
+  color: #fff;
+}
+.lis-btn--primary:hover { filter: brightness(1.08); }
+.lis-btn--secondary {
+  background: var(--card-bg);
+  color: var(--text-primary);
+  border: 0.5px solid var(--border-color);
+}
+.lis-btn--secondary:hover { background: var(--body-bg); }
+.lis-btn--sm { padding: 5px 10px; font-size: 11px; }
+.lis-btn--full { width: 100%; justify-content: center; }
+
+/* Form fields */
+.lis-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.lis-field label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+.lis-field input,
+.lis-field select,
+.lis-field textarea {
+  height: 32px;
+  border: 0.5px solid var(--border-color);
+  border-radius: 7px;
+  padding: 0 9px;
+  font-size: 12px;
+  color: var(--text-primary);
+  background: var(--card-bg);
+  outline: none;
+  font-family: var(--font-family);
+}
+.lis-field input:focus,
+.lis-field select:focus,
+.lis-field textarea:focus { border-color: var(--lis-primary); }
+.lis-field textarea { height: auto; padding: 8px 9px; resize: vertical; min-height: 60px; }
+
+/* Segmented control */
+.lis-seg { display: flex; gap: 4px; }
+.lis-seg__opt {
+  flex: 1;
+  padding: 5px 8px;
+  font-size: 11px;
+  border: 0.5px solid var(--border-color);
+  border-radius: 7px;
+  cursor: pointer;
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+}
+.lis-seg__opt--active {
+  background: var(--lis-primary-xlight);
+  color: var(--lis-primary-deep);
+  border-color: var(--lis-primary-mid);
+  font-weight: 500;
+}

@@ -1,0 +1,27 @@
+/* LIS page content area */
+    .lis-page-content {
+      padding: 20px 22px;
+      min-height: calc(100vh - var(--lis-topbar-height, 52px));
+      overflow-y: auto;
+    }
+
+    @media (max-width: 768px) {
+      .lis-page-content { padding: 14px 14px; }
+    }
+
+    /* Skip-to-content link for a11y */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: var(--lis-primary, #1D9E75);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 0 0 8px 0;
+      text-decoration: none;
+      font-size: 13px;
+      z-index: 9999;
+      transition: top 0.1s;
+
+      &:focus { top: 0; }
+    }

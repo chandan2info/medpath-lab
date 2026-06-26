@@ -1,0 +1,165 @@
+<div class="page-header">
+      <div>
+        <h1 class="page-title">Reports</h1>
+        <nav aria-label="Breadcrumb"><ol class="breadcrumb">
+          <li><a routerLink="/dashboard/home">Home</a></li>
+          <li aria-current="page">Reports</li>
+        </ol></nav>
+      </div>
+    </div>
+
+    <div class="reports-layout">
+      <!-- Report list -->
+      <div class="lis-card report-list">
+        <div class="lis-card__header">
+          <i class="ti ti-file-text" style="color:var(--lis-primary,#1D9E75);font-size:15px" aria-hidden="true"></i>
+          <h2 class="lis-card__title">All reports</h2>
+          <span class="lis-badge lis-badge--danger">5 pending</span>
+        </div>
+        <div role="list" aria-label="Report list">
+          @for (r of reports; track r.id) {
+            <div class="report-row" role="listitem"
+              [class.report-row--selected]="selected()?.id === r.id"
+              (click)="selected.set(r)"
+              [attr.aria-selected]="selected()?.id === r.id"
+            >
+              <div class="rr-av" aria-hidden="true">{{ initials(r.patientName) }}</div>
+              <div class="rr-info">
+                <div class="rr-name">{{ r.patientName }}</div>
+                <div class="rr-meta">{{ r.test }} · {{ r.date }}</div>
+                <div class="lis-mono" style="font-size:9px">{{ r.id }}</div>
+              </div>
+              <div>
+                @if (r.status === 'pending') {
+                  <span class="lis-pill lis-pill--pending">Pending</span>
+                } @else {
+                  <span class="lis-pill lis-pill--ready">Dispatched</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Report preview -->
+      @if (selected()) {
+        <div class="report-preview-area">
+          <!-- Action bar -->
+          <div class="preview-toolbar">
+            <div class="preview-actions">
+              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm">
+                <i class="ti ti-download" aria-hidden="true"></i> Download PDF
+              </button>
+              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm">
+                <i class="ti ti-send" aria-hidden="true"></i> Send to patient
+              </button>
+              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm">
+                <i class="ti ti-whatsapp" aria-hidden="true"></i> WhatsApp
+              </button>
+              <button type="button" class="lis-btn lis-btn--primary lis-btn--sm">
+                <i class="ti ti-printer" aria-hidden="true"></i> Print
+              </button>
+            </div>
+          </div>
+
+          <!-- Print-ready report sheet -->
+          <div class="report-sheet" id="report-sheet" aria-label="Report preview">
+            <!-- Header -->
+            <div class="rpt-header">
+              <div class="rpt-logo" aria-hidden="true">
+                <i class="ti ti-flask"></i>
+              </div>
+              <div class="rpt-lab">
+                <div class="rpt-lab-name">MedPath Diagnostics</div>
+                <div class="rpt-lab-tag">Accurate Results. Better Health.</div>
+                <div class="rpt-lab-addr">123, Health Street, Medical Area, Bengaluru — 560001 · +91 98765 43210</div>
+              </div>
+              <div class="rpt-meta">
+                <div class="rpt-date">Report date: 23 Jun 2026</div>
+                <div class="rpt-nabl">
+                  <i class="ti ti-certificate" aria-hidden="true"></i> NABL Accredited
+                </div>
+              </div>
+            </div>
+
+            <!-- Patient band -->
+            <div class="rpt-pat-band">
+              <div class="rpt-pf"><div class="rpt-pl">Patient name</div><div class="rpt-pv">Arun Pillai</div></div>
+              <div class="rpt-pf"><div class="rpt-pl">Age / Sex</div><div class="rpt-pv">61 years / Male</div></div>
+              <div class="rpt-pf"><div class="rpt-pl">Patient ID</div><div class="rpt-pv" style="font-family:monospace;font-size:10px">PAT-2406-0316</div></div>
+              <div class="rpt-pf"><div class="rpt-pl">Referred by</div><div class="rpt-pv">Dr. Suresh Menon</div></div>
+              <div class="rpt-pf"><div class="rpt-pl">Collected on</div><div class="rpt-pv">23 Jun 2026 · 9:20 AM</div></div>
+              <div class="rpt-pf"><div class="rpt-pl">Reported on</div><div class="rpt-pv">23 Jun 2026 · 11:05 AM</div></div>
+            </div>
+
+            <!-- Title band -->
+            <div class="rpt-title-band">
+              <div class="rpt-title-text">
+                <i class="ti ti-flask" aria-hidden="true"></i>
+                Kidney Function Test (KFT)
+              </div>
+              <div class="lis-mono" style="font-size:10px;color:#9FE1CB">SMP-2406-087</div>
+            </div>
+
+            <!-- Body -->
+            <div class="rpt-body">
+              <div class="rpt-note">
+                <strong>Note:</strong> Critical value — Serum Potassium (K⁺) is significantly elevated.
+                Referring physician has been notified. Fasting: Non-fasting. Specimen: Serum (Red top SST).
+              </div>
+
+              <div class="rpt-grp-title">Biochemistry — Renal profile</div>
+              <table class="rpt-tbl" role="table">
+                <thead>
+                  <tr>
+                    <th scope="col">Parameter</th>
+                    <th scope="col">Result</th>
+                    <th scope="col">Unit</th>
+                    <th scope="col">Reference range</th>
+                    <th scope="col">Flag</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of kftRows; track row.name) {
+                    <tr [class.rpt-row-crit]="row.flag === 'critical'">
+                      <td [class.rpt-bold]="row.flag === 'critical'">{{ row.name }}</td>
+                      <td [class]="'rpt-flag-' + row.flag">
+                        <strong>{{ row.result }}</strong>
+                        @if (row.flag === 'critical') { <span> ↑↑</span> }
+                        @else if (row.flag === 'high') { <span> ↑</span> }
+                        @else if (row.flag === 'low')  { <span> ↓</span> }
+                      </td>
+                      <td>{{ row.unit }}</td>
+                      <td class="rpt-ref">{{ row.ref }}</td>
+                      <td [class]="'rpt-flag-' + row.flag">
+                        @if (row.flag === 'critical') { <strong>CRITICAL</strong> }
+                        @else if (row.flag === 'high') { High }
+                        @else if (row.flag === 'low')  { Low }
+                        @else { Normal }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+
+              <!-- Footer -->
+              <div class="rpt-footer">
+                <div class="rpt-qr-area">
+                  <div class="rpt-qr" aria-hidden="true"><i class="ti ti-qrcode"></i></div>
+                  <div class="rpt-qr-text">
+                    Scan to verify<br>
+                    <span style="font-family:monospace;font-size:9px">rpt.medpath.in/SMP-2406-087</span>
+                  </div>
+                </div>
+                <div class="rpt-sign">
+                  <div class="rpt-sign-pre">Authorised by</div>
+                  <div class="rpt-sign-name">Dr. Priya Hegde</div>
+                  <div class="rpt-sign-role">MD Pathology · MedPath Diagnostics</div>
+                  <div class="rpt-sign-reg">Reg. No. MCI-2019-048721</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>

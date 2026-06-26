@@ -1,0 +1,152 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Billing</h1>
+    <nav aria-label="Breadcrumb">
+      <ol class="breadcrumb">
+        <li><a routerLink="/dashboard/home">Home</a></li>
+        <li aria-current="page">New invoice</li>
+      </ol>
+    </nav>
+  </div>
+  <span class="lis-mono" style="font-size:13px;margin-top:4px">INV-2406-0092</span>
+</div>
+
+<!-- Stepper -->
+<div class="stepper">
+  @for (s of steps; track s.n) {
+    <div class="step" [class.step--done]="s.n < 2" [class.step--active]="s.n === 2">
+      <div class="step-num">
+        @if (s.n < 2) { <i class="ti ti-check"></i> } @else { {{s.n}} }
+      </div>
+      <span class="step-label">{{s.label}}</span>
+    </div>
+    @if (s.n < steps.length) { <i class="ti ti-chevron-right step-arrow"></i> }
+  }
+</div>
+
+<div class="bill-layout">
+  <!-- Left: patient + tests -->
+  <div class="bill-main">
+    <!-- Patient card -->
+    <div class="lis-card">
+      <div class="lis-card__header">
+        <i class="ti ti-user" style="color:var(--lis-primary,#1D9E75);font-size:15px"></i>
+        <h2 class="lis-card__title">Patient</h2>
+        <span class="lis-badge"><i class="ti ti-check" style="font-size:10px"></i> Confirmed</span>
+      </div>
+      <div class="form-grid lis-card__body">
+        <div class="lis-field"><label>Name</label><input value="Kavitha Nair" readonly /></div>
+        <div class="lis-field"><label>Patient ID</label><input value="PAT-2406-0318" readonly class="lis-mono" style="font-size:11px" /></div>
+        <div class="lis-field"><label>Age / Sex</label><input value="34 yrs / Female" readonly /></div>
+        <div class="lis-field"><label>Referred by</label><input value="Dr. Suresh Menon" readonly /></div>
+      </div>
+    </div>
+
+    <!-- Test selection -->
+    <div class="lis-card">
+      <div class="lis-card__header">
+        <i class="ti ti-test-pipe" style="color:var(--lis-primary,#1D9E75);font-size:15px"></i>
+        <h2 class="lis-card__title">Select tests</h2>
+        <span class="lis-badge">{{ selected().size }} selected</span>
+      </div>
+
+      <div class="ts-row">
+        <i class="ti ti-search"></i>
+        <input type="search" placeholder="Search test…" [(ngModel)]="query" aria-label="Search tests" />
+      </div>
+      <div class="cat-pills" role="group">
+        @for (c of cats; track c) {
+          <button type="button" class="cat-pill" [class.cat-pill--active]="activeCat === c" (click)="activeCat = c">{{ c }}</button>
+        }
+      </div>
+      <div class="test-scroll" role="list">
+        @for (t of filteredTests(); track t.id) {
+          <div class="test-row" role="listitem" [class.test-row--sel]="selected().has(t.id)" (click)="toggle(t.id)">
+            <div class="test-info">
+              <div class="test-name">{{ t.name }}</div>
+              <div class="test-cat">{{ t.category }}</div>
+            </div>
+            <div class="test-price">₹{{ t.price }}</div>
+            <div class="test-tog">
+              @if (selected().has(t.id)) { <i class="ti ti-check"></i> } @else { <i class="ti ti-plus"></i> }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Payment mode -->
+      <div style="padding:10px 14px;border-top:0.5px solid var(--border-color)">
+        <div style="font-size:11px;color:var(--text-secondary);margin-bottom:8px;font-weight:500">Payment mode</div>
+        <div class="pay-row" role="group" aria-label="Payment mode">
+          @for (m of payModes; track m.id) {
+            <button type="button" class="pay-opt"
+              [class.pay-opt--active]="payMode() === m.id"
+              [class.pay-opt--credit]="m.id === 'credit' && payMode() === 'credit'"
+              (click)="payMode.set(m.id)"
+              [attr.aria-pressed]="payMode() === m.id"
+            >
+              <i class="ti ti-{{ m.icon }}"></i><br>{{ m.label }}
+            </button>
+          }
+        </div>
+        @if (payMode() === 'credit') {
+          <div class="credit-warn" role="alert">
+            <i class="ti ti-alert-triangle"></i>
+            Credit billing — collect payment before report dispatch.
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Invoice panel -->
+  <aside class="invoice-panel lis-card" aria-label="Invoice">
+    <div class="inv-hd">
+      <div class="inv-title">Invoice</div>
+      <div class="lis-mono" style="font-size:10px">INV-2406-0092 · 23 Jun 2026</div>
+    </div>
+    <div class="inv-pat">
+      <div class="inv-av" aria-hidden="true">KN</div>
+      <div>
+        <div style="font-size:12px;font-weight:500;color:var(--text-primary)">Kavitha Nair</div>
+        <div style="font-size:10px;color:var(--text-secondary)">34F · PAT-2406-0318 · Dr. Suresh Menon</div>
+      </div>
+    </div>
+
+    <div class="inv-items" role="list" aria-label="Billed tests">
+      @for (t of selectedTests(); track t.id) {
+        <div class="inv-item" role="listitem">
+          <span class="inv-iname">{{ t.name }}</span>
+          <span class="inv-iprice">₹{{ t.price }}</span>
+          <button type="button" class="inv-del" (click)="toggle(t.id)" [attr.aria-label]="'Remove ' + t.name">
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+      }
+    </div>
+
+    <div class="disc-row">
+      <label for="disc-inp"><i class="ti ti-tag"></i> Discount (%)</label>
+      <input id="disc-inp" type="number" [(ngModel)]="discountPct" min="0" max="100" aria-label="Discount percentage" />
+    </div>
+
+    <div class="inv-totals" aria-label="Invoice totals">
+      <div class="tot-row"><span>Subtotal</span><span>₹{{ subtotal().toLocaleString('en-IN') }}</span></div>
+      <div class="tot-row"><span>Discount ({{ discountPct }}%)</span><span style="color:#0F6E56">−₹{{ discAmt().toLocaleString('en-IN') }}</span></div>
+      <div class="tot-row"><span>GST (exempt)</span><span>₹0</span></div>
+      <div class="tot-row tot-row--grand"><span>Total payable</span><span>₹{{ grandTotal().toLocaleString('en-IN') }}</span></div>
+    </div>
+
+    <div class="inv-actions">
+      <a routerLink="/dashboard/collection" class="lis-btn lis-btn--primary lis-btn--full">
+        <i class="ti ti-printer"></i> Confirm & print receipt
+      </a>
+      <button type="button" class="lis-btn lis-btn--secondary lis-btn--full">
+        <i class="ti ti-device-floppy"></i> Save as draft
+      </button>
+      <a routerLink="/dashboard/collection" class="lis-btn lis-btn--secondary lis-btn--full">
+        <i class="ti ti-test-pipe"></i> Proceed to sample collection
+      </a>
+    </div>
+  </aside>
+</div>

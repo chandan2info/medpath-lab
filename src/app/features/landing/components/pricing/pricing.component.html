@@ -1,0 +1,93 @@
+<section id="pricing" class="pricing-section" aria-label="Pricing plans">
+      <div class="section-inner">
+        <!-- Header -->
+        <div class="section-header">
+          <span class="section-eyebrow">Pricing</span>
+          <h2 class="section-title">
+            Simple, transparent<br/>
+            <span class="title-accent">pricing for every trader</span>
+          </h2>
+          <p class="section-desc">
+            Choose the plan that fits your trading style. Upgrade or downgrade any time. All plans include a 14-day free trial.
+          </p>
+
+          <!-- Billing toggle -->
+          <div class="billing-toggle" role="group" aria-label="Billing period">
+            <button
+              [ngClass]="{ active: billing() === 'monthly' }"
+              (click)="billing.set('monthly')"
+              [attr.aria-pressed]="billing() === 'monthly'"
+            >Monthly</button>
+            <button
+              [ngClass]="{ active: billing() === 'annual' }"
+              (click)="billing.set('annual')"
+              [attr.aria-pressed]="billing() === 'annual'"
+            >
+              Annual
+              <span class="save-chip" aria-label="Save 20%">-20%</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Plans -->
+        <div class="plans-grid" role="list">
+          @for (plan of plans; track plan.name) {
+            <article
+              class="plan-card"
+              [ngClass]="{ highlighted: plan.highlighted }"
+              role="listitem"
+              [attr.aria-label]="plan.name + ' plan'"
+            >
+              @if (plan.highlighted) {
+                <div class="popular-badge" aria-label="Most popular plan">
+                  <i class="ti ti-star-filled" aria-hidden="true"></i>
+                  Most Popular
+                </div>
+              }
+
+              <div class="plan-icon" [ngClass]="plan.highlighted ? 'plan-icon-hl' : ''" aria-hidden="true">
+                <i class="ti ti-{{ plan.icon }}"></i>
+              </div>
+
+              <h3 class="plan-name">{{ plan.name }}</h3>
+
+              <div class="plan-price-row">
+                <span class="plan-price">{{ billing() === 'monthly' ? plan.price.monthly : plan.price.annual }}</span>
+                @if (plan.priceSub) {
+                  <span class="plan-price-sub">{{ plan.priceSub }}</span>
+                }
+              </div>
+              @if (billing() === 'annual' && plan.priceSub) {
+                <p class="plan-annual-note">Billed annually</p>
+              }
+
+              <p class="plan-desc">{{ plan.description }}</p>
+
+              <button
+                class="plan-btn"
+                [ngClass]="plan.highlighted ? 'plan-btn-primary' : 'plan-btn-outline'"
+                [attr.aria-label]="plan.buttonText + ' for ' + plan.name + ' plan'"
+              >
+                {{ plan.buttonText }}
+              </button>
+
+              <div class="plan-features-title" aria-hidden="true">What's included:</div>
+              <ul class="plan-features" [attr.aria-label]="plan.name + ' plan features'">
+                @for (f of plan.features; track f) {
+                  <li>
+                    <i class="ti ti-check" aria-hidden="true"></i>
+                    <span>{{ f }}</span>
+                  </li>
+                }
+              </ul>
+            </article>
+          }
+        </div>
+
+        <!-- Bottom note -->
+        <p class="pricing-note" aria-live="polite">
+          <i class="ti ti-shield-check" aria-hidden="true"></i>
+          No credit card required to start. Cancel anytime. All plans include 14-day free access to Pro features.
+        </p>
+      </div>
+    </section>

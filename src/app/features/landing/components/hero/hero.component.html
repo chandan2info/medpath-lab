@@ -1,0 +1,148 @@
+<section class="hero-section" aria-label="Hero">
+      <!-- Background blobs -->
+      <div class="blob blob-1" aria-hidden="true"></div>
+      <div class="blob blob-2" aria-hidden="true"></div>
+      <div class="blob blob-3" aria-hidden="true"></div>
+
+      <div class="hero-inner">
+        <!-- Left: Copy -->
+        <div class="hero-copy">
+          <div class="hero-eyebrow" aria-label="New feature announcement">
+            <span class="eyebrow-dot" aria-hidden="true"></span>
+            <span>New: AI Trading Signals v2.0</span>
+            <a href="#features" class="eyebrow-link" aria-label="Learn more about AI Trading Signals">
+              Learn more <i class="ti ti-arrow-right" aria-hidden="true"></i>
+            </a>
+          </div>
+
+          <h1 class="hero-title">
+            Trade Crypto<br/>
+            <span class="hero-title-accent">with Confidence</span>
+          </h1>
+
+          <p class="hero-desc">
+            Real-time analytics, AI-powered signals, and zero-commission trading — all in one platform built for serious traders.
+          </p>
+
+          <div class="hero-actions">
+            <a routerLink="/dashboard" class="hero-btn-primary" aria-label="Start trading now">
+              Start Trading Free
+              <i class="ti ti-arrow-right" aria-hidden="true"></i>
+            </a>
+            <a href="#features" class="hero-btn-ghost">
+              <i class="ti ti-play" aria-hidden="true"></i>
+              Watch Demo
+            </a>
+          </div>
+
+          <!-- Trust badges -->
+          <div class="hero-trust" aria-label="Trust indicators">
+            <div class="trust-item">
+              <i class="ti ti-shield-check" aria-hidden="true"></i>
+              <span>SOC 2 Certified</span>
+            </div>
+            <div class="trust-divider" aria-hidden="true"></div>
+            <div class="trust-item">
+              <i class="ti ti-lock" aria-hidden="true"></i>
+              <span>Bank-Grade Security</span>
+            </div>
+            <div class="trust-divider" aria-hidden="true"></div>
+            <div class="trust-item">
+              <i class="ti ti-star" aria-hidden="true"></i>
+              <span>4.9★ on Trustpilot</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Visual -->
+        <div class="hero-visual" aria-hidden="true">
+          <!-- Floating alert card -->
+          <div class="float-card float-tl animate-fade-up" style="animation-delay:0.3s">
+            <div class="float-card-icon success">
+              <i class="ti ti-trending-up"></i>
+            </div>
+            <div>
+              <p class="float-card-label">BTC Signal</p>
+              <p class="float-card-value success-text">Buy +12.4%</p>
+            </div>
+          </div>
+
+          <!-- Main dashboard mockup -->
+          <div class="dashboard-preview animate-fade-up">
+            <!-- Mini topbar -->
+            <div class="preview-topbar">
+              <div class="preview-dots">
+                <span></span><span></span><span></span>
+              </div>
+              <div class="preview-url">cryptoflow.app/dashboard</div>
+            </div>
+            <!-- Preview content -->
+            <div class="preview-body">
+              <!-- Mini stats row -->
+              <div class="preview-stats">
+                @for (stat of previewStats; track stat.label) {
+                  <div class="preview-stat">
+                    <p class="preview-stat-label">{{ stat.label }}</p>
+                    <p class="preview-stat-val" [style.color]="stat.color">{{ stat.value }}</p>
+                  </div>
+                }
+              </div>
+              <!-- Mini chart lines -->
+              <div class="preview-chart">
+                <svg viewBox="0 0 340 80" fill="none" style="width:100%;height:100%">
+                  <defs>
+                    <linearGradient id="heroGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#CDB4DB" stop-opacity="0.3"/>
+                      <stop offset="100%" stop-color="#CDB4DB" stop-opacity="0"/>
+                    </linearGradient>
+                  </defs>
+                  <path d="M0,65 C20,60 40,50 70,42 S110,28 140,22 S190,18 220,14 S270,8 340,4 L340,80 L0,80 Z"
+                        fill="url(#heroGrad)"/>
+                  <path d="M0,65 C20,60 40,50 70,42 S110,28 140,22 S190,18 220,14 S270,8 340,4"
+                        stroke="#CDB4DB" stroke-width="2.5" stroke-linecap="round"/>
+                  <path d="M0,72 C30,68 60,64 90,58 S140,50 180,46 S240,40 280,38 S310,36 340,34"
+                        stroke="rgba(255,175,204,0.5)" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="4,3"/>
+                </svg>
+              </div>
+              <!-- Mini ticker row -->
+              <div class="preview-tickers">
+                @for (t of previewTickers; track t.sym) {
+                  <div class="preview-ticker">
+                    <span class="preview-ticker-sym">{{ t.sym }}</span>
+                    <span class="preview-ticker-chg" [class.up]="t.up" [class.dn]="!t.up">
+                      {{ t.up ? '+' : '' }}{{ t.chg }}%
+                    </span>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Floating volume card -->
+          <div class="float-card float-br animate-fade-up" style="animation-delay:0.5s">
+            <div class="float-card-icon accent">
+              <i class="ti ti-chart-bar"></i>
+            </div>
+            <div>
+              <p class="float-card-label">24h Volume</p>
+              <p class="float-card-value">$2.5B</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div class="hero-stats-bar" aria-label="Platform statistics">
+        <div class="stats-bar-inner">
+          @for (stat of stats; track stat.label) {
+            <div class="hero-stat">
+              <p class="hero-stat-value">{{ stat.value }}</p>
+              <p class="hero-stat-label">{{ stat.label }}</p>
+            </div>
+            @if (!$last) {
+              <div class="hero-stat-divider" aria-hidden="true"></div>
+            }
+          }
+        </div>
+      </div>
+    </section>

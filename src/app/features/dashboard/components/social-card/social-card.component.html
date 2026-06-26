@@ -1,0 +1,72 @@
+<div class="card social-card" role="region" [attr.aria-label]="platformCfg().label + ' social stats'">
+      <!-- Header -->
+      <div class="social-header">
+        <div class="social-platform-icon" [ngClass]="platformCfg().bgClass" aria-hidden="true">
+          <i class="ti ti-{{ platformCfg().icon }}"></i>
+        </div>
+        <div class="social-header-info">
+          <p class="social-platform-name">{{ platformCfg().label }}</p>
+          <div class="social-count-row">
+            <span class="social-total" [attr.aria-label]="card().totalCount + ' ' + card().label">
+              {{ card().totalCount }}
+            </span>
+            <span
+              class="social-change"
+              [ngClass]="card().changePercent >= 0 ? 'change-up' : 'change-down'"
+              [attr.aria-label]="(card().changePercent >= 0 ? 'Up' : 'Down') + ' ' + Math.abs(card().changePercent) + ' percent'"
+            >
+              <i class="ti ti-{{ card().changePercent >= 0 ? 'arrow-up-right' : 'arrow-down-right' }}" aria-hidden="true"></i>
+              {{ card().changePercent > 0 ? '+' : '' }}{{ card().changePercent }}%
+            </span>
+          </div>
+          <p class="social-label">{{ card().label }}</p>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="social-divider" aria-hidden="true"></div>
+
+      <!-- Stats -->
+      <div class="social-stats">
+        <div class="social-stat-item">
+          <div class="social-stat-header">
+            <span class="social-stat-title">Target</span>
+            <span class="social-stat-val">{{ card().targetCount }}</span>
+          </div>
+          <div
+            class="social-progress"
+            role="progressbar"
+            [attr.aria-valuenow]="card().targetProgress"
+            aria-valuemin="0" aria-valuemax="100"
+            [attr.aria-label]="'Target progress: ' + card().targetProgress + '%'"
+          >
+            <div
+              class="social-progress-fill"
+              [ngClass]="platformCfg().bgClass + '-fill'"
+              [style.width.%]="card().targetProgress"
+            ></div>
+          </div>
+          <span class="social-progress-pct" aria-hidden="true">{{ card().targetProgress }}%</span>
+        </div>
+
+        <div class="social-stat-item">
+          <div class="social-stat-header">
+            <span class="social-stat-title">Today</span>
+            <span class="social-stat-val">{{ card().todayCount }}</span>
+          </div>
+          <div
+            class="social-progress"
+            role="progressbar"
+            [attr.aria-valuenow]="card().todayProgress"
+            aria-valuemin="0" aria-valuemax="100"
+            [attr.aria-label]="'Today progress: ' + card().todayProgress + '%'"
+          >
+            <div
+              class="social-progress-fill today-fill"
+              [style.width.%]="card().todayProgress"
+            ></div>
+          </div>
+          <span class="social-progress-pct" aria-hidden="true">{{ card().todayProgress }}%</span>
+        </div>
+      </div>
+    </div>

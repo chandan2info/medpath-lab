@@ -1,0 +1,129 @@
+<!-- Page header -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Home</h1>
+        <p class="page-sub">{{ today() }} · Lab open 8:00 AM – 8:00 PM</p>
+      </div>
+    </div>
+
+    <!-- Welcome band -->
+    <div class="welcome-band" role="region" aria-label="Day summary">
+      <div class="wb-left">
+        <div class="wb-greet">Good morning, {{ session.operator().name.split(' ')[0] }}.</div>
+        <div class="wb-sub">8 samples in progress · 5 reports ready to dispatch · 1 STAT pending.</div>
+        <div class="wb-pills" aria-hidden="true">
+          <span class="wb-pill"><i class="ti ti-users"></i> 38 patients today</span>
+          <span class="wb-pill"><i class="ti ti-bolt"></i> 1 STAT pending</span>
+          <span class="wb-pill"><i class="ti ti-certificate"></i> NABL Accredited</span>
+        </div>
+      </div>
+      <div class="wb-stats" aria-label="Today's totals">
+        <div class="wb-stat"><div class="wb-stat-val">₹18,450</div><div class="wb-stat-lbl">Revenue today</div></div>
+        <div class="wb-divider" aria-hidden="true"></div>
+        <div class="wb-stat"><div class="wb-stat-val">61</div><div class="wb-stat-lbl">Samples</div></div>
+        <div class="wb-divider" aria-hidden="true"></div>
+        <div class="wb-stat"><div class="wb-stat-val">44</div><div class="wb-stat-lbl">Reports done</div></div>
+      </div>
+    </div>
+
+    <!-- KPI grid -->
+    <section class="kpi-grid" aria-label="Key metrics">
+      @for (kpi of kpis; track kpi.id) {
+        <lis-kpi-card [card]="kpi" />
+      }
+    </section>
+
+    <!-- Worklist + Alerts -->
+    <div class="home-row2">
+      <!-- Worklist -->
+      <div class="lis-card" role="region" aria-label="Urgent worklist">
+        <div class="lis-card__header">
+          <i class="ti ti-list-check" style="color:#E24B4A;font-size:15px" aria-hidden="true"></i>
+          <h2 class="lis-card__title">Urgent worklist</h2>
+          <span class="lis-badge lis-badge--danger">1 STAT · 1 critical</span>
+          <a routerLink="/dashboard/tracking" class="lis-link" aria-label="View all samples">View all →</a>
+        </div>
+        <div class="worklist">
+          @for (s of worklist; track s.id) {
+            <div class="wl-item" [class.wl-item--stat]="s.priority === 'stat'">
+              <span class="wl-dot" [class]="'wl-dot--' + s.status" aria-hidden="true"></span>
+              <div class="wl-info">
+                <div class="wl-name-row">
+                  <span class="wl-name">{{ s.patientName }}</span>
+                  <lis-status-pill [status]="s.priority === 'stat' ? 'stat' : s.status" />
+                </div>
+                <div class="wl-tests">{{ s.tests.join(' · ') }}</div>
+                <div class="wl-sid lis-mono">{{ s.id }}</div>
+              </div>
+              <div class="wl-eta" [class.wl-eta--urgent]="s.etaLabel === 'Now'">{{ s.etaLabel }}</div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Alerts -->
+      <div class="lis-card" role="region" aria-label="Lab alerts">
+        <div class="lis-card__header">
+          <i class="ti ti-bell" style="color:#E24B4A;font-size:15px" aria-hidden="true"></i>
+          <h2 class="lis-card__title">Alerts</h2>
+        </div>
+        <div class="alert-list">
+          <div class="alert-item" role="alert" aria-live="assertive">
+            <span class="alert-dot alert-dot--red" aria-hidden="true"></span>
+            <div>
+              <div class="alert-text"><strong>Critical value</strong> — Arun Pillai: K⁺ 6.8 mEq/L. Notify physician immediately.</div>
+              <div class="alert-time">9:47 AM · SMP-2406-087</div>
+            </div>
+          </div>
+          <div class="alert-item">
+            <span class="alert-dot alert-dot--red" aria-hidden="true"></span>
+            <div>
+              <div class="alert-text">5 reports pending dispatch — patients not yet notified.</div>
+              <div class="alert-time">9:15 AM</div>
+            </div>
+          </div>
+          <div class="alert-item">
+            <span class="alert-dot alert-dot--amber" aria-hidden="true"></span>
+            <div>
+              <div class="alert-text">3 unpaid invoices totalling ₹4,200. Collect before report release.</div>
+              <div class="alert-time">8:30 AM</div>
+            </div>
+          </div>
+          <div class="alert-item">
+            <span class="alert-dot alert-dot--teal" aria-hidden="true"></span>
+            <div>
+              <div class="alert-text">Home collection scheduled — Meena Joshi at 11:00 AM, Jayanagar.</div>
+              <div class="alert-time">8:00 AM</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="lis-card" role="region" aria-label="Quick actions">
+      <div class="lis-card__header">
+        <i class="ti ti-apps" style="color:var(--lis-primary,#1D9E75);font-size:15px" aria-hidden="true"></i>
+        <h2 class="lis-card__title">Quick actions</h2>
+      </div>
+      <div class="qa-grid">
+        <a routerLink="/dashboard/registration" class="qa-btn">
+          <i class="ti ti-user-plus" aria-hidden="true"></i> Register patient
+        </a>
+        <a routerLink="/dashboard/billing" class="qa-btn">
+          <i class="ti ti-receipt" aria-hidden="true"></i> New invoice
+        </a>
+        <a routerLink="/dashboard/results" class="qa-btn">
+          <i class="ti ti-writing" aria-hidden="true"></i> Enter results
+        </a>
+        <a routerLink="/dashboard/reports" class="qa-btn">
+          <i class="ti ti-printer" aria-hidden="true"></i> Print report
+        </a>
+        <a routerLink="/dashboard/tracking" class="qa-btn">
+          <i class="ti ti-test-pipe" aria-hidden="true"></i> Track sample
+        </a>
+        <a routerLink="/dashboard/history" class="qa-btn">
+          <i class="ti ti-history" aria-hidden="true"></i> Patient history
+        </a>
+      </div>
+    </div>

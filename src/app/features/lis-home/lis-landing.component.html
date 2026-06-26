@@ -1,0 +1,198 @@
+<!-- Navbar -->
+    <nav class="lp-nav" role="navigation" aria-label="Site navigation">
+      <div class="lp-nav-brand">
+        <div class="lp-brand-icon" aria-hidden="true"><i class="ti ti-flask"></i></div>
+        <div>
+          <div class="lp-brand-name">MedPath Diagnostics</div>
+          <div class="lp-brand-tag">Accurate Results. Better Health.</div>
+        </div>
+      </div>
+      <div class="lp-nav-links" role="list">
+        <a class="lp-link lp-link--active" href="#" role="listitem">Home</a>
+        <a class="lp-link" href="#" role="listitem">About us</a>
+        <a class="lp-link" href="#" role="listitem">Tests</a>
+        <a class="lp-link" href="#" role="listitem">Our process</a>
+        <a class="lp-link" href="#" role="listitem">Reports</a>
+        <a class="lp-link" href="#" role="listitem">Contact us</a>
+      </div>
+      <div class="lp-nav-cta">
+        <button class="lp-btn-outline" type="button">View reports</button>
+        <button class="lp-btn-solid" type="button" (click)="scrollToLogin()">
+          <i class="ti ti-calendar" aria-hidden="true"></i> Book a test
+        </button>
+      </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="lp-hero" aria-label="Lab introduction">
+      <div class="lp-hero-left">
+        <div class="lp-eyebrow">
+          <i class="ti ti-certificate" aria-hidden="true"></i> NABL Accredited Laboratory
+        </div>
+        <h1 class="lp-h1">Your health,<br>our priority.</h1>
+        <p class="lp-sub">
+          Advanced diagnostics with accurate results and personalised care you can trust —
+          all from a single, streamlined system.
+        </p>
+        <div class="lp-trust" aria-label="Key qualities">
+          <div class="lp-trust-item"><i class="ti ti-shield-check" aria-hidden="true"></i> Accurate results</div>
+          <div class="lp-trust-item"><i class="ti ti-clock" aria-hidden="true"></i> Timely reports</div>
+          <div class="lp-trust-item"><i class="ti ti-headset" aria-hidden="true"></i> Expert support</div>
+        </div>
+        <div class="lp-hero-btns">
+          <button class="lp-btn-solid" type="button" (click)="scrollToLogin()">
+            <i class="ti ti-calendar" aria-hidden="true"></i> Book a test
+          </button>
+          <button class="lp-btn-ghost" type="button">
+            <i class="ti ti-file-text" aria-hidden="true"></i> View reports
+          </button>
+        </div>
+      </div>
+
+      <!-- Login card -->
+      <div class="lp-hero-right">
+        <div class="lp-login-card" id="login-card" role="region" aria-label="Operator login">
+          <div class="lp-lc-head">
+            <div class="lp-lc-icon" aria-hidden="true"><i class="ti ti-lock"></i></div>
+            <div class="lp-lc-title">Operator login</div>
+            <div class="lp-lc-sub">Sign in to access the lab system</div>
+          </div>
+
+          @if (loginError()) {
+            <div class="lp-err-box" role="alert">
+              <i class="ti ti-alert-circle" aria-hidden="true"></i>
+              Invalid username or password.
+            </div>
+          }
+
+          <div class="lp-field">
+            <label for="lp-user">Username</label>
+            <input id="lp-user" type="text" [(ngModel)]="username" placeholder="Enter your username" autocomplete="username" />
+          </div>
+          <div class="lp-field">
+            <label for="lp-pass">Password</label>
+            <div class="lp-pw-wrap">
+              <input id="lp-pass" [type]="showPw() ? 'text' : 'password'" [(ngModel)]="password"
+                placeholder="Enter password" autocomplete="current-password" />
+              <button type="button" class="lp-pw-eye"
+                (click)="togglePasswordVisibility()"
+                [attr.aria-label]="showPw() ? 'Hide password' : 'Show password'"
+              >
+                <i [class]="showPw() ? 'ti ti-eye-off' : 'ti ti-eye'" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+          <div class="lp-remember-row">
+            <label class="lp-check">
+              <input type="checkbox" [(ngModel)]="remember" /> Remember me
+            </label>
+            <a href="#" class="lp-forgot">Forgot password?</a>
+          </div>
+          <button type="button" class="lp-signin-btn" (click)="login()">
+            <i class="ti ti-login" aria-hidden="true"></i> Sign in to dashboard
+          </button>
+          <div class="lp-secure-row">
+            <i class="ti ti-shield-check" aria-hidden="true"></i>
+            Secured · Single-user · MedPath LIS v2.4
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Test categories -->
+    <section class="lp-section lp-section--alt" aria-label="Test categories">
+      <div class="lp-section-title">Popular test categories</div>
+      <div class="lp-section-sub">Comprehensive pathology testing across all major disciplines</div>
+      <div class="lp-cat-grid">
+        @for (cat of testCats; track cat.name) {
+          <div class="lp-cat-card">
+            <div class="lp-cat-icon" aria-hidden="true"><i [class]="'ti ti-' + cat.icon"></i></div>
+            <div class="lp-cat-name">{{ cat.name }}</div>
+            <div class="lp-cat-desc">{{ cat.desc }}</div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Stats band -->
+    <div class="lp-stats-band" role="region" aria-label="Lab statistics">
+      @for (s of stats; track s.label) {
+        <div class="lp-stat">
+          <div class="lp-stat-val">{{ s.value }}</div>
+          <div class="lp-stat-lbl">{{ s.label }}</div>
+        </div>
+      }
+    </div>
+
+    <!-- Why choose -->
+    <section class="lp-section" aria-label="Why choose MedPath">
+      <div class="lp-section-title">Why choose MedPath?</div>
+      <div class="lp-section-sub">Built for precision, designed for trust</div>
+      <div class="lp-why-grid">
+        @for (w of whyCards; track w.title) {
+          <div class="lp-why-card">
+            <div class="lp-why-icon" aria-hidden="true"><i [class]="'ti ti-' + w.icon"></i></div>
+            <div class="lp-why-title">{{ w.title }}</div>
+            <div class="lp-why-desc">{{ w.desc }}</div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- CTA band -->
+    <div class="lp-cta-band">
+      <div class="lp-cta-icon" aria-hidden="true"><i class="ti ti-flask"></i></div>
+      <div>
+        <div class="lp-cta-title">Your health is our commitment.</div>
+        <div class="lp-cta-sub">Book your test today and take a step towards a healthier you.</div>
+      </div>
+      <button class="lp-cta-btn" type="button">
+        <i class="ti ti-calendar" aria-hidden="true"></i> Book a test now
+      </button>
+    </div>
+
+    <!-- Footer -->
+    <footer class="lp-footer" role="contentinfo">
+      <div class="lp-footer-grid">
+        <div>
+          <div class="lp-footer-name">MedPath Diagnostics</div>
+          <div class="lp-footer-tag">Accurate Results. Better Health.</div>
+          <div class="lp-footer-socials" aria-label="Social media">
+            @for (s of ['brand-facebook','brand-twitter','brand-instagram','brand-linkedin']; track s) {
+              <div class="lp-social-btn" [attr.aria-label]="s.replace('brand-','')"><i [class]="'ti ti-' + s" aria-hidden="true"></i></div>
+            }
+          </div>
+        </div>
+        <div>
+          <div class="lp-fc-title">Quick links</div>
+          @for (l of ['Home','About us','Tests','Our process','Contact us']; track l) {
+            <a class="lp-fc-link" href="#">{{ l }}</a>
+          }
+        </div>
+        <div>
+          <div class="lp-fc-title">Useful links</div>
+          @for (l of ['Book a test','View reports','Test packages','Health tips','FAQ']; track l) {
+            <a class="lp-fc-link" href="#">{{ l }}</a>
+          }
+        </div>
+        <div>
+          <div class="lp-fc-title">Contact us</div>
+          <div class="lp-fc-contact"><i class="ti ti-map-pin" aria-hidden="true"></i> 123, Health Street, Medical Area, Bengaluru — 560001</div>
+          <div class="lp-fc-contact"><i class="ti ti-phone" aria-hidden="true"></i> +91 98765 43210</div>
+          <div class="lp-fc-contact"><i class="ti ti-mail" aria-hidden="true"></i> info&#64;medpath.in</div>
+        </div>
+        <div>
+          <div class="lp-fc-title">Working hours</div>
+          <div class="lp-fc-contact"><i class="ti ti-clock" aria-hidden="true"></i> Mon–Sat: 7:00 AM – 8:00 PM</div>
+          <div class="lp-fc-contact"><i class="ti ti-clock" aria-hidden="true"></i> Sunday: 7:00 AM – 2:00 PM</div>
+          <div class="lp-open-badge"><span class="lp-open-dot" aria-hidden="true"></span> Lab open now</div>
+        </div>
+      </div>
+      <div class="lp-footer-bottom">
+        <span>© 2026 MedPath Diagnostics. All rights reserved.</span>
+        <div class="lp-footer-policy">
+          <a href="#">Privacy policy</a>
+          <a href="#">Terms &amp; conditions</a>
+        </div>
+      </div>
+    </footer>
