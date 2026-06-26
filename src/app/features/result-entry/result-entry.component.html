@@ -1,0 +1,171 @@
+<div class="page-header">
+      <div>
+        <h1 class="page-title">Result entry</h1>
+        <nav aria-label="Breadcrumb"><ol class="breadcrumb">
+          <li><a routerLink="/dashboard/home">Home</a></li>
+          <li><a routerLink="/dashboard/tracking">Tracking</a></li>
+          <li aria-current="page">Arun Pillai — SMP-2406-087</li>
+        </ol></nav>
+      </div>
+      <div class="autosave-chip" aria-live="polite">
+        <i class="ti ti-clock" aria-hidden="true"></i> Autosaved 10:44
+      </div>
+    </div>
+
+    <div class="re-layout">
+      <!-- Left: entry area -->
+      <div class="re-main">
+        <!-- Patient bar -->
+        <div class="pat-bar">
+          <div class="pat-av" aria-hidden="true">AP</div>
+          <div class="pat-info">
+            <div class="pat-name">Arun Pillai</div>
+            <div class="pat-meta">61 yrs · Male · PAT-2406-0316 · SMP-2406-087 · Ref: Dr. Suresh Menon</div>
+          </div>
+          <span class="stat-chip" aria-label="STAT priority">STAT</span>
+        </div>
+
+        <!-- Tab bar -->
+        <div class="tab-bar" role="tablist" aria-label="Test tabs">
+          @for (tab of tabs; track tab) {
+            <button type="button" class="tab" role="tab"
+              [class.tab--active]="activeTab() === tab"
+              [attr.aria-selected]="activeTab() === tab"
+              (click)="activeTab.set(tab)"
+            >{{ tab }}</button>
+          }
+        </div>
+
+        <!-- Critical banner -->
+        @if (hasCritical()) {
+          <div class="critical-banner" role="alert" aria-live="assertive">
+            <i class="ti ti-alert-octagon" aria-hidden="true"></i>
+            <div class="critical-text">
+              <strong>Critical value detected</strong> — Serum Potassium (K⁺) is 6.8 mEq/L,
+              significantly above the critical threshold of 6.0.
+              Please notify the referring physician immediately before report dispatch.
+            </div>
+          </div>
+        }
+
+        <!-- Result table -->
+        <div class="result-card lis-card">
+          <div class="lis-card__header">
+            <i class="ti ti-test-pipe" style="color:var(--lis-primary,#1D9E75);font-size:14px" aria-hidden="true"></i>
+            <h2 class="lis-card__title">Kidney function test (KFT)</h2>
+            <span class="lis-badge lis-badge--danger">
+              <i class="ti ti-alert-triangle" style="font-size:10px"></i> 2 critical
+            </span>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="result-tbl" role="table" aria-label="KFT result entry">
+              <thead>
+                <tr>
+                  <th scope="col">Parameter</th>
+                  <th scope="col">Result</th>
+                  <th scope="col">Unit</th>
+                  <th scope="col">Reference range</th>
+                  <th scope="col">Flag</th>
+                  <th scope="col" class="sr-only">Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (p of params; track p.id; let i = $index) {
+                  <tr>
+                    <td class="param-name" [class.param-critical]="p.flag === 'critical'">{{ p.name }}</td>
+                    <td>
+                      <div class="result-input-wrap">
+                        <input
+                          class="result-input"
+                          [class]="'result-input--' + p.flag"
+                          type="number"
+                          [(ngModel)]="params[i].value"
+                          (ngModelChange)="evalFlag(i)"
+                          [attr.aria-label]="p.name + ' result'"
+                        />
+                        @if (p.flag === 'high' || p.flag === 'critical') {
+                          <span class="arrow-up" aria-hidden="true">
+                            {{ p.flag === 'critical' ? '↑↑' : '↑' }}
+                          </span>
+                        }
+                        @if (p.flag === 'low') {
+                          <span class="arrow-dn" aria-hidden="true">↓</span>
+                        }
+                      </div>
+                    </td>
+                    <td class="unit-cell">{{ p.unit }}</td>
+                    <td class="ref-cell">{{ p.refLabel }}</td>
+                    <td>
+                      <span class="lis-flag" [class]="'lis-flag--' + p.flag">
+                        {{ flagLabel(p.flag) }}
+                      </span>
+                    </td>
+                    <td>
+                      <button type="button" class="note-btn" [attr.aria-label]="'Add note for ' + p.name">
+                        <i class="ti ti-message-circle" aria-hidden="true"></i>
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: summary -->
+      <aside class="re-side" aria-label="Entry summary">
+        <div class="lis-card side-card">
+          <div class="lis-card__header">
+            <h2 class="lis-card__title">Test summary</h2>
+          </div>
+          <div class="side-rows">
+            <div class="side-row"><span>Sample ID</span><span class="lis-mono" style="font-size:10px">SMP-2406-087</span></div>
+            <div class="side-row"><span>Tests ordered</span><span>KFT · Urine R/M</span></div>
+            <div class="side-row"><span>Collected</span><span>9:20 AM</span></div>
+            <div class="side-row"><span>Priority</span><span class="stat-chip stat-chip--sm">STAT</span></div>
+          </div>
+
+          <!-- Progress ring -->
+          <div class="progress-wrap">
+            <svg viewBox="0 0 80 80" width="80" height="80" aria-label="6 of 8 parameters entered" role="img">
+              <circle cx="40" cy="40" r="34" fill="none" stroke="var(--body-bg)" stroke-width="8"/>
+              <circle cx="40" cy="40" r="34" fill="none"
+                stroke="var(--lis-primary,#1D9E75)" stroke-width="8"
+                stroke-dasharray="213.6" stroke-dashoffset="53"
+                stroke-linecap="round" transform="rotate(-90 40 40)"/>
+            </svg>
+            <div class="ring-label" aria-hidden="true">
+              <span class="ring-val">{{ pct() }}%</span>
+              <span class="ring-sub">entered</span>
+            </div>
+          </div>
+          <div class="progress-caption">{{ enteredCount() }} of {{ params.length }} parameters entered</div>
+
+          <!-- Flag summary -->
+          <div class="side-section">Flags</div>
+          <div class="side-rows">
+            <div class="side-row"><span>Normal</span><span style="color:#0F6E56;font-weight:500">{{ normalCount() }}</span></div>
+            <div class="side-row"><span>Abnormal</span><span style="color:#E24B4A;font-weight:500">{{ abnCount() }}</span></div>
+            <div class="side-row"><span>Critical</span><span style="color:#E24B4A;font-weight:500">{{ critCount() }}</span></div>
+          </div>
+
+          <!-- Notify box -->
+          @if (hasCritical()) {
+            <div class="notify-box" role="status">
+              <i class="ti ti-phone" aria-hidden="true"></i>
+              Notify Dr. Suresh Menon before report dispatch — critical K⁺ value.
+            </div>
+          }
+
+          <div class="side-actions">
+            <a routerLink="/dashboard/reports" class="lis-btn lis-btn--primary lis-btn--full">
+              <i class="ti ti-file-text" aria-hidden="true"></i> Finalise & generate report
+            </a>
+            <button type="button" class="lis-btn lis-btn--secondary lis-btn--full">
+              <i class="ti ti-device-floppy" aria-hidden="true"></i> Save draft
+            </button>
+          </div>
+        </div>
+      </aside>
+    </div>

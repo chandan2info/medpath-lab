@@ -8,26 +8,9 @@ import { FooterComponent }          from './components/footer/footer.component';
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [
-    NavbarComponent,
-    HeroComponent,
-    FeaturesSectionComponent,
-    PricingComponent,
-    FooterComponent,
-  ],
+  imports: [NavbarComponent, HeroComponent, FeaturesSectionComponent, PricingComponent, FooterComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <app-landing-navbar />
-    <main>
-      <app-landing-hero />
-      <app-landing-features />
-      <app-landing-pricing />
-    </main>
-    <app-landing-footer />
-  `,
-  styles: [`
-    :host { display: block; }
-    main { overflow: hidden; }
-  `],
+  templateUrl: './landing.component.html',
+  styleUrl: './landing.component.css',
 })
 export class LandingComponent {}

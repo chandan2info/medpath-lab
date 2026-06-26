@@ -1,0 +1,26 @@
+<div
+      class="pc-container lis-app-shell"
+      [ngClass]="{
+        'sidebar-collapsed': sidebar.collapsed(),
+        'mobile-nav-open':   sidebar.mobileOpen()
+      }"
+    >
+      <!-- Persistent sidebar -->
+      <app-sidebar />
+
+      <!-- Main content column -->
+      <div class="pc-main-content">
+        <!-- Persistent topbar -->
+        <app-topbar />
+
+        <!-- Routed feature pages land here -->
+        <main
+          class="pc-page-content lis-page-content"
+          role="main"
+          id="main-content"
+          aria-live="polite"
+        >
+          <router-outlet />
+        </main>
+      </div>
+    </div>

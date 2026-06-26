@@ -1,0 +1,50 @@
+<div class="card stat-card" role="region" [attr.aria-label]="card().title + ' statistics'">
+      <div class="stat-card-inner">
+        <!-- Icon -->
+        <div class="stat-icon-wrap" [ngClass]="'stat-icon-' + card().colorVariant" aria-hidden="true">
+          <i class="ti ti-{{ card().icon }}"></i>
+        </div>
+
+        <!-- Content -->
+        <div class="stat-content">
+          <p class="stat-label">{{ card().title }}</p>
+          <p class="stat-value" [attr.aria-label]="card().value">{{ card().value }}</p>
+          @if (card().subtitle) {
+            <p class="stat-subtitle">{{ card().subtitle }}</p>
+          }
+        </div>
+
+        <!-- Badge -->
+        <div
+          class="stat-badge"
+          [ngClass]="card().trend === 'up' ? 'stat-badge-up' : card().trend === 'down' ? 'stat-badge-down' : 'stat-badge-neutral'"
+          [attr.aria-label]="(card().changePercent > 0 ? 'Up' : 'Down') + ' ' + Math.abs(card().changePercent) + ' percent'"
+        >
+          @if (card().trend === 'up') {
+            <i class="ti ti-arrow-up-right" aria-hidden="true"></i>
+          } @else if (card().trend === 'down') {
+            <i class="ti ti-arrow-down-right" aria-hidden="true"></i>
+          }
+          <span>{{ card().changePercent > 0 ? '+' : '' }}{{ card().changePercent }}%</span>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div class="stat-progress-wrap">
+        <div
+          class="stat-progress"
+          role="progressbar"
+          [attr.aria-valuenow]="card().progressValue"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          [attr.aria-label]="card().progressValue + '% of target'"
+        >
+          <div
+            class="stat-progress-fill"
+            [ngClass]="'stat-progress-' + card().colorVariant"
+            [style.width.%]="card().progressValue"
+          ></div>
+        </div>
+        <span class="stat-progress-label" aria-hidden="true">{{ card().progressValue }}% of target</span>
+      </div>
+    </div>

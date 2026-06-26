@@ -1,0 +1,88 @@
+<!-- Mobile overlay -->
+    @if (sidebar.mobileOpen()) {
+      <div
+        class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
+        (click)="sidebar.closeMobile()"
+        aria-hidden="true"
+      ></div>
+    }
+
+    <nav
+      class="pc-sidebar lis-sidebar"
+      [ngClass]="{
+        'collapsed':    sidebar.collapsed(),
+        'mobile-open':  sidebar.mobileOpen()
+      }"
+      role="navigation"
+      aria-label="Lab navigation"
+    >
+      <!-- Brand -->
+      <div class="sidebar-brand">
+        <div class="lis-brand-icon" aria-hidden="true">
+          <i class="ti ti-flask"></i>
+        </div>
+        @if (!sidebar.collapsed()) {
+          <div class="lis-brand-text">
+            <span class="lis-brand-name">MedPath LIS</span>
+            <span class="lis-brand-sub">Diagnostic Lab · v2.4</span>
+          </div>
+        }
+        <button
+          class="mobile-close-btn lg:hidden"
+          (click)="sidebar.closeMobile()"
+          aria-label="Close navigation"
+        >
+          <i class="ti ti-x" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <!-- Navigation -->
+      <div class="sidebar-nav" role="list">
+        @for (entry of nav; track $index) {
+          @if (isSection(entry)) {
+            @if (!sidebar.collapsed()) {
+              <div class="nav-caption" role="presentation">{{ entry.caption }}</div>
+            }
+          } @else {
+            <div class="nav-item" role="listitem">
+              <a
+                [routerLink]="entry.route"
+                routerLinkActive="active"
+                [attr.aria-label]="entry.label"
+                [attr.title]="sidebar.collapsed() ? entry.label : null"
+                (click)="sidebar.closeMobile()"
+              >
+                <span class="nav-icon" aria-hidden="true">
+                  <i class="ti ti-{{ entry.icon }}"></i>
+                </span>
+                @if (!sidebar.collapsed()) {
+                  <span class="nav-label">{{ entry.label }}</span>
+                  @if (entry.badge && badges && badges[entry.badge] > 0) {
+                    <span
+                      class="nav-badge"
+                      [attr.aria-label]="badges[entry.badge] + ' items'"
+                    >{{ badges[entry.badge] }}</span>
+                  }
+                }
+              </a>
+            </div>
+          }
+        }
+      </div>
+
+      <!-- Operator footer -->
+      @if (!sidebar.collapsed()) {
+        <div class="sidebar-footer">
+          <div class="sidebar-user">
+            <div class="lis-avatar" aria-hidden="true">
+              {{ session.operator().initials }}
+            </div>
+            <div class="sidebar-user-info">
+              <p class="sidebar-user-name">{{ session.operator().name }}</p>
+              <p class="sidebar-user-role">{{ session.operator().role }}</p>
+            </div>
+            <i class="ti ti-logout lis-logout-icon" aria-label="Sign out"></i>
+          </div>
+        </div>
+      }
+    </nav>
