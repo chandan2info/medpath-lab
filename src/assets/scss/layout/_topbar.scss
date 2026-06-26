@@ -1,0 +1,72 @@
+// ── Topbar ───────────────────────────────────────────────
+// Migrated from DattaAble's header-content layout
+.pc-topbar {
+  position: fixed;
+  top: 0;
+  left: var(--sidebar-width);
+  right: 0;
+  height: var(--topbar-height);
+  background: var(--topbar-bg);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 16px;
+  z-index: 999;
+  transition: left var(--transition-slow);
+  box-shadow: var(--card-shadow);
+
+  &.sidebar-collapsed { left: var(--sidebar-collapsed); }
+
+  .topbar-search {
+    flex: 0 0 280px;
+    input {
+      width: 100%;
+      padding: 8px 16px;
+      background: var(--body-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 0.875rem;
+      color: var(--text-primary);
+      outline: none;
+      &:focus { border-color: var(--primary-500); }
+    }
+  }
+
+  .topbar-spacer { flex: 1; }
+
+  .topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .topbar-icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: none;
+    background: var(--body-bg);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition-base);
+    &:hover { background: var(--border-color); color: var(--text-primary); }
+  }
+
+  .topbar-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--primary-500);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.8125rem;
+    cursor: pointer;
+  }
+}

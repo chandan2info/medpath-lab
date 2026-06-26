@@ -1,0 +1,26 @@
+.pc-container {
+  margin-left: var(--sidebar-width);
+  padding-top: var(--topbar-height);
+  min-height: 100vh;
+  transition: margin-left var(--transition-slow);
+  background: var(--body-bg);
+
+  &.sidebar-collapsed { margin-left: var(--sidebar-collapsed); }
+}
+
+.pc-content {
+  padding: 24px;
+}
+
+// Responsive grid helpers (12-column, mirroring DattaAble)
+.grid-12 {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .pc-sidebar { transform: translateX(-100%); &.open { transform: none; } }
+  .pc-topbar { left: 0; }
+  .pc-container { margin-left: 0; }
+}

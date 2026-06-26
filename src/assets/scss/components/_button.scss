@@ -1,0 +1,39 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-base);
+  outline: none;
+
+  &-primary {
+    background: var(--primary-500);
+    color: #fff;
+    &:hover { background: var(--primary-600); }
+  }
+  &-crypto {
+    background: var(--crypto-purple);
+    color: #fff;
+    &:hover { background: var(--crypto-dark-purple); }
+  }
+  &-outline {
+    background: transparent;
+    border-color: var(--border-color);
+    color: var(--text-primary);
+    &:hover { background: var(--body-bg); }
+  }
+  &-ghost {
+    background: transparent;
+    border-color: transparent;
+    color: var(--text-secondary);
+    &:hover { background: var(--body-bg); }
+  }
+  &-sm { padding: 5px 10px; font-size: 0.8125rem; }
+  &-lg { padding: 12px 24px; font-size: 1rem; border-radius: 8px; }
+}
