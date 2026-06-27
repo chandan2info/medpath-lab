@@ -1,0 +1,3631 @@
+From 804aba611643e2a260f7d7dad4357c3eee36c742 Mon Sep 17 00:00:00 2001
+From: MedPath Dev <medpath-dev@bot.local>
+Date: Sat, 27 Jun 2026 10:49:08 +0000
+Subject: [PATCH] refactor(workflow): implement focused 4-screen LIS workflow
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Screen 1 - Patient Registration (clean, no test panel)
+- Removed test search sidebar from registration form
+- Added 2-step stepper: Demographics → Clinical Info
+- Added workflow trail progress indicator
+- Added success overlay with Patient ID + countdown auto-navigate
+- Validate step fields progressively before advancing
+
+Screen 2 - Test Order (new dedicated page /dashboard/test-order)
+- Full-width layout: search catalogue left, order panel right
+- Popular test quick-pick grid (CBC, LFT, KFT, HbA1c, VTD, TSH, LIP)
+- Category filter pills + real-time search
+- Animated selected test list with remove button
+- Priority selector (Routine/Urgent/STAT) with STAT alert
+- Guard: redirects to /registration if no patient in flow
+
+Screen 3 - Billing (dedicated, no test search)
+- Patient banner (read-only) + tests summary (read-only)
+- Separate discount/coupon/referral/advance fields
+- Payment mode selector (Cash/UPI/Card/Credit)
+- Invoice panel with live totals, outstanding calculation
+- Payment receipt overlay → proceed to Sample Collection
+- Guard: redirects to test-order if no tests selected
+
+Screen 4 - Sample Collection
+- Current patient block at top (tubes auto-generated from test categories)
+- Tube colour coding (Green=Haematology, Red=Biochemistry, Purple=Endo, Yellow=Urine)
+- Mark as Collected button with timestamp
+- General lab queue table preserved below
+
+PatientFlowService (new shared state service)
+- Single source of truth across all 4 screens
+- Holds patient, selected tests, priority, billing data
+- Provides calcAge, generateInvoiceId, popularTests helpers
+
+Router + Sidebar
+- Added /dashboard/test-order route
+- Sidebar reorganised: Patient Workflow section groups
+  Register → Test Order → Billing → Sample Collection
+---
+ package-lock.json                             |  57 --
+ src/app/app.routes.ts                         |  28 +-
+ src/app/core/services/patient-flow.service.ts | 151 +++++
+ .../features/billing/billing.component.css    | 212 ++++---
+ .../features/billing/billing.component.html   | 338 +++++++----
+ src/app/features/billing/billing.component.ts | 116 ++--
+ .../features/lis-home/lis-home.component.html |   2 +-
+ .../patient-registration.component.css        | 234 +++++---
+ .../patient-registration.component.html       | 532 ++++++++++--------
+ .../patient-registration.component.ts         | 176 +++---
+ .../sample-tracking.component.css             |  73 ++-
+ .../sample-tracking.component.html            | 399 ++++++++-----
+ .../sample-tracking.component.ts              | 112 +++-
+ .../test-order/test-order.component.css       | 218 +++++++
+ .../test-order/test-order.component.html      | 267 +++++++++
+ .../test-order/test-order.component.ts        |  77 +++
+ .../components/sidebar/sidebar.component.ts   |  45 +-
+ 17 files changed, 2128 insertions(+), 909 deletions(-)
+ create mode 100644 src/app/core/services/patient-flow.service.ts
+ create mode 100644 src/app/features/test-order/test-order.component.css
+ create mode 100644 src/app/features/test-order/test-order.component.html
+ create mode 100644 src/app/features/test-order/test-order.component.ts
+
+diff --git a/package-lock.json b/package-lock.json
+index 44acbb1..5ddbb13 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -3463,9 +3463,6 @@
+         "arm"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -3487,9 +3484,6 @@
+         "arm"
+       ],
+       "dev": true,
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -3511,9 +3505,6 @@
+         "arm64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -3535,9 +3526,6 @@
+         "arm64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -3559,9 +3547,6 @@
+         "x64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -3583,9 +3568,6 @@
+         "x64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -3787,9 +3769,6 @@
+         "arm"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -3804,9 +3783,6 @@
+         "arm"
+       ],
+       "dev": true,
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -3821,9 +3797,6 @@
+         "arm64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -3838,9 +3811,6 @@
+         "arm64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -3855,9 +3825,6 @@
+         "loong64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -3872,9 +3839,6 @@
+         "loong64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -3889,9 +3853,6 @@
+         "ppc64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -3906,9 +3867,6 @@
+         "ppc64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -3923,9 +3881,6 @@
+         "riscv64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -3940,9 +3895,6 @@
+         "riscv64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -3957,9 +3909,6 @@
+         "s390x"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -3974,9 +3923,6 @@
+         "x64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -3991,9 +3937,6 @@
+         "x64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+diff --git a/src/app/app.routes.ts b/src/app/app.routes.ts
+index 6f30c29..3497ab8 100644
+--- a/src/app/app.routes.ts
++++ b/src/app/app.routes.ts
+@@ -30,12 +30,21 @@ export const routes: Routes = [
+           import('./features/lis-home/lis-home.component').then(m => m.LisHomeComponent),
+         title: 'Home — MedPath LIS',
+       },
++      // ── Workflow screens ──────────────────────────────────
+       {
+         path: 'registration',
+         loadComponent: () =>
+-          import('./features/patient-registration/patient-registration.component').then(m => m.PatientRegistrationComponent),
++          import('./features/patient-registration/patient-registration.component')
++            .then(m => m.PatientRegistrationComponent),
+         title: 'Patient Registration — MedPath LIS',
+       },
++      {
++        path: 'test-order',
++        loadComponent: () =>
++          import('./features/test-order/test-order.component')
++            .then(m => m.TestOrderComponent),
++        title: 'Test Order — MedPath LIS',
++      },
+       {
+         path: 'billing',
+         loadComponent: () =>
+@@ -45,19 +54,23 @@ export const routes: Routes = [
+       {
+         path: 'collection',
+         loadComponent: () =>
+-          import('./features/sample-tracking/sample-tracking.component').then(m => m.SampleTrackingComponent),
++          import('./features/sample-tracking/sample-tracking.component')
++            .then(m => m.SampleTrackingComponent),
+         title: 'Sample Collection — MedPath LIS',
+       },
++      // ── Lab operations ────────────────────────────────────
+       {
+         path: 'tracking',
+         loadComponent: () =>
+-          import('./features/sample-tracking/sample-tracking.component').then(m => m.SampleTrackingComponent),
++          import('./features/sample-tracking/sample-tracking.component')
++            .then(m => m.SampleTrackingComponent),
+         title: 'Sample Tracking — MedPath LIS',
+       },
+       {
+         path: 'results',
+         loadComponent: () =>
+-          import('./features/result-entry/result-entry.component').then(m => m.ResultEntryComponent),
++          import('./features/result-entry/result-entry.component')
++            .then(m => m.ResultEntryComponent),
+         title: 'Result Entry — MedPath LIS',
+       },
+       {
+@@ -66,16 +79,19 @@ export const routes: Routes = [
+           import('./features/reports/reports.component').then(m => m.ReportsComponent),
+         title: 'Reports — MedPath LIS',
+       },
++      // ── Records ───────────────────────────────────────────
+       {
+         path: 'history',
+         loadComponent: () =>
+-          import('./features/patient-history/patient-history.component').then(m => m.PatientHistoryComponent),
++          import('./features/patient-history/patient-history.component')
++            .then(m => m.PatientHistoryComponent),
+         title: 'Patient History — MedPath LIS',
+       },
+       {
+         path: 'analytics',
+         loadComponent: () =>
+-          import('./features/analytics/analytics.component').then(m => m.AnalyticsComponent),
++          import('./features/analytics/analytics.component')
++            .then(m => m.AnalyticsComponent),
+         title: 'Analytics — MedPath LIS',
+       },
+       {
+diff --git a/src/app/core/services/patient-flow.service.ts b/src/app/core/services/patient-flow.service.ts
+new file mode 100644
+index 0000000..c4c9987
+--- /dev/null
++++ b/src/app/core/services/patient-flow.service.ts
+@@ -0,0 +1,151 @@
++// ─────────────────────────────────────────────
++//  MedPath LIS — Patient Flow State Service
++//  Single source of truth shared across the
++//  Registration → Test Order → Billing →
++//  Sample Collection workflow.
++// ─────────────────────────────────────────────
++import { Injectable, signal, computed } from '@angular/core';
++import { LabTest, Priority, PaymentMode } from '../../shared/models/lis.models';
++
++export interface RegisteredPatient {
++  id: string;           // PAT-2406-NNNN
++  firstName: string;
++  lastName: string;
++  dob: string;
++  ageYears: number;
++  gender: string;
++  bloodGroup: string;
++  mobile: string;
++  email: string;
++  address: string;
++  refDoctor: string;
++  visitType: string;
++  fasting: string;
++  collection: string;
++  clinicalNotes: string;
++  medications: string;
++}
++
++export interface OrderedTest {
++  test: LabTest;
++  priority: Priority;
++}
++
++export interface BillingSummary {
++  subtotal: number;
++  discountPct: number;
++  discountAmt: number;
++  grandTotal: number;
++  paymentMode: PaymentMode;
++  invoiceId: string;
++}
++
++const LAB_TESTS: LabTest[] = [
++  { id:'CBC',  name:'CBC — Complete blood count',   category:'Haematology',   price:200, tatHours:4 },
++  { id:'ESR',  name:'ESR',                           category:'Haematology',   price:80,  tatHours:2 },
++  { id:'GLU',  name:'Blood glucose (fasting)',        category:'Biochemistry',  price:120, tatHours:2 },
++  { id:'HBA',  name:'HbA1c',                         category:'Biochemistry',  price:400, tatHours:4 },
++  { id:'LFT',  name:'Liver function test',            category:'Biochemistry',  price:550, tatHours:6 },
++  { id:'KFT',  name:'Kidney function test',           category:'Biochemistry',  price:500, tatHours:6 },
++  { id:'LIP',  name:'Lipid profile',                  category:'Biochemistry',  price:450, tatHours:6 },
++  { id:'TSH',  name:'TSH',                            category:'Endocrinology', price:350, tatHours:6 },
++  { id:'FT3',  name:'Free T3 / T4 / TSH panel',      category:'Endocrinology', price:700, tatHours:8 },
++  { id:'VTD',  name:'Vitamin D (25-OH)',              category:'Endocrinology', price:900, tatHours:8 },
++  { id:'URI',  name:'Urine routine & microscopy',     category:'Urine',         price:100, tatHours:2 },
++  { id:'UCR',  name:'Urine creatinine',               category:'Urine',         price:150, tatHours:2 },
++  { id:'CRP',  name:'C-Reactive Protein',             category:'Biochemistry',  price:320, tatHours:4 },
++  { id:'FER',  name:'Serum Ferritin',                 category:'Biochemistry',  price:380, tatHours:6 },
++  { id:'B12',  name:'Vitamin B12',                    category:'Biochemistry',  price:750, tatHours:6 },
++];
++
++const POPULAR_IDS = ['CBC','LFT','KFT','HBA','VTD','TSH','LIP'];
++
++const DOCTORS = [
++  'Dr. Pradeep Iyer (Cardiology)',
++  'Dr. Suresh Menon (Internal Medicine)',
++  'Dr. Anita Rao (Endocrinology)',
++  'Dr. Meera Pillai (General Practice)',
++  'Self / Walk-in',
++];
++
++@Injectable({ providedIn: 'root' })
++export class PatientFlowService {
++  // ── Master test catalogue ─────────────────
++  readonly allTests  = LAB_TESTS;
++  readonly popularTests = LAB_TESTS.filter(t => POPULAR_IDS.includes(t.id));
++  readonly doctors   = DOCTORS;
++  readonly categories = ['All','Haematology','Biochemistry','Endocrinology','Urine'];
++
++  // ── Registered patient ────────────────────
++  private _patient  = signal<RegisteredPatient | null>(null);
++  readonly patient  = this._patient.asReadonly();
++
++  // ── Test order ────────────────────────────
++  private _selected  = signal<Set<string>>(new Set());
++  private _priority  = signal<Priority>('routine');
++  readonly priority  = this._priority.asReadonly();
++
++  readonly selectedIds    = this._selected.asReadonly();
++  readonly selectedTests  = computed(() =>
++    this.allTests.filter(t => this._selected().has(t.id))
++  );
++  readonly orderTotal     = computed(() =>
++    this.selectedTests().reduce((a, t) => a + t.price, 0)
++  );
++  readonly maxTat         = computed(() =>
++    this.selectedTests().reduce((m, t) => Math.max(m, t.tatHours), 0)
++  );
++
++  // ── Billing ───────────────────────────────
++  private _discountPct  = signal(0);
++  private _payMode      = signal<PaymentMode>('cash');
++  readonly discountPct  = this._discountPct.asReadonly();
++  readonly payMode      = this._payMode.asReadonly();
++  readonly discountAmt  = computed(() =>
++    Math.round(this.orderTotal() * this._discountPct() / 100)
++  );
++  readonly grandTotal   = computed(() =>
++    this.orderTotal() - this.discountAmt()
++  );
++
++  // ── Actions ───────────────────────────────
++  registerPatient(data: Omit<RegisteredPatient, 'id'>): RegisteredPatient {
++    const seq = String(Math.floor(Math.random() * 900) + 100);
++    const mm  = String(new Date().getMonth() + 1).padStart(2, '0');
++    const yy  = String(new Date().getFullYear()).slice(2);
++    const pat: RegisteredPatient = { ...data, id: `PAT-${yy}${mm}-0${seq}` };
++    this._patient.set(pat);
++    this._selected.set(new Set());          // reset tests for new patient
++    this._discountPct.set(0);
++    this._payMode.set('cash');
++    return pat;
++  }
++
++  toggleTest(id: string): void {
++    this._selected.update(s => {
++      const n = new Set(s);
++      n.has(id) ? n.delete(id) : n.add(id);
++      return n;
++    });
++  }
++
++  setPriority(p: Priority): void { this._priority.set(p); }
++  setDiscount(pct: number): void { this._discountPct.set(pct); }
++  setPayMode(m: PaymentMode): void { this._payMode.set(m); }
++
++  generateInvoiceId(): string {
++    const seq = String(Math.floor(Math.random() * 900) + 100);
++    const mm  = String(new Date().getMonth() + 1).padStart(2, '0');
++    const yy  = String(new Date().getFullYear()).slice(2);
++    return `INV-${yy}${mm}-0${seq}`;
++  }
++
++  calcAge(dob: string): number {
++    if (!dob) return 0;
++    const today = new Date();
++    const birth = new Date(dob);
++    let age = today.getFullYear() - birth.getFullYear();
++    if (today < new Date(today.getFullYear(), birth.getMonth(), birth.getDate())) age--;
++    return age;
++  }
++}
+diff --git a/src/app/features/billing/billing.component.css b/src/app/features/billing/billing.component.css
+index 3b48f7a..1118aae 100644
+--- a/src/app/features/billing/billing.component.css
++++ b/src/app/features/billing/billing.component.css
+@@ -1,132 +1,116 @@
+-/* ────────────────────────────────────────────────
+-   Billing Component Styles
+-   Feature-specific styles only.
+-   Global / shared styles live in styles.css
+-   LIS design tokens defined in _lis-tokens section
+-   of styles.css
+-──────────────────────────────────────────────── */
+ :host { display: block; }
+ 
+-.page-header {
+-  display: flex;
+-  align-items: flex-start;
+-  justify-content: space-between;
+-  flex-wrap: wrap;
+-  gap: 12px;
+-  margin-bottom: 14px;
+-}
+-.page-title {
+-  font-size: 20px;
+-  font-weight: 500;
+-  color: var(--text-primary);
+-  margin: 0 0 3px;
+-}
++/* ── Page header ─────────────────────────── */
++.page-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 14px; }
++.page-title  { font-size: 20px; font-weight: 500; color: var(--text-primary); margin: 0 0 3px; }
++.breadcrumb  { display: flex; list-style: none; padding: 0; margin: 0; gap: 6px; font-size: 12px; color: var(--text-secondary); }
++.breadcrumb li+li::before { content: '/'; margin-right: 6px; }
++.breadcrumb a { color: var(--text-secondary); text-decoration: none; &:hover { color: var(--lis-primary, #1D9E75); } }
++.lis-link { font-size: 11px; color: var(--lis-primary, #1D9E75); text-decoration: none; margin-left: auto; &:hover { text-decoration: underline; } }
+ 
+-/* Breadcrumb */
+-.breadcrumb {
+-  display: flex;
+-  list-style: none;
+-  padding: 0;
+-  margin: 0;
+-  gap: 6px;
+-  font-size: 12px;
+-  color: var(--text-secondary);
+-}
+-.breadcrumb a {
+-  color: var(--text-secondary);
+-  text-decoration: none;
+-}
+-.breadcrumb a:hover { color: var(--lis-primary, #1D9E75); }
+-.breadcrumb li + li::before { content: '/'; margin-right: 6px; }
++/* ── Workflow trail ──────────────────────── */
++.workflow-trail { display: flex; align-items: center; gap: 6px; background: var(--body-bg); border: 0.5px solid var(--border-color); border-radius: 9px; padding: 6px 12px; }
++.wf-step { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-secondary); i { font-size: 13px; } }
++.wf-step--active { color: var(--lis-primary-deep, #085041); font-weight: 500; i { color: var(--lis-primary, #1D9E75); } }
++.wf-step--done   { color: var(--lis-primary, #1D9E75); font-weight: 500; }
++.wf-arrow { font-size: 11px; color: var(--border-color); }
+ 
+-/* Stepper */
+-.stepper { display: flex; align-items: center; padding-bottom: 14px; }
+-.step    { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-secondary); }
+-.step--active { color: var(--lis-primary-deep, #085041); font-weight: 500; }
+-.step-num {
+-  width: 20px; height: 20px; border-radius: 50%;
+-  border: 1.5px solid var(--border-color);
+-  display: flex; align-items: center; justify-content: center;
+-  font-size: 10px; font-weight: 500; flex-shrink: 0;
++/* ── Invoice banner ──────────────────────── */
++.inv-banner {
++  display: flex; align-items: center; gap: 8px;
++  background: var(--body-bg); border: 0.5px solid var(--border-color);
++  border-radius: 8px; padding: 7px 12px; margin-bottom: 14px;
++  font-size: 12px; color: var(--text-secondary);
++  i { color: var(--lis-primary, #1D9E75); }
+ }
+-.step--done   .step-num { background: var(--lis-primary-xlight, #E1F5EE); border-color: var(--lis-primary, #1D9E75); color: var(--lis-primary-deep, #085041); }
+-.step--active .step-num { background: var(--lis-primary, #1D9E75); border-color: var(--lis-primary, #1D9E75); color: #fff; }
+-.step-arrow { color: var(--border-color); font-size: 13px; margin: 0 6px; }
++.inv-id   { font-size: 12px; font-weight: 500; color: var(--text-primary); }
++.inv-date { margin-left: auto; font-size: 11px; }
+ 
+-/* Layout */
+-.bill-layout {
+-  display: grid;
+-  grid-template-columns: 1fr 272px;
+-  gap: 14px;
+-  align-items: start;
+-}
++/* ── Layout ──────────────────────────────── */
++.bill-layout { display: grid; grid-template-columns: 1fr 280px; gap: 14px; align-items: start; }
+ @media (max-width: 900px) { .bill-layout { grid-template-columns: 1fr; } }
+ .bill-main { display: flex; flex-direction: column; gap: 12px; }
+-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+ 
+-/* Test search row */
+-.ts-row {
+-  display: flex; align-items: center; gap: 7px;
+-  background: var(--body-bg);
+-  border-bottom: 0.5px solid var(--border-color);
+-  padding: 8px 13px;
+-}
+-.ts-row i { color: var(--text-secondary); font-size: 14px; }
+-.ts-row input { background: transparent; border: none; outline: none; font-size: 12px; color: var(--text-primary); flex: 1; }
++/* ── Patient card ────────────────────────── */
++.pat-card {}
++.pat-info-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; }
++.pat-av { width: 38px; height: 38px; border-radius: 50%; background: var(--lis-primary, #1D9E75); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; text-transform: uppercase; }
++.pat-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
++.pat-meta { font-size: 11px; color: var(--text-secondary); margin-top: 3px; }
+ 
+-/* Category pills */
+-.cat-pills { display: flex; gap: 5px; flex-wrap: wrap; padding: 8px 13px 6px; }
+-.cat-pill  { font-size: 10px; padding: 3px 8px; border-radius: 20px; border: 0.5px solid var(--border-color); cursor: pointer; color: var(--text-secondary); background: var(--card-bg); }
+-.cat-pill--active { background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); border-color: var(--lis-primary-mid, #5DCAA5); }
++/* ── Ordered tests (read-only) ───────────── */
++.empty-tests { padding: 12px 14px; font-size: 12px; color: var(--text-secondary); }
++.tests-list  { display: flex; flex-direction: column; }
++.bill-test-row {
++  display: flex; align-items: center; gap: 10px;
++  padding: 9px 14px; border-bottom: 0.5px solid var(--border-color);
++  &:last-child { border-bottom: none; }
++}
++.bt-cat-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--lis-primary-mid, #5DCAA5); flex-shrink: 0; }
++.bt-info    { flex: 1; }
++.bt-name    { font-size: 12px; font-weight: 500; color: var(--text-primary); }
++.bt-meta    { font-size: 10px; color: var(--text-secondary); margin-top: 1px; }
++.bt-price   { font-size: 12px; font-weight: 500; color: var(--lis-primary-deep, #085041); }
+ 
+-/* Test list */
+-.test-scroll { padding: 0 13px 10px; display: flex; flex-direction: column; gap: 5px; max-height: 230px; overflow-y: auto; }
+-.test-row { display: flex; align-items: center; gap: 7px; padding: 7px 9px; border: 0.5px solid var(--border-color); border-radius: 8px; cursor: pointer; }
+-.test-row:hover { background: var(--body-bg); }
+-.test-row--sel { background: var(--lis-primary-xlight, #E1F5EE); border-color: var(--lis-primary-mid, #5DCAA5); }
+-.test-info  { flex: 1; }
+-.test-name  { font-size: 11px; font-weight: 500; color: var(--text-primary); }
+-.test-cat   { font-size: 10px; color: var(--text-secondary); }
+-.test-price { font-size: 11px; font-weight: 500; color: var(--lis-primary-deep, #085041); min-width: 40px; text-align: right; }
+-.test-tog   { width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--text-secondary); }
+-.test-row--sel .test-tog { background: var(--lis-primary, #1D9E75); border-color: var(--lis-primary, #1D9E75); color: #fff; }
++/* ── Discounts grid ──────────────────────── */
++.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 12px 14px 14px; }
++@media (max-width: 540px) { .form-grid { grid-template-columns: 1fr; } }
+ 
+-/* Payment mode */
+-.pay-row  { display: flex; gap: 8px; }
+-.pay-opt  { flex: 1; padding: 7px 4px; border: 0.5px solid var(--border-color); border-radius: 7px; text-align: center; font-size: 10px; color: var(--text-secondary); cursor: pointer; background: var(--card-bg); }
+-.pay-opt i { font-size: 14px; }
+-.pay-opt--active { border-color: var(--lis-primary, #1D9E75); background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); font-weight: 500; }
+-.pay-opt--credit { border-color: #E24B4A; background: #FCEBEB; color: #791F1F; }
+-.credit-warn { background: #FAEEDA; border-radius: 7px; padding: 8px 10px; display: flex; gap: 7px; align-items: flex-start; margin-top: 8px; font-size: 10px; color: #633806; }
+-.credit-warn i { color: #633806; font-size: 14px; flex-shrink: 0; margin-top: 1px; }
++/* ── Payment modes ───────────────────────── */
++.pay-modes  { display: flex; gap: 8px; padding: 12px 14px; }
++.pay-mode-btn {
++  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px;
++  padding: 10px 4px; border: 0.5px solid var(--border-color); border-radius: 9px;
++  cursor: pointer; font-size: 11px; color: var(--text-secondary); background: var(--card-bg);
++  i { font-size: 18px; }
++  &:hover { border-color: var(--lis-primary-mid, #5DCAA5); }
++}
++.pay-mode-btn--active { border-color: var(--lis-primary, #1D9E75); background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); font-weight: 500; }
++.pay-mode-btn--credit { border-color: #E24B4A; background: #FCEBEB; color: #791F1F; }
++.credit-warn { display: flex; align-items: flex-start; gap: 7px; margin: 0 14px 12px; padding: 8px 10px; background: #FAEEDA; border-radius: 7px; font-size: 11px; color: #633806; i { font-size: 14px; flex-shrink: 0; } }
+ 
+-/* Invoice panel */
++/* ── Invoice panel ───────────────────────── */
+ .invoice-panel { display: flex; flex-direction: column; position: sticky; top: 80px; }
+-.inv-hd    { padding: 11px 14px; border-bottom: 0.5px solid var(--border-color); }
+-.inv-title { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+-.inv-pat   { padding: 10px 14px; border-bottom: 0.5px solid var(--border-color); display: flex; align-items: center; gap: 9px; }
+-.inv-av    { width: 30px; height: 30px; border-radius: 50%; background: var(--lis-primary-xlight, #E1F5EE); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; color: var(--lis-primary-deep, #085041); }
++.inv-hd    { padding: 12px 14px; border-bottom: 0.5px solid var(--border-color); }
++.inv-title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
++.inv-meta  { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
++.inv-pat   { display: flex; align-items: center; gap: 9px; padding: 10px 14px; border-bottom: 0.5px solid var(--border-color); }
++.inv-av    { width: 30px; height: 30px; border-radius: 50%; background: var(--lis-primary-xlight, #E1F5EE); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; color: var(--lis-primary-deep, #085041); }
++.inv-pat-name { font-size: 12px; font-weight: 500; color: var(--text-primary); }
++.inv-pat-meta { font-size: 10px; color: var(--text-secondary); }
+ .inv-items { display: flex; flex-direction: column; }
+-.inv-item  { display: flex; align-items: center; gap: 7px; padding: 7px 14px; border-bottom: 0.5px solid var(--border-color); font-size: 11px; }
+-.inv-iname { flex: 1; color: var(--text-primary); }
+-.inv-iprice{ color: var(--text-primary); min-width: 45px; text-align: right; }
+-.inv-del   { background: none; border: none; cursor: pointer; color: var(--text-secondary); font-size: 12px; }
+-.inv-del:hover { color: #E24B4A; }
+-.disc-row  { padding: 9px 14px; border-bottom: 0.5px solid var(--border-color); display: flex; align-items: center; gap: 8px; }
+-.disc-row label { font-size: 11px; color: var(--text-secondary); flex: 1; display: flex; align-items: center; gap: 4px; }
+-.disc-row label i { font-size: 12px; }
+-.disc-row input { width: 65px; height: 28px; border: 0.5px solid var(--border-color); border-radius: 6px; padding: 0 8px; font-size: 12px; text-align: right; color: var(--text-primary); background: var(--card-bg); outline: none; font-family: var(--font-family); }
++.inv-item  { display: flex; align-items: center; gap: 6px; padding: 7px 14px; border-bottom: 0.5px solid var(--border-color); font-size: 11px; }
++.inv-iname { flex: 1; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
++.inv-iprice{ color: var(--text-primary); font-weight: 500; }
+ .inv-totals { padding: 10px 14px; background: var(--body-bg); }
+-.tot-row   { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-secondary); padding: 2px 0; }
+-.tot-row--grand { font-size: 14px; font-weight: 500; color: var(--text-primary); padding-top: 6px; border-top: 0.5px solid var(--border-color); margin-top: 4px; }
++.tot-row   { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-secondary); padding: 3px 0; }
++.tot-disc  { color: var(--lis-primary, #1D9E75); }
++.tot-grand { font-size: 15px; font-weight: 600; color: var(--text-primary); padding-top: 7px; border-top: 0.5px solid var(--border-color); margin-top: 4px; }
++.tot-outstanding { color: #E24B4A; font-weight: 500; }
++.inv-priority { padding: 8px 14px; font-size: 11px; color: var(--text-secondary); border-top: 0.5px solid var(--border-color); }
++.prio-tag { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 20px; background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); border: 0.5px solid var(--lis-primary-mid, #5DCAA5); }
++.prio-tag--stat { background: #FCEBEB; color: #791F1F; border-color: #E24B4A; }
+ .inv-actions { padding: 10px 14px; display: flex; flex-direction: column; gap: 7px; }
++.confirm-btn { &:disabled { opacity: 0.6; cursor: not-allowed; } }
++
++/* ── Receipt overlay ─────────────────────── */
++.receipt-overlay { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; animation: fadeIn 0.25s ease; }
++@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
++.receipt-card { background: var(--card-bg); border-radius: 16px; padding: 32px 36px; max-width: 380px; width: 92%; text-align: center; box-shadow: 0 24px 64px rgba(0,0,0,0.3); animation: slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1); }
++@keyframes slideUp { from { transform: translateY(24px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
++.receipt-icon  { font-size: 48px; color: var(--lis-primary, #1D9E75); margin-bottom: 10px; }
++.receipt-title { font-size: 17px; font-weight: 600; color: var(--text-primary); margin: 0 0 6px; }
++.receipt-inv   { font-size: 12px; color: var(--text-secondary); margin-bottom: 18px; }
++.receipt-summary { background: var(--body-bg); border-radius: 10px; padding: 12px 16px; margin-bottom: 18px; }
++.rcpt-row  { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary); padding: 3px 0; }
++.rcpt-cap  { text-transform: capitalize; }
++.rcpt-total{ font-size: 15px; font-weight: 600; color: var(--text-primary); padding-top: 6px; border-top: 0.5px solid var(--border-color); margin-top: 4px; }
++.receipt-actions { display: flex; flex-direction: column; gap: 8px; }
++.receipt-btn { width: 100%; justify-content: center; }
++
++/* ── Spinner ─────────────────────────────── */
++@keyframes spin { to { transform: rotate(360deg); } }
++.spin { display: inline-block; animation: spin 0.8s linear infinite; }
++
++/* ── Card icon ───────────────────────────── */
+ .lis-card-icon { color: var(--lis-primary, #1D9E75); font-size: 15px; }
+-.icon-sm       { font-size: 10px; }
+-.text-xs       { font-size: 11px; }
+-.inv-id-badge  { font-size: 13px; margin-top: 4px; }
+-.inv-pat-name  { font-size: 12px; font-weight: 500; color: var(--text-primary); }
+-.inv-pat-meta  { font-size: 10px; color: var(--text-secondary); }
+-.inv-date-mono { font-size: 10px; }
+-.disc-color    { color: var(--lis-primary-deep, #0F6E56); }
+-.pay-section       { padding: 10px 14px; border-top: 0.5px solid var(--border-color); }
+-.pay-section-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 8px; font-weight: 500; }
+diff --git a/src/app/features/billing/billing.component.html b/src/app/features/billing/billing.component.html
+index 4bec95e..efdaa3f 100644
+--- a/src/app/features/billing/billing.component.html
++++ b/src/app/features/billing/billing.component.html
+@@ -1,152 +1,288 @@
++<!-- ═══════════════════════════════════════════════════════════
++     Screen 3 — Billing
++     Single purpose: collect payment for the ordered tests.
++     No test search. Tests are fixed from Screen 2.
++     ═══════════════════════════════════════════════════════════ -->
++
++<!-- Receipt / success overlay -->
++@if (showReceipt()) {
++  <div class="receipt-overlay" role="dialog" aria-modal="true" aria-labelledby="receipt-title">
++    <div class="receipt-card">
++      <div class="receipt-icon" aria-hidden="true">
++        <i class="ti ti-circle-check"></i>
++      </div>
++      <h2 id="receipt-title" class="receipt-title">Payment Received</h2>
++      <div class="receipt-inv lis-mono">{{ invoiceId }}</div>
++
++      <div class="receipt-summary">
++        <div class="rcpt-row">
++          <span>Patient</span>
++          <span>{{ patient?.firstName }} {{ patient?.lastName }}</span>
++        </div>
++        <div class="rcpt-row">
++          <span>Tests</span>
++          <span>{{ flow.selectedTests().length }}</span>
++        </div>
++        <div class="rcpt-row">
++          <span>Mode</span>
++          <span class="rcpt-cap">{{ payMode() }}</span>
++        </div>
++        <div class="rcpt-row rcpt-total">
++          <span>Paid</span>
++          <span>₹{{ grandTotal().toLocaleString('en-IN') }}</span>
++        </div>
++      </div>
++
++      <div class="receipt-actions">
++        <button type="button" class="lis-btn lis-btn--secondary receipt-btn">
++          <i class="ti ti-printer" aria-hidden="true"></i> Print receipt
++        </button>
++        <button type="button" class="lis-btn lis-btn--primary receipt-btn"
++          (click)="proceedToSample()">
++          <i class="ti ti-test-pipe" aria-hidden="true"></i>
++          Proceed to Sample Collection
++        </button>
++      </div>
++    </div>
++  </div>
++}
++
++<!-- Page header -->
+ <div class="page-header">
+   <div>
+     <h1 class="page-title">Billing</h1>
+     <nav aria-label="Breadcrumb">
+       <ol class="breadcrumb">
+         <li><a routerLink="/dashboard/home">Home</a></li>
+-        <li aria-current="page">New invoice</li>
++        <li><a routerLink="/dashboard/test-order">Test Order</a></li>
++        <li aria-current="page">Billing</li>
+       </ol>
+     </nav>
+   </div>
+-  <span class="lis-mono inv-id-badge">INV-2406-0092</span>
++  <div class="workflow-trail" aria-label="Workflow steps">
++    <div class="wf-step wf-step--done"><i class="ti ti-check"></i> Registered</div>
++    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
++    <div class="wf-step wf-step--done"><i class="ti ti-check"></i> Tests Ordered</div>
++    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
++    <div class="wf-step wf-step--active"><i class="ti ti-file-invoice"></i> Billing</div>
++    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
++    <div class="wf-step"><i class="ti ti-droplet"></i> Sample</div>
++  </div>
+ </div>
+ 
+-<!-- Stepper -->
+-<div class="stepper">
+-  @for (s of steps; track s.n) {
+-    <div class="step" [class.step--done]="s.n < activeStep()" [class.step--active]="s.n === activeStep()">
+-      <div class="step-num">
+-        @if (s.n < activeStep()) { <i class="ti ti-check"></i> } @else { {{s.n}} }
+-      </div>
+-      <span class="step-label">{{s.label}}</span>
+-    </div>
+-    @if (s.n < steps.length) { <i class="ti ti-chevron-right step-arrow"></i> }
+-  }
++<!-- Invoice ID badge -->
++<div class="inv-banner">
++  <i class="ti ti-file-invoice" aria-hidden="true"></i>
++  <span>Invoice</span>
++  <span class="inv-id lis-mono">{{ invoiceId }}</span>
++  <span class="inv-date">{{ today | date:'dd MMM yyyy' }}</span>
+ </div>
+ 
+ <div class="bill-layout">
+-  <!-- Left: patient + tests -->
++
++  <!-- ── Left: patient + tests summary + discounts ── -->
+   <div class="bill-main">
+-    <!-- Patient card -->
+-    <div class="lis-card">
+-      <div class="lis-card__header">
+-        <i class="ti ti-user lis-card-icon"></i>
+-        <h2 class="lis-card__title">Patient</h2>
+-        <span class="lis-badge"><i class="ti ti-check" class="icon-sm"></i> Confirmed</span>
+-      </div>
+-      <div class="form-grid lis-card__body">
+-        <div class="lis-field"><label>Name</label><input value="Kavitha Nair" readonly /></div>
+-        <div class="lis-field"><label>Patient ID</label><input value="PAT-2406-0318" readonly class="lis-mono" class="text-xs" /></div>
+-        <div class="lis-field"><label>Age / Sex</label><input value="34 yrs / Female" readonly /></div>
+-        <div class="lis-field"><label>Referred by</label><input value="Dr. Suresh Menon" readonly /></div>
++
++    <!-- Patient card (read-only) -->
++    @if (patient) {
++      <div class="lis-card pat-card" aria-label="Patient details">
++        <div class="lis-card__header">
++          <i class="ti ti-user lis-card-icon" aria-hidden="true"></i>
++          <h2 class="lis-card__title">Patient</h2>
++          <span class="lis-badge"><i class="ti ti-check"></i> Confirmed</span>
++          <a routerLink="/dashboard/test-order" class="lis-link" aria-label="Go back to test order">← Edit tests</a>
++        </div>
++        <div class="pat-info-row">
++          <div class="pat-av" aria-hidden="true">{{ patientInitials }}</div>
++          <div>
++            <div class="pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
++            <div class="pat-meta">
++              <span class="lis-mono">{{ patient.id }}</span> ·
++              {{ patientAge }} · {{ patient.gender }} ·
++              {{ patient.mobile }}
++            </div>
++            <div class="pat-meta">{{ patient.refDoctor }} · {{ patient.visitType }}</div>
++          </div>
++        </div>
+       </div>
+-    </div>
++    }
+ 
+-    <!-- Test selection -->
+-    <div class="lis-card">
++    <!-- Ordered tests (read-only) -->
++    <div class="lis-card" aria-label="Ordered tests">
+       <div class="lis-card__header">
+-        <i class="ti ti-test-pipe lis-card-icon"></i>
+-        <h2 class="lis-card__title">Select tests</h2>
+-        <span class="lis-badge">{{ selected().size }} selected</span>
++        <i class="ti ti-test-pipe lis-card-icon" aria-hidden="true"></i>
++        <h2 class="lis-card__title">Tests Ordered</h2>
++        <span class="lis-badge">{{ flow.selectedTests().length }}</span>
+       </div>
+ 
+-      <div class="ts-row">
+-        <i class="ti ti-search"></i>
+-        <input type="search" placeholder="Search test…" [(ngModel)]="query" aria-label="Search tests" />
+-      </div>
+-      <div class="cat-pills" role="group">
+-        @for (c of cats; track c) {
+-          <button type="button" class="cat-pill" [class.cat-pill--active]="activeCat === c" (click)="activeCat = c">{{ c }}</button>
+-        }
+-      </div>
+-      <div class="test-scroll" role="list">
+-        @for (t of filteredTests(); track t.id) {
+-          <div class="test-row" role="listitem" [class.test-row--sel]="selected().has(t.id)" (click)="toggle(t.id)">
+-            <div class="test-info">
+-              <div class="test-name">{{ t.name }}</div>
+-              <div class="test-cat">{{ t.category }}</div>
+-            </div>
+-            <div class="test-price">₹{{ t.price }}</div>
+-            <div class="test-tog">
+-              @if (selected().has(t.id)) { <i class="ti ti-check"></i> } @else { <i class="ti ti-plus"></i> }
++      @if (flow.selectedTests().length === 0) {
++        <div class="empty-tests">
++          No tests selected.
++          <a routerLink="/dashboard/test-order" class="lis-link">Add tests →</a>
++        </div>
++      }
++      <div class="tests-list" role="list">
++        @for (t of flow.selectedTests(); track t.id) {
++          <div class="bill-test-row" role="listitem">
++            <div class="bt-cat-dot" [attr.title]="t.category" aria-hidden="true"></div>
++            <div class="bt-info">
++              <div class="bt-name">{{ t.name }}</div>
++              <div class="bt-meta">{{ t.category }} · {{ t.tatHours }}h TAT</div>
+             </div>
++            <div class="bt-price">₹{{ t.price.toLocaleString('en-IN') }}</div>
+           </div>
+         }
+       </div>
++    </div>
+ 
+-      <!-- Payment mode -->
+-      <div class="pay-section">
+-        <div class="pay-section-label">Payment mode</div>
+-        <div class="pay-row" role="group" aria-label="Payment mode">
+-          @for (m of payModes; track m.id) {
+-            <button type="button" class="pay-opt"
+-              [class.pay-opt--active]="payMode() === m.id"
+-              [class.pay-opt--credit]="m.id === 'credit' && payMode() === 'credit'"
+-              (click)="payMode.set(m.id)"
+-              [attr.aria-pressed]="payMode() === m.id"
+-            >
+-              <i class="ti ti-{{ m.icon }}"></i><br>{{ m.label }}
+-            </button>
+-          }
+-        </div>
+-        @if (payMode() === 'credit') {
+-          <div class="credit-warn" role="alert">
+-            <i class="ti ti-alert-triangle"></i>
+-            Credit billing — collect payment before report dispatch.
+-          </div>
++    <!-- Discounts & adjustments -->
++    <div class="lis-card" aria-label="Discounts and adjustments">
++      <div class="lis-card__header">
++        <i class="ti ti-tag lis-card-icon" aria-hidden="true"></i>
++        <h2 class="lis-card__title">Discounts &amp; Adjustments</h2>
++      </div>
++      <div class="form-grid">
++        <div class="lis-field">
++          <label for="discPct">Discount (%)</label>
++          <input id="discPct" type="number" min="0" max="100"
++            [value]="discountPct()"
++            (input)="applyDiscount(+$any($event.target).value)"
++            placeholder="0" />
++        </div>
++        <div class="lis-field">
++          <label for="coupon">Coupon code</label>
++          <input id="coupon" type="text" placeholder="Enter coupon"
++            [value]="couponCode()"
++            (input)="couponCode.set($any($event.target).value)" />
++        </div>
++        <div class="lis-field">
++          <label for="referral">Referral code</label>
++          <input id="referral" type="text" placeholder="Referral code"
++            [value]="referralCode()"
++            (input)="referralCode.set($any($event.target).value)" />
++        </div>
++        <div class="lis-field">
++          <label for="advance">Advance received (₹)</label>
++          <input id="advance" type="number" min="0"
++            [value]="advance()"
++            (input)="advance.set(+$any($event.target).value)"
++            placeholder="0" />
++        </div>
++      </div>
++    </div>
++
++    <!-- Payment mode -->
++    <div class="lis-card" aria-label="Payment mode">
++      <div class="lis-card__header">
++        <i class="ti ti-wallet lis-card-icon" aria-hidden="true"></i>
++        <h2 class="lis-card__title">Receive Payment</h2>
++      </div>
++      <div class="pay-modes" role="group" aria-label="Select payment mode">
++        @for (m of payModes; track m.id) {
++          <button type="button" class="pay-mode-btn"
++            [class.pay-mode-btn--active]="payMode() === m.id"
++            [class.pay-mode-btn--credit]="m.id === 'credit' && payMode() === 'credit'"
++            (click)="setPayMode(m.id)"
++            [attr.aria-pressed]="payMode() === m.id">
++            <i class="ti ti-{{ m.icon }}" aria-hidden="true"></i>
++            <span>{{ m.label }}</span>
++          </button>
+         }
+       </div>
++      @if (payMode() === 'credit') {
++        <div class="credit-warn" role="alert">
++          <i class="ti ti-alert-triangle" aria-hidden="true"></i>
++          Credit billing — collect payment before report dispatch.
++        </div>
++      }
+     </div>
+   </div>
+ 
+-  <!-- Invoice panel -->
+-  <aside class="invoice-panel lis-card" aria-label="Invoice">
++  <!-- ── Right: Invoice panel ─────────────────── -->
++  <aside class="invoice-panel lis-card" aria-label="Invoice summary">
+     <div class="inv-hd">
+-      <div class="inv-title">Invoice</div>
+-      <div class="lis-mono" class="icon-sm">INV-2406-0092 · 23 Jun 2026</div>
++      <div class="inv-title">Invoice Summary</div>
++      <div class="inv-meta lis-mono">{{ invoiceId }}</div>
+     </div>
+-    <div class="inv-pat">
+-      <div class="inv-av" aria-hidden="true">KN</div>
+-      <div>
+-        <div class="inv-pat-name">Kavitha Nair</div>
+-        <div class="inv-pat-meta">34F · PAT-2406-0318 · Dr. Suresh Menon</div>
++
++    @if (patient) {
++      <div class="inv-pat">
++        <div class="inv-av" aria-hidden="true">{{ patientInitials }}</div>
++        <div>
++          <div class="inv-pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
++          <div class="inv-pat-meta">
++            {{ patientAge }} · {{ patient.gender }} · {{ patient.refDoctor }}
++          </div>
++        </div>
+       </div>
+-    </div>
++    }
+ 
+-    <div class="inv-items" role="list" aria-label="Billed tests">
+-      @for (t of selectedTests(); track t.id) {
++    <!-- Line items -->
++    <div class="inv-items" role="list" aria-label="Invoice line items">
++      @for (t of flow.selectedTests(); track t.id) {
+         <div class="inv-item" role="listitem">
+           <span class="inv-iname">{{ t.name }}</span>
+-          <span class="inv-iprice">₹{{ t.price }}</span>
+-          <button type="button" class="inv-del" (click)="toggle(t.id)" [attr.aria-label]="'Remove ' + t.name">
+-            <i class="ti ti-x"></i>
+-          </button>
++          <span class="inv-iprice">₹{{ t.price.toLocaleString('en-IN') }}</span>
+         </div>
+       }
+     </div>
+ 
+-    <div class="disc-row">
+-      <label for="disc-inp"><i class="ti ti-tag"></i> Discount (%)</label>
+-      <input id="disc-inp" type="number" [(ngModel)]="discountPct" min="0" max="100" aria-label="Discount percentage" />
++    <!-- Totals -->
++    <div class="inv-totals">
++      <div class="tot-row"><span>Subtotal</span><span>₹{{ subtotal().toLocaleString('en-IN') }}</span></div>
++      @if (discountPct() > 0) {
++        <div class="tot-row tot-disc">
++          <span>Discount ({{ discountPct() }}%)</span>
++          <span>−₹{{ discAmt().toLocaleString('en-IN') }}</span>
++        </div>
++      }
++      @if (advance() > 0) {
++        <div class="tot-row tot-disc">
++          <span>Advance paid</span>
++          <span>−₹{{ advance().toLocaleString('en-IN') }}</span>
++        </div>
++      }
++      <div class="tot-row"><span>GST</span><span>Exempt</span></div>
++      <div class="tot-row tot-grand">
++        <span>Total payable</span>
++        <span>₹{{ grandTotal().toLocaleString('en-IN') }}</span>
++      </div>
++      @if (advance() > 0) {
++        <div class="tot-row tot-outstanding">
++          <span>Outstanding</span>
++          <span>₹{{ outstanding().toLocaleString('en-IN') }}</span>
++        </div>
++      }
+     </div>
+ 
+-    <div class="inv-totals" aria-label="Invoice totals">
+-      <div class="tot-row"><span>Subtotal</span><span>₹{{ subtotal().toLocaleString('en-IN') }}</span></div>
+-      <div class="tot-row"><span>Discount ({{ discountPct }}%)</span><span class="disc-color">−₹{{ discAmt().toLocaleString('en-IN') }}</span></div>
+-      <div class="tot-row"><span>GST (exempt)</span><span>₹0</span></div>
+-      <div class="tot-row tot-row--grand"><span>Total payable</span><span>₹{{ grandTotal().toLocaleString('en-IN') }}</span></div>
++    <!-- Priority badge -->
++    <div class="inv-priority">
++      Priority:
++      <span class="prio-tag" [class.prio-tag--stat]="flow.priority() === 'stat'">
++        {{ flow.priority() | titlecase }}
++      </span>
+     </div>
+ 
++    <!-- Actions -->
+     <div class="inv-actions">
+-      <button type="button" class="lis-btn lis-btn--primary lis-btn--full" (click)="nextStep()">
+-        <i class="ti ti-printer"></i> Confirm & print receipt
++      <button type="button" class="lis-btn lis-btn--primary lis-btn--full confirm-btn"
++        (click)="confirmPayment()"
++        [disabled]="saving() || flow.selectedTests().length === 0">
++        @if (saving()) {
++          <i class="ti ti-loader-2 spin" aria-hidden="true"></i> Processing…
++        } @else {
++          <i class="ti ti-check" aria-hidden="true"></i>
++          Confirm &amp; Print Receipt
++        }
+       </button>
+       <button type="button" class="lis-btn lis-btn--secondary lis-btn--full">
+-        <i class="ti ti-device-floppy"></i> Save as draft
++        <i class="ti ti-device-floppy" aria-hidden="true"></i> Save as draft
++      </button>
++      <button type="button" class="lis-btn lis-btn--secondary lis-btn--full"
++        (click)="proceedToSample()">
++        <i class="ti ti-test-pipe" aria-hidden="true"></i>
++        Skip to Sample Collection
+       </button>
+-      <a routerLink="/dashboard/collection" class="lis-btn lis-btn--secondary lis-btn--full">
+-        <i class="ti ti-test-pipe"></i> Proceed to sample collection
+-      </a>
+     </div>
+   </aside>
+ </div>
+diff --git a/src/app/features/billing/billing.component.ts b/src/app/features/billing/billing.component.ts
+index d0d2fa0..8334bff 100644
+--- a/src/app/features/billing/billing.component.ts
++++ b/src/app/features/billing/billing.component.ts
+@@ -1,70 +1,84 @@
+-import { Component, signal, computed, ChangeDetectionStrategy } from '@angular/core';
+-import { RouterLink } from '@angular/router';
+-import { NgClass } from '@angular/common';
++// ─────────────────────────────────────────────
++//  Screen 3 — Billing
++//  Single purpose: collect payment for ordered
++//  tests. Tests already decided on Screen 2.
++// ─────────────────────────────────────────────
++import { Component, signal, computed, inject, ChangeDetectionStrategy, OnInit } from '@angular/core';
++import { Router, RouterLink } from '@angular/router';
++import { NgClass, DatePipe, TitleCasePipe } from '@angular/common';
+ import { FormsModule } from '@angular/forms';
+-import { LabTest, PaymentMode } from '../../shared/models/lis.models';
+-
+-const ALL_TESTS: LabTest[] = [
+-  { id:'CBC', name:'CBC — Complete blood count', category:'Haematology',  price:200, tatHours:4 },
+-  { id:'ESR', name:'ESR',                         category:'Haematology',  price:80,  tatHours:2 },
+-  { id:'GLU', name:'Blood glucose (fasting)',      category:'Biochemistry', price:120, tatHours:2 },
+-  { id:'HBA', name:'HbA1c',                       category:'Biochemistry', price:400, tatHours:4 },
+-  { id:'LFT', name:'Liver function test',          category:'Biochemistry', price:550, tatHours:6 },
+-  { id:'KFT', name:'Kidney function test',         category:'Biochemistry', price:500, tatHours:6 },
+-  { id:'LIP', name:'Lipid profile',                category:'Biochemistry', price:450, tatHours:6 },
+-  { id:'TSH', name:'TSH',                          category:'Endocrinology',price:350, tatHours:6 },
+-  { id:'URI', name:'Urine routine & microscopy',   category:'Urine',        price:100, tatHours:2 },
+-];
++import { PatientFlowService } from '../../core/services/patient-flow.service';
++import { PaymentMode } from '../../shared/models/lis.models';
+ 
+ @Component({
+   selector: 'app-billing',
+   standalone: true,
+-  imports: [RouterLink, NgClass, FormsModule],
++  imports: [RouterLink, NgClass, FormsModule, DatePipe, TitleCasePipe],
+   changeDetection: ChangeDetectionStrategy.OnPush,
+   templateUrl: './billing.component.html',
+   styleUrl: './billing.component.css',
+ })
+-export class BillingComponent {
+-  protected readonly steps = [
+-    {n:1,label:'Patient'},{n:2,label:'Select tests'},{n:3,label:'Payment'},{n:4,label:'Receipt & samples'}
+-  ];
+-  protected readonly cats = ['All','Haematology','Biochemistry','Endocrinology','Urine'];
+-  protected readonly payModes = [
+-    {id:'cash'   as PaymentMode, icon:'cash',        label:'Cash'},
+-    {id:'upi'    as PaymentMode, icon:'qrcode',      label:'UPI'},
+-    {id:'card'   as PaymentMode, icon:'credit-card', label:'Card'},
+-    {id:'credit' as PaymentMode, icon:'clock',       label:'Credit'},
++export class BillingComponent implements OnInit {
++  protected readonly flow   = inject(PatientFlowService);
++  private   readonly router = inject(Router);
++
++  protected readonly payModes: { id: PaymentMode; icon: string; label: string }[] = [
++    { id: 'cash',   icon: 'cash',        label: 'Cash'   },
++    { id: 'upi',    icon: 'qrcode',      label: 'UPI'    },
++    { id: 'card',   icon: 'credit-card', label: 'Card'   },
++    { id: 'credit', icon: 'clock',       label: 'Credit' },
+   ];
+ 
+-  activeCat   = 'All';
+-  query       = '';
+-  discountPct = 0;
+-  activeStep  = signal(2);
+-  payMode     = signal<PaymentMode>('cash');
+-  private _sel = signal(new Set<string>(['CBC','LFT','URI']));
++  readonly today  = new Date();
++  discountPct     = signal(0);
++  couponCode      = signal('');
++  referralCode    = signal('');
++  advance         = signal(0);
++  saving          = signal(false);
++  showReceipt     = signal(false);
++  invoiceId       = this.flow.generateInvoiceId();
++
++  subtotal    = this.flow.orderTotal;
++  discAmt     = computed(() => Math.round(this.subtotal() * this.discountPct() / 100));
++  grandTotal  = computed(() => this.subtotal() - this.discAmt());
++  outstanding = computed(() => Math.max(0, this.grandTotal() - this.advance()));
++  payMode     = this.flow.payMode;
++
++  get patient() { return this.flow.patient(); }
+ 
+-  filteredTests = computed(() => {
+-    const q = this.query.toLowerCase();
+-    return ALL_TESTS.filter(t =>
+-      (this.activeCat === 'All' || t.category === this.activeCat) &&
+-      (t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q))
+-    );
+-  });
+-  selectedTests = computed(() => ALL_TESTS.filter(t => this._sel().has(t.id)));
+-  selected      = computed(() => this._sel());
+-  subtotal      = computed(() => this.selectedTests().reduce((a, t) => a + t.price, 0));
+-  discAmt       = computed(() => Math.round(this.subtotal() * this.discountPct / 100));
+-  grandTotal    = computed(() => this.subtotal() - this.discAmt());
++  ngOnInit(): void {
++    if (!this.flow.patient()) {
++      this.router.navigate(['/dashboard/registration']);
++    } else if (this.flow.selectedTests().length === 0) {
++      this.router.navigate(['/dashboard/test-order']);
++    }
++  }
++
++  setPayMode(m: PaymentMode): void { this.flow.setPayMode(m); }
++  applyDiscount(pct: number): void { this.discountPct.set(Math.min(100, Math.max(0, pct))); }
++
++  confirmPayment(): void {
++    this.saving.set(true);
++    setTimeout(() => {
++      this.flow.setDiscount(this.discountPct());
++      this.saving.set(false);
++      this.showReceipt.set(true);
++    }, 500);
++  }
+ 
+-  toggle(id: string): void {
+-    this._sel.update(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
++  proceedToSample(): void {
++    this.router.navigate(['/dashboard/collection']);
+   }
+ 
+-  nextStep(): void {
+-    if (this.activeStep() < this.steps.length) this.activeStep.update(s => s + 1);
++  get patientInitials(): string {
++    const p = this.patient;
++    if (!p) return '?';
++    return (p.firstName[0] + p.lastName[0]).toUpperCase();
+   }
+ 
+-  prevStep(): void {
+-    if (this.activeStep() > 1) this.activeStep.update(s => s - 1);
++  get patientAge(): string {
++    const p = this.patient;
++    if (!p) return '';
++    return this.flow.calcAge(p.dob) + ' yrs';
+   }
+ }
+diff --git a/src/app/features/lis-home/lis-home.component.html b/src/app/features/lis-home/lis-home.component.html
+index 6f4d194..464f1d3 100644
+--- a/src/app/features/lis-home/lis-home.component.html
++++ b/src/app/features/lis-home/lis-home.component.html
+@@ -97,7 +97,7 @@
+   </div>
+   <div class="qa-grid">
+     <a routerLink="/dashboard/registration" class="qa-btn"><i class="ti ti-user-plus" aria-hidden="true"></i> Register patient</a>
+-    <a routerLink="/dashboard/billing"      class="qa-btn"><i class="ti ti-receipt"    aria-hidden="true"></i> New invoice</a>
++    <a routerLink="/dashboard/test-order"   class="qa-btn"><i class="ti ti-test-pipe"  aria-hidden="true"></i> Order tests</a>
+     <a routerLink="/dashboard/results"      class="qa-btn"><i class="ti ti-writing"    aria-hidden="true"></i> Enter results</a>
+     <a routerLink="/dashboard/reports"      class="qa-btn"><i class="ti ti-printer"    aria-hidden="true"></i> Print report</a>
+     <a routerLink="/dashboard/tracking"     class="qa-btn"><i class="ti ti-test-pipe"  aria-hidden="true"></i> Track sample</a>
+diff --git a/src/app/features/patient-registration/patient-registration.component.css b/src/app/features/patient-registration/patient-registration.component.css
+index 6a46b42..cf1080b 100644
+--- a/src/app/features/patient-registration/patient-registration.component.css
++++ b/src/app/features/patient-registration/patient-registration.component.css
+@@ -1,92 +1,152 @@
+ :host { display: block; }
+-    .page-header { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:14px; }
+-    .page-title  { font-size:20px; font-weight:500; color:var(--text-primary); margin:0 0 3px; }
+-    .breadcrumb  { display:flex; list-style:none; padding:0; margin:0; gap:6px; font-size:12px; color:var(--text-secondary); }
+-    .breadcrumb li+li::before { content:'/'; margin-right:6px; }
+-    .breadcrumb a { color:var(--text-secondary); text-decoration:none; &:hover { color:var(--lis-primary,#1D9E75); } }
+-    .pid-badge   { display:flex; align-items:center; gap:10px; background:var(--lis-primary-xlight,#E1F5EE); border-radius:9px; padding:9px 14px; }
+-    .pid-badge i { font-size:20px; color:var(--lis-primary,#1D9E75); }
+-    .pid-label   { font-size:10px; color:var(--lis-primary-deep,#085041); }
+-    .pid-value   { font-size:14px; font-weight:500; color:var(--lis-primary-deep,#085041); }
+ 
+-    /* Stepper */
+-    .stepper { display:flex; align-items:center; padding:0 0 14px; gap:0; }
+-    .step    { display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-secondary); }
+-    .step--active { color:var(--lis-primary-deep,#085041); font-weight:500; }
+-    .step--done   { color:var(--text-secondary); }
+-    .step-num {
+-      width:20px; height:20px; border-radius:50%;
+-      border:1.5px solid var(--border-color);
+-      display:flex; align-items:center; justify-content:center;
+-      font-size:10px; font-weight:500; flex-shrink:0;
+-    }
+-    .step--active .step-num { background:var(--lis-primary,#1D9E75); border-color:var(--lis-primary,#1D9E75); color:#fff; }
+-    .step--done   .step-num { background:var(--lis-primary-xlight,#E1F5EE); border-color:var(--lis-primary,#1D9E75); color:var(--lis-primary-deep,#085041); }
+-    .step-arrow { color:var(--border-color); font-size:13px; margin:0 6px; }
++/* ── Page header ─────────────────────────────────────── */
++.page-header {
++  display: flex; align-items: flex-start;
++  justify-content: space-between; flex-wrap: wrap;
++  gap: 12px; margin-bottom: 14px;
++}
++.page-title  { font-size: 20px; font-weight: 500; color: var(--text-primary); margin: 0 0 3px; }
++.breadcrumb  {
++  display: flex; list-style: none; padding: 0; margin: 0;
++  gap: 6px; font-size: 12px; color: var(--text-secondary);
++}
++.breadcrumb li+li::before { content: '/'; margin-right: 6px; }
++.breadcrumb a {
++  color: var(--text-secondary); text-decoration: none;
++  &:hover { color: var(--lis-primary, #1D9E75); }
++}
+ 
+-    /* Layout */
+-    .reg-layout { display:grid; grid-template-columns:1fr 270px; gap:14px; align-items:start; }
+-    @media (max-width:900px) { .reg-layout { grid-template-columns:1fr; } }
+-    .reg-main    { display:flex; flex-direction:column; gap:12px; }
+-    .reg-card    { margin-bottom:0; }
++/* ── Workflow trail ──────────────────────────────────── */
++.workflow-trail {
++  display: flex; align-items: center; gap: 6px;
++  background: var(--body-bg); border: 0.5px solid var(--border-color);
++  border-radius: 9px; padding: 6px 12px;
++}
++.wf-step {
++  display: flex; align-items: center; gap: 5px;
++  font-size: 11px; color: var(--text-secondary);
++  i { font-size: 13px; }
++}
++.wf-step--active {
++  color: var(--lis-primary-deep, #085041); font-weight: 500;
++  i { color: var(--lis-primary, #1D9E75); }
++}
++.wf-arrow { font-size: 11px; color: var(--border-color); }
+ 
+-    /* Form grid */
+-    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:13px 14px; }
+-    .form-full  { grid-column:1/-1; }
+-    @media (max-width:540px) { .form-grid { grid-template-columns:1fr; } }
+-    .input-error { border-color:#E24B4A !important; }
+-    .err-msg     { font-size:10px; color:#E24B4A; margin-top:2px; }
+-    .form-actions { display:flex; justify-content:flex-end; gap:8px; padding-top:4px; }
++/* ── Stepper ────────────────────────────────────────── */
++.stepper { display: flex; align-items: center; padding: 0 0 14px; gap: 0; }
++.step    { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-secondary); }
++.step--active { color: var(--lis-primary-deep, #085041); font-weight: 500; }
++.step-num {
++  width: 22px; height: 22px; border-radius: 50%;
++  border: 1.5px solid var(--border-color);
++  display: flex; align-items: center; justify-content: center;
++  font-size: 10px; font-weight: 500; flex-shrink: 0;
++}
++.step--active .step-num { background: var(--lis-primary, #1D9E75); border-color: var(--lis-primary, #1D9E75); color: #fff; }
++.step--done   .step-num {
++  background: var(--lis-primary-xlight, #E1F5EE);
++  border-color: var(--lis-primary, #1D9E75);
++  color: var(--lis-primary-deep, #085041);
++}
++.step-arrow { color: var(--border-color); font-size: 13px; margin: 0 8px; }
+ 
+-    /* Order panel */
+-    .order-panel { display:flex; flex-direction:column; position:sticky; top:80px; }
+-    .order-search {
+-      display:flex; align-items:center; gap:7px;
+-      background:var(--body-bg); border-bottom:0.5px solid var(--border-color);
+-      padding:8px 13px;
+-      i { color:var(--text-secondary); font-size:14px; }
+-      input { background:transparent; border:none; outline:none; font-size:12px; color:var(--text-primary); flex:1; }
+-    }
+-    .cat-pills { display:flex; gap:5px; flex-wrap:wrap; padding:8px 13px 6px; }
+-    .cat-pill {
+-      font-size:10px; padding:3px 8px; border-radius:20px;
+-      border:0.5px solid var(--border-color); cursor:pointer;
+-      color:var(--text-secondary); background:var(--card-bg);
+-    }
+-    .cat-pill--active { background:var(--lis-primary-xlight,#E1F5EE); color:var(--lis-primary-deep,#085041); border-color:var(--lis-primary-mid,#5DCAA5); }
+-    .test-scroll { padding:0 13px 8px; display:flex; flex-direction:column; gap:5px; max-height:180px; overflow-y:auto; }
+-    .test-row {
+-      display:flex; align-items:center; gap:7px; padding:7px 9px;
+-      border:0.5px solid var(--border-color); border-radius:8px; cursor:pointer;
+-    }
+-    .test-row:hover { background:var(--body-bg); }
+-    .test-row--selected { background:var(--lis-primary-xlight,#E1F5EE); border-color:var(--lis-primary-mid,#5DCAA5); }
+-    .test-info { flex:1; min-width:0; }
+-    .test-name { font-size:11px; font-weight:500; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+-    .test-meta { font-size:10px; color:var(--text-secondary); }
+-    .test-price { font-size:11px; font-weight:500; color:var(--lis-primary-deep,#085041); min-width:40px; text-align:right; }
+-    .test-tog {
+-      width:18px; height:18px; border-radius:50%; flex-shrink:0;
+-      border:1px solid var(--border-color); display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--text-secondary);
+-      .test-row--selected & { background:var(--lis-primary,#1D9E75); border-color:var(--lis-primary,#1D9E75); color:#fff; }
+-    }
+-    .priority-sec { padding:8px 13px; border-top:0.5px solid var(--border-color); }
+-    .priority-label { font-size:10px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.05em; font-weight:500; margin-bottom:5px; }
+-    .priority-row { display:flex; gap:6px; }
+-    .prio-btn {
+-      flex:1; padding:6px 4px; border:0.5px solid var(--border-color); border-radius:7px;
+-      text-align:center; cursor:pointer; font-size:10px; color:var(--text-secondary); background:var(--card-bg);
+-    }
+-    .prio-btn--active { border-color:var(--lis-primary,#1D9E75); background:var(--lis-primary-xlight,#E1F5EE); color:var(--lis-primary-deep,#085041); font-weight:500; }
+-    .prio-btn--stat   { border-color:#E24B4A; background:#FCEBEB; color:#791F1F; }
+-    .sum-hd   { padding:8px 13px 4px; font-size:10px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.05em; font-weight:500; }
+-    .sum-items{ padding:0; }
+-    .sum-empty{ font-size:11px; color:var(--text-secondary); padding:6px 13px 8px; }
+-    .sum-item { display:flex; align-items:center; gap:6px; padding:6px 13px; border-bottom:0.5px solid var(--border-color); font-size:11px; }
+-    .sum-name { flex:1; color:var(--text-primary); }
+-    .sum-price{ color:var(--text-primary); min-width:40px; text-align:right; }
+-    .sum-del  { background:none; border:none; cursor:pointer; color:var(--text-secondary); font-size:12px; &:hover { color:#E24B4A; } }
+-    .sum-foot { padding:8px 13px; background:var(--body-bg); }
+-    .sum-row  { display:flex; justify-content:space-between; font-size:11px; color:var(--text-secondary); padding:2px 0; }
+-    .sum-row--grand { font-size:13px; font-weight:500; color:var(--text-primary); padding-top:6px; border-top:0.5px solid var(--border-color); margin-top:4px; }
+-    .order-actions { padding:10px 13px; display:flex; flex-direction:column; gap:6px; }
+\ No newline at end of file
++/* ── Form wrapper — single column, max-width centered ── */
++.reg-form-wrap { max-width: 720px; display: flex; flex-direction: column; gap: 12px; }
++.reg-card { margin-bottom: 0; }
++
++/* ── Form grid ──────────────────────────────────────── */
++.form-grid {
++  display: grid; grid-template-columns: 1fr 1fr;
++  gap: 12px; padding: 14px 16px;
++}
++.form-full { grid-column: 1 / -1; }
++@media (max-width: 540px) { .form-grid { grid-template-columns: 1fr; } }
++.input-error { border-color: #E24B4A !important; }
++.err-msg  { font-size: 10px; color: #E24B4A; margin-top: 3px; display: block; }
++.req      { color: #E24B4A; }
++.opt-label { font-size: 10px; color: var(--text-secondary); font-weight: 400; }
++
++/* ── Patient recap (step 2) ─────────────────────────── */
++.patient-recap {
++  display: flex; align-items: center; gap: 10px;
++  padding: 10px 16px; border-bottom: 0.5px solid var(--border-color);
++  background: var(--lis-primary-xlight, #E1F5EE);
++}
++.recap-av {
++  width: 34px; height: 34px; border-radius: 50%;
++  background: var(--lis-primary, #1D9E75); color: #fff;
++  display: flex; align-items: center; justify-content: center;
++  font-size: 12px; font-weight: 600; flex-shrink: 0;
++  text-transform: uppercase;
++}
++.recap-info { flex: 1; min-width: 0; }
++.recap-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
++.recap-meta { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
++.recap-edit { margin-left: auto; }
++
++/* ── Form actions bar ───────────────────────────────── */
++.form-actions {
++  display: flex; justify-content: flex-end; gap: 8px; padding-top: 4px;
++}
++.save-btn { min-width: 170px; justify-content: center; }
++.save-btn:disabled { opacity: 0.7; cursor: not-allowed; }
++
++/* ── Spinner ─────────────────────────────────────────── */
++@keyframes spin { to { transform: rotate(360deg); } }
++.spin { display: inline-block; animation: spin 0.8s linear infinite; }
++
++/* ═══════════════════════════════════════════════════════
++   SUCCESS OVERLAY
++   ═══════════════════════════════════════════════════════ */
++.success-overlay {
++  position: fixed; inset: 0; z-index: 9999;
++  background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(4px);
++  display: flex; align-items: center; justify-content: center;
++  animation: fadeIn 0.25s ease;
++}
++@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
++
++.success-card {
++  background: var(--card-bg); border-radius: 16px;
++  padding: 36px 40px; max-width: 400px; width: 92%;
++  text-align: center;
++  box-shadow: 0 24px 64px rgba(0,0,0,0.3);
++  animation: slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
++}
++@keyframes slideUp { from { transform: translateY(24px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
++
++.success-icon {
++  font-size: 52px; color: var(--lis-primary, #1D9E75);
++  line-height: 1; margin-bottom: 12px;
++}
++.success-title {
++  font-size: 17px; font-weight: 600;
++  color: var(--text-primary); margin: 0 0 20px;
++}
++.success-pid-block {
++  background: var(--lis-primary-xlight, #E1F5EE);
++  border: 1px solid var(--lis-primary-mid, #5DCAA5);
++  border-radius: 10px; padding: 12px 20px; margin-bottom: 14px;
++}
++.success-pid-label {
++  font-size: 10px; text-transform: uppercase; letter-spacing: .07em;
++  color: var(--lis-primary-deep, #085041); font-weight: 500; margin-bottom: 4px;
++}
++.success-pid {
++  font-size: 22px; font-weight: 700;
++  color: var(--lis-primary-deep, #085041); letter-spacing: .05em;
++}
++.success-meta {
++  display: flex; align-items: center; justify-content: center; gap: 6px;
++  font-size: 12px; color: var(--text-secondary); margin-bottom: 16px;
++}
++.success-sep { color: var(--border-color); }
++.success-name { font-weight: 500; color: var(--text-primary); }
++.success-redirect {
++  font-size: 12px; color: var(--text-secondary); margin-bottom: 18px;
++  strong { color: var(--text-primary); }
++}
++.success-cta { width: 100%; justify-content: center; font-size: 13px; padding: 11px; margin-bottom: 8px; }
++.success-hint { font-size: 11px; color: var(--text-secondary); }
+diff --git a/src/app/features/patient-registration/patient-registration.component.html b/src/app/features/patient-registration/patient-registration.component.html
+index d2a8ff7..f69236b 100644
+--- a/src/app/features/patient-registration/patient-registration.component.html
++++ b/src/app/features/patient-registration/patient-registration.component.html
+@@ -1,267 +1,325 @@
+-<div class="page-header">
+-      <div>
+-        <h1 class="page-title">Patient registration</h1>
+-        <nav aria-label="Breadcrumb">
+-          <ol class="breadcrumb">
+-            <li><a routerLink="/dashboard/home">Home</a></li>
+-            <li aria-current="page">New registration</li>
+-          </ol>
+-        </nav>
++<!-- ═══════════════════════════════════════════════════════════
++     Screen 1 — Patient Registration
++     Single purpose: collect patient details.
++     No test panel | No billing | No sidebar clutter.
++     ═══════════════════════════════════════════════════════════ -->
++
++<!-- Success overlay -->
++@if (showSuccess()) {
++  <div class="success-overlay" role="dialog" aria-modal="true" aria-labelledby="success-title">
++    <div class="success-card">
++      <div class="success-icon" aria-hidden="true">
++        <i class="ti ti-circle-check"></i>
+       </div>
+-      <div class="pid-badge" aria-label="Assigned patient ID">
+-        <i class="ti ti-id-badge" aria-hidden="true"></i>
+-        <div>
+-          <div class="pid-label">Patient ID assigned</div>
+-          <div class="pid-value lis-mono">PAT-2406-0319</div>
+-        </div>
+-        <span class="lis-badge">New patient</span>
++      <h2 id="success-title" class="success-title">Patient Registered Successfully</h2>
++
++      <div class="success-pid-block">
++        <div class="success-pid-label">Patient ID</div>
++        <div class="success-pid lis-mono">{{ savedPatient()?.id }}</div>
+       </div>
++
++      <div class="success-meta">
++        <span class="success-name">{{ savedPatient()?.firstName }} {{ savedPatient()?.lastName }}</span>
++        <span class="success-sep">·</span>
++        <span>{{ savedPatient()?.gender }}</span>
++        <span class="success-sep">·</span>
++        <span>{{ savedPatient()?.mobile }}</span>
++      </div>
++
++      <div class="success-redirect" aria-live="polite">
++        Redirecting to Test Order in <strong>{{ countdown() }}s</strong>…
++      </div>
++
++      <button type="button" class="lis-btn lis-btn--primary success-cta" (click)="goToTestOrder()">
++        <i class="ti ti-test-pipe" aria-hidden="true"></i>
++        Open Test Order now
++      </button>
++      <div class="success-hint">or wait {{ countdown() }}s to continue automatically</div>
+     </div>
++  </div>
++}
+ 
+-    <!-- Stepper -->
+-    <div class="stepper" role="list" aria-label="Registration steps">
+-      @for (step of steps; track step.n) {
+-        <div class="step" [class.step--done]="currentStep() > step.n" [class.step--active]="currentStep() === step.n" role="listitem">
+-          <div class="step-num" [attr.aria-label]="currentStep() > step.n ? step.label + ' complete' : step.label">
+-            @if (currentStep() > step.n) { <i class="ti ti-check" aria-hidden="true"></i> }
+-            @else { {{ step.n }} }
+-          </div>
+-          <span class="step-label">{{ step.label }}</span>
+-        </div>
+-        @if (step.n < steps.length) {
+-          <i class="ti ti-chevron-right step-arrow" aria-hidden="true"></i>
++<!-- Page header -->
++<div class="page-header">
++  <div>
++    <h1 class="page-title">Patient Registration</h1>
++    <nav aria-label="Breadcrumb">
++      <ol class="breadcrumb">
++        <li><a routerLink="/dashboard/home">Home</a></li>
++        <li aria-current="page">New registration</li>
++      </ol>
++    </nav>
++  </div>
++  <!-- Workflow progress indicator -->
++  <div class="workflow-trail" aria-label="Workflow steps">
++    <div class="wf-step wf-step--active"><i class="ti ti-user-plus"></i> Register</div>
++    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
++    <div class="wf-step"><i class="ti ti-test-pipe"></i> Test Order</div>
++    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
++    <div class="wf-step"><i class="ti ti-file-invoice"></i> Billing</div>
++    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
++    <div class="wf-step"><i class="ti ti-droplet"></i> Sample</div>
++  </div>
++</div>
++
++<!-- Two-step stepper -->
++<div class="stepper" role="list" aria-label="Registration steps">
++  @for (step of steps; track step.n) {
++    <div class="step"
++      [class.step--done]="currentStep() > step.n"
++      [class.step--active]="currentStep() === step.n"
++      role="listitem">
++      <div class="step-num"
++        [attr.aria-label]="currentStep() > step.n ? step.label + ' complete' : step.label">
++        @if (currentStep() > step.n) {
++          <i class="ti ti-check" aria-hidden="true"></i>
++        } @else {
++          {{ step.n }}
+         }
+-      }
++      </div>
++      <span class="step-label">{{ step.label }}</span>
+     </div>
++    @if (step.n < steps.length) {
++      <i class="ti ti-chevron-right step-arrow" aria-hidden="true"></i>
++    }
++  }
++</div>
+ 
+-    <div class="reg-layout">
+-      <!-- Left: form -->
+-      <div class="reg-main">
+-        <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
++<!-- ── Single-column form (no right sidebar) ── -->
++<div class="reg-form-wrap">
++  <form [formGroup]="form" novalidate>
+ 
+-          <!-- Step 1 — Demographics -->
+-          <div class="lis-card reg-card">
+-            <div class="lis-card__header">
+-              <i class="ti ti-user" style="color:var(--lis-primary,#1D9E75);font-size:15px" aria-hidden="true"></i>
+-              <h2 class="lis-card__title">Personal details</h2>
+-              @if (currentStep() > 1) { <span class="lis-badge"><i class="ti ti-check" style="font-size:11px"></i> Done</span> }
+-              @else { <span class="lis-badge lis-badge--warn">Step 1</span> }
+-            </div>
+-            <div class="form-grid">
+-              <div class="lis-field">
+-                <label for="firstName">First name <span class="req">*</span></label>
+-                <input id="firstName" formControlName="firstName" [class.input-error]="isInvalid('firstName')" />
+-                @if (isInvalid('firstName')) { <span class="err-msg" role="alert">Required</span> }
+-              </div>
+-              <div class="lis-field">
+-                <label for="lastName">Last name <span class="req">*</span></label>
+-                <input id="lastName" formControlName="lastName" />
+-              </div>
+-              <div class="lis-field">
+-                <label for="dob">Date of birth <span class="req">*</span></label>
+-                <input id="dob" type="date" formControlName="dob" (change)="calcAge()" />
+-              </div>
+-              <div class="lis-field">
+-                <label for="age">Age (auto)</label>
+-                <input id="age" [value]="ageDisplay()" readonly />
+-              </div>
+-              <div class="lis-field">
+-                <label>Gender <span class="req">*</span></label>
+-                <div class="lis-seg" role="group" aria-label="Select gender">
+-                  @for (g of ['Male','Female','Other']; track g) {
+-                    <button type="button" class="lis-seg__opt"
+-                      [class.lis-seg__opt--active]="form.value.gender === g"
+-                      (click)="form.patchValue({gender: g})"
+-                      [attr.aria-pressed]="form.value.gender === g"
+-                    >{{ g }}</button>
+-                  }
+-                </div>
+-              </div>
+-              <div class="lis-field">
+-                <label for="bloodGroup">Blood group</label>
+-                <select id="bloodGroup" formControlName="bloodGroup">
+-                  @for (bg of bloodGroups; track bg) { <option [value]="bg">{{ bg }}</option> }
+-                </select>
+-              </div>
+-              <div class="lis-field">
+-                <label for="mobile">Mobile <span class="req">*</span></label>
+-                <input id="mobile" formControlName="mobile" type="tel" />
+-              </div>
+-              <div class="lis-field">
+-                <label for="email">Email</label>
+-                <input id="email" formControlName="email" type="email" />
+-              </div>
+-              <div class="lis-field form-full">
+-                <label for="address">Address</label>
+-                <textarea id="address" formControlName="address"></textarea>
+-              </div>
+-            </div>
++    <!-- ── Step 1: Demographics ────────────── -->
++    @if (currentStep() === 1) {
++      <div class="lis-card reg-card" aria-label="Personal details">
++        <div class="lis-card__header">
++          <i class="ti ti-user lis-card-icon" aria-hidden="true"></i>
++          <h2 class="lis-card__title">Personal Details</h2>
++          <span class="lis-badge lis-badge--warn">Step 1 of 2</span>
++        </div>
++
++        <div class="form-grid">
++          <!-- First name -->
++          <div class="lis-field">
++            <label for="firstName">First name <span class="req" aria-hidden="true">*</span></label>
++            <input id="firstName" formControlName="firstName"
++              [class.input-error]="isInvalid('firstName')"
++              autocomplete="given-name" placeholder="e.g. Ananya" />
++            @if (isInvalid('firstName')) {
++              <span class="err-msg" role="alert">First name is required</span>
++            }
+           </div>
+ 
+-          <!-- Step 2 — Clinical info -->
+-          <div class="lis-card reg-card">
+-            <div class="lis-card__header">
+-              <i class="ti ti-stethoscope" style="color:var(--lis-primary,#1D9E75);font-size:15px" aria-hidden="true"></i>
+-              <h2 class="lis-card__title">Clinical information</h2>
+-              <span class="lis-badge lis-badge--warn">Step 2</span>
+-            </div>
+-            <div class="form-grid">
+-              <div class="lis-field">
+-                <label for="refDoctor">Referring doctor <span class="req">*</span></label>
+-                <select id="refDoctor" formControlName="refDoctor">
+-                  @for (d of doctors; track d) { <option [value]="d">{{ d }}</option> }
+-                  <option value="new">+ Add new doctor</option>
+-                </select>
+-              </div>
+-              <div class="lis-field">
+-                <label>Visit type</label>
+-                <div class="lis-seg" role="group" aria-label="Select visit type">
+-                  @for (v of ['Walk-in','Appointment','Home visit']; track v) {
+-                    <button type="button" class="lis-seg__opt"
+-                      [class.lis-seg__opt--active]="form.value.visitType === v"
+-                      (click)="form.patchValue({visitType: v})"
+-                      [attr.aria-pressed]="form.value.visitType === v"
+-                    >{{ v }}</button>
+-                  }
+-                </div>
+-              </div>
+-              <div class="lis-field">
+-                <label>Fasting status</label>
+-                <div class="lis-seg" role="group" aria-label="Select fasting status">
+-                  @for (f of ['Fasting','Non-fasting','Unknown']; track f) {
+-                    <button type="button" class="lis-seg__opt"
+-                      [class.lis-seg__opt--active]="form.value.fasting === f"
+-                      (click)="form.patchValue({fasting: f})"
+-                      [attr.aria-pressed]="form.value.fasting === f"
+-                    >{{ f }}</button>
+-                  }
+-                </div>
+-              </div>
+-              <div class="lis-field">
+-                <label for="collection">Sample collection</label>
+-                <select id="collection" formControlName="collection">
+-                  <option>At lab counter</option>
+-                  <option>Home collection</option>
+-                </select>
+-              </div>
+-              <div class="lis-field form-full">
+-                <label for="clinicalNotes">Clinical notes / symptoms</label>
+-                <textarea id="clinicalNotes" formControlName="clinicalNotes" placeholder="e.g. fatigue, weight gain, palpitations — 3 months…"></textarea>
+-              </div>
+-              <div class="lis-field form-full">
+-                <label for="medications">Known conditions / medications</label>
+-                <textarea id="medications" formControlName="medications" placeholder="e.g. Type 2 diabetes, on Metformin 500mg…"></textarea>
+-              </div>
++          <!-- Last name -->
++          <div class="lis-field">
++            <label for="lastName">Last name <span class="req" aria-hidden="true">*</span></label>
++            <input id="lastName" formControlName="lastName"
++              [class.input-error]="isInvalid('lastName')"
++              autocomplete="family-name" placeholder="e.g. Krishnaswamy" />
++            @if (isInvalid('lastName')) {
++              <span class="err-msg" role="alert">Last name is required</span>
++            }
++          </div>
++
++          <!-- Date of birth -->
++          <div class="lis-field">
++            <label for="dob">Date of birth <span class="req" aria-hidden="true">*</span></label>
++            <input id="dob" type="date" formControlName="dob"
++              [class.input-error]="isInvalid('dob')"
++              (change)="calcAge()" />
++            @if (isInvalid('dob')) {
++              <span class="err-msg" role="alert">Date of birth is required</span>
++            }
++          </div>
++
++          <!-- Age (computed) -->
++          <div class="lis-field">
++            <label for="ageDisplay">Age</label>
++            <input id="ageDisplay" [value]="ageDisplay()" readonly placeholder="Auto-calculated" />
++          </div>
++
++          <!-- Gender -->
++          <div class="lis-field">
++            <label id="gender-label">Gender <span class="req" aria-hidden="true">*</span></label>
++            <div class="lis-seg" role="group" aria-labelledby="gender-label">
++              @for (g of ['Male','Female','Other']; track g) {
++                <button type="button" class="lis-seg__opt"
++                  [class.lis-seg__opt--active]="form.value.gender === g"
++                  (click)="form.patchValue({gender: g})"
++                  [attr.aria-pressed]="form.value.gender === g">{{ g }}</button>
++              }
+             </div>
++            @if (isInvalid('gender')) {
++              <span class="err-msg" role="alert">Please select a gender</span>
++            }
+           </div>
+ 
+-          <div class="form-actions">
+-            <button type="button" class="lis-btn lis-btn--secondary">Back</button>
+-            <button type="button" class="lis-btn lis-btn--primary" (click)="nextStep()">
+-              Next: Select tests <i class="ti ti-arrow-right" aria-hidden="true"></i>
+-            </button>
++          <!-- Blood group -->
++          <div class="lis-field">
++            <label for="bloodGroup">Blood group</label>
++            <select id="bloodGroup" formControlName="bloodGroup">
++              @for (bg of bloodGroups; track bg) {
++                <option [value]="bg">{{ bg }}</option>
++              }
++            </select>
+           </div>
+-        </form>
+-      </div>
+ 
+-      <!-- Right: test order panel -->
+-      <aside class="order-panel lis-card" aria-label="Test order">
+-        <div class="lis-card__header">
+-          <i class="ti ti-test-pipe" style="color:var(--lis-primary,#1D9E75);font-size:15px" aria-hidden="true"></i>
+-          <h2 class="lis-card__title">Test order</h2>
+-          <span class="lis-badge">{{ selectedTests().length }} added</span>
+-        </div>
++          <!-- Mobile -->
++          <div class="lis-field">
++            <label for="mobile">Mobile <span class="req" aria-hidden="true">*</span></label>
++            <input id="mobile" formControlName="mobile" type="tel"
++              [class.input-error]="isInvalid('mobile')"
++              autocomplete="tel" placeholder="10-digit mobile number" />
++            @if (isInvalid('mobile')) {
++              <span class="err-msg" role="alert">Valid 10-digit mobile number required</span>
++            }
++          </div>
++
++          <!-- Email -->
++          <div class="lis-field">
++            <label for="email">Email <span class="opt-label">(optional)</span></label>
++            <input id="email" formControlName="email" type="email"
++              autocomplete="email" placeholder="patient@email.com" />
++          </div>
+ 
+-        <!-- Search -->
+-        <div class="order-search">
+-          <i class="ti ti-search" aria-hidden="true"></i>
+-          <input
+-            type="search" placeholder="Search test…" aria-label="Search tests"
+-            [value]="testQuery()"
+-            (input)="testQuery.set($any($event.target).value)"
+-          />
++          <!-- Address -->
++          <div class="lis-field form-full">
++            <label for="address">Address <span class="opt-label">(optional)</span></label>
++            <textarea id="address" formControlName="address"
++              placeholder="Street, area, city…"></textarea>
++          </div>
+         </div>
++      </div>
+ 
+-        <!-- Category filter -->
+-        <div class="cat-pills" role="group" aria-label="Test categories">
+-          @for (cat of categories; track cat) {
+-            <button type="button"
+-              class="cat-pill"
+-              [class.cat-pill--active]="activeCategory() === cat"
+-              (click)="activeCategory.set(cat)"
+-              [attr.aria-pressed]="activeCategory() === cat"
+-            >{{ cat }}</button>
+-          }
++      <!-- Step 1 action -->
++      <div class="form-actions">
++        <button type="button" class="lis-btn lis-btn--secondary"
++          (click)="goBack()">
++          <i class="ti ti-arrow-left" aria-hidden="true"></i> Cancel
++        </button>
++        <button type="button" class="lis-btn lis-btn--primary"
++          (click)="nextStep()">
++          Next: Clinical info <i class="ti ti-arrow-right" aria-hidden="true"></i>
++        </button>
++      </div>
++    }
++
++    <!-- ── Step 2: Clinical Information ────── -->
++    @if (currentStep() === 2) {
++      <div class="lis-card reg-card" aria-label="Clinical information">
++        <div class="lis-card__header">
++          <i class="ti ti-stethoscope lis-card-icon" aria-hidden="true"></i>
++          <h2 class="lis-card__title">Clinical Information</h2>
++          <span class="lis-badge lis-badge--warn">Step 2 of 2</span>
+         </div>
+ 
+-        <!-- Test list -->
+-        <div class="test-scroll" role="list" aria-label="Available tests">
+-          @for (t of filteredTests(); track t.id) {
+-            <div class="test-row" role="listitem"
+-              [class.test-row--selected]="isSelected(t.id)"
+-              (click)="toggleTest(t)"
+-              [attr.aria-pressed]="isSelected(t.id)"
+-              [attr.aria-label]="t.name + ', ' + t.category + ', ₹' + t.price"
+-            >
+-              <div class="test-info">
+-                <div class="test-name">{{ t.name }}</div>
+-                <div class="test-meta">{{ t.category }} · {{ t.tatHours }}h TAT</div>
+-              </div>
+-              <div class="test-price">₹{{ t.price }}</div>
+-              <div class="test-tog" [attr.aria-hidden]="true">
+-                @if (isSelected(t.id)) { <i class="ti ti-check"></i> }
+-                @else { <i class="ti ti-plus"></i> }
+-              </div>
++        <!-- Mini patient recap -->
++        <div class="patient-recap">
++          <div class="recap-av" aria-hidden="true">
++            {{ form.value.firstName?.[0] }}{{ form.value.lastName?.[0] }}
++          </div>
++          <div class="recap-info">
++            <div class="recap-name">{{ form.value.firstName }} {{ form.value.lastName }}</div>
++            <div class="recap-meta">
++              {{ ageDisplay() || '—' }} · {{ form.value.gender || '—' }} · {{ form.value.mobile || '—' }}
+             </div>
+-          }
++          </div>
++          <button type="button" class="recap-edit lis-btn lis-btn--secondary lis-btn--sm"
++            (click)="currentStep.set(1)">
++            <i class="ti ti-edit" aria-hidden="true"></i> Edit
++          </button>
+         </div>
+ 
+-        <!-- Priority -->
+-        <div class="priority-sec">
+-          <div class="priority-label">Priority</div>
+-          <div class="priority-row" role="group" aria-label="Order priority">
+-            @for (p of ['Routine','Urgent','STAT']; track p) {
+-              <button type="button" class="prio-btn"
+-                [class.prio-btn--active]="priority() === p"
+-                [class.prio-btn--stat]="p === 'STAT' && priority() === 'STAT'"
+-                (click)="priority.set(p)"
+-                [attr.aria-pressed]="priority() === p"
+-              >{{ p }}</button>
++        <div class="form-grid">
++          <!-- Referring doctor -->
++          <div class="lis-field">
++            <label for="refDoctor">Referring doctor <span class="req" aria-hidden="true">*</span></label>
++            <select id="refDoctor" formControlName="refDoctor"
++              [class.input-error]="isInvalid('refDoctor')">
++              <option value="">— Select doctor —</option>
++              @for (d of flow.doctors; track d) {
++                <option [value]="d">{{ d }}</option>
++              }
++              <option value="new">+ Add new doctor</option>
++            </select>
++            @if (isInvalid('refDoctor')) {
++              <span class="err-msg" role="alert">Please select a referring doctor</span>
+             }
+           </div>
+-        </div>
+ 
+-        <!-- Summary -->
+-        <div class="order-summary">
+-          <div class="sum-hd">Ordered tests</div>
+-          <div class="sum-items" role="list" aria-label="Selected tests">
+-            @if (selectedTests().length === 0) {
+-              <div class="sum-empty">No tests selected yet.</div>
+-            }
+-            @for (t of selectedTests(); track t.id) {
+-              <div class="sum-item" role="listitem">
+-                <span class="sum-name">{{ t.name }}</span>
+-                <span class="sum-price">₹{{ t.price }}</span>
+-                <button type="button" class="sum-del" (click)="toggleTest(t)" [attr.aria-label]="'Remove ' + t.name">
+-                  <i class="ti ti-x" aria-hidden="true"></i>
+-                </button>
+-              </div>
+-            }
++          <!-- Visit type -->
++          <div class="lis-field">
++            <label id="visit-label">Visit type</label>
++            <div class="lis-seg" role="group" aria-labelledby="visit-label">
++              @for (v of ['Walk-in','Appointment','Home visit']; track v) {
++                <button type="button" class="lis-seg__opt"
++                  [class.lis-seg__opt--active]="form.value.visitType === v"
++                  (click)="form.patchValue({visitType: v})"
++                  [attr.aria-pressed]="form.value.visitType === v">{{ v }}</button>
++              }
++            </div>
++          </div>
++
++          <!-- Fasting status -->
++          <div class="lis-field">
++            <label id="fasting-label">Fasting status</label>
++            <div class="lis-seg" role="group" aria-labelledby="fasting-label">
++              @for (f of ['Fasting','Non-fasting','Unknown']; track f) {
++                <button type="button" class="lis-seg__opt"
++                  [class.lis-seg__opt--active]="form.value.fasting === f"
++                  (click)="form.patchValue({fasting: f})"
++                  [attr.aria-pressed]="form.value.fasting === f">{{ f }}</button>
++              }
++            </div>
+           </div>
+-          <div class="sum-foot">
+-            <div class="sum-row"><span>Tests</span><span>{{ selectedTests().length }}</span></div>
+-            <div class="sum-row"><span>Est. TAT</span><span>{{ maxTat() }}h</span></div>
+-            <div class="sum-row sum-row--grand"><span>Total</span><span>₹{{ total().toLocaleString('en-IN') }}</span></div>
++
++          <!-- Sample collection -->
++          <div class="lis-field">
++            <label for="collection">Sample collection</label>
++            <select id="collection" formControlName="collection">
++              <option>At lab counter</option>
++              <option>Home collection</option>
++            </select>
+           </div>
+-        </div>
+ 
+-        <div class="order-actions">
+-          <a routerLink="/dashboard/billing" class="lis-btn lis-btn--primary lis-btn--full">
+-            <i class="ti ti-file-invoice" aria-hidden="true"></i> Save & go to billing
+-          </a>
+-          <button type="button" class="lis-btn lis-btn--secondary lis-btn--full">
+-            <i class="ti ti-device-floppy" aria-hidden="true"></i> Save draft
+-          </button>
++          <!-- Clinical notes -->
++          <div class="lis-field form-full">
++            <label for="clinicalNotes">
++              Clinical notes / symptoms <span class="opt-label">(optional)</span>
++            </label>
++            <textarea id="clinicalNotes" formControlName="clinicalNotes"
++              placeholder="e.g. fatigue, weight gain, palpitations — 3 months…"></textarea>
++          </div>
++
++          <!-- Known conditions / medications -->
++          <div class="lis-field form-full">
++            <label for="medications">
++              Known conditions / medications <span class="opt-label">(optional)</span>
++            </label>
++            <textarea id="medications" formControlName="medications"
++              placeholder="e.g. Type 2 diabetes, on Metformin 500 mg…"></textarea>
++          </div>
+         </div>
+-      </aside>
+-    </div>
+\ No newline at end of file
++      </div>
++
++      <!-- Step 2 actions -->
++      <div class="form-actions">
++        <button type="button" class="lis-btn lis-btn--secondary"
++          (click)="goBack()">
++          <i class="ti ti-arrow-left" aria-hidden="true"></i> Back
++        </button>
++        <button type="button" class="lis-btn lis-btn--primary save-btn"
++          (click)="saveAndContinue()"
++          [disabled]="saving()">
++          @if (saving()) {
++            <i class="ti ti-loader-2 spin" aria-hidden="true"></i> Saving…
++          } @else {
++            <i class="ti ti-device-floppy" aria-hidden="true"></i>
++            Save &amp; Continue →
++          }
++        </button>
++      </div>
++    }
++
++  </form>
++</div>
+diff --git a/src/app/features/patient-registration/patient-registration.component.ts b/src/app/features/patient-registration/patient-registration.component.ts
+index afe174b..42786a9 100644
+--- a/src/app/features/patient-registration/patient-registration.component.ts
++++ b/src/app/features/patient-registration/patient-registration.component.ts
+@@ -1,62 +1,52 @@
++// ─────────────────────────────────────────────
++//  Screen 1 — Patient Registration
++//  Single purpose: capture patient demographics
++//  & clinical info, then navigate to Test Order.
++// ─────────────────────────────────────────────
+ import {
+-  Component, ChangeDetectionStrategy, signal, computed
++  Component, ChangeDetectionStrategy, signal, inject, OnInit
+ } from '@angular/core';
+ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+-import { RouterLink } from '@angular/router';
++import { Router, RouterLink } from '@angular/router';
+ import { NgClass } from '@angular/common';
+-import { LabTest } from '../../shared/models/lis.models';
+-
+-const LAB_TESTS: LabTest[] = [
+-  { id:'CBC',  name:'CBC — Complete blood count',  category:'Haematology',   price:200, tatHours:4 },
+-  { id:'ESR',  name:'ESR',                          category:'Haematology',   price:80,  tatHours:2 },
+-  { id:'GLU',  name:'Blood glucose (fasting)',       category:'Biochemistry',  price:120, tatHours:2 },
+-  { id:'HBA',  name:'HbA1c',                        category:'Biochemistry',  price:400, tatHours:4 },
+-  { id:'LFT',  name:'Liver function test',           category:'Biochemistry',  price:550, tatHours:6 },
+-  { id:'KFT',  name:'Kidney function test',          category:'Biochemistry',  price:500, tatHours:6 },
+-  { id:'LIP',  name:'Lipid profile',                 category:'Biochemistry',  price:450, tatHours:6 },
+-  { id:'TSH',  name:'TSH',                           category:'Endocrinology', price:350, tatHours:6 },
+-  { id:'FT3',  name:'Free T3 / T4 / TSH panel',     category:'Endocrinology', price:700, tatHours:8 },
+-  { id:'URI',  name:'Urine routine & microscopy',    category:'Urine',         price:100, tatHours:2 },
+-];
+-
+-const DOCTORS = [
+-  'Dr. Pradeep Iyer (Cardiology)',
+-  'Dr. Suresh Menon (Internal Medicine)',
+-  'Dr. Anita Rao (Endocrinology)',
+-  'Self / Walk-in',
+-];
++import { PatientFlowService, RegisteredPatient } from '../../core/services/patient-flow.service';
+ 
+ @Component({
+   selector: 'app-patient-registration',
+   standalone: true,
+   imports: [ReactiveFormsModule, RouterLink, NgClass],
+   changeDetection: ChangeDetectionStrategy.OnPush,
+-    templateUrl: './patient-registration.component.html',
+-    styleUrl: './patient-registration.component.css',
++  templateUrl: './patient-registration.component.html',
++  styleUrl: './patient-registration.component.css',
+ })
+-export class PatientRegistrationComponent {
++export class PatientRegistrationComponent implements OnInit {
++  private readonly fb     = inject(FormBuilder);
++  private readonly router = inject(Router);
++  protected readonly flow = inject(PatientFlowService);
++
++  // Two-step stepper (demographics → clinical)
+   protected readonly steps = [
+-    { n:1, label:'Demographics' },
+-    { n:2, label:'Clinical info' },
+-    { n:3, label:'Test order' },
+-    { n:4, label:'Confirm' },
++    { n: 1, label: 'Demographics' },
++    { n: 2, label: 'Clinical info' },
++  ];
++  protected readonly bloodGroups = [
++    'A+', 'A−', 'B+', 'B−', 'O+', 'O−', 'AB+', 'AB−', 'Unknown'
+   ];
+-  protected readonly bloodGroups = ['A+','A−','B+','B−','O+','O−','AB+','AB−','Unknown'];
+-  protected readonly doctors = DOCTORS;
+-  protected readonly allTests = LAB_TESTS;
+-  protected readonly categories = ['All', 'Haematology', 'Biochemistry', 'Endocrinology', 'Urine'];
+ 
+-  currentStep  = signal(2);
+-  testQuery    = signal('');
+-  activeCategory = signal('All');
+-  priority     = signal('Routine');
+-  private _selected = signal<Set<string>>(new Set(['TSH','CBC']));
++  currentStep   = signal(1);
++  ageDisplay    = signal('');
++  saving        = signal(false);
++  showSuccess   = signal(false);
++  savedPatient  = signal<RegisteredPatient | null>(null);
++  countdown     = signal(3);
++
++  form!: FormGroup;
+ 
+-  form: FormGroup;
+-  ageDisplay = signal('');
++  private _timer?: ReturnType<typeof setInterval>;
+ 
+-  constructor(private fb: FormBuilder) {
++  ngOnInit(): void {
+     this.form = this.fb.group({
++      // Step 1 — Demographics
+       firstName:    ['', Validators.required],
+       lastName:     ['', Validators.required],
+       dob:          ['', Validators.required],
+@@ -65,6 +55,7 @@ export class PatientRegistrationComponent {
+       mobile:       ['', [Validators.required, Validators.pattern(/^[6-9]\d{9}$/)]],
+       email:        [''],
+       address:      [''],
++      // Step 2 — Clinical
+       refDoctor:    ['', Validators.required],
+       visitType:    ['Walk-in'],
+       fasting:      ['Fasting'],
+@@ -72,61 +63,84 @@ export class PatientRegistrationComponent {
+       clinicalNotes:[''],
+       medications:  [''],
+     });
+-    this.calcAge();
+   }
+ 
+   calcAge(): void {
+     const dob = this.form.value.dob;
+     if (!dob) { this.ageDisplay.set(''); return; }
+-    const age = new Date().getFullYear() - new Date(dob).getFullYear();
+-    this.ageDisplay.set(age + ' years');
++    const years = this.flow.calcAge(dob);
++    this.ageDisplay.set(years > 0 ? `${years} years` : '');
+   }
+ 
+   isInvalid(field: string): boolean {
+     const c = this.form.get(field);
+-    return !!(c && c.invalid && (c.dirty || c.touched));
++    return !!(c?.invalid && (c.dirty || c.touched));
+   }
+ 
++  // Validate step 1 fields before advancing
+   nextStep(): void {
+-    // Mark current step fields touched so errors show
+-    this.form.markAllAsTouched();
+-    const stepFields: Record<number, string[]> = {
+-      1: ['firstName','lastName','dob','gender','mobile'],
+-      2: ['refDoctor','visitType','fasting','collection'],
+-    };
+-    const fields = stepFields[this.currentStep()] ?? [];
+-    const valid = fields.every(f => this.form.get(f)?.valid ?? true);
+-    if (valid && this.currentStep() < 4) this.currentStep.update(s => s + 1);
++    const step1 = ['firstName', 'lastName', 'dob', 'gender', 'mobile'];
++    step1.forEach(f => this.form.get(f)?.markAsTouched());
++    const valid = step1.every(f => this.form.get(f)?.valid ?? true);
++    if (valid) this.currentStep.set(2);
+   }
+ 
+-  filteredTests = computed(() => {
+-    const q   = this.testQuery().toLowerCase();
+-    const cat = this.activeCategory();
+-    return this.allTests.filter(t =>
+-      (cat === 'All' || t.category === cat) &&
+-      (t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q))
+-    );
+-  });
+-
+-  selectedTests = computed(() =>
+-    this.allTests.filter(t => this._selected().has(t.id))
+-  );
+-
+-  total = computed(() => this.selectedTests().reduce((a, t) => a + t.price, 0));
+-
+-  maxTat = computed(() =>
+-    this.selectedTests().reduce((m, t) => Math.max(m, t.tatHours), 0)
+-  );
++  goBack(): void {
++    if (this.currentStep() === 2) { this.currentStep.set(1); }
++    else { this.router.navigate(['/dashboard/home']); }
++  }
+ 
+-  isSelected(id: string): boolean { return this._selected().has(id); }
++  saveAndContinue(): void {
++    // Validate step 2 fields
++    const step2 = ['refDoctor'];
++    step2.forEach(f => this.form.get(f)?.markAsTouched());
++    if (!this.form.get('refDoctor')?.valid) return;
++
++    this.saving.set(true);
++
++    // Simulate brief save delay (replace with real API call)
++    setTimeout(() => {
++      const v = this.form.value;
++      const pat = this.flow.registerPatient({
++        firstName:    v.firstName,
++        lastName:     v.lastName,
++        dob:          v.dob,
++        ageYears:     this.flow.calcAge(v.dob),
++        gender:       v.gender,
++        bloodGroup:   v.bloodGroup,
++        mobile:       v.mobile,
++        email:        v.email,
++        address:      v.address,
++        refDoctor:    v.refDoctor,
++        visitType:    v.visitType,
++        fasting:      v.fasting,
++        collection:   v.collection,
++        clinicalNotes:v.clinicalNotes,
++        medications:  v.medications,
++      });
++
++      this.saving.set(false);
++      this.savedPatient.set(pat);
++      this.showSuccess.set(true);
++
++      // Countdown → auto-navigate to test order
++      this._timer = setInterval(() => {
++        this.countdown.update(c => {
++          if (c <= 1) {
++            clearInterval(this._timer);
++            this.router.navigate(['/dashboard/test-order']);
++            return 0;
++          }
++          return c - 1;
++        });
++      }, 1000);
++    }, 600);
++  }
+ 
+-  toggleTest(t: LabTest): void {
+-    this._selected.update(s => {
+-      const next = new Set(s);
+-      next.has(t.id) ? next.delete(t.id) : next.add(t.id);
+-      return next;
+-    });
++  goToTestOrder(): void {
++    clearInterval(this._timer);
++    this.router.navigate(['/dashboard/test-order']);
+   }
+ 
+-  onSubmit(): void { /* Wire to real API */ }
++  ngOnDestroy(): void { clearInterval(this._timer); }
+ }
+diff --git a/src/app/features/sample-tracking/sample-tracking.component.css b/src/app/features/sample-tracking/sample-tracking.component.css
+index 5a4ba12..7c25c89 100644
+--- a/src/app/features/sample-tracking/sample-tracking.component.css
++++ b/src/app/features/sample-tracking/sample-tracking.component.css
+@@ -66,4 +66,75 @@
+     .bc-bars { display:flex; gap:1px; height:20px; align-items:stretch; }
+     .bc-bar  { border-radius:1px; background:var(--text-primary); }
+     .bc-num  { font-size:11px; font-family:monospace; color:var(--text-secondary); }
+-    .det-actions { padding:12px 14px; display:flex; flex-direction:column; gap:7px; border-top:0.5px solid var(--border-color); }
+\ No newline at end of file
++    .det-actions { padding:12px 14px; display:flex; flex-direction:column; gap:7px; border-top:0.5px solid var(--border-color); }
++/* ── Workflow trail ──────────────────────────── */
++.workflow-trail { display: flex; align-items: center; gap: 6px; background: var(--body-bg); border: 0.5px solid var(--border-color); border-radius: 9px; padding: 6px 12px; }
++.wf-step { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-secondary); i { font-size: 13px; } }
++.wf-step--active { color: var(--lis-primary-deep, #085041); font-weight: 500; i { color: var(--lis-primary, #1D9E75); } }
++.wf-step--done   { color: var(--lis-primary, #1D9E75); font-weight: 500; }
++.wf-arrow { font-size: 11px; color: var(--border-color); }
++
++/* ── Current patient block ──────────────────── */
++.current-patient-block { margin-bottom: 16px; }
++.cp-layout {
++  display: grid;
++  grid-template-columns: 220px 1fr 200px;
++  gap: 16px; padding: 14px 16px;
++  align-items: start;
++}
++@media (max-width: 900px) { .cp-layout { grid-template-columns: 1fr; } }
++.cp-patient { display: flex; flex-direction: column; gap: 8px; }
++.cp-av { width: 42px; height: 42px; border-radius: 50%; background: var(--lis-primary, #1D9E75); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; text-transform: uppercase; flex-shrink: 0; }
++.cp-info { }
++.cp-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
++.cp-meta { font-size: 11px; color: var(--text-secondary); margin-top: 3px; }
++.cp-priority { display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 20px; background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); border: 0.5px solid var(--lis-primary-mid, #5DCAA5); text-transform: capitalize; }
++.cp-priority--stat { background: #FCEBEB; color: #791F1F; border-color: #E24B4A; }
++
++/* Tubes */
++.cp-tubes { display: flex; flex-direction: column; gap: 10px; }
++.cp-tube  {
++  display: flex; align-items: center; gap: 10px;
++  padding: 10px 12px; border: 0.5px solid var(--border-color);
++  border-radius: 10px; background: var(--body-bg);
++}
++.tube-body-wrap { display: flex; flex-direction: column; align-items: center; gap: 0; flex-shrink: 0; }
++.tube-body-cap  { width: 14px; height: 10px; border-radius: 4px 4px 0 0; }
++.tube-body-body { width: 10px; height: 30px; border-radius: 0 0 5px 5px; background: rgba(0,0,0,.06); border: 1px solid var(--border-color); }
++.tube-detail { flex: 1; min-width: 0; }
++.tube-label  { font-size: 12px; font-weight: 500; color: var(--text-primary); }
++.tube-tests  { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
++.tube-barcode { display: flex; flex-direction: column; align-items: center; gap: 3px; }
++
++/* Collection form */
++.cp-form { display: flex; flex-direction: column; gap: 8px; }
++.collect-btn { width: 100%; justify-content: center; }
++.collected-confirm {
++  display: flex; align-items: center; gap: 8px;
++  padding: 10px 12px; background: var(--lis-primary-xlight, #E1F5EE);
++  border: 0.5px solid var(--lis-primary-mid, #5DCAA5);
++  border-radius: 9px; animation: fadeIn .3s ease;
++  i { font-size: 22px; color: var(--lis-primary, #1D9E75); }
++}
++.cc-title { font-size: 12px; font-weight: 600; color: var(--lis-primary-deep, #085041); }
++.cc-time  { font-size: 11px; color: var(--text-secondary); }
++.collected-badge { background: var(--lis-primary-xlight, #E1F5EE) !important; color: var(--lis-primary-deep, #085041) !important; border-color: var(--lis-primary-mid, #5DCAA5) !important; }
++@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
++
++/* ── Queue section ──────────────────────────── */
++.queue-header { margin-bottom: 10px; }
++.queue-title  { font-size: 14px; font-weight: 600; color: var(--text-primary); margin: 0; }
++
++/* Table tweaks */
++.tbl-sub    { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
++.tbl-tests  { font-size: 11px; }
++.tube-dots  { display: flex; gap: 3px; align-items: center; }
++.lis-card-icon { color: var(--lis-primary, #1D9E75); font-size: 15px; }
++
++/* Detail panel extra classes */
++.det-pname { font-size: 13px; font-weight: 500; color: var(--text-primary); }
++.det-sid   { font-size: 11px; margin-top: 2px; }
++.det-name  { font-size: 12px; font-weight: 500; color: var(--text-primary); }
++.det-meta  { font-size: 11px; color: var(--text-secondary); }
++.tube-label-sm { font-size: 11px; font-weight: 500; color: var(--text-primary); }
++.tube-tests-sm { font-size: 11px; color: var(--text-secondary); }
+diff --git a/src/app/features/sample-tracking/sample-tracking.component.html b/src/app/features/sample-tracking/sample-tracking.component.html
+index a05a5a9..8002a19 100644
+--- a/src/app/features/sample-tracking/sample-tracking.component.html
++++ b/src/app/features/sample-tracking/sample-tracking.component.html
+@@ -1,147 +1,284 @@
+-<!-- Toolbar -->
+-    <div class="page-header">
+-      <div>
+-        <h1 class="page-title">Sample collection & tracking</h1>
+-        <nav aria-label="Breadcrumb"><ol class="breadcrumb">
+-          <li><a routerLink="/dashboard/home">Home</a></li>
+-          <li aria-current="page">Sample tracking</li>
+-        </ol></nav>
+-      </div>
+-      <div class="header-actions">
+-        <button class="lis-btn lis-btn--secondary lis-btn--sm">
+-          <i class="ti ti-printer" aria-hidden="true"></i> Print all labels
+-        </button>
+-        <button class="lis-btn lis-btn--primary lis-btn--sm">
+-          <i class="ti ti-plus" aria-hidden="true"></i> Add sample
+-        </button>
+-      </div>
+-    </div>
++<!-- ═══════════════════════════════════════════════════════════
++     Screen 4 — Sample Collection & Tracking
++     Shows current patient's collection at top (priority),
++     then the general lab queue below.
++     ═══════════════════════════════════════════════════════════ -->
+ 
+-    <div class="tracking-toolbar">
+-      <div class="ts-search" role="search">
+-        <i class="ti ti-search" aria-hidden="true"></i>
+-        <input type="search" placeholder="Search by patient name or sample ID…"
+-          [value]="searchQ()"
+-          (input)="searchQ.set($any($event.target).value)"
+-          aria-label="Search samples" />
+-      </div>
+-      <div class="filter-pills" role="group" aria-label="Filter samples by status">
+-        @for (f of filterOpts; track f.value) {
+-          <button type="button" class="filter-pill"
+-            [class.filter-pill--active]="activeFilter() === f.value"
+-            (click)="activeFilter.set(f.value)"
+-            [attr.aria-pressed]="activeFilter() === f.value"
+-          >{{ f.label }}</button>
+-        }
+-      </div>
++<!-- Page header -->
++<div class="page-header">
++  <div>
++    <h1 class="page-title">Sample Collection</h1>
++    <nav aria-label="Breadcrumb">
++      <ol class="breadcrumb">
++        <li><a routerLink="/dashboard/home">Home</a></li>
++        <li><a routerLink="/dashboard/billing">Billing</a></li>
++        <li aria-current="page">Sample Collection</li>
++      </ol>
++    </nav>
++  </div>
++  <div class="workflow-trail" aria-label="Workflow steps">
++    <div class="wf-step wf-step--done"><i class="ti ti-check"></i> Registered</div>
++    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
++    <div class="wf-step wf-step--done"><i class="ti ti-check"></i> Tests Ordered</div>
++    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
++    <div class="wf-step wf-step--done"><i class="ti ti-check"></i> Billing Done</div>
++    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
++    <div class="wf-step wf-step--active"><i class="ti ti-droplet"></i> Sample</div>
++  </div>
++
++  <div class="header-actions">
++    <button class="lis-btn lis-btn--secondary lis-btn--sm">
++      <i class="ti ti-printer" aria-hidden="true"></i> Print all labels
++    </button>
++    <button class="lis-btn lis-btn--primary lis-btn--sm">
++      <i class="ti ti-plus" aria-hidden="true"></i> Add sample
++    </button>
++  </div>
++</div>
++
++<!-- ════════════════════════════════════════════════
++     Current patient collection block
++     (shown only when patient + tests exist)
++     ════════════════════════════════════════════════ -->
++@if (patient && currentPatientTubes().length > 0) {
++  <div class="current-patient-block lis-card" role="region" aria-label="Current patient sample collection">
++    <div class="lis-card__header">
++      <i class="ti ti-user-check lis-card-icon" aria-hidden="true"></i>
++      <h2 class="lis-card__title">Current Patient — Collect Now</h2>
++      @if (!collected()) {
++        <span class="lis-badge lis-badge--warn">Awaiting collection</span>
++      } @else {
++        <span class="lis-badge collected-badge">
++          <i class="ti ti-check" aria-hidden="true"></i> Collected ✓
++        </span>
++      }
+     </div>
+ 
+-    <div class="tracking-body">
+-      <!-- Sample table -->
+-      <div class="sample-table-wrap">
+-        <table class="sample-tbl" role="table" aria-label="Sample list">
+-          <thead>
+-            <tr>
+-              <th scope="col">Sample ID</th>
+-              <th scope="col">Patient</th>
+-              <th scope="col">Tube(s)</th>
+-              <th scope="col">Tests ordered</th>
+-              <th scope="col">Priority</th>
+-              <th scope="col">Status</th>
+-              <th scope="col">ETA</th>
+-            </tr>
+-          </thead>
+-          <tbody>
+-            @for (s of filteredSamples(); track s.id) {
+-              <tr (click)="selectSample(s)" [class.row--selected]="selectedSample()?.id === s.id"
+-                [attr.aria-selected]="selectedSample()?.id === s.id">
+-                <td><span class="lis-mono">{{ s.id }}</span></td>
+-                <td>
+-                  {{ s.patientName }}
+-                  <div style="font-size:11px;color:var(--text-secondary)">{{ s.patientId }}</div>
+-                </td>
+-                <td>
+-                  <div style="display:flex;gap:3px;align-items:center">
+-                    @for (tube of s.tubes; track tube.id) {
+-                      <span class="tube-dot" [style.background]="tube.color" [attr.title]="tube.label"></span>
+-                    }
+-                  </div>
+-                </td>
+-                <td style="font-size:12px">{{ s.tests.join(' · ') }}</td>
+-                <td>
+-                  @if (s.priority === 'stat') {
+-                    <lis-status-pill status="stat" />
+-                  } @else {
+-                    <span class="prio-label">Routine</span>
+-                  }
+-                </td>
+-                <td><lis-status-pill [status]="s.status" /></td>
+-                <td [class.eta-urgent]="s.etaLabel === 'Now'">{{ s.etaLabel }}</td>
+-              </tr>
+-            }
+-          </tbody>
+-        </table>
++    <div class="cp-layout">
++      <!-- Patient info -->
++      <div class="cp-patient">
++        <div class="cp-av" aria-hidden="true">{{ patientInitials }}</div>
++        <div class="cp-info">
++          <div class="cp-name">{{ patient.firstName }} {{ patient.lastName }}</div>
++          <div class="cp-meta">
++            <span class="lis-mono">{{ patient.id }}</span> ·
++            {{ patientAge }} · {{ patient.gender }} · {{ patient.mobile }}
++          </div>
++          <div class="cp-meta">
++            {{ patient.refDoctor }} · {{ patient.fasting }}
++          </div>
++          <div class="cp-priority" [class.cp-priority--stat]="flow.priority() === 'stat'">
++            <i class="ti ti-bolt" aria-hidden="true"></i>
++            {{ flow.priority() | titlecase }}
++          </div>
++        </div>
+       </div>
+ 
+-      <!-- Detail panel -->
+-      @if (selectedSample()) {
+-        <aside class="detail-panel lis-card" aria-label="Sample detail">
+-          <div class="lis-card__header">
+-            <div>
+-              <div style="font-size:13px;font-weight:500;color:var(--text-primary)">{{ selectedSample()!.patientName }}</div>
+-              <div class="lis-mono" style="margin-top:2px">{{ selectedSample()!.id }}</div>
++      <!-- Tubes -->
++      <div class="cp-tubes" role="list" aria-label="Sample tubes">
++        @for (tube of currentPatientTubes(); track tube.id) {
++          <div class="cp-tube" role="listitem">
++            <div class="tube-body-wrap">
++              <div class="tube-body-cap" [style.background]="tube.color" aria-hidden="true"></div>
++              <div class="tube-body-body" aria-hidden="true"></div>
++            </div>
++            <div class="tube-detail">
++              <div class="tube-label">{{ tube.label }}</div>
++              <div class="tube-tests">{{ tube.tests.join(' · ') }}</div>
++            </div>
++
++            <!-- Barcode -->
++            <div class="tube-barcode" [attr.aria-label]="'Barcode for ' + tube.id">
++              <div class="bc-bars" aria-hidden="true">
++                @for (w of barcodeWidths; track $index) {
++                  <div class="bc-bar" [style.width.px]="w"></div>
++                }
++              </div>
++              <div class="bc-num lis-mono">{{ tube.id }}</div>
+             </div>
+-            @if (selectedSample()!.priority === 'stat') { <lis-status-pill status="stat" /> }
+           </div>
++        }
++      </div>
+ 
+-          <div class="det-pat">
+-            <div class="det-av" aria-hidden="true">{{ initials(selectedSample()!.patientName) }}</div>
++      <!-- Collection form -->
++      <div class="cp-form">
++        <div class="lis-field">
++          <label>Collector</label>
++          <input value="Lab Technician" readonly />
++        </div>
++        <div class="lis-field">
++          <label>Collection time</label>
++          <input [value]="collected() ? collectedAt() : (now | date:'hh:mm a')" readonly />
++        </div>
++        <div class="lis-field">
++          <label>Sample type</label>
++          <input value="Venous blood" readonly />
++        </div>
++
++        @if (!collected()) {
++          <button type="button" class="lis-btn lis-btn--primary collect-btn"
++            (click)="markCollected()">
++            <i class="ti ti-check" aria-hidden="true"></i>
++            Mark as Collected ✓
++          </button>
++          <button type="button" class="lis-btn lis-btn--secondary collect-btn">
++            <i class="ti ti-printer" aria-hidden="true"></i>
++            Print Labels
++          </button>
++        } @else {
++          <div class="collected-confirm" role="status" aria-live="polite">
++            <i class="ti ti-circle-check" aria-hidden="true"></i>
+             <div>
+-              <div style="font-size:12px;font-weight:500;color:var(--text-primary)">{{ selectedSample()!.patientName }}</div>
+-              <div style="font-size:11px;color:var(--text-secondary)">{{ selectedSample()!.patientId }} · {{ selectedSample()!.tests.join(', ') }}</div>
++              <div class="cc-title">Sample Collected</div>
++              <div class="cc-time">at {{ collectedAt() }}</div>
+             </div>
+           </div>
++          <a routerLink="/dashboard/results" class="lis-btn lis-btn--primary collect-btn">
++            <i class="ti ti-writing" aria-hidden="true"></i>
++            Proceed to Result Entry
++          </a>
++          <button type="button" class="lis-btn lis-btn--secondary collect-btn">
++            <i class="ti ti-printer" aria-hidden="true"></i>
++            Reprint Labels
++          </button>
++        }
++      </div>
++    </div>
++  </div>
++}
+ 
+-          <div class="det-section">Sample info</div>
+-          <div class="det-row"><span class="det-lbl">Collected at</span><span class="det-val">{{ selectedSample()!.collectedAt }}</span></div>
+-          <div class="det-row"><span class="det-lbl">Priority</span>
+-            <span class="det-val" [class.det-val--urgent]="selectedSample()!.priority === 'stat'">
+-              {{ selectedSample()!.priority.toUpperCase() }}
+-            </span>
+-          </div>
+-          <div class="det-row"><span class="det-lbl">Status</span>
+-            <lis-status-pill [status]="selectedSample()!.status" />
+-          </div>
++<!-- ════════════════════════════════════════════════
++     General lab queue
++     ════════════════════════════════════════════════ -->
++<div class="queue-header">
++  <h3 class="queue-title">Lab Queue</h3>
++</div>
++
++<div class="tracking-toolbar">
++  <div class="ts-search" role="search">
++    <i class="ti ti-search" aria-hidden="true"></i>
++    <input type="search" placeholder="Search by patient name or sample ID…"
++      [value]="searchQ()"
++      (input)="searchQ.set($any($event.target).value)"
++      aria-label="Search samples" />
++  </div>
++  <div class="filter-pills" role="group" aria-label="Filter samples by status">
++    @for (f of filterOpts; track f.value) {
++      <button type="button" class="filter-pill"
++        [class.filter-pill--active]="activeFilter() === f.value"
++        (click)="activeFilter.set(f.value)"
++        [attr.aria-pressed]="activeFilter() === f.value">{{ f.label }}</button>
++    }
++  </div>
++</div>
+ 
+-          <div class="det-section">Tubes assigned</div>
+-          <div class="tube-list">
+-            @for (tube of selectedSample()!.tubes; track tube.id) {
+-              <div class="tube-card">
+-                <div class="tube-body" [style.background]="tube.color"></div>
+-                <div class="tube-info">
+-                  <div class="tube-label">{{ tube.label }}</div>
+-                  <div class="tube-tests">{{ tube.tests.join(' · ') }}</div>
+-                </div>
+-                <div class="barcode" [attr.aria-label]="'Barcode for tube ' + tube.id">
+-                  <div class="bc-bars" aria-hidden="true">
+-                    @for (w of barcodeWidths; track $index) {
+-                      <div class="bc-bar" [style.width.px]="w"></div>
+-                    }
+-                  </div>
+-                  <div class="bc-num">{{ tube.id }}</div>
+-                </div>
++<div class="tracking-body">
++  <!-- Sample table -->
++  <div class="sample-table-wrap">
++    <table class="sample-tbl" role="table" aria-label="Sample queue">
++      <thead>
++        <tr>
++          <th scope="col">Sample ID</th>
++          <th scope="col">Patient</th>
++          <th scope="col">Tube(s)</th>
++          <th scope="col">Tests ordered</th>
++          <th scope="col">Priority</th>
++          <th scope="col">Status</th>
++          <th scope="col">ETA</th>
++        </tr>
++      </thead>
++      <tbody>
++        @for (s of filteredSamples(); track s.id) {
++          <tr (click)="selectSample(s)"
++            [class.row--selected]="selectedSample()?.id === s.id"
++            [attr.aria-selected]="selectedSample()?.id === s.id">
++            <td><span class="lis-mono">{{ s.id }}</span></td>
++            <td>
++              {{ s.patientName }}
++              <div class="tbl-sub">{{ s.patientId }}</div>
++            </td>
++            <td>
++              <div class="tube-dots">
++                @for (tube of s.tubes; track tube.id) {
++                  <span class="tube-dot" [style.background]="tube.color" [attr.title]="tube.label"></span>
++                }
+               </div>
+-            }
+-          </div>
++            </td>
++            <td class="tbl-tests">{{ s.tests.join(' · ') }}</td>
++            <td>
++              @if (s.priority === 'stat') {
++                <lis-status-pill status="stat" />
++              } @else {
++                <span class="prio-label">Routine</span>
++              }
++            </td>
++            <td><lis-status-pill [status]="s.status" /></td>
++            <td [class.eta-urgent]="s.etaLabel === 'Now'">{{ s.etaLabel }}</td>
++          </tr>
++        }
++      </tbody>
++    </table>
++  </div>
++
++  <!-- Detail panel -->
++  @if (selectedSample()) {
++    <aside class="detail-panel lis-card" aria-label="Sample detail">
++      <div class="lis-card__header">
++        <div>
++          <div class="det-pname">{{ selectedSample()!.patientName }}</div>
++          <div class="lis-mono det-sid">{{ selectedSample()!.id }}</div>
++        </div>
++        @if (selectedSample()!.priority === 'stat') { <lis-status-pill status="stat" /> }
++      </div>
+ 
+-          <div class="det-actions">
+-            <a routerLink="/dashboard/results" class="lis-btn lis-btn--primary lis-btn--full">
+-              <i class="ti ti-writing" aria-hidden="true"></i> Enter results
+-            </a>
+-            <button type="button" class="lis-btn lis-btn--secondary lis-btn--full">
+-              <i class="ti ti-printer" aria-hidden="true"></i> Reprint labels
+-            </button>
++      <div class="det-pat">
++        <div class="det-av" aria-hidden="true">{{ initials(selectedSample()!.patientName) }}</div>
++        <div>
++          <div class="det-name">{{ selectedSample()!.patientName }}</div>
++          <div class="det-meta">{{ selectedSample()!.patientId }} · {{ selectedSample()!.tests.join(', ') }}</div>
++        </div>
++      </div>
++
++      <div class="det-section">Sample info</div>
++      <div class="det-row"><span class="det-lbl">Collected at</span><span class="det-val">{{ selectedSample()!.collectedAt }}</span></div>
++      <div class="det-row"><span class="det-lbl">Priority</span>
++        <span class="det-val" [class.det-val--urgent]="selectedSample()!.priority === 'stat'">
++          {{ selectedSample()!.priority.toUpperCase() }}
++        </span>
++      </div>
++      <div class="det-row"><span class="det-lbl">Status</span>
++        <lis-status-pill [status]="selectedSample()!.status" />
++      </div>
++
++      <div class="det-section">Tubes assigned</div>
++      <div class="tube-list">
++        @for (tube of selectedSample()!.tubes; track tube.id) {
++          <div class="tube-card">
++            <div class="tube-body" [style.background]="tube.color" aria-hidden="true"></div>
++            <div class="tube-info">
++              <div class="tube-label-sm">{{ tube.label }}</div>
++              <div class="tube-tests-sm">{{ tube.tests.join(' · ') }}</div>
++            </div>
++            <div class="barcode" [attr.aria-label]="'Barcode for tube ' + tube.id">
++              <div class="bc-bars" aria-hidden="true">
++                @for (w of barcodeWidths; track $index) {
++                  <div class="bc-bar" [style.width.px]="w"></div>
++                }
++              </div>
++              <div class="bc-num">{{ tube.id }}</div>
++            </div>
+           </div>
+-        </aside>
+-      }
+-    </div>
+\ No newline at end of file
++        }
++      </div>
++
++      <div class="det-actions">
++        <a routerLink="/dashboard/results" class="lis-btn lis-btn--primary lis-btn--full">
++          <i class="ti ti-writing" aria-hidden="true"></i> Enter results
++        </a>
++        <button type="button" class="lis-btn lis-btn--secondary lis-btn--full">
++          <i class="ti ti-printer" aria-hidden="true"></i> Reprint labels
++        </button>
++      </div>
++    </aside>
++  }
++</div>
+diff --git a/src/app/features/sample-tracking/sample-tracking.component.ts b/src/app/features/sample-tracking/sample-tracking.component.ts
+index d335e03..53f1c39 100644
+--- a/src/app/features/sample-tracking/sample-tracking.component.ts
++++ b/src/app/features/sample-tracking/sample-tracking.component.ts
+@@ -1,42 +1,84 @@
+-import { Component, signal, computed, ChangeDetectionStrategy } from '@angular/core';
++// ─────────────────────────────────────────────
++//  Screen 4 — Sample Collection & Tracking
++//  Shows current patient's samples at top for
++//  immediate collection after billing.
++// ─────────────────────────────────────────────
++import { Component, signal, computed, inject, ChangeDetectionStrategy, OnInit } from '@angular/core';
+ import { RouterLink } from '@angular/router';
+-import { NgClass } from '@angular/common';
++import { NgClass, DatePipe, TitleCasePipe } from '@angular/common';
+ import { StatusPillComponent } from '../../shared/components/status-pill/status-pill.component';
+ import { Sample, SampleStatus } from '../../shared/models/lis.models';
++import { PatientFlowService } from '../../core/services/patient-flow.service';
+ 
+ const SAMPLES: Sample[] = [
+-  { id:'SMP-2406-087', patientId:'PAT-0316', patientName:'Arun Pillai',          tests:['KFT','Urine R/M'],  priority:'stat',    status:'critical',   collectedAt:'9:20 AM', etaLabel:'Now',   tubes:[{id:'087-A',color:'#E24B4A',label:'Red top (SST)',    tests:['KFT']},{id:'087-B',color:'#C9A227',label:'Yellow (Urine)',tests:['Urine R/M']}] },
+-  { id:'SMP-2406-084', patientId:'PAT-0318', patientName:'Kavitha Nair',         tests:['CBC','LFT'],         priority:'routine', status:'processing', collectedAt:'9:55 AM', etaLabel:'11:30', tubes:[{id:'084-A',color:'#E24B4A',label:'Red top (SST)',    tests:['LFT']},{id:'084-B',color:'#2B8B3E',label:'Green (EDTA)',  tests:['CBC']}] },
+-  { id:'SMP-2406-085', patientId:'PAT-0317', patientName:'Suresh Menon',         tests:['HbA1c','Lipids'],    priority:'routine', status:'pending',    collectedAt:'9:41 AM', etaLabel:'12:00', tubes:[{id:'085-A',color:'#9F4BA8',label:'Purple (EDTA)',    tests:['HbA1c','Lipids']}] },
+-  { id:'SMP-2406-086', patientId:'PAT-0315', patientName:'Priya Sharma',         tests:['Thyroid panel'],     priority:'routine', status:'ready',      collectedAt:'9:30 AM', etaLabel:'Done',  tubes:[{id:'086-A',color:'#9F4BA8',label:'Purple (EDTA)',    tests:['Thyroid panel']}] },
+-  { id:'SMP-2406-088', patientId:'PAT-0320', patientName:'Meena Joshi',          tests:['CBC','ESR'],         priority:'routine', status:'processing', collectedAt:'10:10 AM',etaLabel:'12:15', tubes:[{id:'088-A',color:'#E24B4A',label:'Red top (SST)',    tests:['ESR','CBC']}] },
+-  { id:'SMP-2406-089', patientId:'PAT-0321', patientName:'Deepak Rao',           tests:['Blood glucose'],     priority:'routine', status:'ready',      collectedAt:'10:22 AM',etaLabel:'Done',  tubes:[{id:'089-A',color:'#2B8B3E',label:'Green (fluoride)', tests:['Blood glucose']}] },
++  { id:'SMP-2406-087', patientId:'PAT-0316', patientName:'Arun Pillai',     tests:['KFT','Urine R/M'],  priority:'stat',    status:'critical',   collectedAt:'9:20 AM',  etaLabel:'Now',   tubes:[{id:'087-A',color:'#E24B4A',label:'Red top (SST)',   tests:['KFT']},{id:'087-B',color:'#C9A227',label:'Yellow (Urine)',tests:['Urine R/M']}] },
++  { id:'SMP-2406-084', patientId:'PAT-0318', patientName:'Kavitha Nair',    tests:['CBC','LFT'],         priority:'routine', status:'processing', collectedAt:'9:55 AM',  etaLabel:'11:30', tubes:[{id:'084-A',color:'#E24B4A',label:'Red top (SST)',   tests:['LFT']},{id:'084-B',color:'#2B8B3E',label:'Green (EDTA)', tests:['CBC']}] },
++  { id:'SMP-2406-085', patientId:'PAT-0317', patientName:'Suresh Menon',    tests:['HbA1c','Lipids'],    priority:'routine', status:'pending',    collectedAt:'9:41 AM',  etaLabel:'12:00', tubes:[{id:'085-A',color:'#9F4BA8',label:'Purple (EDTA)',   tests:['HbA1c','Lipids']}] },
++  { id:'SMP-2406-086', patientId:'PAT-0315', patientName:'Priya Sharma',    tests:['Thyroid panel'],     priority:'routine', status:'ready',      collectedAt:'9:30 AM',  etaLabel:'Done',  tubes:[{id:'086-A',color:'#9F4BA8',label:'Purple (EDTA)',   tests:['Thyroid panel']}] },
++  { id:'SMP-2406-088', patientId:'PAT-0320', patientName:'Meena Joshi',     tests:['CBC','ESR'],         priority:'routine', status:'processing', collectedAt:'10:10 AM', etaLabel:'12:15', tubes:[{id:'088-A',color:'#E24B4A',label:'Red top (SST)',   tests:['ESR','CBC']}] },
++  { id:'SMP-2406-089', patientId:'PAT-0321', patientName:'Deepak Rao',      tests:['Blood glucose'],     priority:'routine', status:'ready',      collectedAt:'10:22 AM', etaLabel:'Done',  tubes:[{id:'089-A',color:'#2B8B3E',label:'Green (fluoride)',tests:['Blood glucose']}] },
+ ];
+ 
+ const FILTER_OPTS: { label: string; value: SampleStatus | 'all' }[] = [
+-  { label:'All (61)',        value:'all' },
+-  { label:'STAT (1)',        value:'critical' },
+-  { label:'Processing (12)',value:'processing' },
+-  { label:'Pending (8)',     value:'pending' },
+-  { label:'Ready (40)',      value:'ready' },
++  { label: 'All',        value: 'all'        },
++  { label: 'STAT',       value: 'critical'   },
++  { label: 'Processing', value: 'processing' },
++  { label: 'Pending',    value: 'pending'    },
++  { label: 'Ready',      value: 'ready'      },
+ ];
+ 
++const TUBE_COLORS: Record<string, string> = {
++  'Haematology':   '#2B8B3E',
++  'Biochemistry':  '#E24B4A',
++  'Endocrinology': '#9F4BA8',
++  'Urine':         '#C9A227',
++};
++
+ @Component({
+   selector: 'app-sample-tracking',
+   standalone: true,
+-  imports: [RouterLink, NgClass, StatusPillComponent],
++  imports: [RouterLink, NgClass, StatusPillComponent, DatePipe, TitleCasePipe],
+   changeDetection: ChangeDetectionStrategy.OnPush,
+-    templateUrl: './sample-tracking.component.html',
+-    styleUrl: './sample-tracking.component.css',
++  templateUrl: './sample-tracking.component.html',
++  styleUrl: './sample-tracking.component.css',
+ })
+-export class SampleTrackingComponent {
+-  protected readonly filterOpts = FILTER_OPTS;
++export class SampleTrackingComponent implements OnInit {
++  protected readonly flow        = inject(PatientFlowService);
++  protected readonly filterOpts  = FILTER_OPTS;
+   protected readonly barcodeWidths = [2,1,3,1,2,1,1,2,3,1,2,1,2,3,1];
++  protected readonly now          = new Date();
+ 
+-  searchQ      = signal('');
+-  activeFilter = signal<SampleStatus | 'all'>('all');
++  searchQ        = signal('');
++  activeFilter   = signal<SampleStatus | 'all'>('all');
+   selectedSample = signal<Sample | null>(SAMPLES[0]);
+ 
++  // Current patient's tubes (derived from test order)
++  currentPatientTubes = computed(() => {
++    const p = this.flow.patient();
++    const tests = this.flow.selectedTests();
++    if (!p || tests.length === 0) return [];
++
++    // Group tests by tube colour category
++    const groups: Record<string, string[]> = {};
++    for (const t of tests) {
++      const color = TUBE_COLORS[t.category] ?? '#888';
++      if (!groups[color]) groups[color] = [];
++      groups[color].push(t.name);
++    }
++
++    return Object.entries(groups).map(([color, testNames], i) => ({
++      id: `${p.id}-T${i+1}`,
++      color,
++      label: this.tubeLabel(color),
++      tests: testNames,
++    }));
++  });
++
++  collected = signal(false);
++  collectedAt = signal('');
++
++  ngOnInit(): void {}
++
+   filteredSamples = computed(() => {
+     const f = this.activeFilter();
+     const q = this.searchQ().toLowerCase();
+@@ -51,4 +93,34 @@ export class SampleTrackingComponent {
+   initials(name: string): string {
+     return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+   }
++
++  markCollected(): void {
++    const now = new Date();
++    this.collectedAt.set(
++      now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
++    );
++    this.collected.set(true);
++  }
++
++  private tubeLabel(color: string): string {
++    const map: Record<string,string> = {
++      '#2B8B3E': 'Green top (EDTA)',
++      '#E24B4A': 'Red top (SST)',
++      '#9F4BA8': 'Purple (EDTA)',
++      '#C9A227': 'Yellow (Urine)',
++    };
++    return map[color] ?? 'Plain tube';
++  }
++
++  get patient() { return this.flow.patient(); }
++  get patientInitials(): string {
++    const p = this.patient;
++    if (!p) return '?';
++    return (p.firstName[0] + p.lastName[0]).toUpperCase();
++  }
++  get patientAge(): string {
++    const p = this.patient;
++    if (!p) return '';
++    return this.flow.calcAge(p.dob) + ' yrs';
++  }
+ }
+diff --git a/src/app/features/test-order/test-order.component.css b/src/app/features/test-order/test-order.component.css
+new file mode 100644
+index 0000000..e78248d
+--- /dev/null
++++ b/src/app/features/test-order/test-order.component.css
+@@ -0,0 +1,218 @@
++:host { display: block; }
++
++/* ── Page header ─────────────────────────────── */
++.page-header {
++  display: flex; align-items: flex-start;
++  justify-content: space-between; flex-wrap: wrap;
++  gap: 12px; margin-bottom: 14px;
++}
++.page-title { font-size: 20px; font-weight: 500; color: var(--text-primary); margin: 0 0 3px; }
++.breadcrumb { display: flex; list-style: none; padding: 0; margin: 0; gap: 6px; font-size: 12px; color: var(--text-secondary); }
++.breadcrumb li+li::before { content: '/'; margin-right: 6px; }
++.breadcrumb a { color: var(--text-secondary); text-decoration: none; &:hover { color: var(--lis-primary, #1D9E75); } }
++
++/* ── Workflow trail ───────────────────────────── */
++.workflow-trail {
++  display: flex; align-items: center; gap: 6px;
++  background: var(--body-bg); border: 0.5px solid var(--border-color);
++  border-radius: 9px; padding: 6px 12px;
++}
++.wf-step { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-secondary); i { font-size: 13px; } }
++.wf-step--active { color: var(--lis-primary-deep, #085041); font-weight: 500; i { color: var(--lis-primary, #1D9E75); } }
++.wf-step--done   { color: var(--lis-primary, #1D9E75); font-weight: 500; }
++.wf-arrow { font-size: 11px; color: var(--border-color); }
++
++/* ── Patient banner ──────────────────────────── */
++.patient-banner {
++  display: flex; align-items: center; gap: 12px;
++  background: var(--lis-primary-xlight, #E1F5EE);
++  border: 0.5px solid var(--lis-primary-mid, #5DCAA5);
++  border-radius: 10px; padding: 10px 14px; margin-bottom: 14px;
++  flex-wrap: wrap;
++}
++.pat-av {
++  width: 38px; height: 38px; border-radius: 50%;
++  background: var(--lis-primary, #1D9E75); color: #fff;
++  display: flex; align-items: center; justify-content: center;
++  font-size: 13px; font-weight: 600; flex-shrink: 0; text-transform: uppercase;
++}
++.pat-main { flex: 1; min-width: 0; }
++.pat-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
++.pat-meta {
++  display: flex; flex-wrap: wrap; align-items: center;
++  gap: 5px; font-size: 11px; color: var(--text-secondary); margin-top: 3px;
++}
++.pid-tag { font-size: 11px; }
++.meta-sep { color: var(--border-color); }
++.visit-tag {
++  background: var(--card-bg); border: 0.5px solid var(--border-color);
++  border-radius: 20px; padding: 1px 7px; font-size: 10px;
++}
++
++/* ── Two-column layout ───────────────────────── */
++.order-layout {
++  display: grid;
++  grid-template-columns: 1fr 280px;
++  gap: 14px; align-items: start;
++}
++@media (max-width: 900px) { .order-layout { grid-template-columns: 1fr; } }
++
++/* ── Search column ───────────────────────────── */
++.search-col { display: flex; flex-direction: column; gap: 12px; }
++
++.search-card { overflow: hidden; }
++.search-bar-wrap {
++  display: flex; align-items: center; gap: 8px;
++  padding: 10px 14px; border-bottom: 0.5px solid var(--border-color);
++}
++.search-ico { font-size: 16px; color: var(--text-secondary); flex-shrink: 0; }
++.search-input {
++  flex: 1; background: transparent; border: none; outline: none;
++  font-size: 13px; color: var(--text-primary);
++  &::placeholder { color: var(--text-secondary); }
++}
++.search-clear {
++  background: none; border: none; cursor: pointer;
++  color: var(--text-secondary); font-size: 13px; padding: 2px;
++  &:hover { color: #E24B4A; }
++}
++.cat-pills { display: flex; gap: 5px; flex-wrap: wrap; padding: 8px 14px; }
++.cat-pill {
++  font-size: 11px; padding: 3px 10px; border-radius: 20px;
++  border: 0.5px solid var(--border-color); cursor: pointer;
++  color: var(--text-secondary); background: var(--card-bg);
++  &:hover { border-color: var(--lis-primary-mid, #5DCAA5); }
++}
++.cat-pill--active {
++  background: var(--lis-primary-xlight, #E1F5EE);
++  color: var(--lis-primary-deep, #085041);
++  border-color: var(--lis-primary-mid, #5DCAA5);
++}
++
++/* ── Popular tests ───────────────────────────── */
++.popular-card {}
++.popular-grid {
++  display: flex; flex-wrap: wrap; gap: 8px;
++  padding: 10px 14px 14px;
++}
++.popular-pill {
++  display: flex; align-items: center; gap: 6px;
++  padding: 7px 12px; border-radius: 8px;
++  border: 0.5px solid var(--border-color);
++  background: var(--body-bg); cursor: pointer;
++  position: relative;
++  &:hover { border-color: var(--lis-primary-mid, #5DCAA5); background: var(--lis-primary-xlight, #E1F5EE); }
++}
++.popular-pill--sel {
++  background: var(--lis-primary-xlight, #E1F5EE);
++  border-color: var(--lis-primary, #1D9E75);
++}
++.pp-name { font-size: 12px; font-weight: 600; color: var(--text-primary); }
++.pp-price { font-size: 10px; color: var(--text-secondary); }
++.pp-check { font-size: 11px; color: var(--lis-primary, #1D9E75); }
++
++/* ── Test catalogue list ─────────────────────── */
++.catalogue-card {}
++.test-list { display: flex; flex-direction: column; }
++.empty-tests {
++  display: flex; align-items: center; gap: 6px;
++  padding: 20px 14px; font-size: 12px; color: var(--text-secondary);
++  i { font-size: 18px; }
++}
++.test-row {
++  display: flex; align-items: center; gap: 10px;
++  padding: 10px 14px; cursor: pointer;
++  border-bottom: 0.5px solid var(--border-color);
++  transition: background 0.12s;
++  &:last-child { border-bottom: none; }
++  &:hover { background: var(--body-bg); }
++}
++.test-row--selected { background: var(--lis-primary-xlight, #E1F5EE); }
++.test-tog {
++  width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
++  border: 1.5px solid var(--border-color);
++  display: flex; align-items: center; justify-content: center;
++  font-size: 12px; color: var(--text-secondary);
++}
++.test-tog--on {
++  background: var(--lis-primary, #1D9E75);
++  border-color: var(--lis-primary, #1D9E75); color: #fff;
++}
++.test-info { flex: 1; min-width: 0; }
++.test-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
++.test-meta { font-size: 11px; color: var(--text-secondary); margin-top: 2px; display: flex; gap: 5px; }
++.test-cat  {}
++.test-dot  {}
++.test-price { font-size: 12px; font-weight: 500; color: var(--lis-primary-deep, #085041); min-width: 50px; text-align: right; }
++
++/* ── Order panel (right) ─────────────────────── */
++.order-panel {
++  position: sticky; top: 80px;
++  display: flex; flex-direction: column;
++}
++.op-section { padding: 12px 14px; }
++.op-hd {
++  display: flex; align-items: center; justify-content: space-between;
++  font-size: 11px; font-weight: 600; text-transform: uppercase;
++  letter-spacing: .05em; color: var(--text-secondary); margin-bottom: 8px;
++}
++.op-label {
++  font-size: 10px; font-weight: 600; text-transform: uppercase;
++  letter-spacing: .06em; color: var(--text-secondary); margin-bottom: 7px;
++}
++.op-divider { height: 0.5px; background: var(--border-color); margin: 0; }
++.op-actions { padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
++
++/* Selected tests */
++.selected-list { display: flex; flex-direction: column; gap: 4px; min-height: 40px; }
++.no-tests-hint {
++  display: flex; align-items: center; gap: 6px;
++  font-size: 11px; color: var(--text-secondary); padding: 8px 0;
++  i { font-size: 16px; }
++}
++.sel-item {
++  display: flex; align-items: center; gap: 6px;
++  padding: 6px 8px; border-radius: 7px;
++  background: var(--body-bg); border: 0.5px solid var(--border-color);
++  animation: fadeIn 0.15s ease;
++}
++@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
++.sel-item-info { flex: 1; min-width: 0; }
++.sel-name  { font-size: 11px; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
++.sel-cat   { font-size: 10px; color: var(--text-secondary); }
++.sel-price { font-size: 11px; font-weight: 500; color: var(--lis-primary-deep, #085041); min-width: 38px; text-align: right; }
++.sel-del   { background: none; border: none; cursor: pointer; color: var(--text-secondary); font-size: 12px; padding: 2px; &:hover { color: #E24B4A; } }
++
++/* Priority */
++.prio-row { display: flex; gap: 5px; }
++.prio-btn {
++  flex: 1; padding: 6px 4px; border: 0.5px solid var(--border-color);
++  border-radius: 7px; cursor: pointer; font-size: 11px;
++  color: var(--text-secondary); background: var(--card-bg); text-transform: capitalize;
++}
++.prio-btn--active { border-color: var(--lis-primary, #1D9E75); background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); font-weight: 500; }
++.prio-btn--stat   { border-color: #E24B4A; background: #FCEBEB; color: #791F1F; }
++.stat-warn {
++  display: flex; align-items: center; gap: 5px;
++  font-size: 10px; color: #791F1F; margin-top: 6px;
++  background: #FCEBEB; border-radius: 6px; padding: 5px 8px;
++}
++
++/* Totals */
++.tot-row {
++  display: flex; justify-content: space-between;
++  font-size: 11px; color: var(--text-secondary); padding: 3px 0;
++}
++.tot-grand {
++  font-size: 15px; font-weight: 600; color: var(--text-primary);
++  padding-top: 8px; border-top: 0.5px solid var(--border-color); margin-top: 4px;
++}
++
++/* Proceed button */
++.proceed-btn { font-size: 12px; }
++.proceed-btn:disabled { opacity: 0.55; cursor: not-allowed; }
++.no-tests-msg { font-size: 11px; color: var(--text-secondary); text-align: center; padding: 0 14px 12px; }
++
++/* Spinner */
++@keyframes spin { to { transform: rotate(360deg); } }
++.spin { display: inline-block; animation: spin 0.8s linear infinite; }
+diff --git a/src/app/features/test-order/test-order.component.html b/src/app/features/test-order/test-order.component.html
+new file mode 100644
+index 0000000..f7cbb61
+--- /dev/null
++++ b/src/app/features/test-order/test-order.component.html
+@@ -0,0 +1,267 @@
++<!-- ═══════════════════════════════════════════════════════════
++     Screen 2 — Test Order
++     Full-width: search panel left, order panel right.
++     ═══════════════════════════════════════════════════════════ -->
++
++<!-- Page header -->
++<div class="page-header">
++  <div>
++    <h1 class="page-title">Test Order</h1>
++    <nav aria-label="Breadcrumb">
++      <ol class="breadcrumb">
++        <li><a routerLink="/dashboard/home">Home</a></li>
++        <li><a routerLink="/dashboard/registration">Registration</a></li>
++        <li aria-current="page">Test Order</li>
++      </ol>
++    </nav>
++  </div>
++  <div class="workflow-trail" aria-label="Workflow steps">
++    <div class="wf-step wf-step--done"><i class="ti ti-check"></i> Registered</div>
++    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
++    <div class="wf-step wf-step--active"><i class="ti ti-test-pipe"></i> Test Order</div>
++    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
++    <div class="wf-step"><i class="ti ti-file-invoice"></i> Billing</div>
++    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
++    <div class="wf-step"><i class="ti ti-droplet"></i> Sample</div>
++  </div>
++</div>
++
++<!-- Patient banner -->
++@if (patient) {
++  <div class="patient-banner" role="region" aria-label="Patient information">
++    <div class="pat-av" aria-hidden="true">{{ patientInitials }}</div>
++    <div class="pat-main">
++      <div class="pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
++      <div class="pat-meta">
++        <span class="lis-mono pid-tag">{{ patient.id }}</span>
++        <span class="meta-sep" aria-hidden="true">·</span>
++        <span>{{ patientAge }}</span>
++        <span class="meta-sep" aria-hidden="true">·</span>
++        <span>{{ patient.gender }}</span>
++        <span class="meta-sep" aria-hidden="true">·</span>
++        <span>{{ patient.mobile }}</span>
++        <span class="meta-sep" aria-hidden="true">·</span>
++        <span>{{ patient.refDoctor }}</span>
++        <span class="meta-sep" aria-hidden="true">·</span>
++        <span class="visit-tag">{{ patient.visitType }}</span>
++      </div>
++    </div>
++    <a routerLink="/dashboard/registration" class="lis-btn lis-btn--secondary lis-btn--sm" aria-label="Edit patient details">
++      <i class="ti ti-edit" aria-hidden="true"></i> Edit patient
++    </a>
++  </div>
++}
++
++<!-- Main layout: search left, order panel right -->
++<div class="order-layout">
++
++  <!-- ── Left: Test search catalogue ──────────── -->
++  <div class="search-col">
++
++    <!-- Search bar -->
++    <div class="lis-card search-card">
++      <div class="search-bar-wrap">
++        <i class="ti ti-search search-ico" aria-hidden="true"></i>
++        <input
++          type="search"
++          class="search-input"
++          placeholder="Search test by name or code…"
++          [value]="testQuery()"
++          (input)="testQuery.set($any($event.target).value)"
++          aria-label="Search tests"
++          autofocus />
++        @if (testQuery()) {
++          <button type="button" class="search-clear" (click)="clearSearch()" aria-label="Clear search">
++            <i class="ti ti-x" aria-hidden="true"></i>
++          </button>
++        }
++      </div>
++
++      <!-- Category pills -->
++      <div class="cat-pills" role="group" aria-label="Test categories">
++        @for (cat of flow.categories; track cat) {
++          <button type="button" class="cat-pill"
++            [class.cat-pill--active]="activeCategory() === cat"
++            (click)="activeCategory.set(cat)"
++            [attr.aria-pressed]="activeCategory() === cat">{{ cat }}</button>
++        }
++      </div>
++    </div>
++
++    <!-- Popular tests (shown when no query) -->
++    @if (!testQuery()) {
++      <div class="lis-card popular-card">
++        <div class="lis-card__header">
++          <i class="ti ti-star lis-card-icon" aria-hidden="true"></i>
++          <h2 class="lis-card__title">Popular Tests</h2>
++          <span class="lis-badge">Quick pick</span>
++        </div>
++        <div class="popular-grid" role="list" aria-label="Popular tests">
++          @for (t of flow.popularTests; track t.id) {
++            <button type="button" class="popular-pill"
++              [class.popular-pill--sel]="isSelected(t.id)"
++              (click)="toggle(t)"
++              role="listitem"
++              [attr.aria-pressed]="isSelected(t.id)"
++              [attr.aria-label]="t.name + ', ₹' + t.price">
++              <span class="pp-name">{{ t.id }}</span>
++              <span class="pp-price">₹{{ t.price }}</span>
++              @if (isSelected(t.id)) {
++                <i class="ti ti-check pp-check" aria-hidden="true"></i>
++              }
++            </button>
++          }
++        </div>
++      </div>
++    }
++
++    <!-- Test catalogue list -->
++    <div class="lis-card catalogue-card">
++      <div class="lis-card__header">
++        <i class="ti ti-list lis-card-icon" aria-hidden="true"></i>
++        <h2 class="lis-card__title">
++          {{ testQuery() ? 'Search results' : 'All Tests' }}
++        </h2>
++        <span class="lis-badge">{{ filteredTests().length }} tests</span>
++      </div>
++
++      <div class="test-list" role="list" aria-label="Test catalogue">
++        @if (filteredTests().length === 0) {
++          <div class="empty-tests" role="status">
++            <i class="ti ti-search-off" aria-hidden="true"></i>
++            No tests match "{{ testQuery() }}"
++          </div>
++        }
++        @for (t of filteredTests(); track t.id) {
++          <div class="test-row"
++            role="listitem"
++            [class.test-row--selected]="isSelected(t.id)"
++            (click)="toggle(t)"
++            [attr.aria-pressed]="isSelected(t.id)"
++            [attr.aria-label]="t.name + ', ' + t.category + ', ₹' + t.price + (isSelected(t.id) ? ', selected' : '')">
++            <div class="test-tog"
++              [class.test-tog--on]="isSelected(t.id)"
++              aria-hidden="true">
++              @if (isSelected(t.id)) {
++                <i class="ti ti-check"></i>
++              } @else {
++                <i class="ti ti-plus"></i>
++              }
++            </div>
++            <div class="test-info">
++              <div class="test-name">{{ t.name }}</div>
++              <div class="test-meta">
++                <span class="test-cat">{{ t.category }}</span>
++                <span class="test-dot" aria-hidden="true">·</span>
++                <span>{{ t.tatHours }}h TAT</span>
++              </div>
++            </div>
++            <div class="test-price">₹{{ t.price }}</div>
++          </div>
++        }
++      </div>
++    </div>
++  </div>
++
++  <!-- ── Right: Order panel ────────────────── -->
++  <aside class="order-panel lis-card" aria-label="Test order summary">
++
++    <!-- Selected tests -->
++    <div class="op-section">
++      <div class="op-hd">
++        <span>Selected Tests</span>
++        <span class="lis-badge">{{ flow.selectedTests().length }}</span>
++      </div>
++
++      <div class="selected-list" role="list" aria-label="Selected tests" aria-live="polite">
++        @if (flow.selectedTests().length === 0) {
++          <div class="no-tests-hint">
++            <i class="ti ti-click" aria-hidden="true"></i>
++            Click tests on the left to add them
++          </div>
++        }
++        @for (t of flow.selectedTests(); track t.id) {
++          <div class="sel-item" role="listitem">
++            <div class="sel-item-info">
++              <div class="sel-name">{{ t.name }}</div>
++              <div class="sel-cat">{{ t.category }}</div>
++            </div>
++            <div class="sel-price">₹{{ t.price }}</div>
++            <button type="button" class="sel-del"
++              (click)="toggle(t)"
++              [attr.aria-label]="'Remove ' + t.name">
++              <i class="ti ti-x" aria-hidden="true"></i>
++            </button>
++          </div>
++        }
++      </div>
++    </div>
++
++    <div class="op-divider" aria-hidden="true"></div>
++
++    <!-- Priority -->
++    <div class="op-section">
++      <div class="op-label">Priority</div>
++      <div class="prio-row" role="group" aria-label="Order priority">
++        @for (p of ['routine','urgent','stat']; track p) {
++          <button type="button" class="prio-btn"
++            [class.prio-btn--active]="flow.priority() === p"
++            [class.prio-btn--stat]="p === 'stat' && flow.priority() === 'stat'"
++            (click)="onPriorityClick(p)"
++            [attr.aria-pressed]="flow.priority() === p">
++            {{ p | titlecase }}
++          </button>
++        }
++      </div>
++      @if (flow.priority() === 'stat') {
++        <div class="stat-warn" role="alert">
++          <i class="ti ti-alert-triangle" aria-hidden="true"></i>
++          STAT — process immediately
++        </div>
++      }
++    </div>
++
++    <div class="op-divider" aria-hidden="true"></div>
++
++    <!-- Totals -->
++    <div class="op-section">
++      <div class="tot-row">
++        <span>Tests</span>
++        <span>{{ flow.selectedTests().length }}</span>
++      </div>
++      <div class="tot-row">
++        <span>Est. TAT</span>
++        <span>{{ flow.maxTat() }}h</span>
++      </div>
++      <div class="tot-row tot-grand" aria-label="Total amount">
++        <span>Total</span>
++        <span>₹{{ flow.orderTotal().toLocaleString('en-IN') }}</span>
++      </div>
++    </div>
++
++    <div class="op-divider" aria-hidden="true"></div>
++
++    <!-- Actions -->
++    <div class="op-actions">
++      <button type="button" class="lis-btn lis-btn--primary lis-btn--full proceed-btn"
++        (click)="proceedToBilling()"
++        [disabled]="!hasTests || saving()">
++        @if (saving()) {
++          <i class="ti ti-loader-2 spin" aria-hidden="true"></i> Saving…
++        } @else {
++          <i class="ti ti-file-invoice" aria-hidden="true"></i>
++          Save &amp; Continue to Billing
++        }
++      </button>
++      <button type="button" class="lis-btn lis-btn--secondary lis-btn--full">
++        <i class="ti ti-device-floppy" aria-hidden="true"></i> Save as draft
++      </button>
++    </div>
++
++    @if (!hasTests) {
++      <div class="no-tests-msg" role="status">
++        Add at least one test to continue
++      </div>
++    }
++  </aside>
++</div>
+diff --git a/src/app/features/test-order/test-order.component.ts b/src/app/features/test-order/test-order.component.ts
+new file mode 100644
+index 0000000..9e3bff9
+--- /dev/null
++++ b/src/app/features/test-order/test-order.component.ts
+@@ -0,0 +1,77 @@
++// ─────────────────────────────────────────────
++//  Screen 2 — Test Order
++//  Single purpose: search & order tests for the
++//  registered patient. Full-width layout.
++// ─────────────────────────────────────────────
++import {
++  Component, ChangeDetectionStrategy, signal, computed, inject, OnInit
++} from '@angular/core';
++import { Router, RouterLink } from '@angular/router';
++import { NgClass, TitleCasePipe } from '@angular/common';
++import { FormsModule } from '@angular/forms';
++import { PatientFlowService } from '../../core/services/patient-flow.service';
++import { LabTest } from '../../shared/models/lis.models';
++
++@Component({
++  selector: 'app-test-order',
++  standalone: true,
++  imports: [RouterLink, NgClass, FormsModule, TitleCasePipe],
++  changeDetection: ChangeDetectionStrategy.OnPush,
++  templateUrl: './test-order.component.html',
++  styleUrl: './test-order.component.css',
++})
++export class TestOrderComponent implements OnInit {
++  protected readonly flow   = inject(PatientFlowService);
++  private   readonly router = inject(Router);
++
++  testQuery      = signal('');
++  activeCategory = signal('All');
++  saving         = signal(false);
++
++  filteredTests = computed(() => {
++    const q   = this.testQuery().toLowerCase();
++    const cat = this.activeCategory();
++    return this.flow.allTests.filter(t =>
++      (cat === 'All' || t.category === cat) &&
++      (t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q))
++    );
++  });
++
++  get patient() { return this.flow.patient(); }
++
++  ngOnInit(): void {
++    // If no registered patient, redirect to registration
++    if (!this.flow.patient()) {
++      this.router.navigate(['/dashboard/registration']);
++    }
++  }
++
++  isSelected(id: string): boolean { return this.flow.selectedIds().has(id); }
++  toggle(t: LabTest): void { this.flow.toggleTest(t.id); }
++  setPriority(p: 'routine' | 'urgent' | 'stat'): void { this.flow.setPriority(p); }
++  onPriorityClick(p: string): void { this.flow.setPriority(p as 'routine' | 'urgent' | 'stat'); }
++  clearSearch(): void { this.testQuery.set(''); }
++
++  get hasTests(): boolean { return this.flow.selectedIds().size > 0; }
++
++  proceedToBilling(): void {
++    if (!this.hasTests) return;
++    this.saving.set(true);
++    setTimeout(() => {
++      this.saving.set(false);
++      this.router.navigate(['/dashboard/billing']);
++    }, 400);
++  }
++
++  get patientInitials(): string {
++    const p = this.patient;
++    if (!p) return '?';
++    return (p.firstName[0] + p.lastName[0]).toUpperCase();
++  }
++
++  get patientAge(): string {
++    const p = this.patient;
++    if (!p) return '';
++    return this.flow.calcAge(p.dob) + ' yrs';
++  }
++}
+diff --git a/src/app/layout/components/sidebar/sidebar.component.ts b/src/app/layout/components/sidebar/sidebar.component.ts
+index 3178210..6baa4aa 100644
+--- a/src/app/layout/components/sidebar/sidebar.component.ts
++++ b/src/app/layout/components/sidebar/sidebar.component.ts
+@@ -9,35 +9,36 @@ import { UserSessionService } from '../../../core/services/user-session.service'
+ import { NavBadges } from '../../../shared/models/lis.models';
+ import { Subscription } from 'rxjs';
+ 
+-interface NavSection {
+-  caption: string;
+-}
+-
++interface NavSection { caption: string; }
+ interface NavLink {
+   label:  string;
+   route:  string;
+   icon:   string;
+   badge?: keyof NavBadges;
+ }
+-
+ type NavEntry = NavSection | NavLink;
+-
+ const isSection = (e: NavEntry): e is NavSection => 'caption' in e;
+ 
++// ── Navigation map (reflects the focused workflow) ──────────
+ const NAV: NavEntry[] = [
+   { caption: 'Workspace' },
+-  { label: 'Home',                 route: '/dashboard/home',         icon: 'home' },
+-  { label: 'Patient registration', route: '/dashboard/registration', icon: 'user-plus' },
++  { label: 'Home',                 route: '/dashboard/home',         icon: 'home'          },
++
++  { caption: 'Patient Workflow' },
++  { label: 'Register Patient',     route: '/dashboard/registration', icon: 'user-plus'     },
++  { label: 'Test Order',           route: '/dashboard/test-order',   icon: 'test-pipe'     },
+   { label: 'Billing',              route: '/dashboard/billing',      icon: 'file-invoice', badge: 'billing' },
+-  { caption: 'Lab work' },
+-  { label: 'Sample collection',    route: '/dashboard/collection',   icon: 'test-pipe' },
+-  { label: 'Sample tracking',      route: '/dashboard/tracking',     icon: 'timeline',     badge: 'tracking' },
+-  { label: 'Result entry',         route: '/dashboard/results',      icon: 'writing' },
+-  { label: 'Reports',              route: '/dashboard/reports',      icon: 'file-text',    badge: 'reports' },
++  { label: 'Sample Collection',    route: '/dashboard/collection',   icon: 'droplet'       },
++
++  { caption: 'Lab Work' },
++  { label: 'Sample Tracking',      route: '/dashboard/tracking',     icon: 'timeline',     badge: 'tracking' },
++  { label: 'Result Entry',         route: '/dashboard/results',      icon: 'writing'       },
++  { label: 'Reports',              route: '/dashboard/reports',      icon: 'file-text',    badge: 'reports'  },
++
+   { caption: 'Records' },
+-  { label: 'Patient history',      route: '/dashboard/history',      icon: 'history' },
+-  { label: 'Analytics',            route: '/dashboard/analytics',    icon: 'chart-bar' },
+-  { label: 'Settings',             route: '/dashboard/settings',     icon: 'settings' },
++  { label: 'Patient History',      route: '/dashboard/history',      icon: 'history'       },
++  { label: 'Analytics',            route: '/dashboard/analytics',    icon: 'chart-bar'     },
++  { label: 'Settings',             route: '/dashboard/settings',     icon: 'settings'      },
+ ];
+ 
+ @Component({
+@@ -45,14 +46,14 @@ const NAV: NavEntry[] = [
+   standalone: true,
+   imports: [RouterLink, RouterLinkActive, NgClass, AsyncPipe],
+   changeDetection: ChangeDetectionStrategy.OnPush,
+-    templateUrl: './sidebar.component.html',
+-    styleUrl: './sidebar.component.css',
++  templateUrl: './sidebar.component.html',
++  styleUrl: './sidebar.component.css',
+ })
+ export class SidebarComponent implements OnInit, OnDestroy {
+-  protected readonly sidebar = inject(SidebarService);
+-  protected readonly nav$    = inject(NavigationService);
+-  protected readonly session = inject(UserSessionService);
+-  protected readonly nav     = NAV;
++  protected readonly sidebar   = inject(SidebarService);
++  protected readonly nav$      = inject(NavigationService);
++  protected readonly session   = inject(UserSessionService);
++  protected readonly nav       = NAV;
+   protected readonly isSection = isSection;
+ 
+   badges: NavBadges = { billing: 0, reports: 0, tracking: 0 };
+-- 
+2.43.0
+

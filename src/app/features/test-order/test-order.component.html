@@ -1,0 +1,267 @@
+<!-- ═══════════════════════════════════════════════════════════
+     Screen 2 — Test Order
+     Full-width: search panel left, order panel right.
+     ═══════════════════════════════════════════════════════════ -->
+
+<!-- Page header -->
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Test Order</h1>
+    <nav aria-label="Breadcrumb">
+      <ol class="breadcrumb">
+        <li><a routerLink="/dashboard/home">Home</a></li>
+        <li><a routerLink="/dashboard/registration">Registration</a></li>
+        <li aria-current="page">Test Order</li>
+      </ol>
+    </nav>
+  </div>
+  <div class="workflow-trail" aria-label="Workflow steps">
+    <div class="wf-step wf-step--done"><i class="ti ti-check"></i> Registered</div>
+    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
+    <div class="wf-step wf-step--active"><i class="ti ti-test-pipe"></i> Test Order</div>
+    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
+    <div class="wf-step"><i class="ti ti-file-invoice"></i> Billing</div>
+    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
+    <div class="wf-step"><i class="ti ti-droplet"></i> Sample</div>
+  </div>
+</div>
+
+<!-- Patient banner -->
+@if (patient) {
+  <div class="patient-banner" role="region" aria-label="Patient information">
+    <div class="pat-av" aria-hidden="true">{{ patientInitials }}</div>
+    <div class="pat-main">
+      <div class="pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
+      <div class="pat-meta">
+        <span class="lis-mono pid-tag">{{ patient.id }}</span>
+        <span class="meta-sep" aria-hidden="true">·</span>
+        <span>{{ patientAge }}</span>
+        <span class="meta-sep" aria-hidden="true">·</span>
+        <span>{{ patient.gender }}</span>
+        <span class="meta-sep" aria-hidden="true">·</span>
+        <span>{{ patient.mobile }}</span>
+        <span class="meta-sep" aria-hidden="true">·</span>
+        <span>{{ patient.refDoctor }}</span>
+        <span class="meta-sep" aria-hidden="true">·</span>
+        <span class="visit-tag">{{ patient.visitType }}</span>
+      </div>
+    </div>
+    <a routerLink="/dashboard/registration" class="lis-btn lis-btn--secondary lis-btn--sm" aria-label="Edit patient details">
+      <i class="ti ti-edit" aria-hidden="true"></i> Edit patient
+    </a>
+  </div>
+}
+
+<!-- Main layout: search left, order panel right -->
+<div class="order-layout">
+
+  <!-- ── Left: Test search catalogue ──────────── -->
+  <div class="search-col">
+
+    <!-- Search bar -->
+    <div class="lis-card search-card">
+      <div class="search-bar-wrap">
+        <i class="ti ti-search search-ico" aria-hidden="true"></i>
+        <input
+          type="search"
+          class="search-input"
+          placeholder="Search test by name or code…"
+          [value]="testQuery()"
+          (input)="testQuery.set($any($event.target).value)"
+          aria-label="Search tests"
+          autofocus />
+        @if (testQuery()) {
+          <button type="button" class="search-clear" (click)="clearSearch()" aria-label="Clear search">
+            <i class="ti ti-x" aria-hidden="true"></i>
+          </button>
+        }
+      </div>
+
+      <!-- Category pills -->
+      <div class="cat-pills" role="group" aria-label="Test categories">
+        @for (cat of flow.categories; track cat) {
+          <button type="button" class="cat-pill"
+            [class.cat-pill--active]="activeCategory() === cat"
+            (click)="activeCategory.set(cat)"
+            [attr.aria-pressed]="activeCategory() === cat">{{ cat }}</button>
+        }
+      </div>
+    </div>
+
+    <!-- Popular tests (shown when no query) -->
+    @if (!testQuery()) {
+      <div class="lis-card popular-card">
+        <div class="lis-card__header">
+          <i class="ti ti-star lis-card-icon" aria-hidden="true"></i>
+          <h2 class="lis-card__title">Popular Tests</h2>
+          <span class="lis-badge">Quick pick</span>
+        </div>
+        <div class="popular-grid" role="list" aria-label="Popular tests">
+          @for (t of flow.popularTests; track t.id) {
+            <button type="button" class="popular-pill"
+              [class.popular-pill--sel]="isSelected(t.id)"
+              (click)="toggle(t)"
+              role="listitem"
+              [attr.aria-pressed]="isSelected(t.id)"
+              [attr.aria-label]="t.name + ', ₹' + t.price">
+              <span class="pp-name">{{ t.id }}</span>
+              <span class="pp-price">₹{{ t.price }}</span>
+              @if (isSelected(t.id)) {
+                <i class="ti ti-check pp-check" aria-hidden="true"></i>
+              }
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Test catalogue list -->
+    <div class="lis-card catalogue-card">
+      <div class="lis-card__header">
+        <i class="ti ti-list lis-card-icon" aria-hidden="true"></i>
+        <h2 class="lis-card__title">
+          {{ testQuery() ? 'Search results' : 'All Tests' }}
+        </h2>
+        <span class="lis-badge">{{ filteredTests().length }} tests</span>
+      </div>
+
+      <div class="test-list" role="list" aria-label="Test catalogue">
+        @if (filteredTests().length === 0) {
+          <div class="empty-tests" role="status">
+            <i class="ti ti-search-off" aria-hidden="true"></i>
+            No tests match "{{ testQuery() }}"
+          </div>
+        }
+        @for (t of filteredTests(); track t.id) {
+          <div class="test-row"
+            role="listitem"
+            [class.test-row--selected]="isSelected(t.id)"
+            (click)="toggle(t)"
+            [attr.aria-pressed]="isSelected(t.id)"
+            [attr.aria-label]="t.name + ', ' + t.category + ', ₹' + t.price + (isSelected(t.id) ? ', selected' : '')">
+            <div class="test-tog"
+              [class.test-tog--on]="isSelected(t.id)"
+              aria-hidden="true">
+              @if (isSelected(t.id)) {
+                <i class="ti ti-check"></i>
+              } @else {
+                <i class="ti ti-plus"></i>
+              }
+            </div>
+            <div class="test-info">
+              <div class="test-name">{{ t.name }}</div>
+              <div class="test-meta">
+                <span class="test-cat">{{ t.category }}</span>
+                <span class="test-dot" aria-hidden="true">·</span>
+                <span>{{ t.tatHours }}h TAT</span>
+              </div>
+            </div>
+            <div class="test-price">₹{{ t.price }}</div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Right: Order panel ────────────────── -->
+  <aside class="order-panel lis-card" aria-label="Test order summary">
+
+    <!-- Selected tests -->
+    <div class="op-section">
+      <div class="op-hd">
+        <span>Selected Tests</span>
+        <span class="lis-badge">{{ flow.selectedTests().length }}</span>
+      </div>
+
+      <div class="selected-list" role="list" aria-label="Selected tests" aria-live="polite">
+        @if (flow.selectedTests().length === 0) {
+          <div class="no-tests-hint">
+            <i class="ti ti-click" aria-hidden="true"></i>
+            Click tests on the left to add them
+          </div>
+        }
+        @for (t of flow.selectedTests(); track t.id) {
+          <div class="sel-item" role="listitem">
+            <div class="sel-item-info">
+              <div class="sel-name">{{ t.name }}</div>
+              <div class="sel-cat">{{ t.category }}</div>
+            </div>
+            <div class="sel-price">₹{{ t.price }}</div>
+            <button type="button" class="sel-del"
+              (click)="toggle(t)"
+              [attr.aria-label]="'Remove ' + t.name">
+              <i class="ti ti-x" aria-hidden="true"></i>
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="op-divider" aria-hidden="true"></div>
+
+    <!-- Priority -->
+    <div class="op-section">
+      <div class="op-label">Priority</div>
+      <div class="prio-row" role="group" aria-label="Order priority">
+        @for (p of ['routine','urgent','stat']; track p) {
+          <button type="button" class="prio-btn"
+            [class.prio-btn--active]="flow.priority() === p"
+            [class.prio-btn--stat]="p === 'stat' && flow.priority() === 'stat'"
+            (click)="onPriorityClick(p)"
+            [attr.aria-pressed]="flow.priority() === p">
+            {{ p | titlecase }}
+          </button>
+        }
+      </div>
+      @if (flow.priority() === 'stat') {
+        <div class="stat-warn" role="alert">
+          <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+          STAT — process immediately
+        </div>
+      }
+    </div>
+
+    <div class="op-divider" aria-hidden="true"></div>
+
+    <!-- Totals -->
+    <div class="op-section">
+      <div class="tot-row">
+        <span>Tests</span>
+        <span>{{ flow.selectedTests().length }}</span>
+      </div>
+      <div class="tot-row">
+        <span>Est. TAT</span>
+        <span>{{ flow.maxTat() }}h</span>
+      </div>
+      <div class="tot-row tot-grand" aria-label="Total amount">
+        <span>Total</span>
+        <span>₹{{ flow.orderTotal().toLocaleString('en-IN') }}</span>
+      </div>
+    </div>
+
+    <div class="op-divider" aria-hidden="true"></div>
+
+    <!-- Actions -->
+    <div class="op-actions">
+      <button type="button" class="lis-btn lis-btn--primary lis-btn--full proceed-btn"
+        (click)="proceedToBilling()"
+        [disabled]="!hasTests || saving()">
+        @if (saving()) {
+          <i class="ti ti-loader-2 spin" aria-hidden="true"></i> Saving…
+        } @else {
+          <i class="ti ti-file-invoice" aria-hidden="true"></i>
+          Save &amp; Continue to Billing
+        }
+      </button>
+      <button type="button" class="lis-btn lis-btn--secondary lis-btn--full">
+        <i class="ti ti-device-floppy" aria-hidden="true"></i> Save as draft
+      </button>
+    </div>
+
+    @if (!hasTests) {
+      <div class="no-tests-msg" role="status">
+        Add at least one test to continue
+      </div>
+    }
+  </aside>
+</div>
