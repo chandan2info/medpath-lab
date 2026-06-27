@@ -1,0 +1,364 @@
+<div class="page-header">
+  <div class="page-header__left">
+    <h1 class="page-title">Report preview</h1>
+    <nav aria-label="Breadcrumb"><ol class="breadcrumb">
+      <li><a routerLink="/dashboard/home">Home</a></li>
+      <li><a routerLink="/dashboard/reports">Reports</a></li>
+      <li aria-current="page">Preview report</li>
+    </ol></nav>
+  </div>
+  <a routerLink="/dashboard/results" class="lis-btn lis-btn--secondary lis-btn--sm back-btn">
+    <i class="ti ti-arrow-left" aria-hidden="true"></i> Back to result entry
+  </a>
+</div>
+
+<div class="rp-shell">
+
+  <!-- ── Left: Navigation panel ─────────────────────────── -->
+  <aside class="rp-nav" aria-label="Report navigation">
+    <div class="lis-card rp-nav-card">
+
+      <div class="lis-card__header">
+        <i class="ti ti-layout-list" style="color:var(--lis-primary);font-size:14px" aria-hidden="true"></i>
+        <h2 class="lis-card__title">Report navigation</h2>
+      </div>
+
+      <!-- Selected report chip -->
+      <div class="rp-nav-patient">
+        <div class="rp-nav-sel-label">1 of 1 report selected</div>
+        <div class="rp-nav-chip">
+          <i class="ti ti-circle-check" style="color:var(--lis-primary);font-size:13px" aria-hidden="true"></i>
+          <div class="rp-nav-chip-info">
+            <div class="rp-nav-chip-name">{{ data().patientName }}</div>
+            <div class="rp-nav-chip-sub">{{ data().sampleId }} · {{ data().testCode }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section checklist -->
+      <div class="rp-sections-label">Report sections</div>
+      <ul class="rp-sections" aria-label="Report sections">
+        @for (s of sections; track s.label) {
+          <li class="rp-section-row" [class.rp-section-row--done]="s.done">
+            <i class="ti" [class.ti-circle-check]="s.done" [class.ti-circle]="!s.done" aria-hidden="true"></i>
+            <span>{{ s.label }}</span>
+          </li>
+        }
+      </ul>
+    </div>
+  </aside>
+
+  <!-- ── Centre: Report canvas ────────────────────────────── -->
+  <main class="rp-canvas" aria-label="Report preview canvas">
+
+    <!-- Viewport / zoom toolbar -->
+    <div class="rp-canvas-toolbar" role="toolbar" aria-label="Preview controls">
+      <div class="rp-viewport-toggle" role="group" aria-label="Viewport">
+        <button type="button" class="rp-vp-btn" [class.rp-vp-btn--active]="viewport() === 'desktop'"
+          (click)="viewport.set('desktop')" aria-label="Desktop preview">
+          <i class="ti ti-device-desktop" aria-hidden="true"></i>
+        </button>
+        <button type="button" class="rp-vp-btn" [class.rp-vp-btn--active]="viewport() === 'mobile'"
+          (click)="viewport.set('mobile')" aria-label="Mobile preview">
+          <i class="ti ti-device-mobile" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="rp-zoom-ctrl" role="group" aria-label="Zoom">
+        <button type="button" class="rp-zoom-btn" (click)="zoomOut()" aria-label="Zoom out">
+          <i class="ti ti-minus" aria-hidden="true"></i>
+        </button>
+        <span class="rp-zoom-val" aria-live="polite" aria-atomic="true">{{ zoom() }}%</span>
+        <button type="button" class="rp-zoom-btn" (click)="zoomIn()" aria-label="Zoom in">
+          <i class="ti ti-plus" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Scrollable sheet wrapper -->
+    <div class="rp-sheet-scroll">
+      <div class="rp-sheet-scaler"
+        [style.transform]="'scale(' + zoom() / 100 + ')'"
+        [style.transformOrigin]="'top center'"
+        [class.rp-sheet-scaler--mobile]="viewport() === 'mobile'"
+      >
+        <!-- ══ REPORT SHEET — print-ready layout ════════════ -->
+        <div class="rpt-sheet" id="rpt-sheet-preview"
+          [class.rpt-sheet--landscape]="data().orientation === 'landscape'"
+          aria-label="Printable report"
+        >
+          <!-- Lab header -->
+          <div class="rpt-hdr">
+            <div class="rpt-hdr-logo" aria-hidden="true">
+              <i class="ti ti-flask"></i>
+            </div>
+            <div class="rpt-hdr-lab">
+              <div class="rpt-lab-name">{{ data().labName }}</div>
+              <div class="rpt-lab-tag">Accurate Results. Better Health.</div>
+              <div class="rpt-lab-addr">{{ data().labAddress }} · {{ data().labPhone }}</div>
+            </div>
+            <div class="rpt-hdr-right">
+              <div class="rpt-report-date">Report date: {{ data().reportDate }}</div>
+              @if (data().showAccreditation) {
+                <div class="rpt-nabl-badge">
+                  <i class="ti ti-certificate" aria-hidden="true"></i>
+                  {{ data().labAccreditation }}
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Horizontal rule -->
+          <div class="rpt-divider rpt-divider--top" aria-hidden="true"></div>
+
+          <!-- LABORATORY REPORT centred title -->
+          <div class="rpt-centre-title" aria-hidden="true">LABORATORY REPORT</div>
+          <div class="rpt-divider rpt-divider--bottom" aria-hidden="true"></div>
+
+          <!-- Patient info grid -->
+          <div class="rpt-patient-grid" role="region" aria-label="Patient information">
+            <div class="rpt-pf"><div class="rpt-pf-label">Patient name</div><div class="rpt-pf-val">{{ data().patientName }}</div></div>
+            <div class="rpt-pf"><div class="rpt-pf-label">Age / Sex</div><div class="rpt-pf-val">{{ data().ageGender }}</div></div>
+            <div class="rpt-pf"><div class="rpt-pf-label">Patient ID</div><div class="rpt-pf-val rpt-mono">{{ data().patientId }}</div></div>
+            <div class="rpt-pf"><div class="rpt-pf-label">Sample ID</div><div class="rpt-pf-val rpt-mono">{{ data().sampleId }}</div></div>
+            <div class="rpt-pf"><div class="rpt-pf-label">Sample type</div><div class="rpt-pf-val">{{ data().sampleType }}</div></div>
+            <div class="rpt-pf"><div class="rpt-pf-label">Referred by</div><div class="rpt-pf-val">{{ data().referredBy }}</div></div>
+            <div class="rpt-pf"><div class="rpt-pf-label">Collected on</div><div class="rpt-pf-val">{{ data().collectedAt }}</div></div>
+            <div class="rpt-pf"><div class="rpt-pf-label">Reported on</div><div class="rpt-pf-val">{{ data().reportedAt }}</div></div>
+          </div>
+
+          <!-- Test section header -->
+          <div class="rpt-test-hdr" role="region" aria-label="Test section header">
+            <div class="rpt-test-hdr-left">
+              <i class="ti ti-flask" aria-hidden="true"></i>
+              <span class="rpt-test-hdr-name">{{ data().testName }}</span>
+            </div>
+            <span class="rpt-mono rpt-test-hdr-id">{{ data().sampleId }}</span>
+          </div>
+
+          <!-- Critical note -->
+          @if (data().criticalNote && data().showNotes) {
+            <div class="rpt-critical-note" role="alert">
+              <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+              <div class="rpt-critical-note-text">
+                <strong>Note:</strong> {{ data().criticalNote }}
+              </div>
+            </div>
+          }
+
+          <!-- Results table -->
+          <table class="rpt-tbl" role="table" aria-label="Test results">
+            <thead>
+              <tr>
+                <th scope="col">Parameter</th>
+                <th scope="col">Result</th>
+                <th scope="col">Unit</th>
+                @if (data().showRefRange) { <th scope="col">Reference range</th> }
+                @if (data().showFlags)    { <th scope="col">Flag</th> }
+                @if (data().showNotes)    { <th scope="col" class="rpt-notes-col">Notes</th> }
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of data().params; track p.id) {
+                <tr [class.rpt-row-critical]="p.flag === 'critical'">
+                  <td [class.rpt-cell-bold]="p.flag === 'critical' || p.flag === 'high' || p.flag === 'low'">
+                    {{ p.name }}
+                  </td>
+                  <td>
+                    <span [ngClass]="'rpt-val-' + p.flag">
+                      {{ p.value }}
+                      @if (p.flag === 'critical') { <i class="ti ti-arrow-narrow-up" aria-hidden="true"></i><i class="ti ti-arrow-narrow-up" aria-hidden="true"></i> }
+                      @else if (p.flag === 'high') { <i class="ti ti-arrow-narrow-up" aria-hidden="true"></i> }
+                      @else if (p.flag === 'low')  { <i class="ti ti-arrow-narrow-down" aria-hidden="true"></i> }
+                    </span>
+                  </td>
+                  <td class="rpt-unit">{{ p.unit }}</td>
+                  @if (data().showRefRange) { <td class="rpt-ref">{{ p.refLabel }}</td> }
+                  @if (data().showFlags)    {
+                    <td>
+                      <span [ngClass]="'rpt-flag-badge rpt-flag-badge--' + p.flag">
+                        {{ flagLabel(p.flag) }}
+                      </span>
+                    </td>
+                  }
+                  @if (data().showNotes) { <td class="rpt-notes-col"><button type="button" class="rpt-note-btn" [attr.aria-label]="'Add note for ' + p.name"><i class="ti ti-message-circle" aria-hidden="true"></i></button></td> }
+                </tr>
+              }
+            </tbody>
+          </table>
+
+          <!-- Footer -->
+          <div class="rpt-footer">
+            @if (data().showQrCode) {
+              <div class="rpt-qr-area">
+                <div class="rpt-qr-block" aria-hidden="true"><i class="ti ti-qrcode"></i></div>
+                <div class="rpt-qr-text">
+                  <div>Scan to verify this report</div>
+                  <div class="rpt-mono">{{ data().verifyUrl }}</div>
+                  <div class="rpt-footer-disclaimer">This is a computer generated report. No signature required.</div>
+                </div>
+              </div>
+            }
+            <div class="rpt-signature">
+              <div class="rpt-sig-pre">Authorised by</div>
+              <div class="rpt-sig-name">{{ data().authorisedBy }}</div>
+              <div class="rpt-sig-role">{{ data().authorisedRole }}</div>
+              <div class="rpt-sig-reg">{{ data().authorisedReg }}</div>
+            </div>
+          </div>
+        </div><!-- /rpt-sheet -->
+      </div><!-- /scaler -->
+    </div><!-- /scroll -->
+
+    <!-- Bottom notice -->
+    <div class="rp-canvas-notice" role="status">
+      <i class="ti ti-info-circle" aria-hidden="true"></i>
+      Review the report carefully before finalising. You can make changes in the result entry if needed.
+    </div>
+  </main>
+
+  <!-- ── Right: Settings panel ────────────────────────────── -->
+  <aside class="rp-settings" aria-label="Report settings">
+    <div class="lis-card rp-settings-card">
+
+      <div class="lis-card__header">
+        <i class="ti ti-adjustments-horizontal" style="color:var(--lis-primary);font-size:14px" aria-hidden="true"></i>
+        <h2 class="lis-card__title">Report settings</h2>
+      </div>
+
+      <div class="rp-settings-body">
+
+        <!-- Template -->
+        <div class="rps-group">
+          <div class="rps-group-label">Template</div>
+          <div class="lis-field">
+            <select [value]="data().template" (change)="setTemplate($any($event.target).value)"
+              aria-label="Report template">
+              @for (t of templates; track t) {
+                <option [value]="t" [selected]="data().template === t">{{ t }}</option>
+              }
+            </select>
+          </div>
+          <div class="rps-help-text">Default template for laboratory reports</div>
+        </div>
+
+        <!-- Logo -->
+        <div class="rps-group">
+          <div class="rps-group-label">Logo</div>
+          <div class="rps-logo-row">
+            <div class="rps-logo-preview" aria-label="Lab logo preview">
+              <i class="ti ti-flask" aria-hidden="true"></i>
+              <div class="rps-logo-text">
+                <span class="rps-logo-name">{{ data().labName }}</span>
+                <span class="rps-logo-sub">Diagnostic Laboratory</span>
+              </div>
+            </div>
+            <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" aria-label="Change logo">
+              Change
+            </button>
+          </div>
+        </div>
+
+        <!-- Display options -->
+        <div class="rps-group">
+          <div class="rps-group-label">Display options</div>
+          <div class="rps-toggles">
+            <div class="rps-toggle-row">
+              <span>Show reference range</span>
+              <button type="button" class="rps-toggle" role="switch"
+                [attr.aria-checked]="data().showRefRange"
+                [class.rps-toggle--on]="data().showRefRange"
+                (click)="toggleSetting('showRefRange')"
+                aria-label="Toggle reference range">
+                <span class="rps-toggle-knob"></span>
+              </button>
+            </div>
+            <div class="rps-toggle-row">
+              <span>Show flags</span>
+              <button type="button" class="rps-toggle" role="switch"
+                [attr.aria-checked]="data().showFlags"
+                [class.rps-toggle--on]="data().showFlags"
+                (click)="toggleSetting('showFlags')"
+                aria-label="Toggle flags">
+                <span class="rps-toggle-knob"></span>
+              </button>
+            </div>
+            <div class="rps-toggle-row">
+              <span>Show notes</span>
+              <button type="button" class="rps-toggle" role="switch"
+                [attr.aria-checked]="data().showNotes"
+                [class.rps-toggle--on]="data().showNotes"
+                (click)="toggleSetting('showNotes')"
+                aria-label="Toggle notes">
+                <span class="rps-toggle-knob"></span>
+              </button>
+            </div>
+            <div class="rps-toggle-row">
+              <span>Show QR code</span>
+              <button type="button" class="rps-toggle" role="switch"
+                [attr.aria-checked]="data().showQrCode"
+                [class.rps-toggle--on]="data().showQrCode"
+                (click)="toggleSetting('showQrCode')"
+                aria-label="Toggle QR code">
+                <span class="rps-toggle-knob"></span>
+              </button>
+            </div>
+            <div class="rps-toggle-row">
+              <span>Show accreditation</span>
+              <button type="button" class="rps-toggle" role="switch"
+                [attr.aria-checked]="data().showAccreditation"
+                [class.rps-toggle--on]="data().showAccreditation"
+                (click)="toggleSetting('showAccreditation')"
+                aria-label="Toggle accreditation">
+                <span class="rps-toggle-knob"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Paper size -->
+        <div class="rps-group">
+          <div class="rps-group-label">Paper size</div>
+          <div class="lis-field">
+            <select [value]="data().paperSize" (change)="setPaperSize($any($event.target).value)"
+              aria-label="Paper size">
+              @for (s of paperSizes; track s) {
+                <option [value]="s" [selected]="data().paperSize === s">
+                  {{ s === 'A4' ? 'A4 (210 × 297 mm)' : 'Letter (216 × 279 mm)' }}
+                </option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <!-- Orientation -->
+        <div class="rps-group">
+          <div class="rps-group-label">Orientation</div>
+          <div class="rps-orientation-btns" role="group" aria-label="Page orientation">
+            @for (o of orientations; track o) {
+              <button type="button" class="rps-orient-btn"
+                [class.rps-orient-btn--active]="data().orientation === o"
+                (click)="setOrientation(o)"
+                [attr.aria-pressed]="data().orientation === o">
+                <i class="ti" [class.ti-file]="o === 'portrait'" [class.ti-file-landscape]="o === 'landscape'" aria-hidden="true"></i>
+                <span>{{ o === 'portrait' ? 'Portrait' : 'Landscape' }}</span>
+              </button>
+            }
+          </div>
+        </div>
+
+      </div><!-- /body -->
+
+      <!-- Sticky action buttons -->
+      <div class="rps-actions">
+        <button type="button" class="lis-btn lis-btn--primary lis-btn--full" (click)="finalise()">
+          <i class="ti ti-file-check" aria-hidden="true"></i> Finalise &amp; generate report
+        </button>
+        <button type="button" class="lis-btn lis-btn--secondary lis-btn--full">
+          <i class="ti ti-device-floppy" aria-hidden="true"></i> Save as draft
+        </button>
+      </div>
+
+    </div>
+  </aside>
+
+</div><!-- /rp-shell -->

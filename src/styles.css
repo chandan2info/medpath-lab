@@ -3806,3 +3806,269 @@
   border-color: var(--lis-primary-mid);
   font-weight: 500;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   UI/UX REFACTORING — Grid Layout Normalization,
+   Typography Hierarchy & Component Alignment
+   Added as part of the MedPath LIS UI/UX refactor.
+   All values reference existing CSS variables — zero new
+   colour palette additions.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Spacing scale extensions (LIS-scoped) ─────────────── */
+:root {
+  /* Page-level gutters — replace scattered hard-coded px */
+  --lis-page-pad-x:   24px;
+  --lis-page-pad-y:   20px;
+  --lis-card-gap:     14px;
+  --lis-form-gap:     12px;
+  --lis-inline-gap:    8px;
+
+  /* Input system — unified across all LIS modules */
+  --lis-input-height:  34px;
+  --lis-input-radius:  7px;
+  --lis-btn-radius:    8px;
+
+  /* Typography scale — scoped to LIS shell */
+  --lis-font-page-title:   20px;
+  --lis-font-section-title:13px;
+  --lis-font-label:        11px;
+  --lis-font-body:         13px;
+  --lis-font-caption:      11px;
+  --lis-font-micro:        10px;
+}
+
+/* ── Typography hierarchy — h1 → h4 inside .lis-app-shell ── */
+.lis-app-shell h1,
+.lis-app-shell .page-title {
+  font-size: var(--lis-font-page-title);
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.3;
+  margin: 0;
+}
+
+.lis-app-shell h2,
+.lis-app-shell .lis-card__title {
+  font-size: var(--lis-font-section-title);
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.lis-app-shell h3 {
+  font-size: var(--lis-font-label);
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.lis-app-shell h4 {
+  font-size: var(--lis-font-micro);
+  font-weight: 600;
+  color: var(--lis-primary-deep);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+
+/* ── Grid Layout Normalization ──────────────────────────── */
+.lis-page {
+  padding: var(--lis-page-pad-y) var(--lis-page-pad-x);
+}
+
+.lis-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--lis-card-gap);
+  margin-bottom: var(--lis-card-gap);
+}
+
+/* Two-column content grid (list + detail) */
+.lis-two-col {
+  display: grid;
+  grid-template-columns: 268px 1fr;
+  gap: var(--lis-card-gap);
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .lis-two-col { grid-template-columns: 1fr; }
+}
+
+/* Three-column grid (nav + main + side) */
+.lis-three-col {
+  display: grid;
+  grid-template-columns: 220px 1fr 248px;
+  gap: var(--lis-card-gap);
+  align-items: start;
+}
+@media (max-width: 1100px) {
+  .lis-three-col { grid-template-columns: 220px 1fr; }
+}
+@media (max-width: 780px) {
+  .lis-three-col { grid-template-columns: 1fr; }
+}
+
+/* Form grids */
+.lis-form-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--lis-form-gap);
+}
+.lis-form-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--lis-form-gap);
+}
+.lis-form-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--lis-form-gap);
+}
+@media (max-width: 700px) {
+  .lis-form-grid-2,
+  .lis-form-grid-3,
+  .lis-form-grid-4 { grid-template-columns: 1fr; }
+}
+@media (min-width: 700px) and (max-width: 900px) {
+  .lis-form-grid-3,
+  .lis-form-grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── Component Alignment — unified input system ─────────── */
+.lis-field input,
+.lis-field select {
+  height: var(--lis-input-height);
+  border-radius: var(--lis-input-radius);
+}
+
+.lis-field input:hover,
+.lis-field select:hover {
+  border-color: var(--lis-primary-mid);
+}
+
+.lis-btn {
+  border-radius: var(--lis-btn-radius);
+}
+
+.lis-btn--secondary:hover {
+  border-color: var(--lis-primary-mid);
+}
+
+.lis-seg__opt {
+  height: var(--lis-input-height);
+  border-radius: var(--lis-input-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Status pill system — canonical set ─────────────────── */
+.lis-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.lis-pill--pending  { background: var(--pill-pending-bg);  color: var(--pill-pending-color); }
+.lis-pill--process  { background: var(--pill-process-bg);  color: var(--pill-process-color); }
+.lis-pill--ready    { background: var(--pill-ready-bg);    color: var(--pill-ready-color);   }
+.lis-pill--critical { background: var(--pill-critical-bg); color: var(--pill-critical-color);}
+.lis-pill--stat     { background: var(--pill-stat-bg);     color: var(--pill-stat-color); font-weight: 600; }
+.lis-pill--dispatch { background: var(--lis-primary-xlight); color: var(--lis-primary-deep); }
+
+/* ── Breadcrumb — shared across all screens ─────────────── */
+.lis-breadcrumb {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  gap: 6px;
+  font-size: var(--lis-font-caption);
+  color: var(--text-secondary);
+}
+.lis-breadcrumb a {
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+.lis-breadcrumb a:hover {
+  color: var(--lis-primary);
+}
+.lis-breadcrumb li+li::before {
+  content: '/';
+  margin-right: 6px;
+  opacity: 0.5;
+}
+
+/* ── Avatar / initials circle — shared ──────────────────── */
+.lis-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--lis-primary-xlight);
+  color: var(--lis-primary-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+.lis-avatar--lg {
+  width: 40px;
+  height: 40px;
+  font-size: 13px;
+}
+.lis-avatar--stat {
+  background: var(--pill-stat-bg);
+  color: var(--pill-stat-color);
+}
+
+/* ── Workflow progress trail ─────────────────────────────── */
+.lis-workflow-trail {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.lis-wf-step {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.lis-wf-step--done {
+  color: var(--lis-primary-deep);
+}
+.lis-wf-step--done i { color: var(--lis-primary); }
+.lis-wf-step--active {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+.lis-wf-arrow {
+  font-size: 11px;
+  color: var(--border-color);
+}
+
+/* ── Dark-mode report sheet guard ───────────────────────── */
+/* Forces the A4 preview to always look like printed paper  */
+[data-theme="dark"] .rpt-sheet {
+  background: #ffffff !important;
+  color: #111827 !important;
+}
+[data-theme="dark"] .rpt-sheet * {
+  --card-bg:      #ffffff;
+  --text-primary: #111827;
+}

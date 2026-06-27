@@ -159,9 +159,9 @@
           }
 
           <div class="side-actions">
-            <a routerLink="/dashboard/reports" class="lis-btn lis-btn--primary lis-btn--full">
-              <i class="ti ti-file-text" aria-hidden="true"></i> Finalise & generate report
-            </a>
+            <button type="button" class="lis-btn lis-btn--primary lis-btn--full" (click)="navigateToPreview()">
+              <i class="ti ti-file-text" aria-hidden="true"></i> Finalise &amp; generate report
+            </button>
             <button type="button" class="lis-btn lis-btn--secondary lis-btn--full">
               <i class="ti ti-device-floppy" aria-hidden="true"></i> Save draft
             </button>

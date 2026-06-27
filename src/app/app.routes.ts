@@ -79,6 +79,13 @@ export const routes: Routes = [
           import('./features/reports/reports.component').then(m => m.ReportsComponent),
         title: 'Reports — MedPath LIS',
       },
+      {
+        path: 'report-preview',
+        loadComponent: () =>
+          import('./features/report-preview/report-preview.component')
+            .then(m => m.ReportPreviewComponent),
+        title: 'Report Preview — MedPath LIS',
+      },
       // ── Records ───────────────────────────────────────────
       {
         path: 'history',

@@ -1,7 +1,8 @@
-import { Component, signal, computed, ChangeDetectionStrategy } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, signal, computed, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { NgClass, NgStyle } from '@angular/common';
 import { ResultParameter, ResultFlag } from '../../shared/models/lis.models';
+import { ReportPreviewService } from '../../core/services/report-preview.service';
 
 interface ParamRow extends ResultParameter {
   editing: boolean;
@@ -25,6 +26,9 @@ const KFT_PARAMS: ParamRow[] = [
     styleUrl: './result-entry.component.css',
 })
 export class ResultEntryComponent {
+  private readonly router     = inject(Router);
+  private readonly previewSvc = inject(ReportPreviewService);
+
   protected readonly tabs = ['KFT (Kidney function)', 'Urine R/M', 'Haematology'];
   activeTab = signal('KFT (Kidney function)');
   params = signal<ParamRow[]>([...KFT_PARAMS]);
@@ -62,5 +66,11 @@ export class ResultEntryComponent {
 
   flagLabel(f: ResultFlag): string {
     return { normal:'Normal', high:'High', low:'Low', critical:'Critical' }[f] ?? f;
+  }
+
+  navigateToPreview(): void {
+    // Stage the current result set so the preview reflects live edits
+    this.previewSvc.stage({ params: this.params() });
+    this.router.navigate(['/dashboard/report-preview']);
   }
 }
