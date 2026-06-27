@@ -1,62 +1,52 @@
+// ─────────────────────────────────────────────
+//  Screen 1 — Patient Registration
+//  Single purpose: capture patient demographics
+//  & clinical info, then navigate to Test Order.
+// ─────────────────────────────────────────────
 import {
-  Component, ChangeDetectionStrategy, signal, computed
+  Component, ChangeDetectionStrategy, signal, inject, OnInit
 } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { NgClass } from '@angular/common';
-import { LabTest } from '../../shared/models/lis.models';
-
-const LAB_TESTS: LabTest[] = [
-  { id:'CBC',  name:'CBC — Complete blood count',  category:'Haematology',   price:200, tatHours:4 },
-  { id:'ESR',  name:'ESR',                          category:'Haematology',   price:80,  tatHours:2 },
-  { id:'GLU',  name:'Blood glucose (fasting)',       category:'Biochemistry',  price:120, tatHours:2 },
-  { id:'HBA',  name:'HbA1c',                        category:'Biochemistry',  price:400, tatHours:4 },
-  { id:'LFT',  name:'Liver function test',           category:'Biochemistry',  price:550, tatHours:6 },
-  { id:'KFT',  name:'Kidney function test',          category:'Biochemistry',  price:500, tatHours:6 },
-  { id:'LIP',  name:'Lipid profile',                 category:'Biochemistry',  price:450, tatHours:6 },
-  { id:'TSH',  name:'TSH',                           category:'Endocrinology', price:350, tatHours:6 },
-  { id:'FT3',  name:'Free T3 / T4 / TSH panel',     category:'Endocrinology', price:700, tatHours:8 },
-  { id:'URI',  name:'Urine routine & microscopy',    category:'Urine',         price:100, tatHours:2 },
-];
-
-const DOCTORS = [
-  'Dr. Pradeep Iyer (Cardiology)',
-  'Dr. Suresh Menon (Internal Medicine)',
-  'Dr. Anita Rao (Endocrinology)',
-  'Self / Walk-in',
-];
+import { PatientFlowService, RegisteredPatient } from '../../core/services/patient-flow.service';
 
 @Component({
   selector: 'app-patient-registration',
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink, NgClass],
   changeDetection: ChangeDetectionStrategy.OnPush,
-    templateUrl: './patient-registration.component.html',
-    styleUrl: './patient-registration.component.css',
+  templateUrl: './patient-registration.component.html',
+  styleUrl: './patient-registration.component.css',
 })
-export class PatientRegistrationComponent {
+export class PatientRegistrationComponent implements OnInit {
+  private readonly fb     = inject(FormBuilder);
+  private readonly router = inject(Router);
+  protected readonly flow = inject(PatientFlowService);
+
+  // Two-step stepper (demographics → clinical)
   protected readonly steps = [
-    { n:1, label:'Demographics' },
-    { n:2, label:'Clinical info' },
-    { n:3, label:'Test order' },
-    { n:4, label:'Confirm' },
+    { n: 1, label: 'Demographics' },
+    { n: 2, label: 'Clinical info' },
   ];
-  protected readonly bloodGroups = ['A+','A−','B+','B−','O+','O−','AB+','AB−','Unknown'];
-  protected readonly doctors = DOCTORS;
-  protected readonly allTests = LAB_TESTS;
-  protected readonly categories = ['All', 'Haematology', 'Biochemistry', 'Endocrinology', 'Urine'];
+  protected readonly bloodGroups = [
+    'A+', 'A−', 'B+', 'B−', 'O+', 'O−', 'AB+', 'AB−', 'Unknown'
+  ];
 
-  currentStep  = signal(2);
-  testQuery    = signal('');
-  activeCategory = signal('All');
-  priority     = signal('Routine');
-  private _selected = signal<Set<string>>(new Set(['TSH','CBC']));
+  currentStep   = signal(1);
+  ageDisplay    = signal('');
+  saving        = signal(false);
+  showSuccess   = signal(false);
+  savedPatient  = signal<RegisteredPatient | null>(null);
+  countdown     = signal(3);
 
-  form: FormGroup;
-  ageDisplay = signal('');
+  form!: FormGroup;
 
-  constructor(private fb: FormBuilder) {
+  private _timer?: ReturnType<typeof setInterval>;
+
+  ngOnInit(): void {
     this.form = this.fb.group({
+      // Step 1 — Demographics
       firstName:    ['', Validators.required],
       lastName:     ['', Validators.required],
       dob:          ['', Validators.required],
@@ -65,6 +55,7 @@ export class PatientRegistrationComponent {
       mobile:       ['', [Validators.required, Validators.pattern(/^[6-9]\d{9}$/)]],
       email:        [''],
       address:      [''],
+      // Step 2 — Clinical
       refDoctor:    ['', Validators.required],
       visitType:    ['Walk-in'],
       fasting:      ['Fasting'],
@@ -72,61 +63,84 @@ export class PatientRegistrationComponent {
       clinicalNotes:[''],
       medications:  [''],
     });
-    this.calcAge();
   }
 
   calcAge(): void {
     const dob = this.form.value.dob;
     if (!dob) { this.ageDisplay.set(''); return; }
-    const age = new Date().getFullYear() - new Date(dob).getFullYear();
-    this.ageDisplay.set(age + ' years');
+    const years = this.flow.calcAge(dob);
+    this.ageDisplay.set(years > 0 ? `${years} years` : '');
   }
 
   isInvalid(field: string): boolean {
     const c = this.form.get(field);
-    return !!(c && c.invalid && (c.dirty || c.touched));
+    return !!(c?.invalid && (c.dirty || c.touched));
   }
 
+  // Validate step 1 fields before advancing
   nextStep(): void {
-    // Mark current step fields touched so errors show
-    this.form.markAllAsTouched();
-    const stepFields: Record<number, string[]> = {
-      1: ['firstName','lastName','dob','gender','mobile'],
-      2: ['refDoctor','visitType','fasting','collection'],
-    };
-    const fields = stepFields[this.currentStep()] ?? [];
-    const valid = fields.every(f => this.form.get(f)?.valid ?? true);
-    if (valid && this.currentStep() < 4) this.currentStep.update(s => s + 1);
+    const step1 = ['firstName', 'lastName', 'dob', 'gender', 'mobile'];
+    step1.forEach(f => this.form.get(f)?.markAsTouched());
+    const valid = step1.every(f => this.form.get(f)?.valid ?? true);
+    if (valid) this.currentStep.set(2);
   }
 
-  filteredTests = computed(() => {
-    const q   = this.testQuery().toLowerCase();
-    const cat = this.activeCategory();
-    return this.allTests.filter(t =>
-      (cat === 'All' || t.category === cat) &&
-      (t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q))
-    );
-  });
-
-  selectedTests = computed(() =>
-    this.allTests.filter(t => this._selected().has(t.id))
-  );
-
-  total = computed(() => this.selectedTests().reduce((a, t) => a + t.price, 0));
-
-  maxTat = computed(() =>
-    this.selectedTests().reduce((m, t) => Math.max(m, t.tatHours), 0)
-  );
-
-  isSelected(id: string): boolean { return this._selected().has(id); }
-
-  toggleTest(t: LabTest): void {
-    this._selected.update(s => {
-      const next = new Set(s);
-      next.has(t.id) ? next.delete(t.id) : next.add(t.id);
-      return next;
-    });
+  goBack(): void {
+    if (this.currentStep() === 2) { this.currentStep.set(1); }
+    else { this.router.navigate(['/dashboard/home']); }
   }
 
-  onSubmit(): void { /* Wire to real API */ }
+  saveAndContinue(): void {
+    // Validate step 2 fields
+    const step2 = ['refDoctor'];
+    step2.forEach(f => this.form.get(f)?.markAsTouched());
+    if (!this.form.get('refDoctor')?.valid) return;
+
+    this.saving.set(true);
+
+    // Simulate brief save delay (replace with real API call)
+    setTimeout(() => {
+      const v = this.form.value;
+      const pat = this.flow.registerPatient({
+        firstName:    v.firstName,
+        lastName:     v.lastName,
+        dob:          v.dob,
+        ageYears:     this.flow.calcAge(v.dob),
+        gender:       v.gender,
+        bloodGroup:   v.bloodGroup,
+        mobile:       v.mobile,
+        email:        v.email,
+        address:      v.address,
+        refDoctor:    v.refDoctor,
+        visitType:    v.visitType,
+        fasting:      v.fasting,
+        collection:   v.collection,
+        clinicalNotes:v.clinicalNotes,
+        medications:  v.medications,
+      });
+
+      this.saving.set(false);
+      this.savedPatient.set(pat);
+      this.showSuccess.set(true);
+
+      // Countdown → auto-navigate to test order
+      this._timer = setInterval(() => {
+        this.countdown.update(c => {
+          if (c <= 1) {
+            clearInterval(this._timer);
+            this.router.navigate(['/dashboard/test-order']);
+            return 0;
+          }
+          return c - 1;
+        });
+      }, 1000);
+    }, 600);
+  }
+
+  goToTestOrder(): void {
+    clearInterval(this._timer);
+    this.router.navigate(['/dashboard/test-order']);
+  }
+
+  ngOnDestroy(): void { clearInterval(this._timer); }
 }

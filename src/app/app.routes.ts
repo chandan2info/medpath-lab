@@ -30,11 +30,20 @@ export const routes: Routes = [
           import('./features/lis-home/lis-home.component').then(m => m.LisHomeComponent),
         title: 'Home — MedPath LIS',
       },
+      // ── Workflow screens ──────────────────────────────────
       {
         path: 'registration',
         loadComponent: () =>
-          import('./features/patient-registration/patient-registration.component').then(m => m.PatientRegistrationComponent),
+          import('./features/patient-registration/patient-registration.component')
+            .then(m => m.PatientRegistrationComponent),
         title: 'Patient Registration — MedPath LIS',
+      },
+      {
+        path: 'test-order',
+        loadComponent: () =>
+          import('./features/test-order/test-order.component')
+            .then(m => m.TestOrderComponent),
+        title: 'Test Order — MedPath LIS',
       },
       {
         path: 'billing',
@@ -45,19 +54,23 @@ export const routes: Routes = [
       {
         path: 'collection',
         loadComponent: () =>
-          import('./features/sample-tracking/sample-tracking.component').then(m => m.SampleTrackingComponent),
+          import('./features/sample-tracking/sample-tracking.component')
+            .then(m => m.SampleTrackingComponent),
         title: 'Sample Collection — MedPath LIS',
       },
+      // ── Lab operations ────────────────────────────────────
       {
         path: 'tracking',
         loadComponent: () =>
-          import('./features/sample-tracking/sample-tracking.component').then(m => m.SampleTrackingComponent),
+          import('./features/sample-tracking/sample-tracking.component')
+            .then(m => m.SampleTrackingComponent),
         title: 'Sample Tracking — MedPath LIS',
       },
       {
         path: 'results',
         loadComponent: () =>
-          import('./features/result-entry/result-entry.component').then(m => m.ResultEntryComponent),
+          import('./features/result-entry/result-entry.component')
+            .then(m => m.ResultEntryComponent),
         title: 'Result Entry — MedPath LIS',
       },
       {
@@ -66,16 +79,19 @@ export const routes: Routes = [
           import('./features/reports/reports.component').then(m => m.ReportsComponent),
         title: 'Reports — MedPath LIS',
       },
+      // ── Records ───────────────────────────────────────────
       {
         path: 'history',
         loadComponent: () =>
-          import('./features/patient-history/patient-history.component').then(m => m.PatientHistoryComponent),
+          import('./features/patient-history/patient-history.component')
+            .then(m => m.PatientHistoryComponent),
         title: 'Patient History — MedPath LIS',
       },
       {
         path: 'analytics',
         loadComponent: () =>
-          import('./features/analytics/analytics.component').then(m => m.AnalyticsComponent),
+          import('./features/analytics/analytics.component')
+            .then(m => m.AnalyticsComponent),
         title: 'Analytics — MedPath LIS',
       },
       {
