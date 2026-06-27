@@ -1,0 +1,753 @@
+diff -rU3 '--exclude=*.js' '--exclude=*.map' '--exclude=node_modules' medpath-lab-backup/src/app/features/billing/billing.component.css medpath-lab/src/app/features/billing/billing.component.css
+--- medpath-lab-backup/src/app/features/billing/billing.component.css	2026-06-27 16:46:13.007283208 +0000
++++ medpath-lab/src/app/features/billing/billing.component.css	2026-06-27 16:50:10.806031077 +0000
+@@ -1,8 +1,8 @@
+ :host { display: block; }
+ 
+ /* ── Page header ─────────────────────────── */
+-.page-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 14px; }
+-.page-title  { font-size: 20px; font-weight: 500; color: var(--text-primary); margin: 0 0 3px; }
++.page-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
++.page-title  { font-size: 22px; font-weight: 500; color: var(--text-primary); margin: 0 0 4px; }
+ .breadcrumb  { display: flex; list-style: none; padding: 0; margin: 0; gap: 6px; font-size: 12px; color: var(--text-secondary); }
+ .breadcrumb li+li::before { content: '/'; margin-right: 6px; }
+ .breadcrumb a { color: var(--text-secondary); text-decoration: none; &:hover { color: var(--lis-primary, #1D9E75); } }
+@@ -12,14 +12,14 @@
+ .workflow-trail { display: flex; align-items: center; gap: 6px; background: var(--body-bg); border: 0.5px solid var(--border-color); border-radius: 9px; padding: 6px 12px; }
+ .wf-step { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-secondary); i { font-size: 13px; } }
+ .wf-step--active { color: var(--lis-primary-deep, #085041); font-weight: 500; i { color: var(--lis-primary, #1D9E75); } }
+-.wf-step--done   { color: var(--lis-primary, #1D9E75); font-weight: 500; }
++.wf-step--done   { color: var(--lis-primary, #1D9E75); font-weight: 500; i { color: var(--lis-primary, #1D9E75); } }
+ .wf-arrow { font-size: 11px; color: var(--border-color); }
+ 
+ /* ── Invoice banner ──────────────────────── */
+ .inv-banner {
+   display: flex; align-items: center; gap: 8px;
+   background: var(--body-bg); border: 0.5px solid var(--border-color);
+-  border-radius: 8px; padding: 7px 12px; margin-bottom: 14px;
++  border-radius: 8px; padding: 7px 12px; margin-bottom: 18px;
+   font-size: 12px; color: var(--text-secondary);
+   i { color: var(--lis-primary, #1D9E75); }
+ }
+@@ -27,9 +27,9 @@
+ .inv-date { margin-left: auto; font-size: 11px; }
+ 
+ /* ── Layout ──────────────────────────────── */
+-.bill-layout { display: grid; grid-template-columns: 1fr 280px; gap: 14px; align-items: start; }
++.bill-layout { display: grid; grid-template-columns: 1fr 300px; gap: 16px; align-items: start; }
+ @media (max-width: 900px) { .bill-layout { grid-template-columns: 1fr; } }
+-.bill-main { display: flex; flex-direction: column; gap: 12px; }
++.bill-main { display: flex; flex-direction: column; gap: 14px; }
+ 
+ /* ── Patient card ────────────────────────── */
+ .pat-card {}
+@@ -53,7 +53,7 @@
+ .bt-price   { font-size: 12px; font-weight: 500; color: var(--lis-primary-deep, #085041); }
+ 
+ /* ── Discounts grid ──────────────────────── */
+-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 12px 14px 14px; }
++.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 14px 16px 16px; }
+ @media (max-width: 540px) { .form-grid { grid-template-columns: 1fr; } }
+ 
+ /* ── Payment modes ───────────────────────── */
+diff -rU3 '--exclude=*.js' '--exclude=*.map' '--exclude=node_modules' medpath-lab-backup/src/app/features/dashboard/dashboard.component.css medpath-lab/src/app/features/dashboard/dashboard.component.css
+--- medpath-lab-backup/src/app/features/dashboard/dashboard.component.css	2026-06-27 16:46:13.008881175 +0000
++++ medpath-lab/src/app/features/dashboard/dashboard.component.css	2026-06-27 16:48:16.558892894 +0000
+@@ -65,7 +65,7 @@
+ 
+     /* Section */
+     .dashboard-section { margin-bottom: 24px; }
+-    .section-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
++    .section-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+     .section-title { font-size: 16px; font-weight: 700; color: var(--text-base); margin: 0; }
+ 
+     /* Stat cards */
+diff -rU3 '--exclude=*.js' '--exclude=*.map' '--exclude=node_modules' medpath-lab-backup/src/app/features/lis-home/lis-home.component.css medpath-lab/src/app/features/lis-home/lis-home.component.css
+--- medpath-lab-backup/src/app/features/lis-home/lis-home.component.css	2026-06-27 16:46:13.012054185 +0000
++++ medpath-lab/src/app/features/lis-home/lis-home.component.css	2026-06-27 16:48:16.588205674 +0000
+@@ -1,6 +1,6 @@
+ :host { display: block; }
+ 
+-    .page-header { margin-bottom: 14px; }
++    .page-header { margin-bottom: 18px; }
+     .page-title  { font-size: 20px; font-weight: 500; color: var(--text-primary); margin: 0 0 2px; }
+     .page-sub    { font-size: 12px; color: var(--text-secondary); margin: 0; }
+ 
+@@ -31,7 +31,7 @@
+     .kpi-grid {
+       display: grid;
+       grid-template-columns: repeat(4, 1fr);
+-      gap: 10px; margin-bottom: 14px;
++      gap: 10px; margin-bottom: 18px;
+     }
+     @media (max-width: 900px) { .kpi-grid { grid-template-columns: repeat(2,1fr); } }
+     @media (max-width: 540px) { .kpi-grid { grid-template-columns: 1fr; } }
+diff -rU3 '--exclude=*.js' '--exclude=*.map' '--exclude=node_modules' medpath-lab-backup/src/app/features/patient-history/patient-history.component.css medpath-lab/src/app/features/patient-history/patient-history.component.css
+--- medpath-lab-backup/src/app/features/patient-history/patient-history.component.css	2026-06-27 16:46:13.012411048 +0000
++++ medpath-lab/src/app/features/patient-history/patient-history.component.css	2026-06-27 16:48:16.602815724 +0000
+@@ -1,6 +1,6 @@
+ :host { display:block; }
+-    .page-header { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:12px; }
+-    .page-title  { font-size:20px; font-weight:500; color:var(--text-primary); margin:0 0 3px; }
++    .page-header { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:18px; }
++    .page-title  { font-size:22px; font-weight:500; color:var(--text-primary); margin:0 0 4px; }
+     .breadcrumb  { display:flex; list-style:none; padding:0; margin:0; gap:6px; font-size:12px; color:var(--text-secondary); }
+     .breadcrumb a { color:var(--text-secondary); text-decoration:none; }
+     .breadcrumb li+li::before { content:'/'; margin-right:6px; }
+@@ -8,12 +8,12 @@
+     .ph-search {
+       display:flex; align-items:center; gap:8px; flex:1;
+       background:var(--card-bg); border:0.5px solid var(--border-color); border-radius:8px;
+-      padding:8px 13px; margin-bottom:12px; max-width:420px;
++      padding:8px 13px; margin-bottom:18px; max-width:420px;
+       i { color:var(--text-secondary); font-size:14px; }
+       input { background:transparent; border:none; outline:none; font-size:12px; color:var(--text-primary); flex:1; }
+     }
+ 
+-    .ph-layout { display:grid; grid-template-columns:280px 1fr; gap:12px; align-items:start; }
++    .ph-layout { display:grid; grid-template-columns:300px 1fr; gap:16px; align-items:start; }
+     @media (max-width:900px) { .ph-layout { grid-template-columns:1fr; } }
+ 
+     /* Patient list */
+@@ -59,7 +59,7 @@
+     .dot-warn   { background:#EF9F27; }
+     .dot-ok     { background:var(--lis-primary,#1D9E75); }
+     .visit-track{ flex:1; width:2px; background:var(--border-color); margin:4px auto 0; min-height:20px; }
+-    .visit-card { flex:1; background:var(--card-bg); border:0.5px solid var(--border-color); border-radius:10px; overflow:hidden; margin-bottom:12px; }
++    .visit-card { flex:1; background:var(--card-bg); border:0.5px solid var(--border-color); border-radius:10px; overflow:hidden; margin-bottom:18px; }
+     .vc-header  { padding:9px 12px; border-bottom:0.5px solid var(--border-color); display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+     .vc-date    { font-size:12px; font-weight:500; color:var(--text-primary); }
+     .crit-badge { font-size:10px; background:#FCEBEB; color:#791F1F; padding:2px 7px; border-radius:10px; font-weight:500; display:inline-flex; align-items:center; gap:3px; }
+diff -rU3 '--exclude=*.js' '--exclude=*.map' '--exclude=node_modules' medpath-lab-backup/src/app/features/patient-registration/patient-registration.component.css medpath-lab/src/app/features/patient-registration/patient-registration.component.css
+--- medpath-lab-backup/src/app/features/patient-registration/patient-registration.component.css	2026-06-27 16:46:13.013103468 +0000
++++ medpath-lab/src/app/features/patient-registration/patient-registration.component.css	2026-06-27 16:49:39.992699429 +0000
+@@ -4,9 +4,9 @@
+ .page-header {
+   display: flex; align-items: flex-start;
+   justify-content: space-between; flex-wrap: wrap;
+-  gap: 12px; margin-bottom: 14px;
++  gap: 12px; margin-bottom: 18px;
+ }
+-.page-title  { font-size: 20px; font-weight: 500; color: var(--text-primary); margin: 0 0 3px; }
++.page-title  { font-size: 22px; font-weight: 500; color: var(--text-primary); margin: 0 0 4px; }
+ .breadcrumb  {
+   display: flex; list-style: none; padding: 0; margin: 0;
+   gap: 6px; font-size: 12px; color: var(--text-secondary);
+@@ -52,17 +52,19 @@
+ }
+ .step-arrow { color: var(--border-color); font-size: 13px; margin: 0 8px; }
+ 
+-/* ── Form wrapper — single column, max-width centered ── */
+-.reg-form-wrap { max-width: 720px; display: flex; flex-direction: column; gap: 12px; }
++/* ── Form wrapper — full width ── */
++.reg-form-wrap { display: flex; flex-direction: column; gap: 16px; }
+ .reg-card { margin-bottom: 0; }
+ 
+-/* ── Form grid ──────────────────────────────────────── */
++/* ── Form grid — 3-column matching design ── */
+ .form-grid {
+-  display: grid; grid-template-columns: 1fr 1fr;
+-  gap: 12px; padding: 14px 16px;
++  display: grid; grid-template-columns: 1fr 1fr 1fr;
++  gap: 16px; padding: 20px 20px;
+ }
+ .form-full { grid-column: 1 / -1; }
+-@media (max-width: 540px) { .form-grid { grid-template-columns: 1fr; } }
++.form-2col { grid-column: span 2; }
++@media (max-width: 800px) { .form-grid { grid-template-columns: 1fr 1fr; } }
++@media (max-width: 540px) { .form-grid { grid-template-columns: 1fr; .form-2col { grid-column: 1; } } }
+ .input-error { border-color: #E24B4A !important; }
+ .err-msg  { font-size: 10px; color: #E24B4A; margin-top: 3px; display: block; }
+ .req      { color: #E24B4A; }
+@@ -88,9 +90,10 @@
+ 
+ /* ── Form actions bar ───────────────────────────────── */
+ .form-actions {
+-  display: flex; justify-content: flex-end; gap: 8px; padding-top: 4px;
++  display: flex; justify-content: space-between; gap: 8px;
++  padding: 16px 20px; border-top: 0.5px solid var(--border-color); background: var(--body-bg);
+ }
+-.save-btn { min-width: 170px; justify-content: center; }
++.save-btn { min-width: 180px; justify-content: center; }
+ .save-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+ 
+ /* ── Spinner ─────────────────────────────────────────── */
+@@ -128,7 +131,7 @@
+ .success-pid-block {
+   background: var(--lis-primary-xlight, #E1F5EE);
+   border: 1px solid var(--lis-primary-mid, #5DCAA5);
+-  border-radius: 10px; padding: 12px 20px; margin-bottom: 14px;
++  border-radius: 10px; padding: 12px 20px; margin-bottom: 18px;
+ }
+ .success-pid-label {
+   font-size: 10px; text-transform: uppercase; letter-spacing: .07em;
+@@ -150,3 +153,27 @@
+ }
+ .success-cta { width: 100%; justify-content: center; font-size: 13px; padding: 11px; margin-bottom: 8px; }
+ .success-hint { font-size: 11px; color: var(--text-secondary); }
++
++/* ── UHID display field ────────────────────────────────── */
++.uhid-input-wrap {
++  position: relative; display: flex; align-items: center;
++}
++.uhid-input-wrap input { width: 100%; padding-right: 32px; }
++.uhid-lock {
++  position: absolute; right: 10px;
++  color: var(--text-secondary); font-size: 14px; pointer-events: none;
++}
++.input-readonly {
++  background: var(--body-bg) !important;
++  color: var(--text-secondary) !important;
++  cursor: default !important;
++}
++
++/* ── Security note ─────────────────────────────────────── */
++.secure-note {
++  display: flex; align-items: center; gap: 6px; justify-content: center;
++  font-size: 11px; color: var(--text-secondary);
++  padding: 10px 0 4px;
++  i { color: var(--lis-primary); }
++  strong { color: var(--text-primary); }
++}
+diff -rU3 '--exclude=*.js' '--exclude=*.map' '--exclude=node_modules' medpath-lab-backup/src/app/features/patient-registration/patient-registration.component.html medpath-lab/src/app/features/patient-registration/patient-registration.component.html
+--- medpath-lab-backup/src/app/features/patient-registration/patient-registration.component.html	2026-06-27 16:46:13.013269996 +0000
++++ medpath-lab/src/app/features/patient-registration/patient-registration.component.html	2026-06-27 16:49:50.145931349 +0000
+@@ -52,7 +52,9 @@
+   </div>
+   <!-- Workflow progress indicator -->
+   <div class="workflow-trail" aria-label="Workflow steps">
+-    <div class="wf-step wf-step--active"><i class="ti ti-user-plus"></i> Register</div>
++    <div class="wf-step wf-step--active">
++      <i class="ti ti-circle-check-filled" aria-hidden="true"></i> Register
++    </div>
+     <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
+     <div class="wf-step"><i class="ti ti-test-pipe"></i> Test Order</div>
+     <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
+@@ -99,9 +101,9 @@
+         </div>
+ 
+         <div class="form-grid">
+-          <!-- First name -->
++          <!-- Row 1: First name | Last name | UHID (auto) -->
+           <div class="lis-field">
+-            <label for="firstName">First name <span class="req" aria-hidden="true">*</span></label>
++            <label for="firstName">First Name <span class="req" aria-hidden="true">*</span></label>
+             <input id="firstName" formControlName="firstName"
+               [class.input-error]="isInvalid('firstName')"
+               autocomplete="given-name" placeholder="e.g. Ananya" />
+@@ -110,9 +112,8 @@
+             }
+           </div>
+ 
+-          <!-- Last name -->
+           <div class="lis-field">
+-            <label for="lastName">Last name <span class="req" aria-hidden="true">*</span></label>
++            <label for="lastName">Last Name <span class="req" aria-hidden="true">*</span></label>
+             <input id="lastName" formControlName="lastName"
+               [class.input-error]="isInvalid('lastName')"
+               autocomplete="family-name" placeholder="e.g. Krishnaswamy" />
+@@ -121,9 +122,17 @@
+             }
+           </div>
+ 
+-          <!-- Date of birth -->
+           <div class="lis-field">
+-            <label for="dob">Date of birth <span class="req" aria-hidden="true">*</span></label>
++            <label for="uhidDisplay">UHID / Patient ID <span class="opt-label">(Auto)</span></label>
++            <div class="uhid-input-wrap">
++              <input id="uhidDisplay" value="Auto-generated" readonly class="input-readonly" />
++              <i class="ti ti-lock uhid-lock" aria-hidden="true"></i>
++            </div>
++          </div>
++
++          <!-- Row 2: DOB | Age | Gender -->
++          <div class="lis-field">
++            <label for="dob">Date of Birth <span class="req" aria-hidden="true">*</span></label>
+             <input id="dob" type="date" formControlName="dob"
+               [class.input-error]="isInvalid('dob')"
+               (change)="calcAge()" />
+@@ -132,13 +141,11 @@
+             }
+           </div>
+ 
+-          <!-- Age (computed) -->
+           <div class="lis-field">
+-            <label for="ageDisplay">Age</label>
+-            <input id="ageDisplay" [value]="ageDisplay()" readonly placeholder="Auto-calculated" />
++            <label for="ageDisplay">Age <span class="opt-label">(Auto)</span></label>
++            <input id="ageDisplay" [value]="ageDisplay()" readonly placeholder="Auto-calculated" class="input-readonly" />
+           </div>
+ 
+-          <!-- Gender -->
+           <div class="lis-field">
+             <label id="gender-label">Gender <span class="req" aria-hidden="true">*</span></label>
+             <div class="lis-seg" role="group" aria-labelledby="gender-label">
+@@ -154,19 +161,9 @@
+             }
+           </div>
+ 
+-          <!-- Blood group -->
++          <!-- Row 3: Mobile | Email | Blood Group -->
+           <div class="lis-field">
+-            <label for="bloodGroup">Blood group</label>
+-            <select id="bloodGroup" formControlName="bloodGroup">
+-              @for (bg of bloodGroups; track bg) {
+-                <option [value]="bg">{{ bg }}</option>
+-              }
+-            </select>
+-          </div>
+-
+-          <!-- Mobile -->
+-          <div class="lis-field">
+-            <label for="mobile">Mobile <span class="req" aria-hidden="true">*</span></label>
++            <label for="mobile">Mobile Number <span class="req" aria-hidden="true">*</span></label>
+             <input id="mobile" formControlName="mobile" type="tel"
+               [class.input-error]="isInvalid('mobile')"
+               autocomplete="tel" placeholder="10-digit mobile number" />
+@@ -175,16 +172,24 @@
+             }
+           </div>
+ 
+-          <!-- Email -->
+           <div class="lis-field">
+-            <label for="email">Email <span class="opt-label">(optional)</span></label>
++            <label for="email">Email <span class="opt-label">(Optional)</span></label>
+             <input id="email" formControlName="email" type="email"
+               autocomplete="email" placeholder="patient@email.com" />
+           </div>
+ 
+-          <!-- Address -->
++          <div class="lis-field">
++            <label for="bloodGroup">Blood Group</label>
++            <select id="bloodGroup" formControlName="bloodGroup">
++              @for (bg of bloodGroups; track bg) {
++                <option [value]="bg">{{ bg }}</option>
++              }
++            </select>
++          </div>
++
++          <!-- Row 4: Address full width -->
+           <div class="lis-field form-full">
+-            <label for="address">Address <span class="opt-label">(optional)</span></label>
++            <label for="address">Address <span class="opt-label">(Optional)</span></label>
+             <textarea id="address" formControlName="address"
+               placeholder="Street, area, city…"></textarea>
+           </div>
+diff -rU3 '--exclude=*.js' '--exclude=*.map' '--exclude=node_modules' medpath-lab-backup/src/app/features/report-preview/report-preview.component.css medpath-lab/src/app/features/report-preview/report-preview.component.css
+--- medpath-lab-backup/src/app/features/report-preview/report-preview.component.css	2026-06-27 16:46:13.013497569 +0000
++++ medpath-lab/src/app/features/report-preview/report-preview.component.css	2026-06-27 16:48:16.632183298 +0000
+@@ -7,7 +7,7 @@
+   justify-content: space-between;
+   flex-wrap: wrap;
+   gap: 10px;
+-  margin-bottom: 14px;
++  margin-bottom: 18px;
+ }
+ .page-title {
+   font-size: 20px;
+diff -rU3 '--exclude=*.js' '--exclude=*.map' '--exclude=node_modules' medpath-lab-backup/src/app/features/reports/reports.component.css medpath-lab/src/app/features/reports/reports.component.css
+--- medpath-lab-backup/src/app/features/reports/reports.component.css	2026-06-27 16:46:13.013747207 +0000
++++ medpath-lab/src/app/features/reports/reports.component.css	2026-06-27 16:48:16.647103131 +0000
+@@ -1,16 +1,16 @@
+ :host { display:block; }
+-    .page-header { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:14px; }
+-    .page-title  { font-size:20px; font-weight:500; color:var(--text-primary); margin:0 0 3px; }
++    .page-header { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:18px; }
++    .page-title  { font-size:22px; font-weight:500; color:var(--text-primary); margin:0 0 4px; }
+     .breadcrumb  { display:flex; list-style:none; padding:0; margin:0; gap:6px; font-size:12px; color:var(--text-secondary); }
+     .breadcrumb a { color:var(--text-secondary); text-decoration:none; }
+     .breadcrumb li+li::before { content:'/'; margin-right:6px; }
+ 
+-    .reports-layout { display:grid; grid-template-columns:268px 1fr; gap:14px; align-items:start; }
++    .reports-layout { display:grid; grid-template-columns:288px 1fr; gap:16px; align-items:start; }
+     @media (max-width:900px) { .reports-layout { grid-template-columns:1fr; } }
+ 
+     .report-list { }
+     .report-row {
+-      display:flex; align-items:center; gap:9px; padding:9px 14px;
++      display:flex; align-items:center; gap:10px; padding:10px 14px;
+       border-bottom:0.5px solid var(--border-color); cursor:pointer;
+       transition:background 0.1s;
+     }
+@@ -55,9 +55,9 @@
+     .rpt-title-band { background:#085041; padding:7px 18px; display:flex; align-items:center; justify-content:space-between; }
+     .rpt-title-text { font-size:12px; font-weight:500; color:#fff; display:flex; align-items:center; gap:5px; i { font-size:11px; } }
+     .rpt-body { padding:14px 18px; }
+-    .rpt-note { background:#FFF8E7; border-left:3px solid #EF9F27; padding:8px 11px; border-radius:0 6px 6px 0; margin-bottom:12px; font-size:11px; color:#412402; line-height:1.5; }
++    .rpt-note { background:#FFF8E7; border-left:3px solid #EF9F27; padding:8px 11px; border-radius:0 6px 6px 0; margin-bottom:18px; font-size:11px; color:#412402; line-height:1.5; }
+     .rpt-grp-title { font-size:12px; font-weight:500; color:#085041; margin-bottom:6px; padding-bottom:4px; border-bottom:1px solid #E1F5EE; }
+-    .rpt-tbl { width:100%; border-collapse:collapse; font-size:11px; margin-bottom:12px; }
++    .rpt-tbl { width:100%; border-collapse:collapse; font-size:11px; margin-bottom:18px; }
+     .rpt-tbl th { padding:5px 8px; text-align:left; font-size:11px; color:#0F6E56; font-weight:500; border-bottom:1px solid #E1F5EE; text-transform:uppercase; letter-spacing:.04em; }
+     .rpt-tbl td { padding:6px 8px; border-bottom:0.5px solid var(--lis-primary-xlight, #F0FAF6); color:var(--text-primary); }
+     .rpt-tbl tbody tr:last-child td { border-bottom:none; }
+diff -rU3 '--exclude=*.js' '--exclude=*.map' '--exclude=node_modules' medpath-lab-backup/src/app/features/result-entry/result-entry.component.css medpath-lab/src/app/features/result-entry/result-entry.component.css
+--- medpath-lab-backup/src/app/features/result-entry/result-entry.component.css	2026-06-27 16:46:13.013865214 +0000
++++ medpath-lab/src/app/features/result-entry/result-entry.component.css	2026-06-27 16:50:10.850701055 +0000
+@@ -1,12 +1,12 @@
+ :host { display:block; }
+-    .page-header { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:14px; }
+-    .page-title  { font-size:20px; font-weight:500; color:var(--text-primary); margin:0 0 3px; }
++    .page-header { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:18px; }
++    .page-title  { font-size:22px; font-weight:500; color:var(--text-primary); margin:0 0 4px; }
+     .breadcrumb  { display:flex; list-style:none; padding:0; margin:0; gap:6px; font-size:12px; color:var(--text-secondary); }
+     .breadcrumb a { color:var(--text-secondary); text-decoration:none; }
+     .breadcrumb li+li::before { content:'/'; margin-right:6px; }
+     .autosave-chip { display:flex; align-items:center; gap:5px; padding:5px 10px; border:0.5px solid var(--border-color); border-radius:7px; font-size:11px; color:var(--text-secondary); background:var(--card-bg); i { font-size:13px; } }
+ 
+-    .re-layout { display:grid; grid-template-columns:1fr 252px; gap:14px; align-items:start; }
++    .re-layout { display:grid; grid-template-columns:1fr 280px; gap:16px; align-items:start; }
+     @media (max-width:900px) { .re-layout { grid-template-columns:1fr; } }
+     .re-main { display:flex; flex-direction:column; gap:0; background:var(--card-bg); border:0.5px solid var(--border-color); border-radius:10px; overflow:hidden; }
+ 
+@@ -19,7 +19,7 @@
+     .stat-chip--sm { padding:1px 6px; font-size:10px; }
+ 
+     .tab-bar { display:flex; border-bottom:0.5px solid var(--border-color); padding:0 14px; }
+-    .tab { padding:10px 13px; font-size:12px; color:var(--text-secondary); cursor:pointer; border-bottom:2px solid transparent; background:none; border-top:none; border-left:none; border-right:none; font-family:var(--font-family); }
++    .tab { padding:10px 14px; font-size:13px; color:var(--text-secondary); cursor:pointer; border-bottom:2px solid transparent; background:none; border-top:none; border-left:none; border-right:none; font-family:var(--font-family); }
+     .tab--active { color:var(--lis-primary,#1D9E75); border-bottom-color:var(--lis-primary,#1D9E75); font-weight:500; }
+ 
+     .critical-banner { background:#FCEBEB; border:0.5px solid #F09595; margin:12px 14px 0; border-radius:8px; padding:9px 12px; display:flex; align-items:flex-start; gap:8px; i { color:#E24B4A; font-size:16px; flex-shrink:0; margin-top:1px; } }
+@@ -28,12 +28,12 @@
+     .result-card { border:none !important; border-radius:0 !important; }
+     .result-tbl { width:100%; border-collapse:collapse; font-size:12px; min-width:480px; }
+     .result-tbl th { padding:7px 14px; text-align:left; font-size:10px; color:var(--text-secondary); font-weight:500; border-bottom:0.5px solid var(--border-color); text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; }
+-    .result-tbl td { padding:7px 14px; border-bottom:0.5px solid var(--border-color); color:var(--text-primary); vertical-align:middle; }
++    .result-tbl td { padding:9px 14px; border-bottom:0.5px solid var(--border-color); color:var(--text-primary); vertical-align:middle; }
+     .result-tbl tbody tr:last-child td { border-bottom:none; }
+     .param-name { font-size:12px; }
+     .param-critical { font-weight:500; color:#E24B4A; }
+     .result-input-wrap { display:flex; align-items:center; gap:5px; }
+-    .result-input { width:82px; height:30px; border:0.5px solid var(--border-color); border-radius:6px; padding:0 8px; font-size:12px; text-align:right; color:var(--text-primary); background:var(--card-bg); outline:none; font-family:var(--font-family); }
++    .result-input { width:90px; height:34px; border:0.5px solid var(--border-color); border-radius:6px; padding:0 8px; font-size:12px; text-align:right; color:var(--text-primary); background:var(--card-bg); outline:none; font-family:var(--font-family); }
+     .result-input--normal   { border-color:var(--lis-primary,#1D9E75); color:#0F6E56; }
+     .result-input--high,
+     .result-input--low,
+diff -rU3 '--exclude=*.js' '--exclude=*.map' '--exclude=node_modules' medpath-lab-backup/src/app/features/sample-tracking/sample-tracking.component.css medpath-lab/src/app/features/sample-tracking/sample-tracking.component.css
+--- medpath-lab-backup/src/app/features/sample-tracking/sample-tracking.component.css	2026-06-27 16:46:13.014251500 +0000
++++ medpath-lab/src/app/features/sample-tracking/sample-tracking.component.css	2026-06-27 16:50:10.834169709 +0000
+@@ -1,6 +1,6 @@
+ :host { display:block; }
+-    .page-header { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:12px; }
+-    .page-title  { font-size:20px; font-weight:500; color:var(--text-primary); margin:0 0 3px; }
++    .page-header { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:18px; }
++    .page-title  { font-size:22px; font-weight:500; color:var(--text-primary); margin:0 0 4px; }
+     .breadcrumb  { display:flex; list-style:none; padding:0; margin:0; gap:6px; font-size:12px; color:var(--text-secondary); }
+     .breadcrumb a { color:var(--text-secondary); text-decoration:none; &:hover{color:var(--lis-primary,#1D9E75);} }
+     .breadcrumb li+li::before { content:'/'; margin-right:6px; }
+@@ -9,7 +9,7 @@
+     .tracking-toolbar {
+       display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+       background:var(--card-bg); border:0.5px solid var(--border-color);
+-      border-radius:10px; padding:10px 14px; margin-bottom:12px;
++      border-radius:10px; padding:10px 14px; margin-bottom:18px;
+     }
+     .ts-search {
+       display:flex; align-items:center; gap:7px; flex:1; max-width:300px;
+@@ -26,17 +26,17 @@
+     }
+     .filter-pill--active { background:var(--lis-primary-xlight,#E1F5EE); color:var(--lis-primary-deep,#085041); border-color:var(--lis-primary-mid,#5DCAA5); }
+ 
+-    .tracking-body { display:grid; grid-template-columns:1fr 290px; gap:12px; align-items:start; }
++    .tracking-body { display:grid; grid-template-columns:1fr 310px; gap:14px; align-items:start; }
+     @media (max-width:1000px) { .tracking-body { grid-template-columns:1fr; } }
+ 
+     .sample-table-wrap { background:var(--card-bg); border:0.5px solid var(--border-color); border-radius:10px; overflow-x:auto; }
+     .sample-tbl { width:100%; border-collapse:collapse; font-size:12px; min-width:600px; }
+     .sample-tbl th {
+-      padding:8px 14px; text-align:left; font-size:11px; color:var(--text-secondary);
++      padding:9px 14px; text-align:left; font-size:11px; color:var(--text-secondary);
+       font-weight:500; border-bottom:0.5px solid var(--border-color);
+       text-transform:uppercase; letter-spacing:.04em; white-space:nowrap;
+     }
+-    .sample-tbl td { padding:9px 14px; border-bottom:0.5px solid var(--border-color); color:var(--text-primary); vertical-align:middle; }
++    .sample-tbl td { padding:10px 14px; border-bottom:0.5px solid var(--border-color); color:var(--text-primary); vertical-align:middle; }
+     .sample-tbl tbody tr { cursor:pointer; transition:background 0.1s; }
+     .sample-tbl tbody tr:hover td { background:var(--body-bg); }
+     .sample-tbl tbody tr.row--selected td { background:var(--lis-primary-xlight,#E1F5EE); }
+@@ -71,7 +71,7 @@
+ .workflow-trail { display: flex; align-items: center; gap: 6px; background: var(--body-bg); border: 0.5px solid var(--border-color); border-radius: 9px; padding: 6px 12px; }
+ .wf-step { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-secondary); i { font-size: 13px; } }
+ .wf-step--active { color: var(--lis-primary-deep, #085041); font-weight: 500; i { color: var(--lis-primary, #1D9E75); } }
+-.wf-step--done   { color: var(--lis-primary, #1D9E75); font-weight: 500; }
++.wf-step--done   { color: var(--lis-primary, #1D9E75); font-weight: 500; i { color: var(--lis-primary, #1D9E75); } }
+ .wf-arrow { font-size: 11px; color: var(--border-color); }
+ 
+ /* ── Current patient block ──────────────────── */
+diff -rU3 '--exclude=*.js' '--exclude=*.map' '--exclude=node_modules' medpath-lab-backup/src/app/features/test-order/test-order.component.css medpath-lab/src/app/features/test-order/test-order.component.css
+--- medpath-lab-backup/src/app/features/test-order/test-order.component.css	2026-06-27 16:46:13.014803316 +0000
++++ medpath-lab/src/app/features/test-order/test-order.component.css	2026-06-27 16:48:16.699255908 +0000
+@@ -4,9 +4,9 @@
+ .page-header {
+   display: flex; align-items: flex-start;
+   justify-content: space-between; flex-wrap: wrap;
+-  gap: 12px; margin-bottom: 14px;
++  gap: 12px; margin-bottom: 18px;
+ }
+-.page-title { font-size: 20px; font-weight: 500; color: var(--text-primary); margin: 0 0 3px; }
++.page-title { font-size: 22px; font-weight: 500; color: var(--text-primary); margin: 0 0 4px; }
+ .breadcrumb { display: flex; list-style: none; padding: 0; margin: 0; gap: 6px; font-size: 12px; color: var(--text-secondary); }
+ .breadcrumb li+li::before { content: '/'; margin-right: 6px; }
+ .breadcrumb a { color: var(--text-secondary); text-decoration: none; &:hover { color: var(--lis-primary, #1D9E75); } }
+@@ -27,7 +27,7 @@
+   display: flex; align-items: center; gap: 12px;
+   background: var(--lis-primary-xlight, #E1F5EE);
+   border: 0.5px solid var(--lis-primary-mid, #5DCAA5);
+-  border-radius: 10px; padding: 10px 14px; margin-bottom: 14px;
++  border-radius: 10px; padding: 10px 14px; margin-bottom: 18px;
+   flex-wrap: wrap;
+ }
+ .pat-av {
+diff -rU3 '--exclude=*.js' '--exclude=*.map' '--exclude=node_modules' medpath-lab-backup/src/app/layout/components/main-layout/main-layout.component.css medpath-lab/src/app/layout/components/main-layout/main-layout.component.css
+--- medpath-lab-backup/src/app/layout/components/main-layout/main-layout.component.css	2026-06-27 16:46:13.015294438 +0000
++++ medpath-lab/src/app/layout/components/main-layout/main-layout.component.css	2026-06-27 16:47:08.503743820 +0000
+@@ -1,12 +1,12 @@
+ /* LIS page content area */
+     .lis-page-content {
+-      padding: 20px 22px;
++      padding: 24px 28px;
+       min-height: calc(100vh - var(--lis-topbar-height, 52px));
+       overflow-y: auto;
+     }
+ 
+     @media (max-width: 768px) {
+-      .lis-page-content { padding: 14px 14px; }
++      .lis-page-content { padding: 16px; }
+     }
+ 
+     /* Skip-to-content link for a11y */
+diff -rU3 '--exclude=*.js' '--exclude=*.map' '--exclude=node_modules' medpath-lab-backup/src/app/layout/components/topbar/topbar.component.css medpath-lab/src/app/layout/components/topbar/topbar.component.css
+--- medpath-lab-backup/src/app/layout/components/topbar/topbar.component.css	2026-06-27 16:46:13.018450492 +0000
++++ medpath-lab/src/app/layout/components/topbar/topbar.component.css	2026-06-27 16:50:29.431019678 +0000
+@@ -12,22 +12,22 @@
+       background: var(--border-color); margin: 0 4px;
+     }
+     .lis-topbar-cta {
+-      display: inline-flex; align-items: center; gap: 5px;
+-      padding: 6px 13px;
++      display: inline-flex; align-items: center; gap: 6px;
++      padding: 8px 16px;
+       background: var(--lis-primary, #1D9E75);
+       color: #fff;
+       border-radius: 8px;
+-      font-size: 12px; font-weight: 500;
++      font-size: 13px; font-weight: 500;
+       text-decoration: none;
+       transition: filter 0.15s;
+-      i { font-size: 14px; }
++      i { font-size: 15px; }
+       &:hover { filter: brightness(1.08); }
+     }
+     .lis-topbar-avatar {
+-      width: 30px; height: 30px; border-radius: 50%;
++      width: 32px; height: 32px; border-radius: 50%;
+       background: var(--lis-primary-xlight, #E1F5EE);
+       display: flex; align-items: center; justify-content: center;
+-      font-size: 11px; font-weight: 500;
++      font-size: 12px; font-weight: 500;
+       color: var(--lis-primary-deep, #085041);
+     }
+     .topbar-avatar-btn {
+@@ -38,8 +38,8 @@
+       transition: background 0.12s; color: var(--text-primary);
+       &:hover { background: var(--body-bg); }
+     }
+-    .avatar-name { font-size: 12px; font-weight: 500; color: var(--text-primary); margin: 0; line-height: 1.3; }
+-    .avatar-role { font-size: 10px; color: var(--text-secondary); margin: 0; }
++    .avatar-name { font-size: 13px; font-weight: 500; color: var(--text-primary); margin: 0; line-height: 1.3; }
++    .avatar-role { font-size: 11px; color: var(--text-secondary); margin: 0; }
+     .avatar-chevron { font-size: 14px; color: var(--text-secondary); }
+     .search-kbd {
+       font-size: 10px; font-weight: 600;
+diff -rU3 '--exclude=*.js' '--exclude=*.map' '--exclude=node_modules' medpath-lab-backup/src/styles.css medpath-lab/src/styles.css
+--- medpath-lab-backup/src/styles.css	2026-06-27 16:46:13.020437938 +0000
++++ medpath-lab/src/styles.css	2026-06-27 16:50:50.515051717 +0000
+@@ -89,7 +89,7 @@
+   --editor-line-height: 1.78;
+ 
+   /* ── Layout dimensions ─────────────────────────────────── */
+-  --header-height:     52px;
++  --header-height:     56px;
+   --sidebar-expanded:  260px;
+   --sidebar-collapsed: 72px;
+   --ai-panel-width:    300px;
+@@ -3426,7 +3426,7 @@
+   border-radius: var(--radius-md);
+   color: var(--text-muted);
+   text-decoration: none;
+-  font-size: 14px;
++  font-size: 13px;
+   font-weight: 500;
+   transition: background var(--transition-fast), color var(--transition-fast);
+   margin-bottom: 2px;
+@@ -3459,8 +3459,8 @@
+   z-index: var(--z-header);
+   display: flex;
+   align-items: center;
+-  padding: 0 20px;
+-  gap: 10px;
++  padding: 0 24px;
++  gap: 12px;
+   transition: left var(--transition-sidebar);
+ }
+ .pc-topbar.sidebar-collapsed { left: var(--sidebar-collapsed); }
+@@ -3491,9 +3491,9 @@
+   border: 1.5px solid var(--border);
+   border-radius: var(--radius-md);
+   padding: 0 12px;
+-  height: 36px;
+-  min-width: 200px;
+-  max-width: 320px;
++  height: 38px;
++  min-width: 260px;
++  max-width: 400px;
+   transition: border-color var(--transition-fast);
+   position: relative;
+ }
+@@ -3537,8 +3537,7 @@
+ }
+ 
+ .pc-content {
+-  padding: 24px;
+-  max-width: 1400px;
++  padding: 24px 28px;
+ }
+ 
+ @media (max-width: 640px) {
+@@ -3617,7 +3616,7 @@
+   --lis-mono:          var(--font-mono);
+ 
+   /* LIS layout */
+-  --lis-topbar-height: 52px;
++  --lis-topbar-height: 56px;
+   --lis-card-radius:   10px;
+ 
+   /* Status pill colours (light) */
+@@ -3690,18 +3689,18 @@
+ .lis-card__header {
+   display: flex;
+   align-items: center;
+-  gap: 7px;
+-  padding: 10px 14px;
++  gap: 8px;
++  padding: 14px 20px;
+   border-bottom: 0.5px solid var(--border-color);
+ }
+ .lis-card__title {
+-  font-size: 13px;
++  font-size: 14px;
+   font-weight: 500;
+   color: var(--text-primary);
+   margin: 0;
+ }
+ .lis-card__body {
+-  padding: 13px 14px;
++  padding: 16px 20px;
+ }
+ 
+ /* Badge */
+@@ -3733,9 +3732,9 @@
+   display: inline-flex;
+   align-items: center;
+   gap: 6px;
+-  padding: 7px 14px;
++  padding: 9px 16px;
+   border-radius: 8px;
+-  font-size: 12px;
++  font-size: 13px;
+   font-weight: 500;
+   font-family: var(--font-family);
+   cursor: pointer;
+@@ -3755,7 +3754,7 @@
+   border: 0.5px solid var(--border-color);
+ }
+ .lis-btn--secondary:hover { background: var(--body-bg); }
+-.lis-btn--sm { padding: 5px 10px; font-size: 11px; }
++.lis-btn--sm { padding: 6px 12px; font-size: 12px; }
+ .lis-btn--full { width: 100%; justify-content: center; }
+ 
+ /* Form fields */
+@@ -3765,18 +3764,18 @@
+   gap: 4px;
+ }
+ .lis-field label {
+-  font-size: 11px;
++  font-size: 12px;
+   color: var(--text-secondary);
+   font-weight: 500;
+ }
+ .lis-field input,
+ .lis-field select,
+ .lis-field textarea {
+-  height: 32px;
+-  border: 0.5px solid var(--border-color);
+-  border-radius: 7px;
+-  padding: 0 9px;
+-  font-size: 12px;
++  height: 38px;
++  border: 1px solid var(--border-color);
++  border-radius: 8px;
++  padding: 0 11px;
++  font-size: 13px;
+   color: var(--text-primary);
+   background: var(--card-bg);
+   outline: none;
+@@ -3785,16 +3784,16 @@
+ .lis-field input:focus,
+ .lis-field select:focus,
+ .lis-field textarea:focus { border-color: var(--lis-primary); }
+-.lis-field textarea { height: auto; padding: 8px 9px; resize: vertical; min-height: 60px; }
++.lis-field textarea { height: auto; padding: 10px 11px; resize: vertical; min-height: 70px; }
+ 
+ /* Segmented control */
+ .lis-seg { display: flex; gap: 4px; }
+ .lis-seg__opt {
+   flex: 1;
+-  padding: 5px 8px;
+-  font-size: 11px;
+-  border: 0.5px solid var(--border-color);
+-  border-radius: 7px;
++  padding: 7px 8px;
++  font-size: 12px;
++  border: 1px solid var(--border-color);
++  border-radius: 8px;
+   cursor: pointer;
+   background: var(--card-bg);
+   color: var(--text-secondary);
+@@ -3818,24 +3817,24 @@
+ /* ── Spacing scale extensions (LIS-scoped) ─────────────── */
+ :root {
+   /* Page-level gutters — replace scattered hard-coded px */
+-  --lis-page-pad-x:   24px;
+-  --lis-page-pad-y:   20px;
+-  --lis-card-gap:     14px;
+-  --lis-form-gap:     12px;
++  --lis-page-pad-x:   28px;
++  --lis-page-pad-y:   24px;
++  --lis-card-gap:     16px;
++  --lis-form-gap:     16px;
+   --lis-inline-gap:    8px;
+ 
+   /* Input system — unified across all LIS modules */
+-  --lis-input-height:  34px;
+-  --lis-input-radius:  7px;
++  --lis-input-height:  38px;
++  --lis-input-radius:  8px;
+   --lis-btn-radius:    8px;
+ 
+   /* Typography scale — scoped to LIS shell */
+-  --lis-font-page-title:   20px;
+-  --lis-font-section-title:13px;
+-  --lis-font-label:        11px;
++  --lis-font-page-title:   22px;
++  --lis-font-section-title:14px;
++  --lis-font-label:        12px;
+   --lis-font-body:         13px;
+-  --lis-font-caption:      11px;
+-  --lis-font-micro:        10px;
++  --lis-font-caption:      12px;
++  --lis-font-micro:        11px;
+ }
+ 
+ /* ── Typography hierarchy — h1 → h4 inside .lis-app-shell ── */

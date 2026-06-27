@@ -52,7 +52,9 @@
   </div>
   <!-- Workflow progress indicator -->
   <div class="workflow-trail" aria-label="Workflow steps">
-    <div class="wf-step wf-step--active"><i class="ti ti-user-plus"></i> Register</div>
+    <div class="wf-step wf-step--active">
+      <i class="ti ti-circle-check-filled" aria-hidden="true"></i> Register
+    </div>
     <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
     <div class="wf-step"><i class="ti ti-test-pipe"></i> Test Order</div>
     <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
@@ -99,9 +101,9 @@
         </div>
 
         <div class="form-grid">
-          <!-- First name -->
+          <!-- Row 1: First name | Last name | UHID (auto) -->
           <div class="lis-field">
-            <label for="firstName">First name <span class="req" aria-hidden="true">*</span></label>
+            <label for="firstName">First Name <span class="req" aria-hidden="true">*</span></label>
             <input id="firstName" formControlName="firstName"
               [class.input-error]="isInvalid('firstName')"
               autocomplete="given-name" placeholder="e.g. Ananya" />
@@ -110,9 +112,8 @@
             }
           </div>
 
-          <!-- Last name -->
           <div class="lis-field">
-            <label for="lastName">Last name <span class="req" aria-hidden="true">*</span></label>
+            <label for="lastName">Last Name <span class="req" aria-hidden="true">*</span></label>
             <input id="lastName" formControlName="lastName"
               [class.input-error]="isInvalid('lastName')"
               autocomplete="family-name" placeholder="e.g. Krishnaswamy" />
@@ -121,9 +122,17 @@
             }
           </div>
 
-          <!-- Date of birth -->
           <div class="lis-field">
-            <label for="dob">Date of birth <span class="req" aria-hidden="true">*</span></label>
+            <label for="uhidDisplay">UHID / Patient ID <span class="opt-label">(Auto)</span></label>
+            <div class="uhid-input-wrap">
+              <input id="uhidDisplay" value="Auto-generated" readonly class="input-readonly" />
+              <i class="ti ti-lock uhid-lock" aria-hidden="true"></i>
+            </div>
+          </div>
+
+          <!-- Row 2: DOB | Age | Gender -->
+          <div class="lis-field">
+            <label for="dob">Date of Birth <span class="req" aria-hidden="true">*</span></label>
             <input id="dob" type="date" formControlName="dob"
               [class.input-error]="isInvalid('dob')"
               (change)="calcAge()" />
@@ -132,13 +141,11 @@
             }
           </div>
 
-          <!-- Age (computed) -->
           <div class="lis-field">
-            <label for="ageDisplay">Age</label>
-            <input id="ageDisplay" [value]="ageDisplay()" readonly placeholder="Auto-calculated" />
+            <label for="ageDisplay">Age <span class="opt-label">(Auto)</span></label>
+            <input id="ageDisplay" [value]="ageDisplay()" readonly placeholder="Auto-calculated" class="input-readonly" />
           </div>
 
-          <!-- Gender -->
           <div class="lis-field">
             <label id="gender-label">Gender <span class="req" aria-hidden="true">*</span></label>
             <div class="lis-seg" role="group" aria-labelledby="gender-label">
@@ -154,19 +161,9 @@
             }
           </div>
 
-          <!-- Blood group -->
+          <!-- Row 3: Mobile | Email | Blood Group -->
           <div class="lis-field">
-            <label for="bloodGroup">Blood group</label>
-            <select id="bloodGroup" formControlName="bloodGroup">
-              @for (bg of bloodGroups; track bg) {
-                <option [value]="bg">{{ bg }}</option>
-              }
-            </select>
-          </div>
-
-          <!-- Mobile -->
-          <div class="lis-field">
-            <label for="mobile">Mobile <span class="req" aria-hidden="true">*</span></label>
+            <label for="mobile">Mobile Number <span class="req" aria-hidden="true">*</span></label>
             <input id="mobile" formControlName="mobile" type="tel"
               [class.input-error]="isInvalid('mobile')"
               autocomplete="tel" placeholder="10-digit mobile number" />
@@ -175,16 +172,24 @@
             }
           </div>
 
-          <!-- Email -->
           <div class="lis-field">
-            <label for="email">Email <span class="opt-label">(optional)</span></label>
+            <label for="email">Email <span class="opt-label">(Optional)</span></label>
             <input id="email" formControlName="email" type="email"
               autocomplete="email" placeholder="patient@email.com" />
           </div>
 
-          <!-- Address -->
+          <div class="lis-field">
+            <label for="bloodGroup">Blood Group</label>
+            <select id="bloodGroup" formControlName="bloodGroup">
+              @for (bg of bloodGroups; track bg) {
+                <option [value]="bg">{{ bg }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Row 4: Address full width -->
           <div class="lis-field form-full">
-            <label for="address">Address <span class="opt-label">(optional)</span></label>
+            <label for="address">Address <span class="opt-label">(Optional)</span></label>
             <textarea id="address" formControlName="address"
               placeholder="Street, area, city…"></textarea>
           </div>

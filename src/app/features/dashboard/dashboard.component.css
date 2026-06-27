@@ -65,7 +65,7 @@
 
     /* Section */
     .dashboard-section { margin-bottom: 24px; }
-    .section-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .section-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
     .section-title { font-size: 16px; font-weight: 700; color: var(--text-base); margin: 0; }
 
     /* Stat cards */

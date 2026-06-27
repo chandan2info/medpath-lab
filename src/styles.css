@@ -89,7 +89,7 @@
   --editor-line-height: 1.78;
 
   /* ── Layout dimensions ─────────────────────────────────── */
-  --header-height:     52px;
+  --header-height:     56px;
   --sidebar-expanded:  260px;
   --sidebar-collapsed: 72px;
   --ai-panel-width:    300px;
@@ -3426,7 +3426,7 @@
   border-radius: var(--radius-md);
   color: var(--text-muted);
   text-decoration: none;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   transition: background var(--transition-fast), color var(--transition-fast);
   margin-bottom: 2px;
@@ -3459,8 +3459,8 @@
   z-index: var(--z-header);
   display: flex;
   align-items: center;
-  padding: 0 20px;
-  gap: 10px;
+  padding: 0 24px;
+  gap: 12px;
   transition: left var(--transition-sidebar);
 }
 .pc-topbar.sidebar-collapsed { left: var(--sidebar-collapsed); }
@@ -3491,9 +3491,9 @@
   border: 1.5px solid var(--border);
   border-radius: var(--radius-md);
   padding: 0 12px;
-  height: 36px;
-  min-width: 200px;
-  max-width: 320px;
+  height: 38px;
+  min-width: 260px;
+  max-width: 400px;
   transition: border-color var(--transition-fast);
   position: relative;
 }
@@ -3537,8 +3537,7 @@
 }
 
 .pc-content {
-  padding: 24px;
-  max-width: 1400px;
+  padding: 24px 28px;
 }
 
 @media (max-width: 640px) {
@@ -3617,7 +3616,7 @@
   --lis-mono:          var(--font-mono);
 
   /* LIS layout */
-  --lis-topbar-height: 52px;
+  --lis-topbar-height: 56px;
   --lis-card-radius:   10px;
 
   /* Status pill colours (light) */
@@ -3690,18 +3689,18 @@
 .lis-card__header {
   display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 10px 14px;
+  gap: 8px;
+  padding: 14px 20px;
   border-bottom: 0.5px solid var(--border-color);
 }
 .lis-card__title {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text-primary);
   margin: 0;
 }
 .lis-card__body {
-  padding: 13px 14px;
+  padding: 16px 20px;
 }
 
 /* Badge */
@@ -3733,9 +3732,9 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 14px;
+  padding: 9px 16px;
   border-radius: 8px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   font-family: var(--font-family);
   cursor: pointer;
@@ -3755,7 +3754,7 @@
   border: 0.5px solid var(--border-color);
 }
 .lis-btn--secondary:hover { background: var(--body-bg); }
-.lis-btn--sm { padding: 5px 10px; font-size: 11px; }
+.lis-btn--sm { padding: 6px 12px; font-size: 12px; }
 .lis-btn--full { width: 100%; justify-content: center; }
 
 /* Form fields */
@@ -3765,18 +3764,18 @@
   gap: 4px;
 }
 .lis-field label {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-secondary);
   font-weight: 500;
 }
 .lis-field input,
 .lis-field select,
 .lis-field textarea {
-  height: 32px;
-  border: 0.5px solid var(--border-color);
-  border-radius: 7px;
-  padding: 0 9px;
-  font-size: 12px;
+  height: 38px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0 11px;
+  font-size: 13px;
   color: var(--text-primary);
   background: var(--card-bg);
   outline: none;
@@ -3785,16 +3784,16 @@
 .lis-field input:focus,
 .lis-field select:focus,
 .lis-field textarea:focus { border-color: var(--lis-primary); }
-.lis-field textarea { height: auto; padding: 8px 9px; resize: vertical; min-height: 60px; }
+.lis-field textarea { height: auto; padding: 10px 11px; resize: vertical; min-height: 70px; }
 
 /* Segmented control */
 .lis-seg { display: flex; gap: 4px; }
 .lis-seg__opt {
   flex: 1;
-  padding: 5px 8px;
-  font-size: 11px;
-  border: 0.5px solid var(--border-color);
-  border-radius: 7px;
+  padding: 7px 8px;
+  font-size: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
   cursor: pointer;
   background: var(--card-bg);
   color: var(--text-secondary);
@@ -3818,24 +3817,24 @@
 /* ── Spacing scale extensions (LIS-scoped) ─────────────── */
 :root {
   /* Page-level gutters — replace scattered hard-coded px */
-  --lis-page-pad-x:   24px;
-  --lis-page-pad-y:   20px;
-  --lis-card-gap:     14px;
-  --lis-form-gap:     12px;
+  --lis-page-pad-x:   28px;
+  --lis-page-pad-y:   24px;
+  --lis-card-gap:     16px;
+  --lis-form-gap:     16px;
   --lis-inline-gap:    8px;
 
   /* Input system — unified across all LIS modules */
-  --lis-input-height:  34px;
-  --lis-input-radius:  7px;
+  --lis-input-height:  38px;
+  --lis-input-radius:  8px;
   --lis-btn-radius:    8px;
 
   /* Typography scale — scoped to LIS shell */
-  --lis-font-page-title:   20px;
-  --lis-font-section-title:13px;
-  --lis-font-label:        11px;
+  --lis-font-page-title:   22px;
+  --lis-font-section-title:14px;
+  --lis-font-label:        12px;
   --lis-font-body:         13px;
-  --lis-font-caption:      11px;
-  --lis-font-micro:        10px;
+  --lis-font-caption:      12px;
+  --lis-font-micro:        11px;
 }
 
 /* ── Typography hierarchy — h1 → h4 inside .lis-app-shell ── */

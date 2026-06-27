@@ -1,12 +1,12 @@
 /* LIS page content area */
     .lis-page-content {
-      padding: 20px 22px;
+      padding: 24px 28px;
       min-height: calc(100vh - var(--lis-topbar-height, 52px));
       overflow-y: auto;
     }
 
     @media (max-width: 768px) {
-      .lis-page-content { padding: 14px 14px; }
+      .lis-page-content { padding: 16px; }
     }
 
     /* Skip-to-content link for a11y */
