@@ -75,13 +75,13 @@ export const routes: Routes = [
       {
         path: 'analytics',
         loadComponent: () =>
-          import('./features/lis-home/lis-home.component').then(m => m.LisHomeComponent), // placeholder
+          import('./features/analytics/analytics.component').then(m => m.AnalyticsComponent),
         title: 'Analytics — MedPath LIS',
       },
       {
         path: 'settings',
         loadComponent: () =>
-          import('./features/lis-home/lis-home.component').then(m => m.LisHomeComponent), // placeholder
+          import('./features/settings/settings.component').then(m => m.SettingsComponent),
         title: 'Settings — MedPath LIS',
       },
       {

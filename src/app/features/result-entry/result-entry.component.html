@@ -54,7 +54,7 @@
             <i class="ti ti-test-pipe" style="color:var(--lis-primary,#1D9E75);font-size:14px" aria-hidden="true"></i>
             <h2 class="lis-card__title">Kidney function test (KFT)</h2>
             <span class="lis-badge lis-badge--danger">
-              <i class="ti ti-alert-triangle" style="font-size:10px"></i> 2 critical
+              <i class="ti ti-alert-triangle" style="font-size:11px"></i> 2 critical
             </span>
           </div>
           <div style="overflow-x:auto">
@@ -70,7 +70,7 @@
                 </tr>
               </thead>
               <tbody>
-                @for (p of params; track p.id; let i = $index) {
+                @for (p of params(); track p.id; let i = $index) {
                   <tr>
                     <td class="param-name" [class.param-critical]="p.flag === 'critical'">{{ p.name }}</td>
                     <td>
@@ -79,8 +79,8 @@
                           class="result-input"
                           [class]="'result-input--' + p.flag"
                           type="number"
-                          [(ngModel)]="params[i].value"
-                          (ngModelChange)="evalFlag(i)"
+                          [value]="p.value"
+                          (input)="updateValue(i, $any($event.target).value)"
                           [attr.aria-label]="p.name + ' result'"
                         />
                         @if (p.flag === 'high' || p.flag === 'critical') {
@@ -120,7 +120,7 @@
             <h2 class="lis-card__title">Test summary</h2>
           </div>
           <div class="side-rows">
-            <div class="side-row"><span>Sample ID</span><span class="lis-mono" style="font-size:10px">SMP-2406-087</span></div>
+            <div class="side-row"><span>Sample ID</span><span class="lis-mono" style="font-size:11px">SMP-2406-087</span></div>
             <div class="side-row"><span>Tests ordered</span><span>KFT · Urine R/M</span></div>
             <div class="side-row"><span>Collected</span><span>9:20 AM</span></div>
             <div class="side-row"><span>Priority</span><span class="stat-chip stat-chip--sm">STAT</span></div>
@@ -140,7 +140,7 @@
               <span class="ring-sub">entered</span>
             </div>
           </div>
-          <div class="progress-caption">{{ enteredCount() }} of {{ params.length }} parameters entered</div>
+          <div class="progress-caption">{{ enteredCount() }} of {{ params().length }} parameters entered</div>
 
           <!-- Flag summary -->
           <div class="side-section">Flags</div>

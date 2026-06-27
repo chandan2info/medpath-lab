@@ -1,4 +1,4 @@
-import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { SidebarService }    from '../../../core/services/sidebar.service';
@@ -17,4 +17,5 @@ export class TopbarComponent {
   protected readonly sidebar = inject(SidebarService);
   protected readonly theme   = inject(ThemeService);
   protected readonly session = inject(UserSessionService);
+  readonly searchQuery = signal('');
 }

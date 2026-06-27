@@ -9,11 +9,11 @@
       </div>
       <div class="lp-nav-links" role="list">
         <a class="lp-link lp-link--active" href="#" role="listitem">Home</a>
-        <a class="lp-link" href="#" role="listitem">About us</a>
-        <a class="lp-link" href="#" role="listitem">Tests</a>
-        <a class="lp-link" href="#" role="listitem">Our process</a>
-        <a class="lp-link" href="#" role="listitem">Reports</a>
-        <a class="lp-link" href="#" role="listitem">Contact us</a>
+        <a class="lp-link" href="#about" role="listitem">About us</a>
+        <a class="lp-link" href="#tests" role="listitem">Tests</a>
+        <a class="lp-link" href="#why" role="listitem">Our process</a>
+        <a class="lp-link" href="#login-card" role="listitem">Reports</a>
+        <a class="lp-link" href="#footer" role="listitem">Contact us</a>
       </div>
       <div class="lp-nav-cta">
         <button class="lp-btn-outline" type="button">View reports</button>
@@ -21,10 +21,32 @@
           <i class="ti ti-calendar" aria-hidden="true"></i> Book a test
         </button>
       </div>
+      <!-- Mobile hamburger -->
+      <button class="lp-hamburger" type="button"
+        (click)="mobileMenuOpen.set(!mobileMenuOpen())"
+        [attr.aria-expanded]="mobileMenuOpen()"
+        aria-label="Toggle navigation menu"
+        aria-controls="lp-mobile-menu">
+        <i [class]="mobileMenuOpen() ? 'ti ti-x' : 'ti ti-menu-2'" aria-hidden="true"></i>
+      </button>
     </nav>
+    <!-- Mobile drawer -->
+    @if (mobileMenuOpen()) {
+      <div class="lp-mobile-menu" id="lp-mobile-menu" role="dialog" aria-label="Mobile navigation">
+        <a class="lp-mob-link" href="#" (click)="mobileMenuOpen.set(false)">Home</a>
+        <a class="lp-mob-link" href="#" (click)="mobileMenuOpen.set(false)">About us</a>
+        <a class="lp-mob-link" href="#" (click)="mobileMenuOpen.set(false)">Tests</a>
+        <a class="lp-mob-link" href="#" (click)="mobileMenuOpen.set(false)">Our process</a>
+        <a class="lp-mob-link" href="#" (click)="mobileMenuOpen.set(false)">Reports</a>
+        <a class="lp-mob-link" href="#" (click)="mobileMenuOpen.set(false)">Contact us</a>
+        <button class="lp-btn-solid lp-mob-cta" type="button" (click)="scrollToLogin(); mobileMenuOpen.set(false)">
+          <i class="ti ti-calendar" aria-hidden="true"></i> Book a test
+        </button>
+      </div>
+    }
 
     <!-- Hero -->
-    <section class="lp-hero" aria-label="Lab introduction">
+    <section class="lp-hero" id="hero" aria-label="Lab introduction">
       <div class="lp-hero-left">
         <div class="lp-eyebrow">
           <i class="ti ti-certificate" aria-hidden="true"></i> NABL Accredited Laboratory
@@ -95,12 +117,16 @@
             <i class="ti ti-shield-check" aria-hidden="true"></i>
             Secured · Single-user · MedPath LIS v2.4
           </div>
+          <div class="lp-demo-hint" role="note">
+            <i class="ti ti-info-circle" aria-hidden="true"></i>
+            Demo — username: <code>ravi.anand</code> &nbsp;password: <code>MedPath&#64;2024</code>
+          </div>
         </div>
       </div>
     </section>
 
     <!-- Test categories -->
-    <section class="lp-section lp-section--alt" aria-label="Test categories">
+    <section class="lp-section lp-section--alt" id="tests" aria-label="Test categories">
       <div class="lp-section-title">Popular test categories</div>
       <div class="lp-section-sub">Comprehensive pathology testing across all major disciplines</div>
       <div class="lp-cat-grid">
@@ -125,7 +151,7 @@
     </div>
 
     <!-- Why choose -->
-    <section class="lp-section" aria-label="Why choose MedPath">
+    <section class="lp-section" id="why" aria-label="Why choose MedPath">
       <div class="lp-section-title">Why choose MedPath?</div>
       <div class="lp-section-sub">Built for precision, designed for trust</div>
       <div class="lp-why-grid">
@@ -152,7 +178,7 @@
     </div>
 
     <!-- Footer -->
-    <footer class="lp-footer" role="contentinfo">
+    <footer class="lp-footer" id="footer" role="contentinfo">
       <div class="lp-footer-grid">
         <div>
           <div class="lp-footer-name">MedPath Diagnostics</div>

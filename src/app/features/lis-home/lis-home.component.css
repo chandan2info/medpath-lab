@@ -103,4 +103,20 @@
       font-size: 12px; color: var(--lis-primary, #1D9E75);
       text-decoration: none; margin-left: auto;
       &:hover { text-decoration: underline; }
+    }.empty-state {
+  display: flex; align-items: center; gap: 8px; padding: 20px 14px;
+  font-size: 13px; color: var(--text-secondary);
+  i { font-size: 16px; }
+}
+.lis-card-icon         { color: var(--lis-primary, #1D9E75); font-size: 15px; }
+.lis-card-icon--danger { color: #E24B4A; }
+
+    /* Welcome band responsive — fix stat strip on narrow screens */
+    @media (max-width: 600px) {
+      .welcome-band { flex-direction: column; gap: 12px; }
+      .wb-stats { flex-wrap: wrap; justify-content: flex-start; }
+      .wb-stat  { text-align: left; padding: 0 12px; }
+      .wb-stat:first-child { padding-left: 0; }
+      .wb-divider { display: none; }
+      .wb-stat-val { font-size: 18px; }
     }

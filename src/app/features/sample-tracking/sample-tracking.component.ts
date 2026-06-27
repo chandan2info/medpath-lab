@@ -1,7 +1,6 @@
 import { Component, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgClass } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { StatusPillComponent } from '../../shared/components/status-pill/status-pill.component';
 import { Sample, SampleStatus } from '../../shared/models/lis.models';
 
@@ -25,7 +24,7 @@ const FILTER_OPTS: { label: string; value: SampleStatus | 'all' }[] = [
 @Component({
   selector: 'app-sample-tracking',
   standalone: true,
-  imports: [RouterLink, NgClass, FormsModule, StatusPillComponent],
+  imports: [RouterLink, NgClass, StatusPillComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './sample-tracking.component.html',
     styleUrl: './sample-tracking.component.css',
@@ -34,13 +33,13 @@ export class SampleTrackingComponent {
   protected readonly filterOpts = FILTER_OPTS;
   protected readonly barcodeWidths = [2,1,3,1,2,1,1,2,3,1,2,1,2,3,1];
 
-  searchQ      = '';
+  searchQ      = signal('');
   activeFilter = signal<SampleStatus | 'all'>('all');
   selectedSample = signal<Sample | null>(SAMPLES[0]);
 
   filteredSamples = computed(() => {
     const f = this.activeFilter();
-    const q = this.searchQ.toLowerCase();
+    const q = this.searchQ().toLowerCase();
     return SAMPLES.filter(s =>
       (f === 'all' || s.status === f || (f === 'critical' && s.priority === 'stat')) &&
       (s.patientName.toLowerCase().includes(q) || s.id.toLowerCase().includes(q))

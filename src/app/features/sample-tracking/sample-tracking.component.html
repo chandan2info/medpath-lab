@@ -20,7 +20,9 @@
     <div class="tracking-toolbar">
       <div class="ts-search" role="search">
         <i class="ti ti-search" aria-hidden="true"></i>
-        <input type="search" placeholder="Search by patient name or sample ID…" [(ngModel)]="searchQ"
+        <input type="search" placeholder="Search by patient name or sample ID…"
+          [value]="searchQ()"
+          (input)="searchQ.set($any($event.target).value)"
           aria-label="Search samples" />
       </div>
       <div class="filter-pills" role="group" aria-label="Filter samples by status">
@@ -56,7 +58,7 @@
                 <td><span class="lis-mono">{{ s.id }}</span></td>
                 <td>
                   {{ s.patientName }}
-                  <div style="font-size:10px;color:var(--text-secondary)">{{ s.patientId }}</div>
+                  <div style="font-size:11px;color:var(--text-secondary)">{{ s.patientId }}</div>
                 </td>
                 <td>
                   <div style="display:flex;gap:3px;align-items:center">
@@ -96,7 +98,7 @@
             <div class="det-av" aria-hidden="true">{{ initials(selectedSample()!.patientName) }}</div>
             <div>
               <div style="font-size:12px;font-weight:500;color:var(--text-primary)">{{ selectedSample()!.patientName }}</div>
-              <div style="font-size:10px;color:var(--text-secondary)">{{ selectedSample()!.patientId }} · {{ selectedSample()!.tests.join(', ') }}</div>
+              <div style="font-size:11px;color:var(--text-secondary)">{{ selectedSample()!.patientId }} · {{ selectedSample()!.tests.join(', ') }}</div>
             </div>
           </div>
 

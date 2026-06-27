@@ -6,8 +6,7 @@ export const authGuard: CanActivateFn = () => {
   const session = inject(UserSessionService);
   const router  = inject(Router);
 
-  // For demo: operator is always set; swap with real token check in production.
-  if (session.operator().name) {
+  if (session.isLoggedIn()) {
     return true;
   }
   return router.createUrlTree(['/lis-home']);

@@ -124,7 +124,7 @@
     .preview-body { padding: 14px; }
     .preview-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 14px; }
     .preview-stat { background: rgba(255,255,255,0.04); border-radius: 8px; padding: 8px 10px; border: 1px solid rgba(255,255,255,0.06); }
-    .preview-stat-label { font-size: 9px; color: rgba(255,255,255,0.4); margin: 0 0 3px; }
+    .preview-stat-label { font-size: 11px; color: rgba(255,255,255,0.4); margin: 0 0 3px; }
     .preview-stat-val   { font-size: 13px; font-weight: 700; margin: 0; }
 
     .preview-chart { height: 80px; margin-bottom: 12px; }

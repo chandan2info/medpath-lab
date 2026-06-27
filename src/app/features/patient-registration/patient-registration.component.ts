@@ -57,19 +57,19 @@ export class PatientRegistrationComponent {
 
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({
-      firstName:    ['Ananya', Validators.required],
-      lastName:     ['Krishnaswamy', Validators.required],
-      dob:          ['1990-03-14'],
-      gender:       ['Female'],
-      bloodGroup:   ['B+'],
-      mobile:       ['91xxxxxxx44', Validators.required],
-      email:        ['ananya.k@email.com'],
-      address:      ['14, 3rd Cross, Jayanagar 4th Block, Bengaluru — 560041'],
-      refDoctor:    [DOCTORS[0]],
+      firstName:    ['', Validators.required],
+      lastName:     ['', Validators.required],
+      dob:          ['', Validators.required],
+      gender:       ['', Validators.required],
+      bloodGroup:   ['Unknown'],
+      mobile:       ['', [Validators.required, Validators.pattern(/^[6-9]\d{9}$/)]],
+      email:        [''],
+      address:      [''],
+      refDoctor:    ['', Validators.required],
       visitType:    ['Walk-in'],
       fasting:      ['Fasting'],
       collection:   ['At lab counter'],
-      clinicalNotes:['Fatigue, weight gain, cold intolerance — 3 months. Suspected hypothyroidism.'],
+      clinicalNotes:[''],
       medications:  [''],
     });
     this.calcAge();
@@ -88,7 +88,15 @@ export class PatientRegistrationComponent {
   }
 
   nextStep(): void {
-    if (this.currentStep() < 4) this.currentStep.update(s => s + 1);
+    // Mark current step fields touched so errors show
+    this.form.markAllAsTouched();
+    const stepFields: Record<number, string[]> = {
+      1: ['firstName','lastName','dob','gender','mobile'],
+      2: ['refDoctor','visitType','fasting','collection'],
+    };
+    const fields = stepFields[this.currentStep()] ?? [];
+    const valid = fields.every(f => this.form.get(f)?.valid ?? true);
+    if (valid && this.currentStep() < 4) this.currentStep.update(s => s + 1);
   }
 
   filteredTests = computed(() => {

@@ -332,8 +332,9 @@
   }
 
   /* ── Typography baseline ───────────────────────────────── */
+  /* Landing/marketing headings use display font; LIS dashboard resets to sans via .lis-app-shell */
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-display);
+    font-family: var(--font-sans);
     font-weight: 600;
     line-height: 1.25;
     color: var(--text-base);
@@ -3594,10 +3595,15 @@
   --lis-primary-xlight:#E1F5EE;
   --lis-primary-deep:  #085041;
   --lis-sidebar-bg:    #04342C;
+  --lis-sidebar-text:  rgba(255,255,255,0.85);
+  --lis-sidebar-muted: rgba(255,255,255,0.45);
+  --lis-sidebar-hover: rgba(255,255,255,0.06);
+  --lis-sidebar-sep:   rgba(255,255,255,0.07);
 
   /* Semantic */
   --lis-warning:       #EF9F27;
   --lis-danger:        #E24B4A;
+  --lis-danger-xlight: #FFF0F0;
 
   /* Surfaces (alias to global tokens) */
   --card-bg:           var(--bg-surface);
@@ -3625,6 +3631,7 @@
   --pill-critical-color:#791F1F;
   --pill-stat-bg:      #E24B4A;
   --pill-stat-color:   #ffffff;
+  --lis-danger-xlight: rgba(226,75,74,0.12);
 
   /* Topbar */
   --topbar-bg:         #ffffff;
@@ -3638,6 +3645,10 @@
   --lis-primary-xlight:rgba(29,158,117,0.12);
   --lis-primary-deep:  #9FE1CB;
   --lis-sidebar-bg:    #031f19;
+  --lis-sidebar-text:  rgba(255,255,255,0.85);
+  --lis-sidebar-muted: rgba(255,255,255,0.40);
+  --lis-sidebar-hover: rgba(255,255,255,0.05);
+  --lis-sidebar-sep:   rgba(255,255,255,0.06);
 
   --card-bg:           var(--bg-surface);
   --body-bg:           var(--bg-page);
