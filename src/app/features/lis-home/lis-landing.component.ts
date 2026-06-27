@@ -12,11 +12,12 @@ import { UserSessionService } from '../../core/services/user-session.service';
     styleUrl: './lis-landing.component.css',
 })
 export class LisLandingComponent {
-  username = 'ravi.anand';
+  username = '';
   password = '';
-  remember = true;
+  remember = false;
   showPw   = signal(false);
   loginError = signal(false);
+  mobileMenuOpen = signal(false);
 
   protected readonly testCats = [
     { name:'Blood tests',    icon:'droplet',           desc:'CBC, Sugar, Lipid profile & more' },

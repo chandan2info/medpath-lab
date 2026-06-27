@@ -1,7 +1,6 @@
 import { Component, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgClass, NgStyle } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { ResultParameter, ResultFlag } from '../../shared/models/lis.models';
 
 interface ParamRow extends ResultParameter {
@@ -20,7 +19,7 @@ const KFT_PARAMS: ParamRow[] = [
 @Component({
   selector: 'app-result-entry',
   standalone: true,
-  imports: [RouterLink, NgClass, NgStyle, FormsModule],
+  imports: [RouterLink, NgClass, NgStyle],
   changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './result-entry.component.html',
     styleUrl: './result-entry.component.css',
@@ -28,23 +27,37 @@ const KFT_PARAMS: ParamRow[] = [
 export class ResultEntryComponent {
   protected readonly tabs = ['KFT (Kidney function)', 'Urine R/M', 'Haematology'];
   activeTab = signal('KFT (Kidney function)');
-  params: ParamRow[] = [...KFT_PARAMS];
+  params = signal<ParamRow[]>([...KFT_PARAMS]);
 
-  hasCritical = computed(() => this.params.some(p => p.flag === 'critical'));
-  enteredCount = computed(() => this.params.filter(p => p.value !== '').length);
-  pct = computed(() => Math.round(this.enteredCount() / this.params.length * 100));
-  normalCount  = computed(() => this.params.filter(p => p.flag === 'normal').length);
-  abnCount     = computed(() => this.params.filter(p => p.flag === 'high' || p.flag === 'low').length);
-  critCount    = computed(() => this.params.filter(p => p.flag === 'critical').length);
+  hasCritical = computed(() => this.params().some(p => p.flag === 'critical'));
+  enteredCount = computed(() => this.params().filter(p => p.value !== '').length);
+  pct = computed(() => Math.round(this.enteredCount() / this.params().length * 100));
+  normalCount  = computed(() => this.params().filter(p => p.flag === 'normal').length);
+  abnCount     = computed(() => this.params().filter(p => p.flag === 'high' || p.flag === 'low').length);
+  critCount    = computed(() => this.params().filter(p => p.flag === 'critical').length);
 
   evalFlag(i: number): void {
-    const p = this.params[i];
-    const v = parseFloat(p.value);
-    if (isNaN(v)) { p.flag = 'normal'; return; }
-    if (p.id === 'k' && v > 6.0) { p.flag = 'critical'; return; }
-    if (p.refHigh !== null && v > p.refHigh) { p.flag = 'high'; return; }
-    if (p.refLow !== null && v < p.refLow)   { p.flag = 'low';  return; }
-    p.flag = 'normal';
+    this.params.update(rows => {
+      const updated = [...rows];
+      const p = { ...updated[i] };
+      const v = parseFloat(p.value);
+      if (isNaN(v)) { p.flag = 'normal'; }
+      else if (p.id === 'k' && v > 6.0) { p.flag = 'critical'; }
+      else if (p.refHigh !== null && v > p.refHigh) { p.flag = 'high'; }
+      else if (p.refLow !== null && v < p.refLow)   { p.flag = 'low';  }
+      else { p.flag = 'normal'; }
+      updated[i] = p;
+      return updated;
+    });
+  }
+
+  updateValue(i: number, value: string): void {
+    this.params.update(rows => {
+      const updated = [...rows];
+      updated[i] = { ...updated[i], value };
+      return updated;
+    });
+    this.evalFlag(i);
   }
 
   flagLabel(f: ResultFlag): string {

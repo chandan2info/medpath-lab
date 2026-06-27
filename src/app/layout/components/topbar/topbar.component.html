@@ -30,6 +30,9 @@
           type="search"
           placeholder="Search patient, sample ID, test…"
           autocomplete="off"
+          [value]="searchQuery()"
+          (input)="searchQuery.set($any($event.target).value)"
+          aria-label="Search patient, sample ID, or test"
         />
         <kbd class="search-kbd" aria-hidden="true">⌘K</kbd>
       </div>
@@ -69,11 +72,11 @@
         <!-- Operator -->
         <button class="topbar-avatar-btn" aria-label="Operator menu" aria-haspopup="true">
           <div class="lis-topbar-avatar" aria-hidden="true">
-            {{ session.operator().initials }}
+            {{ session.operator()?.initials }}
           </div>
           <div class="avatar-info hidden sm:block">
-            <p class="avatar-name">{{ session.operator().name }}</p>
-            <p class="avatar-role">{{ session.operator().role }}</p>
+            <p class="avatar-name">{{ session.operator()?.name }}</p>
+            <p class="avatar-role">{{ session.operator()?.role }}</p>
           </div>
           <i class="ti ti-chevron-down avatar-chevron hidden sm:block" aria-hidden="true"></i>
         </button>

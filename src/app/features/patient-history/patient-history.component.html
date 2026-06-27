@@ -55,7 +55,7 @@
               <div class="pd-name">{{ selectedPatient()!.name }}</div>
               <div class="pd-meta">
                 {{ selectedPatient()!.age }} yrs · {{ selectedPatient()!.sex }} ·
-                <span class="lis-mono" style="font-size:10px">{{ selectedPatient()!.id }}</span>
+                <span class="lis-mono" style="font-size:11px">{{ selectedPatient()!.id }}</span>
               </div>
             </div>
             <div class="pd-stats">
@@ -80,6 +80,7 @@
           </div>
 
           <!-- Visit timeline -->
+          @if (activeTab() === 'Visit history') {
           <div class="timeline" role="list" aria-label="Visit history">
             @for (v of selectedPatient()!.visits; track v.invoiceId; let i = $index) {
               <div class="visit-item" role="listitem">
@@ -95,10 +96,10 @@
                     <span class="vc-date">{{ v.date }}{{ i === 0 ? ' — Today' : '' }}</span>
                     @if (v.hasCritical) {
                       <span class="crit-badge" role="status">
-                        <i class="ti ti-alert-triangle" style="font-size:9px" aria-hidden="true"></i> Critical
+                        <i class="ti ti-alert-triangle" style="font-size:11px" aria-hidden="true"></i> Critical
                       </span>
                     }
-                    <span class="lis-mono" style="font-size:9px;margin-left:auto">{{ v.invoiceId }}</span>
+                    <span class="lis-mono" style="font-size:11px;margin-left:auto">{{ v.invoiceId }}</span>
                   </div>
                   <div class="vc-body">
                     <div class="vc-tests">
@@ -128,6 +129,17 @@
               </div>
             }
           </div>
+          } @else if (activeTab() === 'Test trends') {
+            <div class="tab-empty-state" role="region" aria-label="Test trends">
+              <i class="ti ti-chart-line" aria-hidden="true"></i>
+              <p>Test trend charts will appear here once multiple visits are recorded.</p>
+            </div>
+          } @else {
+            <div class="tab-empty-state" role="region" aria-label="Documents">
+              <i class="ti ti-files" aria-hidden="true"></i>
+              <p>No documents uploaded for this patient yet.</p>
+            </div>
+          }
         </div>
       }
     </div>

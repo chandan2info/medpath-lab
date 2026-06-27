@@ -70,4 +70,9 @@
     .vc-row--finding span:last-child { color:var(--text-secondary); }
     .vc-row--critical span:last-child { color:#E24B4A; font-weight:500; }
     .vc-actions { display:flex; gap:6px; margin-top:8px; }
-    .vc-btn { display:flex; align-items:center; gap:4px; padding:5px 9px; border:0.5px solid var(--border-color); border-radius:6px; font-size:11px; cursor:pointer; color:var(--text-secondary); background:var(--card-bg); font-family:var(--font-family); &:hover { background:var(--body-bg); } i { font-size:13px; color:var(--lis-primary,#1D9E75); } }
+    .vc-btn { display:flex; align-items:center; gap:4px; padding:5px 9px; border:0.5px solid var(--border-color); border-radius:6px; font-size:11px; cursor:pointer; color:var(--text-secondary); background:var(--card-bg); font-family:var(--font-family); &:hover { background:var(--body-bg); } i { font-size:13px; color:var(--lis-primary,#1D9E75); } }    .tab-empty-state {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 10px; padding: 40px 20px; color: var(--text-secondary); text-align: center;
+      i { font-size: 32px; opacity: 0.4; }
+      p  { font-size: 13px; margin: 0; }
+    }

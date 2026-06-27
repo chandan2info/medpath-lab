@@ -32,7 +32,7 @@
     .sample-table-wrap { background:var(--card-bg); border:0.5px solid var(--border-color); border-radius:10px; overflow-x:auto; }
     .sample-tbl { width:100%; border-collapse:collapse; font-size:12px; min-width:600px; }
     .sample-tbl th {
-      padding:8px 14px; text-align:left; font-size:10px; color:var(--text-secondary);
+      padding:8px 14px; text-align:left; font-size:11px; color:var(--text-secondary);
       font-weight:500; border-bottom:0.5px solid var(--border-color);
       text-transform:uppercase; letter-spacing:.04em; white-space:nowrap;
     }
@@ -43,14 +43,14 @@
     .sample-tbl tbody tr:last-child td { border-bottom:none; }
 
     .tube-dot { display:inline-block; width:12px; height:28px; border-radius:6px; }
-    .prio-label { font-size:10px; color:var(--text-secondary); }
+    .prio-label { font-size:11px; color:var(--text-secondary); }
     .eta-urgent { color:#E24B4A; font-weight:500; }
 
     /* Detail panel */
     .detail-panel { position:sticky; top:80px; }
     .det-pat { padding:10px 14px; border-bottom:0.5px solid var(--border-color); display:flex; align-items:center; gap:9px; }
-    .det-av { width:30px; height:30px; border-radius:50%; background:var(--lis-primary-xlight,#E1F5EE); display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:var(--lis-primary-deep,#085041); }
-    .det-section { padding:9px 14px 3px; font-size:10px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.05em; font-weight:500; }
+    .det-av { width:30px; height:30px; border-radius:50%; background:var(--lis-primary-xlight,#E1F5EE); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:500; color:var(--lis-primary-deep,#085041); }
+    .det-section { padding:9px 14px 3px; font-size:11px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.05em; font-weight:500; }
     .det-row { display:flex; align-items:center; justify-content:space-between; padding:6px 14px; border-bottom:0.5px solid var(--border-color); &:last-of-type { border-bottom:none; } }
     .det-lbl { font-size:11px; color:var(--text-secondary); }
     .det-val { font-size:11px; color:var(--text-primary); font-weight:500; }
@@ -61,9 +61,9 @@
     .tube-body  { width:13px; height:36px; border-radius:7px; flex-shrink:0; }
     .tube-info  { flex:1; min-width:0; }
     .tube-label { font-size:11px; font-weight:500; color:var(--text-primary); }
-    .tube-tests { font-size:10px; color:var(--text-secondary); }
+    .tube-tests { font-size:11px; color:var(--text-secondary); }
     .barcode { display:flex; flex-direction:column; align-items:center; gap:3px; }
     .bc-bars { display:flex; gap:1px; height:20px; align-items:stretch; }
     .bc-bar  { border-radius:1px; background:var(--text-primary); }
-    .bc-num  { font-size:9px; font-family:monospace; color:var(--text-secondary); }
+    .bc-num  { font-size:11px; font-family:monospace; color:var(--text-secondary); }
     .det-actions { padding:12px 14px; display:flex; flex-direction:column; gap:7px; border-top:0.5px solid var(--border-color); }

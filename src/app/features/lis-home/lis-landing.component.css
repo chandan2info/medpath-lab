@@ -42,6 +42,7 @@
     .lp-forgot { font-size:11px; color:#1D9E75; text-decoration:none; }
     .lp-signin-btn { width:100%; padding:9px; background:#1D9E75; color:#fff; border:none; border-radius:9px; font-size:13px; font-weight:500; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; font-family:inherit; &:hover { filter:brightness(1.07); } i { font-size:14px; } }
     .lp-secure-row { display:flex; align-items:center; justify-content:center; gap:5px; margin-top:10px; font-size:10px; color:#085041; i { font-size:12px; } }
+    .lp-demo-hint { display:flex; align-items:center; justify-content:center; gap:5px; margin-top:6px; font-size:10px; color:#0F6E56; background:rgba(29,158,117,0.08); border:0.5px solid rgba(29,158,117,0.25); border-radius:6px; padding:5px 10px; code { font-family:monospace; font-size:10px; background:rgba(29,158,117,0.12); padding:0 4px; border-radius:3px; } i { font-size:11px; flex-shrink:0; } }
 
     /* Sections */
     .lp-section    { padding:34px 28px; }
@@ -95,3 +96,26 @@
     .lp-open-dot { width:7px; height:7px; border-radius:50%; background:#5DCAA5; }
     .lp-footer-bottom { border-top:1px solid rgba(255,255,255,0.08); padding-top:12px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:11px; color:#5DCAA5; }
     .lp-footer-policy { display:flex; gap:14px; a { font-size:11px; color:#5DCAA5; text-decoration:none; &:hover { color:#fff; } } }
+    /* Mobile hamburger & drawer */
+    .lp-hamburger { display:none; background:none; border:none; font-size:20px; color:var(--text-primary); cursor:pointer; padding:6px; margin-left:auto; }
+    @media (max-width:768px) {
+      .lp-nav-links, .lp-nav-cta { display:none; }
+      .lp-hamburger { display:flex; align-items:center; }
+    }
+    .lp-mobile-menu {
+      position:fixed; top:56px; left:0; right:0; z-index:200;
+      background:var(--card-bg); border-bottom:1px solid var(--border-color);
+      display:flex; flex-direction:column; padding:12px 20px 16px; gap:0;
+      box-shadow:0 8px 24px rgba(0,0,0,0.12);
+    }
+    .lp-mob-link { padding:13px 0; font-size:14px; color:var(--text-primary); text-decoration:none; border-bottom:0.5px solid var(--border-color); }
+    .lp-mob-cta  { margin-top:14px; justify-content:center; width:100%; }
+
+    /* Welcome band mobile fix */
+    @media (max-width:600px) {
+      .lp-stats-band { display:grid; grid-template-columns:1fr 1fr; gap:0; flex-wrap:wrap; }
+      .lp-stat { padding:16px; }
+    }
+
+    /* Restore display font for landing page headings only */
+    h1, h2 { font-family: 'Instrument Serif', Georgia, serif; }

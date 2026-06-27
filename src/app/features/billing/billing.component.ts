@@ -39,6 +39,7 @@ export class BillingComponent {
   activeCat   = 'All';
   query       = '';
   discountPct = 0;
+  activeStep  = signal(2);
   payMode     = signal<PaymentMode>('cash');
   private _sel = signal(new Set<string>(['CBC','LFT','URI']));
 
@@ -57,5 +58,13 @@ export class BillingComponent {
 
   toggle(id: string): void {
     this._sel.update(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  }
+
+  nextStep(): void {
+    if (this.activeStep() < this.steps.length) this.activeStep.update(s => s + 1);
+  }
+
+  prevStep(): void {
+    if (this.activeStep() > 1) this.activeStep.update(s => s - 1);
   }
 }

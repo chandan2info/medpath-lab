@@ -120,3 +120,13 @@
 .tot-row   { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-secondary); padding: 2px 0; }
 .tot-row--grand { font-size: 14px; font-weight: 500; color: var(--text-primary); padding-top: 6px; border-top: 0.5px solid var(--border-color); margin-top: 4px; }
 .inv-actions { padding: 10px 14px; display: flex; flex-direction: column; gap: 7px; }
+.lis-card-icon { color: var(--lis-primary, #1D9E75); font-size: 15px; }
+.icon-sm       { font-size: 10px; }
+.text-xs       { font-size: 11px; }
+.inv-id-badge  { font-size: 13px; margin-top: 4px; }
+.inv-pat-name  { font-size: 12px; font-weight: 500; color: var(--text-primary); }
+.inv-pat-meta  { font-size: 10px; color: var(--text-secondary); }
+.inv-date-mono { font-size: 10px; }
+.disc-color    { color: var(--lis-primary-deep, #0F6E56); }
+.pay-section       { padding: 10px 14px; border-top: 0.5px solid var(--border-color); }
+.pay-section-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 8px; font-weight: 500; }
