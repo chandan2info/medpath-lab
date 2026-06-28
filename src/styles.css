@@ -969,6 +969,21 @@
   .animate-delay-400 { animation-delay: 400ms; }
 }
 
+
+/* ── Global icon utility — used across LIS feature components ── */
+.lis-card-icon         { color: var(--lis-primary, #1D9E75); font-size: 15px; }
+.lis-card-icon--danger { color: var(--lis-danger, #E24B4A); }
+
+/* ── Value colour utilities for flag summaries ───────────────── */
+.val-normal { color: #0F6E56; font-weight: 500; }
+.val-danger { color: #E24B4A; font-weight: 500; }
+
+/* ── Tabler icon size utility ─────────────────────────────────── */
+.ti-xs { font-size: 11px; }
+
+/* ── overflow-x-auto utility ──────────────────────────────────── */
+.overflow-x-auto { overflow-x: auto; }
+
 /* ─── SCROLLBAR ─────────────────────────────────────────── */
 * {
   scrollbar-width: thin;
@@ -3279,12 +3294,8 @@
 }
 .auth-link:hover { color: var(--primary-dark); }
 
-/* Spin */
-.spin-icon { animation: authSpin 0.9s linear infinite; }
-@keyframes authSpin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
+/* Spin — reuses the global spin keyframes from the editor section above */
+.spin-icon { animation: spin 0.9s linear infinite; }
 
 /* ══════════════════════════════════════════════════
    RESPONSIVE

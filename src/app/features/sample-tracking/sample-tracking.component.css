@@ -129,7 +129,7 @@
 .tbl-sub    { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
 .tbl-tests  { font-size: 11px; }
 .tube-dots  { display: flex; gap: 3px; align-items: center; }
-.lis-card-icon { color: var(--lis-primary, #1D9E75); font-size: 15px; }
+/* .lis-card-icon is defined globally in styles.css */
 
 /* Detail panel extra classes */
 .det-pname { font-size: 13px; font-weight: 500; color: var(--text-primary); }

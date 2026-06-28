@@ -108,8 +108,7 @@
   font-size: 13px; color: var(--text-secondary);
   i { font-size: 16px; }
 }
-.lis-card-icon         { color: var(--lis-primary, #1D9E75); font-size: 15px; }
-.lis-card-icon--danger { color: #E24B4A; }
+/* .lis-card-icon and .lis-card-icon--danger are defined globally in styles.css */
 
     /* Welcome band responsive — fix stat strip on narrow screens */
     @media (max-width: 600px) {

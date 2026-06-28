@@ -112,5 +112,4 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 .spin { display: inline-block; animation: spin 0.8s linear infinite; }
 
-/* ── Card icon ───────────────────────────── */
-.lis-card-icon { color: var(--lis-primary, #1D9E75); font-size: 15px; }
+/* .lis-card-icon is defined globally in styles.css */

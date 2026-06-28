@@ -64,7 +64,7 @@
               {{ selectedPatient()!.mobile }}
             </span>
             <span>·</span>
-            <span class="lis-mono" style="font-size:11px">{{ selectedPatient()!.id }}</span>
+            <span class="lis-mono">{{ selectedPatient()!.id }}</span>
           </div>
         </div>
         <div class="pd-stats">
@@ -107,14 +107,14 @@
               </div>
               <div class="visit-card">
                 <div class="vc-header">
-                  <i class="ti ti-calendar" style="font-size:14px;color:var(--text-secondary)" aria-hidden="true"></i>
+                  <i class="ti ti-calendar vc-cal-icon" aria-hidden="true"></i>
                   <span class="vc-date">{{ v.date }}</span>
                   @if (v.hasCritical) {
                     <span class="crit-badge" role="status">
                       <i class="ti ti-alert-triangle" aria-hidden="true"></i> Critical
                     </span>
                   }
-                  <span class="lis-mono vc-inv-id" style="font-size:11px">{{ v.invoiceId }}</span>
+                  <span class="lis-mono vc-inv-id">{{ v.invoiceId }}</span>
                 </div>
                 <div class="vc-body">
                   <div class="vc-tests">

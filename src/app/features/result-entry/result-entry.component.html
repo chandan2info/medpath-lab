@@ -51,13 +51,13 @@
         <!-- Result table -->
         <div class="result-card lis-card">
           <div class="lis-card__header">
-            <i class="ti ti-test-pipe" style="color:var(--lis-primary,#1D9E75);font-size:14px" aria-hidden="true"></i>
+            <i class="ti ti-test-pipe lis-card-icon" aria-hidden="true"></i>
             <h2 class="lis-card__title">Kidney function test (KFT)</h2>
             <span class="lis-badge lis-badge--danger">
-              <i class="ti ti-alert-triangle" style="font-size:11px"></i> 2 critical
+              <i class="ti ti-alert-triangle ti-xs"></i> 2 critical
             </span>
           </div>
-          <div style="overflow-x:auto">
+          <div class="overflow-x-auto">
             <table class="result-tbl" role="table" aria-label="KFT result entry">
               <thead>
                 <tr>
@@ -120,7 +120,7 @@
             <h2 class="lis-card__title">Test summary</h2>
           </div>
           <div class="side-rows">
-            <div class="side-row"><span>Sample ID</span><span class="lis-mono" style="font-size:11px">SMP-2406-087</span></div>
+            <div class="side-row"><span>Sample ID</span><span class="lis-mono">SMP-2406-087</span></div>
             <div class="side-row"><span>Tests ordered</span><span>KFT · Urine R/M</span></div>
             <div class="side-row"><span>Collected</span><span>9:20 AM</span></div>
             <div class="side-row"><span>Priority</span><span class="stat-chip stat-chip--sm">STAT</span></div>
@@ -145,9 +145,9 @@
           <!-- Flag summary -->
           <div class="side-section">Flags</div>
           <div class="side-rows">
-            <div class="side-row"><span>Normal</span><span style="color:#0F6E56;font-weight:500">{{ normalCount() }}</span></div>
-            <div class="side-row"><span>Abnormal</span><span style="color:#E24B4A;font-weight:500">{{ abnCount() }}</span></div>
-            <div class="side-row"><span>Critical</span><span style="color:#E24B4A;font-weight:500">{{ critCount() }}</span></div>
+            <div class="side-row"><span>Normal</span><span class="val-normal">{{ normalCount() }}</span></div>
+            <div class="side-row"><span>Abnormal</span><span class="val-danger">{{ abnCount() }}</span></div>
+            <div class="side-row"><span>Critical</span><span class="val-danger">{{ critCount() }}</span></div>
           </div>
 
           <!-- Notify box -->

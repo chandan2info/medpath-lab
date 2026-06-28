@@ -12,7 +12,7 @@
       <!-- Report list -->
       <div class="lis-card report-list">
         <div class="lis-card__header">
-          <i class="ti ti-file-text" style="color:var(--lis-primary,#1D9E75);font-size:15px" aria-hidden="true"></i>
+          <i class="ti ti-file-text lis-card-icon" aria-hidden="true"></i>
           <h2 class="lis-card__title">All reports</h2>
           <span class="lis-badge lis-badge--danger">5 pending</span>
         </div>
@@ -33,7 +33,7 @@
               <div class="rr-info">
                 <div class="rr-name">{{ r.patientName }}</div>
                 <div class="rr-meta">{{ r.test }} · {{ r.date }}</div>
-                <div class="lis-mono" style="font-size:11px">{{ r.id }}</div>
+                <div class="lis-mono">{{ r.id }}</div>
               </div>
               <div>
                 @if (r.status === 'pending') {
@@ -92,7 +92,7 @@
             <div class="rpt-pat-band">
               <div class="rpt-pf"><div class="rpt-pl">Patient name</div><div class="rpt-pv">Arun Pillai</div></div>
               <div class="rpt-pf"><div class="rpt-pl">Age / Sex</div><div class="rpt-pv">61 years / Male</div></div>
-              <div class="rpt-pf"><div class="rpt-pl">Patient ID</div><div class="rpt-pv" style="font-family:monospace;font-size:11px">PAT-2406-0316</div></div>
+              <div class="rpt-pf"><div class="rpt-pl">Patient ID</div><div class="rpt-pv rpt-pv--mono">PAT-2406-0316</div></div>
               <div class="rpt-pf"><div class="rpt-pl">Referred by</div><div class="rpt-pv">Dr. Suresh Menon</div></div>
               <div class="rpt-pf"><div class="rpt-pl">Collected on</div><div class="rpt-pv">23 Jun 2026 · 9:20 AM</div></div>
               <div class="rpt-pf"><div class="rpt-pl">Reported on</div><div class="rpt-pv">23 Jun 2026 · 11:05 AM</div></div>
@@ -104,7 +104,7 @@
                 <i class="ti ti-flask" aria-hidden="true"></i>
                 Kidney Function Test (KFT)
               </div>
-              <div class="lis-mono" style="font-size:11px;color:#9FE1CB">SMP-2406-087</div>
+              <div class="lis-mono rpt-sid-chip">SMP-2406-087</div>
             </div>
 
             <!-- Body -->
@@ -154,7 +154,7 @@
                   <div class="rpt-qr" aria-hidden="true"><i class="ti ti-qrcode"></i></div>
                   <div class="rpt-qr-text">
                     Scan to verify<br>
-                    <span style="font-family:monospace;font-size:11px">rpt.medpath.in/SMP-2406-087</span>
+                    <span class="rpt-mono-url">rpt.medpath.in/SMP-2406-087</span>
                   </div>
                 </div>
                 <div class="rpt-sign">
