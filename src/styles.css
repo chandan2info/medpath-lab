@@ -21,52 +21,52 @@
 /* ─── LIGHT THEME (default) ────────────────────────────── */
 :root {
   /* ── Brand palette ─────────────────────────────────────── */
-  --primary:           #CDB4DB;
-  --primary-dark:      #A78BBF;
-  --primary-deeper:    #8A6BA8;
-  --primary-light:     #EDE4F3;
-  --primary-xlight:    #F7F2FB;
+  --primary:           #3DC9A8;
+  --primary-dark:      #2EA88D;
+  --primary-deeper:    #5367FE;
+  --primary-light:     #7080FF;
+  --primary-xlight:    #E8EBFF;
 
-  --secondary:         #FFAFCC;
-  --secondary-dark:    #F07FA0;
-  --secondary-light:   #FFE4EE;
-  --secondary-xlight:  #FFF5F8;
+  --secondary:         #F07057;
+  --secondary-dark:    #C8503A;
+  --secondary-light:   #FAD5CE;
+  --secondary-xlight:  #FFF0EC;
 
-  --accent:            #BDE0FE;
-  --accent-dark:       #7EC8FD;
-  --accent-light:      #EEF7FF;
+  --accent:            #91E1CB;
+  --accent-dark:       #3DC9A8;
+  --accent-light:      #D0F4EB;
 
   /* ── Surfaces ──────────────────────────────────────────── */
-  --bg-page:           #ffffff;
+  --bg-page:           #F8F9FF;
   --bg-surface:        #ffffff;
-  --bg-surface-alt:    #fdf8ff;
-  --bg-overlay:        rgba(255,255,255,0.93);
+  --bg-surface-alt:    #F0F2FF;
+  --bg-overlay:        rgba(248,249,255,0.95);
 
   /* ── Text ──────────────────────────────────────────────── */
-  --text-base:         #2d1f3d;
-  --text-muted:        #8a7898;
-  --text-subtle:       #a08ab0;
+  --text-base:         #1A2040;
+  --text-muted:        #6B7399;
+  --text-subtle:       #9099C4;
   --text-on-primary:   #ffffff;
 
   /* ── Borders ───────────────────────────────────────────── */
-  --border:            #f0e8f5;
-  --border-strong:     #e8d8f0;
+  --border:            #DDE1F5;
+  --border-strong:     #C8CEEB;
 
   /* ── Shadows ───────────────────────────────────────────── */
-  --shadow-sm:         0 1px 4px rgba(205,180,219,0.15);
-  --shadow-card:       0 2px 16px rgba(205,180,219,0.18);
-  --shadow-card-hover: 0 12px 36px rgba(205,180,219,0.35);
-  --shadow-editor:     0 24px 64px rgba(205,180,219,0.28), 0 4px 20px rgba(0,0,0,0.06);
-  --shadow-btn:        0 2px 12px rgba(138,107,168,0.35);
-  --shadow-btn-hover:  0 6px 20px rgba(138,107,168,0.4);
-  --shadow-nav:        0 1px 10px rgba(205,180,219,0.15);
+  --shadow-sm:         0 1px 4px rgba(61,201,168,0.15);
+  --shadow-card:       0 2px 16px rgba(83,103,254,0.10);
+  --shadow-card-hover: 0 12px 36px rgba(83,103,254,0.22);
+  --shadow-editor:     0 24px 64px rgba(83,103,254,0.18), 0 4px 20px rgba(0,0,0,0.06);
+  --shadow-btn:        0 2px 12px rgba(83,103,254,0.35);
+  --shadow-btn-hover:  0 6px 20px rgba(83,103,254,0.42);
+  --shadow-nav:        0 1px 10px rgba(83,103,254,0.12);
 
   /* ── Scrollbar ─────────────────────────────────────────── */
-  --scrollbar-track:   #f7f2fb;
-  --scrollbar-thumb:   #CDB4DB;
+  --scrollbar-track:   #EFF1FF;
+  --scrollbar-thumb:   #91E1CB;
 
   /* ── Theme toggle icon (moon shown in light mode) ──────── */
-  --theme-icon-color:  #a78bbf;
+  --theme-icon-color:  #5367FE;
 
   /* ════════════════════════════════════════════════════════
      INKWELL EDITOR — ADDITIONAL VARIABLES
@@ -90,7 +90,7 @@
 
   /* ── Layout dimensions ─────────────────────────────────── */
   --header-height:     56px;
-  --sidebar-expanded:  260px;
+  --sidebar-expanded:  240px;
   --sidebar-collapsed: 72px;
   --ai-panel-width:    300px;
   --content-max-width: 740px;
@@ -128,7 +128,7 @@
   --surface-secondary:      var(--bg-surface-alt);
   --surface-tertiary:       var(--primary-xlight);
   --surface-overlay:        var(--bg-overlay);
-  --surface-overlay-hover:  rgba(205, 180, 219, 0.10);
+  --surface-overlay-hover:  rgba(83, 103, 254, 0.08);
 
   /* ── Border aliases ────────────────────────────────────── */
   --border-subtle:  var(--border);
@@ -148,19 +148,19 @@
   --color-accent-soft: var(--primary-xlight);
 
   /* ── AI colors (light) ─────────────────────────────────── */
-  --color-ai:                    #10b981;
-  --color-ai-soft:               rgba(16, 185, 129, 0.09);
-  --color-ai-header-bg:          rgba(16, 185, 129, 0.04);
-  --color-ai-soft-overlay:       rgba(16, 185, 129, 0.18);
-  --color-ai-soft-overlay-hover: rgba(16, 185, 129, 0.26);
+  --color-ai:                    #3DC9A8;
+  --color-ai-soft:               rgba(61, 201, 168, 0.09);
+  --color-ai-header-bg:          rgba(61, 201, 168, 0.04);
+  --color-ai-soft-overlay:       rgba(61, 201, 168, 0.18);
+  --color-ai-soft-overlay-hover: rgba(61, 201, 168, 0.26);
 
   /* ── Semantic ──────────────────────────────────────────── */
-  --color-success: #10b981;
+  --color-success: #3DC9A8;
   --color-warning: #f59e0b;
   --color-danger:  #ef4444;
 
   /* ── Misc ──────────────────────────────────────────────── */
-  --block-hover-bg: rgba(205, 180, 219, 0.06);
+  --block-hover-bg: rgba(83, 103, 254, 0.05);
 
   /* ── Shadow aliases ────────────────────────────────────── */
   --shadow-md:    var(--shadow-card);
@@ -178,24 +178,24 @@
   --theme-text-main:   #f8fafc;
   --theme-text-muted:  #94a3b8;
   --theme-text-subtle: #64748b;
-  --theme-accent:      #1D9E75;
-  --theme-accent-soft: rgba(56, 189, 248, 0.12);
+  --theme-accent:      #3DC9A8;
+  --theme-accent-soft: rgba(61, 201, 168, 0.14);
 
   /* ── Brand palette (Slate-aware) ── */
-  --primary:           #c4a8d8;
-  --primary-dark:      #a888c0;
-  --primary-deeper:    #1D9E75;
-  --primary-light:     rgba(56, 189, 248, 0.12);
-  --primary-xlight:    rgba(56, 189, 248, 0.06);
+  --primary:           #3DC9A8;
+  --primary-dark:      #2EA88D;
+  --primary-deeper:    #5367FE;
+  --primary-light:     rgba(112, 128, 255, 0.18);
+  --primary-xlight:    rgba(83, 103, 254, 0.10);
 
-  --secondary:         #f472b6;
-  --secondary-dark:    #ec4899;
-  --secondary-light:   rgba(244, 114, 182, 0.12);
-  --secondary-xlight:  rgba(244, 114, 182, 0.06);
+  --secondary:         #F07057;
+  --secondary-dark:    #C8503A;
+  --secondary-light:   rgba(240, 112, 87, 0.18);
+  --secondary-xlight:  rgba(240, 112, 87, 0.10);
 
-  --accent:            #1D9E75;
-  --accent-dark:       #0ea5e9;
-  --accent-light:      rgba(56, 189, 248, 0.12);
+  --accent:            #91E1CB;
+  --accent-dark:       #3DC9A8;
+  --accent-light:      rgba(145, 225, 203, 0.15);
 
   /* ── Surfaces — Slate Z-depth ── */
   --bg-page:           #0f172a;
@@ -217,23 +217,23 @@
   --shadow-sm:         0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
   --shadow-card:       0 4px 6px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.2);
   --shadow-card-hover: 0 20px 40px rgba(0,0,0,0.5), 0 8px 16px rgba(0,0,0,0.3);
-  --shadow-editor:     0 24px 64px rgba(0,0,0,0.6), 0 4px 20px rgba(56,189,248,0.08);
-  --shadow-btn:        0 2px 8px rgba(56,189,248,0.3);
-  --shadow-btn-hover:  0 6px 20px rgba(56,189,248,0.4);
+  --shadow-editor:     0 24px 64px rgba(0,0,0,0.6), 0 4px 20px rgba(61,201,168,0.10);
+  --shadow-btn:        0 2px 8px rgba(83,103,254,0.35);
+  --shadow-btn-hover:  0 6px 20px rgba(83,103,254,0.42);
   --shadow-nav:        0 1px 0 rgba(255,255,255,0.05), 0 4px 16px rgba(0,0,0,0.4);
 
   /* ── Scrollbar ── */
   --scrollbar-track:   #0f172a;
-  --scrollbar-thumb:   #475569;
+  --scrollbar-thumb:   #2EA88D;
 
-  --theme-icon-color:  #94a3b8;
+  --theme-icon-color:  #91E1CB;
 
   /* ── Aliases ── */
   --surface-primary:        var(--bg-surface);
   --surface-secondary:      var(--bg-surface-alt);
   --surface-tertiary:       var(--primary-xlight);
   --surface-overlay:        var(--bg-overlay);
-  --surface-overlay-hover:  rgba(248, 250, 252, 0.06);
+  --surface-overlay-hover:  rgba(61, 201, 168, 0.06);
 
   --border-subtle:  var(--theme-border-soft);
   --border-default: var(--theme-border);
@@ -250,18 +250,18 @@
   --color-accent-soft: var(--theme-accent-soft);
 
   /* ── AI colors ── */
-  --color-ai:                    #34d399;
-  --color-ai-soft:               rgba(52, 211, 153, 0.10);
-  --color-ai-header-bg:          rgba(52, 211, 153, 0.05);
-  --color-ai-soft-overlay:       rgba(52, 211, 153, 0.18);
-  --color-ai-soft-overlay-hover: rgba(52, 211, 153, 0.26);
+  --color-ai:                    #3DC9A8;
+  --color-ai-soft:               rgba(61, 201, 168, 0.10);
+  --color-ai-header-bg:          rgba(61, 201, 168, 0.05);
+  --color-ai-soft-overlay:       rgba(61, 201, 168, 0.18);
+  --color-ai-soft-overlay-hover: rgba(61, 201, 168, 0.26);
 
   /* ── Status ── */
   --color-success: #4ade80;
   --color-warning: #fbbf24;
   --color-danger:  #f87171;
 
-  --block-hover-bg: rgba(248, 250, 252, 0.04);
+  --block-hover-bg: rgba(61, 201, 168, 0.04);
   --shadow-md:    var(--shadow-card);
   --shadow-float: var(--shadow-editor);
 }
@@ -971,7 +971,7 @@
 
 
 /* ── Global icon utility — used across LIS feature components ── */
-.lis-card-icon         { color: var(--lis-primary, #1D9E75); font-size: 15px; }
+.lis-card-icon         { color: var(--lis-primary, #3DC9A8); font-size: 15px; }
 .lis-card-icon--danger { color: var(--lis-danger, #E24B4A); }
 
 /* ── Value colour utilities for flag summaries ───────────────── */
@@ -3411,7 +3411,7 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 12px 10px;
+  padding: 10px 6px;
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
@@ -3598,13 +3598,13 @@
 
 /* ── LIS Light (default) ─────────────────────────────────── */
 :root {
-  /* Brand greens — primary accent: #2DC58F */
-  --lis-primary:       #2DC58F;
-  --lis-primary-mid:   #6DDCB4;
-  --lis-primary-light: #A8EDD3;
-  --lis-primary-xlight:#E3F9F1;
-  --lis-primary-deep:  #085041;
-  --lis-sidebar-bg:    #0A2E22;
+  /* Brand teal — primary accent: #3DC9A8 */
+  --lis-primary:       #3DC9A8;
+  --lis-primary-mid:   #91E1CB;
+  --lis-primary-light: #D0F4EB;
+  --lis-primary-xlight:#E8EBFF;
+  --lis-primary-deep:  #0F172A;
+  --lis-sidebar-bg:    #111827;
   --lis-sidebar-text:  rgba(255,255,255,0.85);
   --lis-sidebar-muted: rgba(255,255,255,0.45);
   --lis-sidebar-hover: rgba(255,255,255,0.06);
@@ -3635,8 +3635,8 @@
   --pill-pending-color:#633806;
   --pill-process-bg:   #E6F1FB;
   --pill-process-color:#0C447C;
-  --pill-ready-bg:     #E1F5EE;
-  --pill-ready-color:  #085041;
+  --pill-ready-bg:     #D0F4EB;
+  --pill-ready-color:  #0F172A;
   --pill-critical-bg:  #FCEBEB;
   --pill-critical-color:#791F1F;
   --pill-stat-bg:      #E24B4A;
@@ -3644,17 +3644,17 @@
   --lis-danger-xlight: rgba(226,75,74,0.12);
 
   /* Topbar */
-  --topbar-bg:         #ffffff;
+  --topbar-bg:         #F8F9FF;
 }
 
 /* ── LIS Dark overrides ──────────────────────────────────── */
 [data-theme="dark"] {
-  --lis-primary:       #2DC58F;
-  --lis-primary-mid:   #6DDCB4;
-  --lis-primary-light: #1F5046;
-  --lis-primary-xlight:rgba(45,197,143,0.14);
-  --lis-primary-deep:  #A8EDD3;
-  --lis-sidebar-bg:    #0A2E22;
+  --lis-primary:       #3DC9A8;
+  --lis-primary-mid:   #91E1CB;
+  --lis-primary-light: #1E2847;
+  --lis-primary-xlight:rgba(61,201,168,0.14);
+  --lis-primary-deep:  #D0F4EB;
+  --lis-sidebar-bg:    #111827;
   --lis-sidebar-text:  rgba(255,255,255,0.85);
   --lis-sidebar-muted: rgba(255,255,255,0.40);
   --lis-sidebar-hover: rgba(255,255,255,0.05);
@@ -3671,9 +3671,9 @@
   --pill-pending-bg:   rgba(239,159,39,0.15);
   --pill-pending-color:#f9c74f;
   --pill-process-bg:   rgba(12,68,124,0.3);
-  --pill-process-color:#7ec8fd;
-  --pill-ready-bg:     rgba(29,158,117,0.18);
-  --pill-ready-color:  #9FE1CB;
+  --pill-process-color:#7080FF;
+  --pill-ready-bg:     rgba(61,201,168,0.18);
+  --pill-ready-color:  #91E1CB;
   --pill-critical-bg:  rgba(226,75,74,0.18);
   --pill-critical-color:#f87171;
   --pill-stat-bg:      #7f1d1d;
@@ -3687,28 +3687,28 @@
    component CSS. Angular ViewEncapsulation adds attribute
    selectors to component styles (e.g. [_nghost-xyz]),
    making them lose specificity against global rules here.
-   Brand accent: #2DC58F (teal-green)
-   Sidebar bg:   #0A2E22 (deep forest, both themes)
+   Brand accent: #3DC9A8 (teal)
+   Sidebar bg:   #0F172A (dark slate, both themes)
    ══════════════════════════════════════════════════════════ */
 
 /* ── CSS tokens — sidebar palette ──────────────────────── */
 :root {
-  --lis-sb-bg:          #0A2E22;
-  --lis-sb-bg-brand:    #0D3829;
-  --lis-sb-accent:      #2DC58F;
-  --lis-sb-accent-glow: rgba(45,197,143,0.18);
-  --lis-sb-text:        rgba(255,255,255,0.72);
-  --lis-sb-text-active: #B8F0D8;
-  --lis-sb-caption:     rgba(255,255,255,0.30);
-  --lis-sb-hover-bg:    rgba(255,255,255,0.06);
-  --lis-sb-sep:         rgba(255,255,255,0.07);
+  --lis-sb-bg:          #111827;
+  --lis-sb-bg-brand:    #0D1526;
+  --lis-sb-accent:      #3DC9A8;
+  --lis-sb-accent-glow: rgba(61,201,168,0.16);
+  --lis-sb-text:        rgba(200,210,255,0.75);
+  --lis-sb-text-active: #A8F4E0;
+  --lis-sb-caption:     rgba(150,165,255,0.45);
+  --lis-sb-hover-bg:    rgba(112,128,255,0.12);
+  --lis-sb-sep:         rgba(112,128,255,0.12);
 }
 
 /* ── Shell ──────────────────────────────────────────────── */
 .pc-sidebar.lis-sidebar {
   background: var(--lis-sb-bg) !important;
   border-right: 1px solid var(--lis-sb-sep) !important;
-  box-shadow: 2px 0 20px rgba(0,0,0,0.30) !important;
+  box-shadow: 2px 0 20px rgba(0,0,0,0.40), 1px 0 0 rgba(112,128,255,0.08) !important;
 }
 
 /* ── Brand strip ────────────────────────────────────────── */
@@ -3746,7 +3746,7 @@
   display: flex !important;
   align-items: center !important;
   gap: 10px !important;
-  margin: 1px 8px !important;
+  margin: 1px 6px !important;
   padding: 8px 11px !important;
   border-radius: 8px !important;
   font-size: 13px !important;
@@ -3761,7 +3761,9 @@
 /* ── Nav link — hover ───────────────────────────────────── */
 .pc-sidebar.lis-sidebar .nav-item a:hover {
   background: var(--lis-sb-hover-bg) !important;
-  color: rgba(255,255,255,0.92) !important;
+  color: rgba(220,228,255,0.95) !important;
+  border-left: 2px solid rgba(112,128,255,0.45) !important;
+  padding-left: 9px !important;
 }
 
 /* ── Nav link — active ──────────────────────────────────── */
@@ -3770,7 +3772,8 @@
   background: var(--lis-sb-accent-glow) !important;
   color: var(--lis-sb-text-active) !important;
   font-weight: 600 !important;
-  border-left: none !important;
+  border-left: 2px solid var(--lis-sb-accent) !important;
+  padding-left: 9px !important;
 }
 
 /* ── Active icon gets accent color ─────────────────────── */
