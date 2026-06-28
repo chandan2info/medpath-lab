@@ -1,0 +1,333 @@
+From 85ff8bbd04355e9be33cb8cf5975ea300f96e430 Mon Sep 17 00:00:00 2001
+From: Chandan <chandan@medpath.dev>
+Date: Sun, 28 Jun 2026 04:47:43 +0000
+Subject: [PATCH] =?UTF-8?q?fix:=20sidebar=20hover/active/color=20=E2=80=94?=
+ =?UTF-8?q?=20use=20#2DC58F=20accent,=20!important=20guards,=20new=20sb=20?=
+ =?UTF-8?q?tokens?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Primary accent changed to #2DC58F across both light and dark theme tokens
+- Sidebar bg: #0A2E22 (deep forest green, consistent both themes)
+- Active state blank-box fixed: added !important to background/color so global
+  .nav-item a.active { background: var(--primary-light) } (lavender) no longer wins
+- Hover fixed: rgba(255,255,255,0.06) guaranteed with !important
+- Added --lis-sb-* local tokens (bg, accent, glow, text, caption, hover, sep)
+- Active item: teal-glow bg + #B8F0D8 text + #2DC58F icon
+- Base nav items reset to transparent bg (no bleed from global styles)
+- Dark theme: sidebar stays #0A2E22 regardless of page [data-theme=dark] slate
+---
+ .../components/sidebar/sidebar.component.css  |   4 +-
+ src/styles.css                                | 223 +++++++++++-------
+ 2 files changed, 137 insertions(+), 90 deletions(-)
+
+diff --git a/src/app/layout/components/sidebar/sidebar.component.css b/src/app/layout/components/sidebar/sidebar.component.css
+index 14dad46..0ddd732 100644
+--- a/src/app/layout/components/sidebar/sidebar.component.css
++++ b/src/app/layout/components/sidebar/sidebar.component.css
+@@ -7,7 +7,7 @@
+ .lis-brand-icon {
+   width: 34px;
+   height: 34px;
+-  background: var(--lis-primary, #1D9E75);
++  background: var(--lis-primary, #2DC58F);
+   border-radius: 9px;
+   display: flex;
+   align-items: center;
+@@ -51,7 +51,7 @@
+   width: 32px;
+   height: 32px;
+   border-radius: 50%;
+-  background: var(--lis-primary, #1D9E75);
++  background: var(--lis-primary, #2DC58F);
+   display: flex;
+   align-items: center;
+   justify-content: center;
+diff --git a/src/styles.css b/src/styles.css
+index 297282a..c970c05 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -3587,13 +3587,13 @@
+ 
+ /* ── LIS Light (default) ─────────────────────────────────── */
+ :root {
+-  /* Brand greens */
+-  --lis-primary:       #1D9E75;
+-  --lis-primary-mid:   #5DCAA5;
+-  --lis-primary-light: #9FE1CB;
+-  --lis-primary-xlight:#E1F5EE;
++  /* Brand greens — primary accent: #2DC58F */
++  --lis-primary:       #2DC58F;
++  --lis-primary-mid:   #6DDCB4;
++  --lis-primary-light: #A8EDD3;
++  --lis-primary-xlight:#E3F9F1;
+   --lis-primary-deep:  #085041;
+-  --lis-sidebar-bg:    #04342C;
++  --lis-sidebar-bg:    #0A2E22;
+   --lis-sidebar-text:  rgba(255,255,255,0.85);
+   --lis-sidebar-muted: rgba(255,255,255,0.45);
+   --lis-sidebar-hover: rgba(255,255,255,0.06);
+@@ -3639,11 +3639,11 @@
+ /* ── LIS Dark overrides ──────────────────────────────────── */
+ [data-theme="dark"] {
+   --lis-primary:       #2DC58F;
+-  --lis-primary-mid:   #45B892;
++  --lis-primary-mid:   #6DDCB4;
+   --lis-primary-light: #1F5046;
+-  --lis-primary-xlight:rgba(29,158,117,0.12);
+-  --lis-primary-deep:  #9FE1CB;
+-  --lis-sidebar-bg:    #031f19;
++  --lis-primary-xlight:rgba(45,197,143,0.14);
++  --lis-primary-deep:  #A8EDD3;
++  --lis-sidebar-bg:    #0A2E22;
+   --lis-sidebar-text:  rgba(255,255,255,0.85);
+   --lis-sidebar-muted: rgba(255,255,255,0.40);
+   --lis-sidebar-hover: rgba(255,255,255,0.05);
+@@ -3671,118 +3671,165 @@
+ 
+ /* ══════════════════════════════════════════════════════════
+    LIS SIDEBAR — Global overrides
+-   Must live here (not in component CSS) because Angular
+-   ViewEncapsulation scopes component styles with attribute
+-   selectors, so they cannot override global .pc-sidebar rules.
++   ──────────────────────────────────────────────────────────
++   IMPORTANT: These MUST live in styles.css, not the
++   component CSS. Angular ViewEncapsulation adds attribute
++   selectors to component styles (e.g. [_nghost-xyz]),
++   making them lose specificity against global rules here.
++   Brand accent: #2DC58F (teal-green)
++   Sidebar bg:   #0A2E22 (deep forest, both themes)
+    ══════════════════════════════════════════════════════════ */
+ 
+-/* ── Core shell — override bg-surface with brand forest green ── */
++/* ── CSS tokens — sidebar palette ──────────────────────── */
++:root {
++  --lis-sb-bg:          #0A2E22;
++  --lis-sb-bg-brand:    #0D3829;
++  --lis-sb-accent:      #2DC58F;
++  --lis-sb-accent-glow: rgba(45,197,143,0.18);
++  --lis-sb-text:        rgba(255,255,255,0.72);
++  --lis-sb-text-active: #B8F0D8;
++  --lis-sb-caption:     rgba(255,255,255,0.30);
++  --lis-sb-hover-bg:    rgba(255,255,255,0.06);
++  --lis-sb-sep:         rgba(255,255,255,0.07);
++}
++
++/* ── Shell ──────────────────────────────────────────────── */
+ .pc-sidebar.lis-sidebar {
+-  background: var(--lis-sidebar-bg, #04342C);
+-  border-right: 1px solid rgba(255,255,255,0.06);
+-  box-shadow: 2px 0 16px rgba(0,0,0,0.25);
++  background: var(--lis-sb-bg) !important;
++  border-right: 1px solid var(--lis-sb-sep) !important;
++  box-shadow: 2px 0 20px rgba(0,0,0,0.30) !important;
+ }
+ 
+-/* ── Brand header ───────────────────────────────────────── */
++/* ── Brand strip ────────────────────────────────────────── */
+ .pc-sidebar.lis-sidebar .sidebar-brand {
+-  border-bottom: 1px solid rgba(255,255,255,0.07);
+-  padding: 16px 14px;
+-  min-height: var(--lis-topbar-height, 56px);
+-  background: rgba(0,0,0,0.12);
++  background: var(--lis-sb-bg-brand) !important;
++  border-bottom: 1px solid var(--lis-sb-sep) !important;
++  padding: 0 14px !important;
++  min-height: var(--lis-topbar-height, 56px) !important;
++  display: flex !important;
++  align-items: center !important;
++  gap: 10px !important;
+ }
+ 
+ /* ── Section captions ───────────────────────────────────── */
+ .pc-sidebar.lis-sidebar .nav-caption {
+-  font-size: 9.5px;
+-  font-weight: 700;
+-  letter-spacing: 0.09em;
+-  text-transform: uppercase;
+-  color: rgba(255,255,255,0.28);
+-  padding: 16px 14px 5px;
+-}
+-
+-/* ── Nav links — base ───────────────────────────────────── */
+-.pc-sidebar.lis-sidebar .nav-item a {
+-  display: flex;
+-  align-items: center;
+-  gap: 10px;
+-  padding: 8px 12px;
+-  border-radius: 8px;
+-  margin: 1px 6px;
+-  color: rgba(255,255,255,0.65);
+-  font-size: 13px;
+-  font-weight: 400;
+-  text-decoration: none;
+-  transition: background 0.13s ease, color 0.13s ease;
+-  white-space: nowrap;
+-}
+-
+-/* ── Nav links — hover ──────────────────────────────────── */
++  font-size: 9px !important;
++  font-weight: 700 !important;
++  letter-spacing: 0.10em !important;
++  text-transform: uppercase !important;
++  color: var(--lis-sb-caption) !important;
++  padding: 18px 14px 4px !important;
++  margin: 0 !important;
++}
++
++/* ── Nav item — reset margin that Tailwind/global may set ── */
++.pc-sidebar.lis-sidebar .nav-item {
++  margin: 0 !important;
++  padding: 0 !important;
++}
++
++/* ── Nav link — base ────────────────────────────────────── */
++.pc-sidebar.lis-sidebar .nav-item a,
++.pc-sidebar.lis-sidebar .nav-item a:link,
++.pc-sidebar.lis-sidebar .nav-item a:visited {
++  display: flex !important;
++  align-items: center !important;
++  gap: 10px !important;
++  margin: 1px 8px !important;
++  padding: 8px 11px !important;
++  border-radius: 8px !important;
++  font-size: 13px !important;
++  font-weight: 400 !important;
++  color: var(--lis-sb-text) !important;
++  background: transparent !important;
++  text-decoration: none !important;
++  transition: background 0.14s ease, color 0.14s ease !important;
++  white-space: nowrap !important;
++}
++
++/* ── Nav link — hover ───────────────────────────────────── */
+ .pc-sidebar.lis-sidebar .nav-item a:hover {
+-  background: rgba(255,255,255,0.07);
+-  color: rgba(255,255,255,0.92);
++  background: var(--lis-sb-hover-bg) !important;
++  color: rgba(255,255,255,0.92) !important;
+ }
+ 
+-/* ── Nav links — active ─────────────────────────────────── */
+-.pc-sidebar.lis-sidebar .nav-item a.active {
+-  background: rgba(29,158,117,0.22);
+-  color: #9FE1CB;
+-  font-weight: 600;
++/* ── Nav link — active ──────────────────────────────────── */
++.pc-sidebar.lis-sidebar .nav-item a.active,
++.pc-sidebar.lis-sidebar .nav-item a.active:visited {
++  background: var(--lis-sb-accent-glow) !important;
++  color: var(--lis-sb-text-active) !important;
++  font-weight: 600 !important;
++  border-left: none !important;
+ }
+ 
+-.pc-sidebar.lis-sidebar .nav-item a.active .nav-icon {
+-  color: var(--lis-primary, #1D9E75);
++/* ── Active icon gets accent color ─────────────────────── */
++.pc-sidebar.lis-sidebar .nav-item a.active .nav-icon,
++.pc-sidebar.lis-sidebar .nav-item a.active .nav-icon i {
++  color: var(--lis-sb-accent) !important;
+ }
+ 
+ /* ── Nav icon ───────────────────────────────────────────── */
+ .pc-sidebar.lis-sidebar .nav-icon {
+-  font-size: 17px;
+-  width: 20px;
+-  display: flex;
+-  align-items: center;
+-  justify-content: center;
+-  flex-shrink: 0;
+-  color: inherit;
+-}
+-
+-/* ── Scrollbar inside nav ───────────────────────────────── */
+-.pc-sidebar.lis-sidebar .sidebar-nav::-webkit-scrollbar-track {
+-  background: rgba(0,0,0,0.15);
+-}
++  width: 20px !important;
++  height: 20px !important;
++  font-size: 17px !important;
++  display: flex !important;
++  align-items: center !important;
++  justify-content: center !important;
++  flex-shrink: 0 !important;
++  color: inherit !important;
++}
++
++/* ── Nav label ──────────────────────────────────────────── */
++.pc-sidebar.lis-sidebar .nav-label {
++  flex: 1 !important;
++  white-space: nowrap !important;
++  overflow: hidden !important;
++  text-overflow: ellipsis !important;
++  color: inherit !important;
++}
++
++/* ── Scrollbar ──────────────────────────────────────────── */
++.pc-sidebar.lis-sidebar .sidebar-nav::-webkit-scrollbar { width: 3px; }
++.pc-sidebar.lis-sidebar .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+ .pc-sidebar.lis-sidebar .sidebar-nav::-webkit-scrollbar-thumb {
+-  background: rgba(255,255,255,0.12);
+-  border-radius: 4px;
++  background: rgba(255,255,255,0.10);
++  border-radius: 3px;
+ }
+ 
+-/* ── Footer / user strip ────────────────────────────────── */
++/* ── Footer strip ───────────────────────────────────────── */
+ .pc-sidebar.lis-sidebar .sidebar-footer {
+-  border-top: 1px solid rgba(255,255,255,0.07);
+-  padding: 10px 8px;
+-  background: rgba(0,0,0,0.1);
++  background: var(--lis-sb-bg-brand) !important;
++  border-top: 1px solid var(--lis-sb-sep) !important;
++  padding: 10px 8px !important;
+ }
+ 
++.pc-sidebar.lis-sidebar .sidebar-user {
++  border-radius: 8px !important;
++  transition: background 0.13s !important;
++}
+ .pc-sidebar.lis-sidebar .sidebar-user:hover {
+-  background: rgba(255,255,255,0.06);
++  background: var(--lis-sb-hover-bg) !important;
+ }
+ 
+ .pc-sidebar.lis-sidebar .sidebar-user-name {
+-  color: rgba(255,255,255,0.85);
+-  font-size: 12px;
+-  font-weight: 600;
++  color: rgba(255,255,255,0.85) !important;
++  font-size: 12px !important;
++  font-weight: 600 !important;
+ }
+-
+ .pc-sidebar.lis-sidebar .sidebar-user-role {
+-  color: rgba(255,255,255,0.42);
+-  font-size: 10px;
++  color: rgba(255,255,255,0.38) !important;
++  font-size: 10px !important;
+ }
+ 
+-/* ── Dark theme — keep sidebar dark regardless of page theme ── */
+-/* Sidebar always uses its own deep forest-green palette,
+-   NOT the page-level dark bg-surface (#1e293b slate).
+-   Re-assert the brand bg so [data-theme="dark"] doesn't win. */
++/* ── Dark theme — sidebar is self-themed, ignore page bg ── */
+ [data-theme="dark"] .pc-sidebar.lis-sidebar {
+-  background: var(--lis-sidebar-bg, #031f19);
+-  border-right-color: rgba(255,255,255,0.05);
++  background: var(--lis-sb-bg) !important;
++  border-right-color: rgba(255,255,255,0.05) !important;
++}
++[data-theme="dark"] .pc-sidebar.lis-sidebar .sidebar-brand,
++[data-theme="dark"] .pc-sidebar.lis-sidebar .sidebar-footer {
++  background: var(--lis-sb-bg-brand) !important;
+ }
+ 
+ /* ── Shared LIS utility classes ─────────────────────────── */
+-- 
+2.43.0
+

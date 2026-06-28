@@ -33,6 +33,8 @@ export class PatientRegistrationComponent implements OnInit {
     'A+', 'A−', 'B+', 'B−', 'O+', 'O−', 'AB+', 'AB−', 'Unknown'
   ];
 
+  readonly todayISO = new Date().toISOString().split('T')[0];
+
   currentStep   = signal(1);
   ageDisplay    = signal('');
   saving        = signal(false);

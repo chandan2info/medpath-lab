@@ -1,7 +1,6 @@
 <!-- ═══════════════════════════════════════════════════════════
      Screen 1 — Patient Registration
      Single purpose: collect patient details.
-     No test panel | No billing | No sidebar clutter.
      ═══════════════════════════════════════════════════════════ -->
 
 <!-- Success overlay -->
@@ -39,32 +38,52 @@
   </div>
 }
 
-<!-- Page header -->
+<!-- ── Page header ─────────────────────────────────────────── -->
 <div class="page-header">
-  <div>
-    <h1 class="page-title">Patient Registration</h1>
-    <nav aria-label="Breadcrumb">
-      <ol class="breadcrumb">
-        <li><a routerLink="/dashboard/home">Home</a></li>
-        <li aria-current="page">New registration</li>
-      </ol>
-    </nav>
+  <div class="page-header__left">
+    <div class="page-header__title-row">
+      <div class="page-header__icon" aria-hidden="true">
+        <i class="ti ti-user-plus"></i>
+      </div>
+      <div>
+        <h1 class="page-title">Patient Registration</h1>
+        <nav aria-label="Breadcrumb">
+          <ol class="breadcrumb">
+            <li><a routerLink="/dashboard/home">Home</a></li>
+            <li aria-current="page">New registration</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
   </div>
-  <!-- Workflow progress indicator -->
+
+  <!-- Workflow progress trail -->
   <div class="workflow-trail" aria-label="Workflow steps">
     <div class="wf-step wf-step--active">
-      <i class="ti ti-circle-check-filled" aria-hidden="true"></i> Register
+      <span class="wf-dot wf-dot--active">
+        <i class="ti ti-check" aria-hidden="true"></i>
+      </span>
+      <span>Register</span>
     </div>
-    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
-    <div class="wf-step"><i class="ti ti-test-pipe"></i> Test Order</div>
-    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
-    <div class="wf-step"><i class="ti ti-file-invoice"></i> Billing</div>
-    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
-    <div class="wf-step"><i class="ti ti-droplet"></i> Sample</div>
+    <div class="wf-connector wf-connector--done"></div>
+    <div class="wf-step">
+      <span class="wf-dot">2</span>
+      <span>Test Order</span>
+    </div>
+    <div class="wf-connector"></div>
+    <div class="wf-step">
+      <span class="wf-dot">3</span>
+      <span>Billing</span>
+    </div>
+    <div class="wf-connector"></div>
+    <div class="wf-step">
+      <span class="wf-dot">4</span>
+      <span>Sample</span>
+    </div>
   </div>
 </div>
 
-<!-- Two-step stepper -->
+<!-- ── Stepper pills ─────────────────────────────────────── -->
 <div class="stepper" role="list" aria-label="Registration steps">
   @for (step of steps; track step.n) {
     <div class="step"
@@ -82,70 +101,86 @@
       <span class="step-label">{{ step.label }}</span>
     </div>
     @if (step.n < steps.length) {
-      <i class="ti ti-chevron-right step-arrow" aria-hidden="true"></i>
+      <div class="step-line" [class.step-line--done]="currentStep() > step.n"></div>
     }
   }
 </div>
 
-<!-- ── Single-column form (no right sidebar) ── -->
+<!-- ── Form ──────────────────────────────────────────────── -->
 <div class="reg-form-wrap">
   <form [formGroup]="form" novalidate>
 
-    <!-- ── Step 1: Demographics ────────────── -->
+    <!-- ── Step 1: Demographics ─────────────────────────── -->
     @if (currentStep() === 1) {
       <div class="lis-card reg-card" aria-label="Personal details">
         <div class="lis-card__header">
           <i class="ti ti-user lis-card-icon" aria-hidden="true"></i>
           <h2 class="lis-card__title">Personal Details</h2>
-          <span class="lis-badge lis-badge--warn">Step 1 of 2</span>
+          <span class="step-pill">Step 1 of 2</span>
         </div>
 
         <div class="form-grid">
-          <!-- Row 1: First name | Last name | UHID (auto) -->
+          <!-- First name -->
           <div class="lis-field">
             <label for="firstName">First Name <span class="req" aria-hidden="true">*</span></label>
             <input id="firstName" formControlName="firstName"
               [class.input-error]="isInvalid('firstName')"
               autocomplete="given-name" placeholder="e.g. Ananya" />
             @if (isInvalid('firstName')) {
-              <span class="err-msg" role="alert">First name is required</span>
+              <span class="err-msg" role="alert">
+                <i class="ti ti-alert-circle"></i> First name is required
+              </span>
             }
           </div>
 
+          <!-- Last name -->
           <div class="lis-field">
             <label for="lastName">Last Name <span class="req" aria-hidden="true">*</span></label>
             <input id="lastName" formControlName="lastName"
               [class.input-error]="isInvalid('lastName')"
               autocomplete="family-name" placeholder="e.g. Krishnaswamy" />
             @if (isInvalid('lastName')) {
-              <span class="err-msg" role="alert">Last name is required</span>
+              <span class="err-msg" role="alert">
+                <i class="ti ti-alert-circle"></i> Last name is required
+              </span>
             }
           </div>
 
+          <!-- Date of Birth — custom date picker wrapper -->
           <div class="lis-field">
-            <label for="uhidDisplay">UHID / Patient ID <span class="opt-label">(Auto)</span></label>
-            <div class="uhid-input-wrap">
-              <input id="uhidDisplay" value="Auto-generated" readonly class="input-readonly" />
-              <i class="ti ti-lock uhid-lock" aria-hidden="true"></i>
+            <label for="dob">Date of Birth <span class="req" aria-hidden="true">*</span></label>
+            <div class="date-input-wrap">
+              <i class="ti ti-calendar date-icon" aria-hidden="true"></i>
+              <input id="dob" type="date" formControlName="dob"
+                class="date-input"
+                [class.input-error]="isInvalid('dob')"
+                [max]="todayISO"
+                (change)="calcAge()" />
+            </div>
+            @if (isInvalid('dob')) {
+              <span class="err-msg" role="alert">
+                <i class="ti ti-alert-circle"></i> Date of birth is required
+              </span>
+            }
+          </div>
+
+          <!-- Age — auto-calculated readonly -->
+          <div class="lis-field">
+            <label for="ageDisplay">
+              Age
+              <span class="auto-chip">
+                <i class="ti ti-cpu" aria-hidden="true"></i> Auto
+              </span>
+            </label>
+            <div class="auto-field-wrap">
+              <input id="ageDisplay" [value]="ageDisplay()" readonly
+                placeholder="Calculated from DOB"
+                class="auto-field" tabindex="-1" />
+              <i class="ti ti-lock auto-field-lock" aria-hidden="true"></i>
             </div>
           </div>
 
-          <!-- Row 2: DOB | Age | Gender -->
-          <div class="lis-field">
-            <label for="dob">Date of Birth <span class="req" aria-hidden="true">*</span></label>
-            <input id="dob" type="date" formControlName="dob"
-              [class.input-error]="isInvalid('dob')"
-              (change)="calcAge()" />
-            @if (isInvalid('dob')) {
-              <span class="err-msg" role="alert">Date of birth is required</span>
-            }
-          </div>
-
-          <div class="lis-field">
-            <label for="ageDisplay">Age <span class="opt-label">(Auto)</span></label>
-            <input id="ageDisplay" [value]="ageDisplay()" readonly placeholder="Auto-calculated" class="input-readonly" />
-          </div>
-
+          <!-- Gender -->
           <div class="lis-field">
             <label id="gender-label">Gender <span class="req" aria-hidden="true">*</span></label>
             <div class="lis-seg" role="group" aria-labelledby="gender-label">
@@ -157,27 +192,13 @@
               }
             </div>
             @if (isInvalid('gender')) {
-              <span class="err-msg" role="alert">Please select a gender</span>
+              <span class="err-msg" role="alert">
+                <i class="ti ti-alert-circle"></i> Please select a gender
+              </span>
             }
           </div>
 
-          <!-- Row 3: Mobile | Email | Blood Group -->
-          <div class="lis-field">
-            <label for="mobile">Mobile Number <span class="req" aria-hidden="true">*</span></label>
-            <input id="mobile" formControlName="mobile" type="tel"
-              [class.input-error]="isInvalid('mobile')"
-              autocomplete="tel" placeholder="10-digit mobile number" />
-            @if (isInvalid('mobile')) {
-              <span class="err-msg" role="alert">Valid 10-digit mobile number required</span>
-            }
-          </div>
-
-          <div class="lis-field">
-            <label for="email">Email <span class="opt-label">(Optional)</span></label>
-            <input id="email" formControlName="email" type="email"
-              autocomplete="email" placeholder="patient@email.com" />
-          </div>
-
+          <!-- Blood Group -->
           <div class="lis-field">
             <label for="bloodGroup">Blood Group</label>
             <select id="bloodGroup" formControlName="bloodGroup">
@@ -187,7 +208,35 @@
             </select>
           </div>
 
-          <!-- Row 4: Address full width -->
+          <!-- Mobile Number — with +91 prefix -->
+          <div class="lis-field">
+            <label for="mobile">Mobile Number <span class="req" aria-hidden="true">*</span></label>
+            <div class="phone-wrap">
+              <span class="phone-prefix">
+                <span class="phone-flag">🇮🇳</span>
+                +91
+              </span>
+              <input id="mobile" formControlName="mobile" type="tel"
+                class="phone-input"
+                [class.input-error]="isInvalid('mobile')"
+                autocomplete="tel" placeholder="98765 43210"
+                maxlength="10" inputmode="numeric" />
+            </div>
+            @if (isInvalid('mobile')) {
+              <span class="err-msg" role="alert">
+                <i class="ti ti-alert-circle"></i> Valid 10-digit number required
+              </span>
+            }
+          </div>
+
+          <!-- Email -->
+          <div class="lis-field">
+            <label for="email">Email <span class="opt-label">(Optional)</span></label>
+            <input id="email" formControlName="email" type="email"
+              autocomplete="email" placeholder="patient@email.com" />
+          </div>
+
+          <!-- Address — full width -->
           <div class="lis-field form-full">
             <label for="address">Address <span class="opt-label">(Optional)</span></label>
             <textarea id="address" formControlName="address"
@@ -196,26 +245,24 @@
         </div>
       </div>
 
-      <!-- Step 1 action -->
+      <!-- Step 1 actions -->
       <div class="form-actions">
-        <button type="button" class="lis-btn lis-btn--secondary"
-          (click)="goBack()">
+        <button type="button" class="lis-btn lis-btn--secondary" (click)="goBack()">
           <i class="ti ti-arrow-left" aria-hidden="true"></i> Cancel
         </button>
-        <button type="button" class="lis-btn lis-btn--primary"
-          (click)="nextStep()">
+        <button type="button" class="lis-btn lis-btn--primary" (click)="nextStep()">
           Next: Clinical info <i class="ti ti-arrow-right" aria-hidden="true"></i>
         </button>
       </div>
     }
 
-    <!-- ── Step 2: Clinical Information ────── -->
+    <!-- ── Step 2: Clinical Information ─────────────────── -->
     @if (currentStep() === 2) {
       <div class="lis-card reg-card" aria-label="Clinical information">
         <div class="lis-card__header">
           <i class="ti ti-stethoscope lis-card-icon" aria-hidden="true"></i>
           <h2 class="lis-card__title">Clinical Information</h2>
-          <span class="lis-badge lis-badge--warn">Step 2 of 2</span>
+          <span class="step-pill">Step 2 of 2</span>
         </div>
 
         <!-- Mini patient recap -->
@@ -309,8 +356,7 @@
 
       <!-- Step 2 actions -->
       <div class="form-actions">
-        <button type="button" class="lis-btn lis-btn--secondary"
-          (click)="goBack()">
+        <button type="button" class="lis-btn lis-btn--secondary" (click)="goBack()">
           <i class="ti ti-arrow-left" aria-hidden="true"></i> Back
         </button>
         <button type="button" class="lis-btn lis-btn--primary save-btn"

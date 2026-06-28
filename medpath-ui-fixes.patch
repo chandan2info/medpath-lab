@@ -1,0 +1,1173 @@
+From d71da53ea24106d5a6f457040431914790ae258c Mon Sep 17 00:00:00 2001
+From: Chandan <chandan@medpath.dev>
+Date: Sun, 28 Jun 2026 03:57:08 +0000
+Subject: [PATCH] =?UTF-8?q?fix:=20patient=20registration=20UI=20overhaul?=
+ =?UTF-8?q?=20=E2=80=94=20phone=20prefix,=20auto-fields,=20DOB,=20header,?=
+ =?UTF-8?q?=20sidebar=20polish?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Remove UHID/Patient ID auto field from registration form (not needed here)
+- Add +91 Indian country code prefix with flag to mobile number field
+- Style Age as visually distinct auto-calculated read-only field (dashed border, teal bg, lock icon, Auto chip label)
+- Improve Date of Birth: calendar icon, teal indicator, max=today, styled picker trigger
+- Redesign page header: icon tile + title + breadcrumb + workflow trail with step dots and connectors
+- Stepper: pills replaced with connected step dots and step-line connectors
+- Form card + action bar now flush connected (no gap, unified rounded corners bottom)
+- Sidebar: improved nav item spacing, section captions, active state, user footer
+- Full dark mode support maintained via CSS variables throughout
+---
+ .../patient-registration.component.css        | 523 ++++++++++++++----
+ .../patient-registration.component.html       | 178 +++---
+ .../patient-registration.component.ts         |   2 +
+ .../components/sidebar/sidebar.component.css  | 224 +++++---
+ 4 files changed, 676 insertions(+), 251 deletions(-)
+
+diff --git a/src/app/features/patient-registration/patient-registration.component.css b/src/app/features/patient-registration/patient-registration.component.css
+index a083e5d..64a3679 100644
+--- a/src/app/features/patient-registration/patient-registration.component.css
++++ b/src/app/features/patient-registration/patient-registration.component.css
+@@ -1,179 +1,486 @@
+ :host { display: block; }
+ 
+-/* ── Page header ─────────────────────────────────────── */
++/* ══════════════════════════════════════════════════════
++   PAGE HEADER — Title + workflow trail
++   ══════════════════════════════════════════════════════ */
+ .page-header {
+-  display: flex; align-items: flex-start;
+-  justify-content: space-between; flex-wrap: wrap;
+-  gap: 12px; margin-bottom: 18px;
++  display: flex;
++  align-items: center;
++  justify-content: space-between;
++  flex-wrap: wrap;
++  gap: 16px;
++  margin-bottom: 20px;
++  padding: 16px 20px;
++  background: var(--card-bg);
++  border: 0.5px solid var(--border-color);
++  border-radius: var(--lis-card-radius, 10px);
+ }
+-.page-title  { font-size: 22px; font-weight: 500; color: var(--text-primary); margin: 0 0 4px; }
+-.breadcrumb  {
+-  display: flex; list-style: none; padding: 0; margin: 0;
+-  gap: 6px; font-size: 12px; color: var(--text-secondary);
++
++.page-header__left { display: flex; flex-direction: column; gap: 2px; }
++
++.page-header__title-row {
++  display: flex;
++  align-items: center;
++  gap: 12px;
++}
++
++.page-header__icon {
++  width: 40px;
++  height: 40px;
++  border-radius: 10px;
++  background: var(--lis-primary-xlight, #E1F5EE);
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  flex-shrink: 0;
++  i { font-size: 20px; color: var(--lis-primary, #1D9E75); }
+ }
+-.breadcrumb li+li::before { content: '/'; margin-right: 6px; }
++
++.page-title {
++  font-size: 18px;
++  font-weight: 600;
++  color: var(--text-primary);
++  margin: 0 0 2px;
++  line-height: 1.2;
++}
++
++.breadcrumb {
++  display: flex;
++  list-style: none;
++  padding: 0; margin: 0;
++  gap: 4px;
++  font-size: 12px;
++  color: var(--text-secondary);
++}
++.breadcrumb li+li::before { content: '/'; margin-right: 4px; color: var(--border-color); }
+ .breadcrumb a {
+-  color: var(--text-secondary); text-decoration: none;
++  color: var(--text-secondary);
++  text-decoration: none;
++  transition: color 0.15s;
+   &:hover { color: var(--lis-primary, #1D9E75); }
+ }
+ 
+-/* ── Workflow trail ──────────────────────────────────── */
++/* ── Workflow trail ─────────────────────────────────── */
+ .workflow-trail {
+-  display: flex; align-items: center; gap: 6px;
+-  background: var(--body-bg); border: 0.5px solid var(--border-color);
+-  border-radius: 9px; padding: 6px 12px;
++  display: flex;
++  align-items: center;
++  gap: 0;
++  background: var(--body-bg);
++  border: 0.5px solid var(--border-color);
++  border-radius: 10px;
++  padding: 8px 16px;
++  gap: 4px;
+ }
++
+ .wf-step {
+-  display: flex; align-items: center; gap: 5px;
+-  font-size: 11px; color: var(--text-secondary);
+-  i { font-size: 13px; }
++  display: flex;
++  align-items: center;
++  gap: 7px;
++  font-size: 12px;
++  color: var(--text-secondary);
++  font-weight: 400;
++  padding: 0 4px;
+ }
++
++.wf-dot {
++  width: 22px;
++  height: 22px;
++  border-radius: 50%;
++  border: 1.5px solid var(--border-color);
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  font-size: 10px;
++  font-weight: 600;
++  flex-shrink: 0;
++  color: var(--text-secondary);
++  background: var(--card-bg);
++}
++
++.wf-dot--active {
++  background: var(--lis-primary, #1D9E75);
++  border-color: var(--lis-primary, #1D9E75);
++  color: #fff;
++  i { font-size: 11px; }
++}
++
+ .wf-step--active {
+-  color: var(--lis-primary-deep, #085041); font-weight: 500;
+-  i { color: var(--lis-primary, #1D9E75); }
++  color: var(--lis-primary-deep, #085041);
++  font-weight: 600;
++}
++
++.wf-connector {
++  width: 28px;
++  height: 1px;
++  background: var(--border-color);
++  flex-shrink: 0;
++}
++
++.wf-connector--done { background: var(--lis-primary-mid, #5DCAA5); }
++
++/* ══════════════════════════════════════════════════════
++   STEPPER
++   ══════════════════════════════════════════════════════ */
++.stepper {
++  display: flex;
++  align-items: center;
++  gap: 0;
++  padding: 0 0 16px;
++}
++
++.step {
++  display: flex;
++  align-items: center;
++  gap: 7px;
++  font-size: 12px;
++  color: var(--text-secondary);
+ }
+-.wf-arrow { font-size: 11px; color: var(--border-color); }
+ 
+-/* ── Stepper ────────────────────────────────────────── */
+-.stepper { display: flex; align-items: center; padding: 0 0 14px; gap: 0; }
+-.step    { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-secondary); }
+-.step--active { color: var(--lis-primary-deep, #085041); font-weight: 500; }
++.step--active { color: var(--lis-primary-deep, #085041); font-weight: 600; }
++
+ .step-num {
+-  width: 22px; height: 22px; border-radius: 50%;
++  width: 24px;
++  height: 24px;
++  border-radius: 50%;
+   border: 1.5px solid var(--border-color);
+-  display: flex; align-items: center; justify-content: center;
+-  font-size: 10px; font-weight: 500; flex-shrink: 0;
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  font-size: 10px;
++  font-weight: 600;
++  flex-shrink: 0;
+ }
+-.step--active .step-num { background: var(--lis-primary, #1D9E75); border-color: var(--lis-primary, #1D9E75); color: #fff; }
+-.step--done   .step-num {
++
++.step--active .step-num {
++  background: var(--lis-primary, #1D9E75);
++  border-color: var(--lis-primary, #1D9E75);
++  color: #fff;
++}
++
++.step--done .step-num {
+   background: var(--lis-primary-xlight, #E1F5EE);
+   border-color: var(--lis-primary, #1D9E75);
+   color: var(--lis-primary-deep, #085041);
+ }
+-.step-arrow { color: var(--border-color); font-size: 13px; margin: 0 8px; }
+ 
+-/* ── Form wrapper — full width ── */
+-.reg-form-wrap { display: flex; flex-direction: column; gap: 16px; }
+-.reg-card { margin-bottom: 0; }
++.step-line {
++  flex: 1;
++  height: 1.5px;
++  background: var(--border-color);
++  margin: 0 10px;
++  max-width: 60px;
++}
++
++.step-line--done { background: var(--lis-primary-mid, #5DCAA5); }
++
++.step-pill {
++  display: inline-flex;
++  align-items: center;
++  padding: 2px 9px;
++  border-radius: 20px;
++  font-size: 10px;
++  font-weight: 500;
++  background: #FAEEDA;
++  color: #633806;
++  border: 0.5px solid #E5C07B;
++  margin-left: auto;
++}
++
++/* ══════════════════════════════════════════════════════
++   FORM LAYOUT
++   ══════════════════════════════════════════════════════ */
++.reg-form-wrap { display: flex; flex-direction: column; gap: 0; }
++.reg-card { margin-bottom: 0; border-radius: var(--lis-card-radius) var(--lis-card-radius) 0 0; border-bottom: none; }
+ 
+-/* ── Form grid — 3-column matching design ── */
+ .form-grid {
+-  display: grid; grid-template-columns: 1fr 1fr 1fr;
+-  gap: 16px; padding: 20px 20px;
++  display: grid;
++  grid-template-columns: 1fr 1fr 1fr;
++  gap: 18px;
++  padding: 20px;
+ }
+ .form-full { grid-column: 1 / -1; }
+-.form-2col { grid-column: span 2; }
+-@media (max-width: 800px) { .form-grid { grid-template-columns: 1fr 1fr; } }
+-@media (max-width: 540px) { .form-grid { grid-template-columns: 1fr; .form-2col { grid-column: 1; } } }
+-.input-error { border-color: #E24B4A !important; }
+-.err-msg  { font-size: 10px; color: #E24B4A; margin-top: 3px; display: block; }
+-.req      { color: #E24B4A; }
++
++@media (max-width: 860px) { .form-grid { grid-template-columns: 1fr 1fr; } }
++@media (max-width: 560px) { .form-grid { grid-template-columns: 1fr; } }
++
++/* ── Error / validation ─────────────────────────────── */
++.input-error { border-color: var(--lis-danger, #E24B4A) !important; }
++.err-msg {
++  font-size: 11px;
++  color: var(--lis-danger, #E24B4A);
++  margin-top: 3px;
++  display: flex;
++  align-items: center;
++  gap: 3px;
++  i { font-size: 11px; }
++}
++.req { color: var(--lis-danger, #E24B4A); }
+ .opt-label { font-size: 10px; color: var(--text-secondary); font-weight: 400; }
+ 
+-/* ── Patient recap (step 2) ─────────────────────────── */
++/* ══════════════════════════════════════════════════════
++   CUSTOM DATE INPUT — styled wrapper
++   ══════════════════════════════════════════════════════ */
++.date-input-wrap {
++  position: relative;
++  display: flex;
++  align-items: center;
++}
++
++.date-icon {
++  position: absolute;
++  left: 10px;
++  font-size: 15px;
++  color: var(--lis-primary, #1D9E75);
++  pointer-events: none;
++  z-index: 1;
++}
++
++.date-input {
++  width: 100%;
++  height: 38px;
++  padding: 0 11px 0 34px;
++  border: 1px solid var(--border-color);
++  border-radius: 8px;
++  font-size: 13px;
++  color: var(--text-primary);
++  background: var(--card-bg);
++  font-family: var(--font-family);
++  outline: none;
++  cursor: pointer;
++  appearance: none;
++  -webkit-appearance: none;
++
++  /* Style the date picker trigger in webkit */
++  &::-webkit-calendar-picker-indicator {
++    opacity: 0.6;
++    cursor: pointer;
++    padding: 0 6px;
++    filter: invert(42%) sepia(78%) saturate(464%) hue-rotate(115deg) brightness(95%) contrast(95%);
++  }
++
++  &:focus { border-color: var(--lis-primary, #1D9E75); box-shadow: 0 0 0 3px var(--lis-primary-xlight, #E1F5EE); }
++  &:hover { border-color: var(--lis-primary-mid, #5DCAA5); }
++}
++
++/* ══════════════════════════════════════════════════════
++   AUTO-CALCULATED FIELD (Age, etc.)
++   ══════════════════════════════════════════════════════ */
++.auto-chip {
++  display: inline-flex;
++  align-items: center;
++  gap: 2px;
++  font-size: 9px;
++  font-weight: 500;
++  text-transform: uppercase;
++  letter-spacing: 0.04em;
++  padding: 1px 6px;
++  border-radius: 4px;
++  background: var(--lis-primary-xlight, #E1F5EE);
++  color: var(--lis-primary-deep, #085041);
++  border: 0.5px solid var(--lis-primary-mid, #5DCAA5);
++  margin-left: 5px;
++  vertical-align: middle;
++  i { font-size: 9px; }
++}
++
++.auto-field-wrap {
++  position: relative;
++  display: flex;
++  align-items: center;
++}
++
++.auto-field {
++  width: 100%;
++  height: 38px;
++  padding: 0 32px 0 11px;
++  border: 1px dashed var(--border-color);
++  border-radius: 8px;
++  font-size: 13px;
++  font-weight: 500;
++  color: var(--lis-primary-deep, #085041);
++  background: var(--lis-primary-xlight, #E1F5EE) !important;
++  font-family: var(--font-family);
++  cursor: default;
++  outline: none;
++
++  &::placeholder {
++    color: var(--text-secondary);
++    font-weight: 400;
++    font-style: italic;
++    font-size: 12px;
++  }
++}
++
++.auto-field-lock {
++  position: absolute;
++  right: 10px;
++  font-size: 13px;
++  color: var(--lis-primary-mid, #5DCAA5);
++  pointer-events: none;
++}
++
++/* ══════════════════════════════════════════════════════
++   PHONE INPUT — +91 prefix
++   ══════════════════════════════════════════════════════ */
++.phone-wrap {
++  display: flex;
++  align-items: stretch;
++  border: 1px solid var(--border-color);
++  border-radius: 8px;
++  overflow: hidden;
++  height: 38px;
++  transition: border-color 0.15s;
++
++  &:focus-within { border-color: var(--lis-primary, #1D9E75); box-shadow: 0 0 0 3px var(--lis-primary-xlight, #E1F5EE); }
++}
++
++.phone-prefix {
++  display: flex;
++  align-items: center;
++  gap: 5px;
++  padding: 0 10px;
++  background: var(--body-bg);
++  border-right: 1px solid var(--border-color);
++  font-size: 12px;
++  font-weight: 600;
++  color: var(--text-primary);
++  white-space: nowrap;
++  flex-shrink: 0;
++  user-select: none;
++}
++
++.phone-flag { font-size: 14px; line-height: 1; }
++
++.phone-input {
++  flex: 1;
++  min-width: 0;
++  height: 100%;
++  border: none !important;
++  border-radius: 0 !important;
++  outline: none;
++  padding: 0 11px;
++  font-size: 13px;
++  font-weight: 500;
++  color: var(--text-primary);
++  background: var(--card-bg);
++  font-family: var(--font-family);
++  letter-spacing: 0.03em;
++
++  &::placeholder { font-weight: 400; color: var(--text-secondary); letter-spacing: 0; }
++  &.input-error { background: #FFF0F0 !important; }
++}
++
++/* ══════════════════════════════════════════════════════
++   PATIENT RECAP (step 2)
++   ══════════════════════════════════════════════════════ */
+ .patient-recap {
+-  display: flex; align-items: center; gap: 10px;
+-  padding: 10px 16px; border-bottom: 0.5px solid var(--border-color);
++  display: flex;
++  align-items: center;
++  gap: 12px;
++  padding: 12px 20px;
++  border-bottom: 0.5px solid var(--border-color);
+   background: var(--lis-primary-xlight, #E1F5EE);
+ }
++
+ .recap-av {
+-  width: 34px; height: 34px; border-radius: 50%;
+-  background: var(--lis-primary, #1D9E75); color: #fff;
+-  display: flex; align-items: center; justify-content: center;
+-  font-size: 12px; font-weight: 600; flex-shrink: 0;
++  width: 36px;
++  height: 36px;
++  border-radius: 50%;
++  background: var(--lis-primary, #1D9E75);
++  color: #fff;
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  font-size: 12px;
++  font-weight: 700;
++  flex-shrink: 0;
+   text-transform: uppercase;
+ }
++
+ .recap-info { flex: 1; min-width: 0; }
+-.recap-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
++.recap-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+ .recap-meta { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+ .recap-edit { margin-left: auto; }
+ 
+-/* ── Form actions bar ───────────────────────────────── */
++/* ══════════════════════════════════════════════════════
++   FORM ACTIONS BAR
++   ══════════════════════════════════════════════════════ */
+ .form-actions {
+-  display: flex; justify-content: space-between; gap: 8px;
+-  padding: 16px 20px; border-top: 0.5px solid var(--border-color); background: var(--body-bg);
++  display: flex;
++  justify-content: space-between;
++  gap: 8px;
++  padding: 14px 20px;
++  border: 0.5px solid var(--border-color);
++  border-top: none;
++  background: var(--card-bg);
++  border-radius: 0 0 var(--lis-card-radius) var(--lis-card-radius);
+ }
++
+ .save-btn { min-width: 180px; justify-content: center; }
+ .save-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+ 
+-/* ── Spinner ─────────────────────────────────────────── */
++/* ── Spinner ────────────────────────────────────────── */
+ @keyframes spin { to { transform: rotate(360deg); } }
+ .spin { display: inline-block; animation: spin 0.8s linear infinite; }
+ 
+-/* ═══════════════════════════════════════════════════════
++/* ══════════════════════════════════════════════════════
+    SUCCESS OVERLAY
+-   ═══════════════════════════════════════════════════════ */
++   ══════════════════════════════════════════════════════ */
+ .success-overlay {
+-  position: fixed; inset: 0; z-index: 9999;
+-  background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(4px);
+-  display: flex; align-items: center; justify-content: center;
++  position: fixed;
++  inset: 0;
++  z-index: 9999;
++  background: rgba(0,0,0,0.55);
++  backdrop-filter: blur(4px);
++  display: flex;
++  align-items: center;
++  justify-content: center;
+   animation: fadeIn 0.25s ease;
+ }
+ @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+ 
+ .success-card {
+-  background: var(--card-bg); border-radius: 16px;
+-  padding: 36px 40px; max-width: 400px; width: 92%;
++  background: var(--card-bg);
++  border-radius: 16px;
++  padding: 36px 40px;
++  max-width: 400px;
++  width: 92%;
+   text-align: center;
+   box-shadow: 0 24px 64px rgba(0,0,0,0.3);
+   animation: slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
+ }
+ @keyframes slideUp { from { transform: translateY(24px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+ 
+-.success-icon {
+-  font-size: 52px; color: var(--lis-primary, #1D9E75);
+-  line-height: 1; margin-bottom: 12px;
+-}
+-.success-title {
+-  font-size: 17px; font-weight: 600;
+-  color: var(--text-primary); margin: 0 0 20px;
+-}
++.success-icon { font-size: 52px; color: var(--lis-primary,#1D9E75); line-height: 1; margin-bottom: 12px; }
++.success-title { font-size: 17px; font-weight: 600; color: var(--text-primary); margin: 0 0 20px; }
++
+ .success-pid-block {
+-  background: var(--lis-primary-xlight, #E1F5EE);
+-  border: 1px solid var(--lis-primary-mid, #5DCAA5);
+-  border-radius: 10px; padding: 12px 20px; margin-bottom: 18px;
++  background: var(--lis-primary-xlight,#E1F5EE);
++  border: 1px solid var(--lis-primary-mid,#5DCAA5);
++  border-radius: 10px;
++  padding: 12px 20px;
++  margin-bottom: 18px;
+ }
+ .success-pid-label {
+-  font-size: 10px; text-transform: uppercase; letter-spacing: .07em;
+-  color: var(--lis-primary-deep, #085041); font-weight: 500; margin-bottom: 4px;
+-}
+-.success-pid {
+-  font-size: 22px; font-weight: 700;
+-  color: var(--lis-primary-deep, #085041); letter-spacing: .05em;
++  font-size: 10px;
++  text-transform: uppercase;
++  letter-spacing: .07em;
++  color: var(--lis-primary-deep,#085041);
++  font-weight: 500;
++  margin-bottom: 4px;
+ }
++.success-pid { font-size: 22px; font-weight: 700; color: var(--lis-primary-deep,#085041); letter-spacing: .05em; }
+ .success-meta {
+-  display: flex; align-items: center; justify-content: center; gap: 6px;
+-  font-size: 12px; color: var(--text-secondary); margin-bottom: 16px;
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  gap: 6px;
++  font-size: 12px;
++  color: var(--text-secondary);
++  margin-bottom: 16px;
+ }
+ .success-sep { color: var(--border-color); }
+ .success-name { font-weight: 500; color: var(--text-primary); }
+-.success-redirect {
+-  font-size: 12px; color: var(--text-secondary); margin-bottom: 18px;
+-  strong { color: var(--text-primary); }
+-}
++.success-redirect { font-size: 12px; color: var(--text-secondary); margin-bottom: 18px; strong { color: var(--text-primary); } }
+ .success-cta { width: 100%; justify-content: center; font-size: 13px; padding: 11px; margin-bottom: 8px; }
+ .success-hint { font-size: 11px; color: var(--text-secondary); }
+-
+-/* ── UHID display field ────────────────────────────────── */
+-.uhid-input-wrap {
+-  position: relative; display: flex; align-items: center;
+-}
+-.uhid-input-wrap input { width: 100%; padding-right: 32px; }
+-.uhid-lock {
+-  position: absolute; right: 10px;
+-  color: var(--text-secondary); font-size: 14px; pointer-events: none;
+-}
+-.input-readonly {
+-  background: var(--body-bg) !important;
+-  color: var(--text-secondary) !important;
+-  cursor: default !important;
+-}
+-
+-/* ── Security note ─────────────────────────────────────── */
+-.secure-note {
+-  display: flex; align-items: center; gap: 6px; justify-content: center;
+-  font-size: 11px; color: var(--text-secondary);
+-  padding: 10px 0 4px;
+-  i { color: var(--lis-primary); }
+-  strong { color: var(--text-primary); }
+-}
+diff --git a/src/app/features/patient-registration/patient-registration.component.html b/src/app/features/patient-registration/patient-registration.component.html
+index b18e147..868a262 100644
+--- a/src/app/features/patient-registration/patient-registration.component.html
++++ b/src/app/features/patient-registration/patient-registration.component.html
+@@ -1,7 +1,6 @@
+ <!-- ═══════════════════════════════════════════════════════════
+      Screen 1 — Patient Registration
+      Single purpose: collect patient details.
+-     No test panel | No billing | No sidebar clutter.
+      ═══════════════════════════════════════════════════════════ -->
+ 
+ <!-- Success overlay -->
+@@ -39,32 +38,52 @@
+   </div>
+ }
+ 
+-<!-- Page header -->
++<!-- ── Page header ─────────────────────────────────────────── -->
+ <div class="page-header">
+-  <div>
+-    <h1 class="page-title">Patient Registration</h1>
+-    <nav aria-label="Breadcrumb">
+-      <ol class="breadcrumb">
+-        <li><a routerLink="/dashboard/home">Home</a></li>
+-        <li aria-current="page">New registration</li>
+-      </ol>
+-    </nav>
++  <div class="page-header__left">
++    <div class="page-header__title-row">
++      <div class="page-header__icon" aria-hidden="true">
++        <i class="ti ti-user-plus"></i>
++      </div>
++      <div>
++        <h1 class="page-title">Patient Registration</h1>
++        <nav aria-label="Breadcrumb">
++          <ol class="breadcrumb">
++            <li><a routerLink="/dashboard/home">Home</a></li>
++            <li aria-current="page">New registration</li>
++          </ol>
++        </nav>
++      </div>
++    </div>
+   </div>
+-  <!-- Workflow progress indicator -->
++
++  <!-- Workflow progress trail -->
+   <div class="workflow-trail" aria-label="Workflow steps">
+     <div class="wf-step wf-step--active">
+-      <i class="ti ti-circle-check-filled" aria-hidden="true"></i> Register
++      <span class="wf-dot wf-dot--active">
++        <i class="ti ti-check" aria-hidden="true"></i>
++      </span>
++      <span>Register</span>
++    </div>
++    <div class="wf-connector wf-connector--done"></div>
++    <div class="wf-step">
++      <span class="wf-dot">2</span>
++      <span>Test Order</span>
++    </div>
++    <div class="wf-connector"></div>
++    <div class="wf-step">
++      <span class="wf-dot">3</span>
++      <span>Billing</span>
++    </div>
++    <div class="wf-connector"></div>
++    <div class="wf-step">
++      <span class="wf-dot">4</span>
++      <span>Sample</span>
+     </div>
+-    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
+-    <div class="wf-step"><i class="ti ti-test-pipe"></i> Test Order</div>
+-    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
+-    <div class="wf-step"><i class="ti ti-file-invoice"></i> Billing</div>
+-    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
+-    <div class="wf-step"><i class="ti ti-droplet"></i> Sample</div>
+   </div>
+ </div>
+ 
+-<!-- Two-step stepper -->
++<!-- ── Stepper pills ─────────────────────────────────────── -->
+ <div class="stepper" role="list" aria-label="Registration steps">
+   @for (step of steps; track step.n) {
+     <div class="step"
+@@ -82,70 +101,86 @@
+       <span class="step-label">{{ step.label }}</span>
+     </div>
+     @if (step.n < steps.length) {
+-      <i class="ti ti-chevron-right step-arrow" aria-hidden="true"></i>
++      <div class="step-line" [class.step-line--done]="currentStep() > step.n"></div>
+     }
+   }
+ </div>
+ 
+-<!-- ── Single-column form (no right sidebar) ── -->
++<!-- ── Form ──────────────────────────────────────────────── -->
+ <div class="reg-form-wrap">
+   <form [formGroup]="form" novalidate>
+ 
+-    <!-- ── Step 1: Demographics ────────────── -->
++    <!-- ── Step 1: Demographics ─────────────────────────── -->
+     @if (currentStep() === 1) {
+       <div class="lis-card reg-card" aria-label="Personal details">
+         <div class="lis-card__header">
+           <i class="ti ti-user lis-card-icon" aria-hidden="true"></i>
+           <h2 class="lis-card__title">Personal Details</h2>
+-          <span class="lis-badge lis-badge--warn">Step 1 of 2</span>
++          <span class="step-pill">Step 1 of 2</span>
+         </div>
+ 
+         <div class="form-grid">
+-          <!-- Row 1: First name | Last name | UHID (auto) -->
++          <!-- First name -->
+           <div class="lis-field">
+             <label for="firstName">First Name <span class="req" aria-hidden="true">*</span></label>
+             <input id="firstName" formControlName="firstName"
+               [class.input-error]="isInvalid('firstName')"
+               autocomplete="given-name" placeholder="e.g. Ananya" />
+             @if (isInvalid('firstName')) {
+-              <span class="err-msg" role="alert">First name is required</span>
++              <span class="err-msg" role="alert">
++                <i class="ti ti-alert-circle"></i> First name is required
++              </span>
+             }
+           </div>
+ 
++          <!-- Last name -->
+           <div class="lis-field">
+             <label for="lastName">Last Name <span class="req" aria-hidden="true">*</span></label>
+             <input id="lastName" formControlName="lastName"
+               [class.input-error]="isInvalid('lastName')"
+               autocomplete="family-name" placeholder="e.g. Krishnaswamy" />
+             @if (isInvalid('lastName')) {
+-              <span class="err-msg" role="alert">Last name is required</span>
++              <span class="err-msg" role="alert">
++                <i class="ti ti-alert-circle"></i> Last name is required
++              </span>
+             }
+           </div>
+ 
+-          <div class="lis-field">
+-            <label for="uhidDisplay">UHID / Patient ID <span class="opt-label">(Auto)</span></label>
+-            <div class="uhid-input-wrap">
+-              <input id="uhidDisplay" value="Auto-generated" readonly class="input-readonly" />
+-              <i class="ti ti-lock uhid-lock" aria-hidden="true"></i>
+-            </div>
+-          </div>
+-
+-          <!-- Row 2: DOB | Age | Gender -->
++          <!-- Date of Birth — custom date picker wrapper -->
+           <div class="lis-field">
+             <label for="dob">Date of Birth <span class="req" aria-hidden="true">*</span></label>
+-            <input id="dob" type="date" formControlName="dob"
+-              [class.input-error]="isInvalid('dob')"
+-              (change)="calcAge()" />
++            <div class="date-input-wrap">
++              <i class="ti ti-calendar date-icon" aria-hidden="true"></i>
++              <input id="dob" type="date" formControlName="dob"
++                class="date-input"
++                [class.input-error]="isInvalid('dob')"
++                [max]="todayISO"
++                (change)="calcAge()" />
++            </div>
+             @if (isInvalid('dob')) {
+-              <span class="err-msg" role="alert">Date of birth is required</span>
++              <span class="err-msg" role="alert">
++                <i class="ti ti-alert-circle"></i> Date of birth is required
++              </span>
+             }
+           </div>
+ 
++          <!-- Age — auto-calculated readonly -->
+           <div class="lis-field">
+-            <label for="ageDisplay">Age <span class="opt-label">(Auto)</span></label>
+-            <input id="ageDisplay" [value]="ageDisplay()" readonly placeholder="Auto-calculated" class="input-readonly" />
++            <label for="ageDisplay">
++              Age
++              <span class="auto-chip">
++                <i class="ti ti-cpu" aria-hidden="true"></i> Auto
++              </span>
++            </label>
++            <div class="auto-field-wrap">
++              <input id="ageDisplay" [value]="ageDisplay()" readonly
++                placeholder="Calculated from DOB"
++                class="auto-field" tabindex="-1" />
++              <i class="ti ti-lock auto-field-lock" aria-hidden="true"></i>
++            </div>
+           </div>
+ 
++          <!-- Gender -->
+           <div class="lis-field">
+             <label id="gender-label">Gender <span class="req" aria-hidden="true">*</span></label>
+             <div class="lis-seg" role="group" aria-labelledby="gender-label">
+@@ -157,37 +192,51 @@
+               }
+             </div>
+             @if (isInvalid('gender')) {
+-              <span class="err-msg" role="alert">Please select a gender</span>
++              <span class="err-msg" role="alert">
++                <i class="ti ti-alert-circle"></i> Please select a gender
++              </span>
+             }
+           </div>
+ 
+-          <!-- Row 3: Mobile | Email | Blood Group -->
++          <!-- Blood Group -->
++          <div class="lis-field">
++            <label for="bloodGroup">Blood Group</label>
++            <select id="bloodGroup" formControlName="bloodGroup">
++              @for (bg of bloodGroups; track bg) {
++                <option [value]="bg">{{ bg }}</option>
++              }
++            </select>
++          </div>
++
++          <!-- Mobile Number — with +91 prefix -->
+           <div class="lis-field">
+             <label for="mobile">Mobile Number <span class="req" aria-hidden="true">*</span></label>
+-            <input id="mobile" formControlName="mobile" type="tel"
+-              [class.input-error]="isInvalid('mobile')"
+-              autocomplete="tel" placeholder="10-digit mobile number" />
++            <div class="phone-wrap">
++              <span class="phone-prefix">
++                <span class="phone-flag">🇮🇳</span>
++                +91
++              </span>
++              <input id="mobile" formControlName="mobile" type="tel"
++                class="phone-input"
++                [class.input-error]="isInvalid('mobile')"
++                autocomplete="tel" placeholder="98765 43210"
++                maxlength="10" inputmode="numeric" />
++            </div>
+             @if (isInvalid('mobile')) {
+-              <span class="err-msg" role="alert">Valid 10-digit mobile number required</span>
++              <span class="err-msg" role="alert">
++                <i class="ti ti-alert-circle"></i> Valid 10-digit number required
++              </span>
+             }
+           </div>
+ 
++          <!-- Email -->
+           <div class="lis-field">
+             <label for="email">Email <span class="opt-label">(Optional)</span></label>
+             <input id="email" formControlName="email" type="email"
+               autocomplete="email" placeholder="patient@email.com" />
+           </div>
+ 
+-          <div class="lis-field">
+-            <label for="bloodGroup">Blood Group</label>
+-            <select id="bloodGroup" formControlName="bloodGroup">
+-              @for (bg of bloodGroups; track bg) {
+-                <option [value]="bg">{{ bg }}</option>
+-              }
+-            </select>
+-          </div>
+-
+-          <!-- Row 4: Address full width -->
++          <!-- Address — full width -->
+           <div class="lis-field form-full">
+             <label for="address">Address <span class="opt-label">(Optional)</span></label>
+             <textarea id="address" formControlName="address"
+@@ -196,26 +245,24 @@
+         </div>
+       </div>
+ 
+-      <!-- Step 1 action -->
++      <!-- Step 1 actions -->
+       <div class="form-actions">
+-        <button type="button" class="lis-btn lis-btn--secondary"
+-          (click)="goBack()">
++        <button type="button" class="lis-btn lis-btn--secondary" (click)="goBack()">
+           <i class="ti ti-arrow-left" aria-hidden="true"></i> Cancel
+         </button>
+-        <button type="button" class="lis-btn lis-btn--primary"
+-          (click)="nextStep()">
++        <button type="button" class="lis-btn lis-btn--primary" (click)="nextStep()">
+           Next: Clinical info <i class="ti ti-arrow-right" aria-hidden="true"></i>
+         </button>
+       </div>
+     }
+ 
+-    <!-- ── Step 2: Clinical Information ────── -->
++    <!-- ── Step 2: Clinical Information ─────────────────── -->
+     @if (currentStep() === 2) {
+       <div class="lis-card reg-card" aria-label="Clinical information">
+         <div class="lis-card__header">
+           <i class="ti ti-stethoscope lis-card-icon" aria-hidden="true"></i>
+           <h2 class="lis-card__title">Clinical Information</h2>
+-          <span class="lis-badge lis-badge--warn">Step 2 of 2</span>
++          <span class="step-pill">Step 2 of 2</span>
+         </div>
+ 
+         <!-- Mini patient recap -->
+@@ -309,8 +356,7 @@
+ 
+       <!-- Step 2 actions -->
+       <div class="form-actions">
+-        <button type="button" class="lis-btn lis-btn--secondary"
+-          (click)="goBack()">
++        <button type="button" class="lis-btn lis-btn--secondary" (click)="goBack()">
+           <i class="ti ti-arrow-left" aria-hidden="true"></i> Back
+         </button>
+         <button type="button" class="lis-btn lis-btn--primary save-btn"
+diff --git a/src/app/features/patient-registration/patient-registration.component.ts b/src/app/features/patient-registration/patient-registration.component.ts
+index 42786a9..af63253 100644
+--- a/src/app/features/patient-registration/patient-registration.component.ts
++++ b/src/app/features/patient-registration/patient-registration.component.ts
+@@ -33,6 +33,8 @@ export class PatientRegistrationComponent implements OnInit {
+     'A+', 'A−', 'B+', 'B−', 'O+', 'O−', 'AB+', 'AB−', 'Unknown'
+   ];
+ 
++  readonly todayISO = new Date().toISOString().split('T')[0];
++
+   currentStep   = signal(1);
+   ageDisplay    = signal('');
+   saving        = signal(false);
+diff --git a/src/app/layout/components/sidebar/sidebar.component.css b/src/app/layout/components/sidebar/sidebar.component.css
+index e6e3206..5594623 100644
+--- a/src/app/layout/components/sidebar/sidebar.component.css
++++ b/src/app/layout/components/sidebar/sidebar.component.css
+@@ -1,77 +1,147 @@
+-/* LIS brand overrides */
+-    .lis-sidebar { background: var(--lis-sidebar-bg, #04342C) !important; }
+-
+-    .lis-brand-icon {
+-      width: 33px; height: 33px;
+-      background: var(--lis-primary, #1D9E75);
+-      border-radius: 8px;
+-      display: flex; align-items: center; justify-content: center;
+-      flex-shrink: 0;
+-      i { color: var(--lis-sidebar-text); font-size: 18px; }
+-    }
+-    .lis-brand-text { display: flex; flex-direction: column; }
+-    .lis-brand-name {
+-      font-size: 13px; font-weight: 500; color: var(--lis-sidebar-text); line-height: 1.2;
+-    }
+-    .lis-brand-sub  { font-size: 10px; color: rgba(255,255,255,0.5); }
+-
+-    /* Nav items inherit base .pc-sidebar styles — only override colour */
+-    .pc-sidebar .nav-item a:hover,
+-    .pc-sidebar .nav-item a.active {
+-      background: rgba(29,158,117,0.18) !important;
+-      color: #9FE1CB !important;
+-    }
+-    .pc-sidebar .nav-item a.active { font-weight: 600; }
+-
+-    /* Badge */
+-    .nav-badge {
+-      margin-left: auto;
+-      background: #E24B4A;
+-      color: #fff;
+-      font-size: 10px;
+-      border-radius: 10px;
+-      padding: 1px 6px;
+-      font-weight: 500;
+-      line-height: 1.6;
+-    }
+-
+-    /* Avatar */
+-    .lis-avatar {
+-      width: 30px; height: 30px;
+-      border-radius: 50%;
+-      background: var(--lis-primary, #1D9E75);
+-      display: flex; align-items: center; justify-content: center;
+-      font-size: 11px; font-weight: 500; color: #fff;
+-      flex-shrink: 0;
+-    }
+-    .lis-logout-icon {
+-      margin-left: auto; font-size: 15px;
+-      color: var(--lis-sidebar-muted); cursor: pointer;
+-      &:hover { color: var(--lis-sidebar-text); }
+-    }
+-
+-    /* Footer */
+-    .sidebar-footer {
+-      margin-top: auto;
+-      padding: 12px;
+-      border-top: 1px solid var(--lis-sidebar-sep);
+-    }
+-    .sidebar-user {
+-      display: flex; align-items: center; gap: 9px;
+-      padding: 8px 10px; border-radius: 8px;
+-      cursor: pointer; transition: background 0.12s;
+-      &:hover { background: var(--lis-sidebar-hover); }
+-    }
+-    .sidebar-user-name { font-size: 12px; font-weight: 500; color: var(--lis-sidebar-text); margin: 0; line-height: 1.3; }
+-    .sidebar-user-role { font-size: 10px; color: var(--lis-sidebar-muted); margin: 0; }
+-
+-    .mobile-close-btn {
+-      margin-left: auto;
+-      width: 32px; height: 32px;
+-      border: none; border-radius: 8px;
+-      background: var(--lis-sidebar-hover);
+-      color: var(--lis-sidebar-muted);
+-      display: flex; align-items: center; justify-content: center;
+-      cursor: pointer;
+-      &:hover { background: rgba(255,255,255,0.14); }
+-    }
+\ No newline at end of file
++/* ══════════════════════════════════════════════════════
++   MEDPATH LIS — Sidebar
++   ══════════════════════════════════════════════════════ */
++
++/* Background */
++.lis-sidebar { background: var(--lis-sidebar-bg, #04342C) !important; }
++
++/* ── Brand header ─────────────────────────────────── */
++.lis-brand-icon {
++  width: 34px; height: 34px;
++  background: var(--lis-primary, #1D9E75);
++  border-radius: 9px;
++  display: flex; align-items: center; justify-content: center;
++  flex-shrink: 0;
++  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
++  i { color: #fff; font-size: 18px; }
++}
++
++.lis-brand-text { display: flex; flex-direction: column; gap: 1px; }
++.lis-brand-name {
++  font-size: 13px; font-weight: 600;
++  color: var(--lis-sidebar-text);
++  line-height: 1.2;
++  letter-spacing: -0.01em;
++}
++.lis-brand-sub { font-size: 10px; color: rgba(255,255,255,0.4); letter-spacing: 0.01em; }
++
++/* ── Section captions ─────────────────────────────── */
++.nav-caption {
++  font-size: 9.5px !important;
++  font-weight: 600 !important;
++  letter-spacing: 0.08em !important;
++  text-transform: uppercase !important;
++  color: rgba(255,255,255,0.3) !important;
++  padding: 14px 16px 4px !important;
++  margin: 0 !important;
++}
++
++/* ── Nav items ────────────────────────────────────── */
++.pc-sidebar .nav-item a {
++  border-radius: 8px !important;
++  margin: 1px 8px !important;
++  padding: 8px 10px !important;
++  gap: 9px !important;
++  font-size: 13px !important;
++  font-weight: 400 !important;
++  color: rgba(255,255,255,0.7) !important;
++  transition: background 0.12s, color 0.12s !important;
++}
++
++.pc-sidebar .nav-item a:hover {
++  background: rgba(255,255,255,0.06) !important;
++  color: rgba(255,255,255,0.92) !important;
++}
++
++.pc-sidebar .nav-item a.active {
++  background: rgba(29,158,117,0.22) !important;
++  color: #9FE1CB !important;
++  font-weight: 500 !important;
++}
++
++.pc-sidebar .nav-item a.active .nav-icon i {
++  color: var(--lis-primary, #1D9E75) !important;
++}
++
++/* ── Nav icon ─────────────────────────────────────── */
++.nav-icon {
++  width: 20px !important;
++  height: 20px !important;
++  display: flex !important;
++  align-items: center !important;
++  justify-content: center !important;
++  flex-shrink: 0 !important;
++  i { font-size: 16px !important; }
++}
++
++/* ── Badge ────────────────────────────────────────── */
++.nav-badge {
++  margin-left: auto;
++  background: #E24B4A;
++  color: #fff;
++  font-size: 10px;
++  border-radius: 10px;
++  padding: 1px 6px;
++  font-weight: 600;
++  line-height: 1.6;
++  min-width: 18px;
++  text-align: center;
++}
++
++/* ── Avatar ───────────────────────────────────────── */
++.lis-avatar {
++  width: 32px; height: 32px;
++  border-radius: 50%;
++  background: var(--lis-primary, #1D9E75);
++  display: flex; align-items: center; justify-content: center;
++  font-size: 11px; font-weight: 700; color: #fff;
++  flex-shrink: 0;
++  border: 1.5px solid rgba(255,255,255,0.15);
++}
++
++.lis-logout-icon {
++  margin-left: auto; font-size: 15px;
++  color: var(--lis-sidebar-muted);
++  cursor: pointer;
++  transition: color 0.12s;
++  &:hover { color: rgba(255,255,255,0.85); }
++}
++
++/* ── Footer ───────────────────────────────────────── */
++.sidebar-footer {
++  margin-top: auto;
++  padding: 10px 8px;
++  border-top: 1px solid var(--lis-sidebar-sep);
++}
++
++.sidebar-user {
++  display: flex; align-items: center; gap: 9px;
++  padding: 8px 10px; border-radius: 8px;
++  cursor: pointer; transition: background 0.12s;
++  &:hover { background: var(--lis-sidebar-hover); }
++}
++
++.sidebar-user-info { flex: 1; min-width: 0; }
++.sidebar-user-name {
++  font-size: 12px; font-weight: 600;
++  color: var(--lis-sidebar-text);
++  margin: 0; line-height: 1.3;
++  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
++}
++.sidebar-user-role {
++  font-size: 10px; color: var(--lis-sidebar-muted);
++  margin: 0;
++}
++
++/* ── Mobile close ─────────────────────────────────── */
++.mobile-close-btn {
++  margin-left: auto;
++  width: 32px; height: 32px;
++  border: none; border-radius: 8px;
++  background: var(--lis-sidebar-hover);
++  color: var(--lis-sidebar-muted);
++  display: flex; align-items: center; justify-content: center;
++  cursor: pointer;
++  transition: background 0.12s, color 0.12s;
++  &:hover { background: rgba(255,255,255,0.14); color: rgba(255,255,255,0.85); }
++}
+-- 
+2.43.0
+
