@@ -3687,53 +3687,130 @@
    component CSS. Angular ViewEncapsulation adds attribute
    selectors to component styles (e.g. [_nghost-xyz]),
    making them lose specificity against global rules here.
-   Brand accent: #3DC9A8 (teal)
-   Sidebar bg:   #0F172A (dark slate, both themes)
+   Brand accent: #5367FE (indigo)  active pill
+   Sidebar bg:   #1a1d2e (dark navy-charcoal)
+   Ref: modern icon-sidebar design (expanded + collapsed)
    ══════════════════════════════════════════════════════════ */
 
 /* ── CSS tokens — sidebar palette ──────────────────────── */
+/* ── Sidebar tokens: DARK mode (default — sidebar is always dark) ── */
 :root {
-  --lis-sb-bg:          #111827;
-  --lis-sb-bg-brand:    #0D1526;
-  --lis-sb-accent:      #3DC9A8;
-  --lis-sb-accent-glow: rgba(61,201,168,0.16);
-  --lis-sb-text:        rgba(200,210,255,0.75);
-  --lis-sb-text-active: #A8F4E0;
-  --lis-sb-caption:     rgba(150,165,255,0.45);
-  --lis-sb-hover-bg:    rgba(112,128,255,0.12);
-  --lis-sb-sep:         rgba(112,128,255,0.12);
+  --lis-sb-bg:             #1a1d2e;
+  --lis-sb-bg-brand:       #1a1d2e;
+  --lis-sb-search-bg:      #252840;
+  --lis-sb-accent:         #5367FE;
+  --lis-sb-accent-hover:   #6474FF;
+  --lis-sb-text:           rgba(185,195,240,0.70);
+  --lis-sb-text-hover:     rgba(220,228,255,0.95);
+  --lis-sb-text-active:    #ffffff;
+  --lis-sb-caption:        rgba(150,165,255,0.38);
+  --lis-sb-hover-bg:       rgba(255,255,255,0.07);
+  --lis-sb-sep:            rgba(255,255,255,0.07);
+  --lis-sb-icon-idle:      rgba(185,195,240,0.55);
+  --lis-sb-icon-active:    #ffffff;
+  --lis-sb-radius:         10px;
+  --lis-sb-col-icon-box:   42px;
+  --lis-sb-col-icon-bg:    rgba(255,255,255,0.06);
+  --lis-sb-col-icon-hover: rgba(255,255,255,0.11);
+  /* light-theme expanded overrides (used below) */
+  --lis-sb-lt-bg:          #ffffff;
+  --lis-sb-lt-icon:        #6B7399;
+  --lis-sb-lt-icon-hover:  #1A2040;
+  --lis-sb-lt-icon-bg:     rgba(83,103,254,0.07);
+  --lis-sb-lt-sep:         #DDE1F5;
 }
+
+/* ── Sidebar tokens: LIGHT theme — expanded sidebar goes white ── */
+:root:not([data-theme="dark"]) {
+  --lis-sb-bg:             #ffffff;
+  --lis-sb-bg-brand:       #F8F9FF;
+  --lis-sb-search-bg:      #F0F2FF;
+  --lis-sb-text:           #6B7399;
+  --lis-sb-text-hover:     #1A2040;
+  --lis-sb-text-active:    #ffffff;
+  --lis-sb-caption:        #9099C4;
+  --lis-sb-hover-bg:       rgba(83,103,254,0.07);
+  --lis-sb-sep:            #DDE1F5;
+  --lis-sb-icon-idle:      #9099C4;
+  --lis-sb-icon-active:    #ffffff;
+  --lis-sb-col-icon-bg:    rgba(83,103,254,0.06);
+  --lis-sb-col-icon-hover: rgba(83,103,254,0.12);
+}
+
+/* ── Sidebar tokens: DARK theme explicit (sidebar stays dark-navy) ── */
+[data-theme="dark"] {
+  --lis-sb-bg:             #1a1d2e;
+  --lis-sb-bg-brand:       #1a1d2e;
+  --lis-sb-search-bg:      #252840;
+  --lis-sb-text:           rgba(185,195,240,0.70);
+  --lis-sb-text-hover:     rgba(220,228,255,0.95);
+  --lis-sb-text-active:    #ffffff;
+  --lis-sb-caption:        rgba(150,165,255,0.38);
+  --lis-sb-hover-bg:       rgba(255,255,255,0.07);
+  --lis-sb-sep:            rgba(255,255,255,0.07);
+  --lis-sb-icon-idle:      rgba(185,195,240,0.55);
+  --lis-sb-icon-active:    #ffffff;
+  --lis-sb-col-icon-bg:    rgba(255,255,255,0.06);
+  --lis-sb-col-icon-hover: rgba(255,255,255,0.11);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   EXPANDED SIDEBAR — dark navy, indigo active pill
+   ═══════════════════════════════════════════════════════════ */
 
 /* ── Shell ──────────────────────────────────────────────── */
 .pc-sidebar.lis-sidebar {
   background: var(--lis-sb-bg) !important;
   border-right: 1px solid var(--lis-sb-sep) !important;
-  box-shadow: 2px 0 20px rgba(0,0,0,0.40), 1px 0 0 rgba(112,128,255,0.08) !important;
+  box-shadow: 4px 0 24px rgba(0,0,0,0.35) !important;
+  overflow: hidden !important;
 }
 
-/* ── Brand strip ────────────────────────────────────────── */
+/* ── Brand strip — unified, no contrast band ────────────── */
 .pc-sidebar.lis-sidebar .sidebar-brand {
-  background: var(--lis-sb-bg-brand) !important;
+  background: var(--lis-sb-bg) !important;
   border-bottom: 1px solid var(--lis-sb-sep) !important;
-  padding: 0 14px !important;
+  padding: 0 16px !important;
   min-height: var(--lis-topbar-height, 56px) !important;
   display: flex !important;
   align-items: center !important;
   gap: 10px !important;
 }
 
+/* ── Search bar in sidebar ──────────────────────────────── */
+.pc-sidebar.lis-sidebar .sidebar-search,
+.pc-sidebar.lis-sidebar .topbar-search {
+  margin: 10px 12px 6px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  background: var(--lis-sb-search-bg) !important;
+  border: 1px solid rgba(255,255,255,0.07) !important;
+  border-radius: 8px !important;
+  padding: 7px 12px !important;
+  color: rgba(185,195,240,0.55) !important;
+  font-size: 13px !important;
+  cursor: text !important;
+}
+.pc-sidebar.lis-sidebar .sidebar-search i,
+.pc-sidebar.lis-sidebar .topbar-search i {
+  font-size: 15px !important;
+  color: rgba(185,195,240,0.40) !important;
+  flex-shrink: 0 !important;
+}
+
 /* ── Section captions ───────────────────────────────────── */
 .pc-sidebar.lis-sidebar .nav-caption {
-  font-size: 9px !important;
+  font-size: 9.5px !important;
   font-weight: 700 !important;
-  letter-spacing: 0.10em !important;
+  letter-spacing: 0.11em !important;
   text-transform: uppercase !important;
   color: var(--lis-sb-caption) !important;
-  padding: 18px 14px 4px !important;
+  padding: 16px 18px 5px !important;
   margin: 0 !important;
 }
 
-/* ── Nav item — reset margin that Tailwind/global may set ── */
+/* ── Nav item reset ─────────────────────────────────────── */
 .pc-sidebar.lis-sidebar .nav-item {
   margin: 0 !important;
   padding: 0 !important;
@@ -3745,53 +3822,65 @@
 .pc-sidebar.lis-sidebar .nav-item a:visited {
   display: flex !important;
   align-items: center !important;
-  gap: 10px !important;
-  margin: 1px 6px !important;
-  padding: 8px 11px !important;
-  border-radius: 8px !important;
-  font-size: 13px !important;
-  font-weight: 400 !important;
+  gap: 12px !important;
+  margin: 2px 10px !important;
+  padding: 9px 12px !important;
+  border-radius: var(--lis-sb-radius) !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
   color: var(--lis-sb-text) !important;
   background: transparent !important;
+  border: none !important;
   text-decoration: none !important;
-  transition: background 0.14s ease, color 0.14s ease !important;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.10s ease !important;
   white-space: nowrap !important;
+  position: relative !important;
 }
 
 /* ── Nav link — hover ───────────────────────────────────── */
 .pc-sidebar.lis-sidebar .nav-item a:hover {
   background: var(--lis-sb-hover-bg) !important;
-  color: rgba(220,228,255,0.95) !important;
-  border-left: 2px solid rgba(112,128,255,0.45) !important;
-  padding-left: 9px !important;
+  color: var(--lis-sb-text-hover) !important;
+  border: none !important;
+  padding-left: 12px !important;
 }
 
-/* ── Nav link — active ──────────────────────────────────── */
+/* ── Nav link — active (indigo solid pill) ──────────────── */
 .pc-sidebar.lis-sidebar .nav-item a.active,
 .pc-sidebar.lis-sidebar .nav-item a.active:visited {
-  background: var(--lis-sb-accent-glow) !important;
+  background: #3DC9A8 !important;
   color: var(--lis-sb-text-active) !important;
   font-weight: 600 !important;
-  border-left: 2px solid var(--lis-sb-accent) !important;
-  padding-left: 9px !important;
+  border: none !important;
+  padding-left: 12px !important;
+  box-shadow: 0 4px 14px rgba(61,201,168,0.40) !important;
 }
-
-/* ── Active icon gets accent color ─────────────────────── */
-.pc-sidebar.lis-sidebar .nav-item a.active .nav-icon,
-.pc-sidebar.lis-sidebar .nav-item a.active .nav-icon i {
-  color: var(--lis-sb-accent) !important;
+.pc-sidebar.lis-sidebar .nav-item a.active:hover {
+  background: #2EA88D !important;
+  box-shadow: 0 6px 18px rgba(61,201,168,0.50) !important;
 }
 
 /* ── Nav icon ───────────────────────────────────────────── */
 .pc-sidebar.lis-sidebar .nav-icon {
   width: 20px !important;
   height: 20px !important;
-  font-size: 17px !important;
+  font-size: 18px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   flex-shrink: 0 !important;
-  color: inherit !important;
+  color: var(--lis-sb-icon-idle) !important;
+  transition: color 0.15s ease !important;
+}
+
+/* Icon inherits from link on hover/active */
+.pc-sidebar.lis-sidebar .nav-item a:hover .nav-icon,
+.pc-sidebar.lis-sidebar .nav-item a:hover .nav-icon i {
+  color: var(--lis-sb-text-hover) !important;
+}
+.pc-sidebar.lis-sidebar .nav-item a.active .nav-icon,
+.pc-sidebar.lis-sidebar .nav-item a.active .nav-icon i {
+  color: var(--lis-sb-icon-active) !important;
 }
 
 /* ── Nav label ──────────────────────────────────────────── */
@@ -3801,6 +3890,39 @@
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   color: inherit !important;
+  font-size: inherit !important;
+}
+
+/* ── Badge / count chips inside nav ────────────────────── */
+.pc-sidebar.lis-sidebar .nav-item a .badge,
+.pc-sidebar.lis-sidebar .nav-item a .nav-badge {
+  margin-left: auto !important;
+  min-width: 20px !important;
+  height: 20px !important;
+  padding: 0 6px !important;
+  border-radius: 10px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: #E24B4A !important;
+  color: #fff !important;
+  line-height: 1 !important;
+}
+/* Badge on active item: white bg, indigo text */
+.pc-sidebar.lis-sidebar .nav-item a.active .badge,
+.pc-sidebar.lis-sidebar .nav-item a.active .nav-badge {
+  background: rgba(255,255,255,0.22) !important;
+  color: #fff !important;
+}
+
+/* ── Divider line ────────────────────────────────────────── */
+.pc-sidebar.lis-sidebar .sidebar-divider,
+.pc-sidebar.lis-sidebar hr {
+  border: none !important;
+  border-top: 1px solid var(--lis-sb-sep) !important;
+  margin: 8px 16px !important;
 }
 
 /* ── Scrollbar ──────────────────────────────────────────── */
@@ -3811,39 +3933,281 @@
   border-radius: 3px;
 }
 
-/* ── Footer strip ───────────────────────────────────────── */
+/* ── Footer strip — unified bg ───────────────────────────── */
 .pc-sidebar.lis-sidebar .sidebar-footer {
-  background: var(--lis-sb-bg-brand) !important;
+  background: var(--lis-sb-bg) !important;
   border-top: 1px solid var(--lis-sb-sep) !important;
-  padding: 10px 8px !important;
+  padding: 10px 10px !important;
 }
 
 .pc-sidebar.lis-sidebar .sidebar-user {
-  border-radius: 8px !important;
-  transition: background 0.13s !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 8px 10px !important;
+  border-radius: var(--lis-sb-radius) !important;
+  transition: background 0.14s ease !important;
+  cursor: pointer !important;
 }
 .pc-sidebar.lis-sidebar .sidebar-user:hover {
   background: var(--lis-sb-hover-bg) !important;
 }
-
 .pc-sidebar.lis-sidebar .sidebar-user-name {
-  color: rgba(255,255,255,0.85) !important;
-  font-size: 12px !important;
+  color: rgba(220,228,255,0.90) !important;
+  font-size: 12.5px !important;
   font-weight: 600 !important;
 }
 .pc-sidebar.lis-sidebar .sidebar-user-role {
-  color: rgba(255,255,255,0.38) !important;
-  font-size: 10px !important;
+  color: rgba(185,195,240,0.42) !important;
+  font-size: 10.5px !important;
 }
 
-/* ── Dark theme — sidebar is self-themed, ignore page bg ── */
+/* ═══════════════════════════════════════════════════════════
+   COLLAPSED SIDEBAR — icon-only mode (72px wide)
+   Each icon centred in a square pill, active = indigo square
+   ═══════════════════════════════════════════════════════════ */
+
+.pc-sidebar.lis-sidebar.collapsed .nav-item a,
+.pc-sidebar.lis-sidebar.collapsed .nav-item a:link,
+.pc-sidebar.lis-sidebar.collapsed .nav-item a:visited {
+  justify-content: center !important;
+  margin: 3px 10px !important;
+  padding: 0 !important;
+  width: var(--lis-sb-col-icon-box) !important;
+  height: var(--lis-sb-col-icon-box) !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  gap: 0 !important;
+}
+.pc-sidebar.lis-sidebar.collapsed .nav-item a:hover {
+  background: var(--lis-sb-col-icon-hover) !important;
+  color: var(--lis-sb-text-hover) !important;
+}
+.pc-sidebar.lis-sidebar.collapsed .nav-item a.active,
+.pc-sidebar.lis-sidebar.collapsed .nav-item a.active:visited {
+  background: #3DC9A8 !important;
+  box-shadow: 0 4px 14px rgba(61,201,168,0.45) !important;
+}
+.pc-sidebar.lis-sidebar.collapsed .nav-label,
+.pc-sidebar.lis-sidebar.collapsed .nav-caption,
+.pc-sidebar.lis-sidebar.collapsed .sidebar-user-name,
+.pc-sidebar.lis-sidebar.collapsed .sidebar-user-role,
+.pc-sidebar.lis-sidebar.collapsed .brand-sub {
+  display: none !important;
+}
+.pc-sidebar.lis-sidebar.collapsed .nav-icon {
+  font-size: 19px !important;
+  width: 22px !important;
+  height: 22px !important;
+  margin: 0 !important;
+}
+.pc-sidebar.lis-sidebar.collapsed .sidebar-brand {
+  justify-content: center !important;
+  padding: 0 !important;
+}
+.pc-sidebar.lis-sidebar.collapsed .sidebar-footer {
+  padding: 10px 6px !important;
+}
+.pc-sidebar.lis-sidebar.collapsed .sidebar-user {
+  justify-content: center !important;
+  padding: 8px 0 !important;
+}
+.pc-sidebar.lis-sidebar.collapsed .sidebar-search,
+.pc-sidebar.lis-sidebar.collapsed .topbar-search {
+  margin: 10px auto 6px !important;
+  width: var(--lis-sb-col-icon-box) !important;
+  padding: 0 !important;
+  justify-content: center !important;
+  background: var(--lis-sb-col-icon-bg) !important;
+  border-radius: 10px !important;
+  height: var(--lis-sb-col-icon-box) !important;
+}
+.pc-sidebar.lis-sidebar.collapsed .sidebar-search span,
+.pc-sidebar.lis-sidebar.collapsed .topbar-search span {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LIGHT THEME — collapsed sidebar becomes white card look
+   (ref: right-most panel in screenshot)
+   ═══════════════════════════════════════════════════════════ */
+
+:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar.collapsed {
+  background: var(--lis-sb-lt-bg) !important;
+  border-right: 1px solid var(--lis-sb-lt-sep) !important;
+  box-shadow: 2px 0 16px rgba(83,103,254,0.08) !important;
+}
+:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar.collapsed .nav-item a {
+  color: var(--lis-sb-lt-icon) !important;
+}
+:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar.collapsed .nav-item a:hover {
+  background: var(--lis-sb-lt-icon-bg) !important;
+  color: var(--lis-sb-lt-icon-hover) !important;
+}
+:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar.collapsed .nav-item a.active {
+  background: var(--lis-sb-accent) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 14px rgba(83,103,254,0.30) !important;
+}
+:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar.collapsed .nav-icon {
+  color: inherit !important;
+}
+:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar.collapsed .sidebar-search,
+:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar.collapsed .topbar-search {
+  background: #F0F2FF !important;
+  color: #6B7399 !important;
+  border-color: #DDE1F5 !important;
+}
+:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar.collapsed .sidebar-footer,
+:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar.collapsed .sidebar-brand {
+  background: var(--lis-sb-lt-bg) !important;
+  border-color: var(--lis-sb-lt-sep) !important;
+}
+
+/* ── Dark theme — sidebar is always self-themed ──────────── */
 [data-theme="dark"] .pc-sidebar.lis-sidebar {
   background: var(--lis-sb-bg) !important;
-  border-right-color: rgba(255,255,255,0.05) !important;
+  border-right-color: var(--lis-sb-sep) !important;
 }
 [data-theme="dark"] .pc-sidebar.lis-sidebar .sidebar-brand,
 [data-theme="dark"] .pc-sidebar.lis-sidebar .sidebar-footer {
+  background: var(--lis-sb-bg) !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   LIS SIDEBAR — Final cascade override (both themes)
+   ──────────────────────────────────────────────────────────
+   Placed last so these always win over any global nav-item
+   rules regardless of source order. Covers light + dark.
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Container hover reset (element-level rule from ~ln1179) ── */
+.pc-sidebar.lis-sidebar .nav-item:hover {
+  background: transparent !important;
+  color: inherit !important;
+}
+
+/* ── DARK: nav link hover ───────────────────────────────── */
+[data-theme="dark"] .pc-sidebar.lis-sidebar .nav-item a:hover,
+.pc-sidebar.lis-sidebar .nav-item a:hover {
+  background: var(--lis-sb-hover-bg) !important;
+  color: var(--lis-sb-text-hover) !important;
+  border: none !important;
+  padding-left: 12px !important;
+  box-shadow: none !important;
+}
+
+/* ── DARK: nav link active (indigo solid pill) ──────────── */
+[data-theme="dark"] .pc-sidebar.lis-sidebar .nav-item a.active,
+[data-theme="dark"] .pc-sidebar.lis-sidebar .nav-item a.active:visited,
+.pc-sidebar.lis-sidebar .nav-item a.active,
+.pc-sidebar.lis-sidebar .nav-item a.active:visited {
+  background: #3DC9A8 !important;
+  color: var(--lis-sb-text-active) !important;
+  border: none !important;
+  padding-left: 12px !important;
+  box-shadow: 0 4px 14px rgba(61,201,168,0.40) !important;
+  font-weight: 600 !important;
+}
+[data-theme="dark"] .pc-sidebar.lis-sidebar .nav-item a.active:hover,
+.pc-sidebar.lis-sidebar .nav-item a.active:hover {
+  background: #2EA88D !important;
+  box-shadow: 0 6px 18px rgba(61,201,168,0.50) !important;
+}
+
+/* ── Icon colours (both themes) ─────────────────────────── */
+[data-theme="dark"] .pc-sidebar.lis-sidebar .nav-item a:hover .nav-icon,
+[data-theme="dark"] .pc-sidebar.lis-sidebar .nav-item a:hover .nav-icon i,
+.pc-sidebar.lis-sidebar .nav-item a:hover .nav-icon,
+.pc-sidebar.lis-sidebar .nav-item a:hover .nav-icon i {
+  color: var(--lis-sb-text-hover) !important;
+}
+[data-theme="dark"] .pc-sidebar.lis-sidebar .nav-item a.active .nav-icon,
+[data-theme="dark"] .pc-sidebar.lis-sidebar .nav-item a.active .nav-icon i,
+.pc-sidebar.lis-sidebar .nav-item a.active .nav-icon,
+.pc-sidebar.lis-sidebar .nav-item a.active .nav-icon i {
+  color: var(--lis-sb-icon-active) !important;
+}
+
+/* ── LIGHT: explicit overrides for expanded sidebar ─────── */
+:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar {
+  background: var(--lis-sb-bg) !important;
+  border-right: 1px solid var(--lis-sb-sep) !important;
+  box-shadow: 2px 0 16px rgba(83,103,254,0.08) !important;
+}
+:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar .sidebar-brand {
   background: var(--lis-sb-bg-brand) !important;
+  border-bottom: 1px solid var(--lis-sb-sep) !important;
+}
+:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar .sidebar-footer {
+  background: var(--lis-sb-bg-brand) !important;
+  border-top: 1px solid var(--lis-sb-sep) !important;
+}
+:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar .nav-item a,
+:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar .nav-item a:link,
+:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar .nav-item a:visited {
+  color: var(--lis-sb-text) !important;
+  background: transparent !important;
+  border: none !important;
+}
+:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar .nav-item a:hover {
+  background: var(--lis-sb-hover-bg) !important;
+  color: var(--lis-sb-text-hover) !important;
+  border: none !important;
+  padding-left: 12px !important;
+  box-shadow: none !important;
+}
+:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar .nav-item a.active,
+:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar .nav-item a.active:visited {
+  background: #3DC9A8 !important;
+  color: #ffffff !important;
+  border: none !important;
+  padding-left: 12px !important;
+  box-shadow: 0 4px 14px rgba(61,201,168,0.35) !important;
+}
+:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar .nav-caption {
+  color: var(--lis-sb-caption) !important;
+}
+:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar .nav-icon {
+  color: var(--lis-sb-icon-idle) !important;
+}
+:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar .nav-item a:hover .nav-icon,
+:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar .nav-item a:hover .nav-icon i {
+  color: var(--lis-sb-text-hover) !important;
+}
+:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar .nav-item a.active .nav-icon,
+:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar .nav-item a.active .nav-icon i {
+  color: #ffffff !important;
+}
+:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar .sidebar-user-name {
+  color: #1A2040 !important;
+}
+:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar .sidebar-user-role {
+  color: #9099C4 !important;
+}
+:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar .sidebar-nav::-webkit-scrollbar-thumb {
+  background: #DDE1F5 !important;
+}
+
+/* ── COLLAPSED: expanded token overrides (both themes) ──── */
+.pc-sidebar.lis-sidebar.collapsed .nav-item:hover {
+  background: transparent !important;
+}
+.pc-sidebar.lis-sidebar.collapsed .nav-item a:hover {
+  background: var(--lis-sb-col-icon-hover) !important;
+  color: var(--lis-sb-text-hover) !important;
+  border: none !important;
+  padding-left: 0 !important;
+  box-shadow: none !important;
+}
+.pc-sidebar.lis-sidebar.collapsed .nav-item a.active,
+.pc-sidebar.lis-sidebar.collapsed .nav-item a.active:visited {
+  background: #3DC9A8 !important;
+  color: #ffffff !important;
+  border: none !important;
+  padding-left: 0 !important;
+  box-shadow: 0 4px 14px rgba(61,201,168,0.45) !important;
 }
 
 /* ── Shared LIS utility classes ─────────────────────────── */
