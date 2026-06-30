@@ -266,6 +266,368 @@
   --shadow-float: var(--shadow-editor);
 }
 
+/* ═══════════════════════════════════════════════════════════
+   COLOR PALETTES (independent of light/dark mode)
+   ─────────────────────────────────────────────────────────
+   • Default palette (Teal/Indigo) = the brand colors already
+     defined above in :root and [data-theme="dark"] — untouched.
+   • [data-palette="ocean" | "sunset" | "violet"] on <html>
+     overrides just the brand + derived tokens, in BOTH light
+     and dark mode, via the combined attribute selectors below.
+   • ThemeService.setPalette() sets/removes data-palette.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ─── OCEAN (Blue / Cyan) — Light ─────────────────────────── */
+[data-palette="ocean"] {
+  --primary:           #0EA5E9;
+  --primary-dark:      #0284C7;
+  --primary-deeper:    #2563EB;
+  --primary-light:     #60A5FA;
+  --primary-xlight:    #E0F2FE;
+
+  --secondary:         #F59E0B;
+  --secondary-dark:    #D97706;
+  --secondary-light:   #FDE8C8;
+  --secondary-xlight:  #FFF7E8;
+
+  --accent:            #7DD3FC;
+  --accent-dark:       #0EA5E9;
+  --accent-light:      #DFF4FF;
+
+  --bg-page:           #F4FAFF;
+  --bg-surface:        #ffffff;
+  --bg-surface-alt:    #EAF5FF;
+  --bg-overlay:        rgba(244,250,255,0.95);
+
+  --border:            #D7E9FA;
+  --border-strong:     #BBD9F0;
+
+  --shadow-sm:         0 1px 4px rgba(14,165,233,0.15);
+  --shadow-card:       0 2px 16px rgba(37,99,235,0.10);
+  --shadow-card-hover: 0 12px 36px rgba(37,99,235,0.22);
+  --shadow-editor:     0 24px 64px rgba(37,99,235,0.18), 0 4px 20px rgba(0,0,0,0.06);
+  --shadow-btn:        0 2px 12px rgba(37,99,235,0.35);
+  --shadow-btn-hover:  0 6px 20px rgba(37,99,235,0.42);
+  --shadow-nav:        0 1px 10px rgba(37,99,235,0.12);
+
+  --scrollbar-track:   #EAF5FF;
+  --scrollbar-thumb:   #7DD3FC;
+  --theme-icon-color:  #2563EB;
+
+  --color-accent:      var(--primary-deeper);
+  --color-accent-soft: var(--primary-xlight);
+
+  --color-ai:                    #0EA5E9;
+  --color-ai-soft:               rgba(14, 165, 233, 0.09);
+  --color-ai-header-bg:          rgba(14, 165, 233, 0.04);
+  --color-ai-soft-overlay:       rgba(14, 165, 233, 0.18);
+  --color-ai-soft-overlay-hover: rgba(14, 165, 233, 0.26);
+
+  --color-success: #0EA5E9;
+  --block-hover-bg: rgba(37, 99, 235, 0.05);
+}
+
+/* ─── OCEAN — Dark ─────────────────────────────────────────── */
+[data-theme="dark"][data-palette="ocean"] {
+  /* ── Surfaces — deep blue-slate ── */
+  --theme-bg:          #0B1622;
+  --theme-card:        #122236;
+  --theme-surface2:    #1B3148;
+  --theme-border:      #1F3A54;
+  --theme-border-soft: #15273A;
+  --theme-text-main:   #EAF4FF;
+  --theme-text-muted:  #93B3CE;
+  --theme-text-subtle: #5D7E9A;
+
+  --bg-page:           #0B1622;
+  --bg-surface:        #122236;
+  --bg-surface-alt:    #1B3148;
+  --bg-overlay:        rgba(11, 22, 34, 0.96);
+
+  --text-base:         #EAF4FF;
+  --text-muted:        #93B3CE;
+  --text-subtle:       #5D7E9A;
+
+  --border:            #1F3A54;
+  --border-strong:     #2C4D6B;
+
+  --theme-accent:      #0EA5E9;
+  --theme-accent-soft: rgba(14, 165, 233, 0.14);
+
+  --primary:           #0EA5E9;
+  --primary-dark:      #0284C7;
+  --primary-deeper:    #2563EB;
+  --primary-light:     rgba(96, 165, 250, 0.18);
+  --primary-xlight:    rgba(37, 99, 235, 0.10);
+
+  --secondary:         #F59E0B;
+  --secondary-dark:    #D97706;
+  --secondary-light:   rgba(245, 158, 11, 0.18);
+  --secondary-xlight:  rgba(245, 158, 11, 0.10);
+
+  --accent:            #7DD3FC;
+  --accent-dark:       #0EA5E9;
+  --accent-light:      rgba(125, 211, 252, 0.15);
+
+  --shadow-sm:         0 1px 3px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-card:       0 4px 6px rgba(0,0,0,0.35), 0 2px 4px rgba(0,0,0,0.25);
+  --shadow-card-hover: 0 20px 40px rgba(0,0,0,0.55), 0 8px 16px rgba(0,0,0,0.3);
+  --shadow-editor:     0 24px 64px rgba(0,0,0,0.6), 0 4px 20px rgba(14,165,233,0.10);
+  --shadow-btn:        0 2px 8px rgba(37,99,235,0.35);
+  --shadow-btn-hover:  0 6px 20px rgba(37,99,235,0.42);
+  --shadow-nav:        0 1px 0 rgba(255,255,255,0.04), 0 4px 16px rgba(0,0,0,0.4);
+
+  --scrollbar-track:   #0B1622;
+  --scrollbar-thumb:   #0284C7;
+  --theme-icon-color:  #7DD3FC;
+
+  --color-accent:      var(--theme-accent);
+  --color-accent-soft: var(--theme-accent-soft);
+
+  --color-ai:                    #0EA5E9;
+  --color-ai-soft:               rgba(14, 165, 233, 0.10);
+  --color-ai-header-bg:          rgba(14, 165, 233, 0.05);
+  --color-ai-soft-overlay:       rgba(14, 165, 233, 0.18);
+  --color-ai-soft-overlay-hover: rgba(14, 165, 233, 0.26);
+
+  --color-success: #38bdf8;
+  --block-hover-bg: rgba(14, 165, 233, 0.04);
+}
+
+/* ─── SUNSET (Coral / Amber) — Light ───────────────────────── */
+[data-palette="sunset"] {
+  --primary:           #FB7185;
+  --primary-dark:      #E11D48;
+  --primary-deeper:    #F97316;
+  --primary-light:     #FDA4AF;
+  --primary-xlight:    #FFE4E6;
+
+  --secondary:         #FBBF24;
+  --secondary-dark:    #D97706;
+  --secondary-light:   #FEF0C7;
+  --secondary-xlight:  #FFFBEB;
+
+  --accent:            #FDBA74;
+  --accent-dark:       #FB7185;
+  --accent-light:      #FFE9D5;
+
+  --bg-page:           #FFF8F7;
+  --bg-surface:        #ffffff;
+  --bg-surface-alt:    #FFEFEC;
+  --bg-overlay:        rgba(255,248,247,0.95);
+
+  --border:            #FBE0DC;
+  --border-strong:     #F6C7C0;
+
+  --shadow-sm:         0 1px 4px rgba(251,113,133,0.15);
+  --shadow-card:       0 2px 16px rgba(249,115,22,0.10);
+  --shadow-card-hover: 0 12px 36px rgba(249,115,22,0.22);
+  --shadow-editor:     0 24px 64px rgba(249,115,22,0.18), 0 4px 20px rgba(0,0,0,0.06);
+  --shadow-btn:        0 2px 12px rgba(249,115,22,0.35);
+  --shadow-btn-hover:  0 6px 20px rgba(249,115,22,0.42);
+  --shadow-nav:        0 1px 10px rgba(249,115,22,0.12);
+
+  --scrollbar-track:   #FFEFEC;
+  --scrollbar-thumb:   #FDBA74;
+  --theme-icon-color:  #F97316;
+
+  --color-accent:      var(--primary-deeper);
+  --color-accent-soft: var(--primary-xlight);
+
+  --color-ai:                    #FB7185;
+  --color-ai-soft:               rgba(251, 113, 133, 0.09);
+  --color-ai-header-bg:          rgba(251, 113, 133, 0.04);
+  --color-ai-soft-overlay:       rgba(251, 113, 133, 0.18);
+  --color-ai-soft-overlay-hover: rgba(251, 113, 133, 0.26);
+
+  --color-success: #34D399;
+  --block-hover-bg: rgba(249, 115, 22, 0.05);
+}
+
+/* ─── SUNSET — Dark ────────────────────────────────────────── */
+[data-theme="dark"][data-palette="sunset"] {
+  /* ── Surfaces — warm charcoal-brown ── */
+  --theme-bg:          #1C1412;
+  --theme-card:        #271C19;
+  --theme-surface2:    #3A2924;
+  --theme-border:      #3D2B26;
+  --theme-border-soft: #271C19;
+  --theme-text-main:   #FDF1ED;
+  --theme-text-muted:  #C9A99E;
+  --theme-text-subtle: #8E6E64;
+
+  --bg-page:           #1C1412;
+  --bg-surface:        #271C19;
+  --bg-surface-alt:    #3A2924;
+  --bg-overlay:        rgba(28, 20, 18, 0.96);
+
+  --text-base:         #FDF1ED;
+  --text-muted:        #C9A99E;
+  --text-subtle:       #8E6E64;
+
+  --border:            #3D2B26;
+  --border-strong:     #54382F;
+
+  --theme-accent:      #FB7185;
+  --theme-accent-soft: rgba(251, 113, 133, 0.14);
+
+  --primary:           #FB7185;
+  --primary-dark:      #E11D48;
+  --primary-deeper:    #F97316;
+  --primary-light:     rgba(253, 164, 175, 0.18);
+  --primary-xlight:    rgba(249, 115, 22, 0.10);
+
+  --secondary:         #FBBF24;
+  --secondary-dark:    #D97706;
+  --secondary-light:   rgba(251, 191, 36, 0.18);
+  --secondary-xlight:  rgba(251, 191, 36, 0.10);
+
+  --accent:            #FDBA74;
+  --accent-dark:       #FB7185;
+  --accent-light:      rgba(253, 186, 116, 0.15);
+
+  --shadow-sm:         0 1px 3px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-card:       0 4px 6px rgba(0,0,0,0.35), 0 2px 4px rgba(0,0,0,0.25);
+  --shadow-card-hover: 0 20px 40px rgba(0,0,0,0.55), 0 8px 16px rgba(0,0,0,0.3);
+  --shadow-editor:     0 24px 64px rgba(0,0,0,0.6), 0 4px 20px rgba(249,115,22,0.10);
+  --shadow-btn:        0 2px 8px rgba(249,115,22,0.35);
+  --shadow-btn-hover:  0 6px 20px rgba(249,115,22,0.42);
+  --shadow-nav:        0 1px 0 rgba(255,255,255,0.04), 0 4px 16px rgba(0,0,0,0.4);
+
+  --scrollbar-track:   #1C1412;
+  --scrollbar-thumb:   #E11D48;
+  --theme-icon-color:  #FDBA74;
+
+  --color-accent:      var(--theme-accent);
+  --color-accent-soft: var(--theme-accent-soft);
+
+  --color-ai:                    #FB7185;
+  --color-ai-soft:               rgba(251, 113, 133, 0.10);
+  --color-ai-header-bg:          rgba(251, 113, 133, 0.05);
+  --color-ai-soft-overlay:       rgba(251, 113, 133, 0.18);
+  --color-ai-soft-overlay-hover: rgba(251, 113, 133, 0.26);
+
+  --color-success: #4ade80;
+  --block-hover-bg: rgba(251, 113, 133, 0.04);
+}
+
+/* ─── VIOLET (Purple / Magenta) — Light ────────────────────── */
+[data-palette="violet"] {
+  --primary:           #8B5CF6;
+  --primary-dark:      #6D28D9;
+  --primary-deeper:    #C026D3;
+  --primary-light:     #C4B5FD;
+  --primary-xlight:    #F1E8FF;
+
+  --secondary:         #EC4899;
+  --secondary-dark:    #BE185D;
+  --secondary-light:   #FBD0E6;
+  --secondary-xlight:  #FFF0F8;
+
+  --accent:            #D8B4FE;
+  --accent-dark:       #8B5CF6;
+  --accent-light:      #EFDEFF;
+
+  --bg-page:           #FAF8FF;
+  --bg-surface:        #ffffff;
+  --bg-surface-alt:    #F2ECFF;
+  --bg-overlay:        rgba(250,248,255,0.95);
+
+  --border:            #E5D9FA;
+  --border-strong:     #D2BEF0;
+
+  --shadow-sm:         0 1px 4px rgba(139,92,246,0.15);
+  --shadow-card:       0 2px 16px rgba(192,38,211,0.10);
+  --shadow-card-hover: 0 12px 36px rgba(192,38,211,0.22);
+  --shadow-editor:     0 24px 64px rgba(192,38,211,0.18), 0 4px 20px rgba(0,0,0,0.06);
+  --shadow-btn:        0 2px 12px rgba(192,38,211,0.35);
+  --shadow-btn-hover:  0 6px 20px rgba(192,38,211,0.42);
+  --shadow-nav:        0 1px 10px rgba(192,38,211,0.12);
+
+  --scrollbar-track:   #F2ECFF;
+  --scrollbar-thumb:   #D8B4FE;
+  --theme-icon-color:  #C026D3;
+
+  --color-accent:      var(--primary-deeper);
+  --color-accent-soft: var(--primary-xlight);
+
+  --color-ai:                    #8B5CF6;
+  --color-ai-soft:               rgba(139, 92, 246, 0.09);
+  --color-ai-header-bg:          rgba(139, 92, 246, 0.04);
+  --color-ai-soft-overlay:       rgba(139, 92, 246, 0.18);
+  --color-ai-soft-overlay-hover: rgba(139, 92, 246, 0.26);
+
+  --color-success: #34D399;
+  --block-hover-bg: rgba(192, 38, 211, 0.05);
+}
+
+/* ─── VIOLET — Dark ────────────────────────────────────────── */
+[data-theme="dark"][data-palette="violet"] {
+  /* ── Surfaces — deep purple-slate (#202733 family) ── */
+  --theme-bg:          #16131F;
+  --theme-card:        #201B2E;
+  --theme-surface2:    #2D2545;
+  --theme-border:      #322A4A;
+  --theme-border-soft: #201B2E;
+  --theme-text-main:   #F4F0FF;
+  --theme-text-muted:  #B3A6D6;
+  --theme-text-subtle: #7A6B9C;
+
+  --bg-page:           #16131F;
+  --bg-surface:        #201B2E;
+  --bg-surface-alt:    #2D2545;
+  --bg-overlay:        rgba(22, 19, 31, 0.96);
+
+  --text-base:         #F4F0FF;
+  --text-muted:        #B3A6D6;
+  --text-subtle:       #7A6B9C;
+
+  --border:            #322A4A;
+  --border-strong:     #443A63;
+
+  --theme-accent:      #8B5CF6;
+  --theme-accent-soft: rgba(139, 92, 246, 0.14);
+
+  --primary:           #8B5CF6;
+  --primary-dark:      #6D28D9;
+  --primary-deeper:    #C026D3;
+  --primary-light:     rgba(196, 181, 253, 0.18);
+  --primary-xlight:    rgba(192, 38, 211, 0.10);
+
+  --secondary:         #EC4899;
+  --secondary-dark:    #BE185D;
+  --secondary-light:   rgba(236, 72, 153, 0.18);
+  --secondary-xlight:  rgba(236, 72, 153, 0.10);
+
+  --accent:            #D8B4FE;
+  --accent-dark:       #8B5CF6;
+  --accent-light:      rgba(216, 180, 254, 0.15);
+
+  --shadow-sm:         0 1px 3px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-card:       0 4px 6px rgba(0,0,0,0.35), 0 2px 4px rgba(0,0,0,0.25);
+  --shadow-card-hover: 0 20px 40px rgba(0,0,0,0.55), 0 8px 16px rgba(0,0,0,0.3);
+  --shadow-editor:     0 24px 64px rgba(0,0,0,0.6), 0 4px 20px rgba(192,38,211,0.10);
+  --shadow-btn:        0 2px 8px rgba(192,38,211,0.35);
+  --shadow-btn-hover:  0 6px 20px rgba(192,38,211,0.42);
+  --shadow-nav:        0 1px 0 rgba(255,255,255,0.04), 0 4px 16px rgba(0,0,0,0.4);
+
+  --scrollbar-track:   #16131F;
+  --scrollbar-thumb:   #6D28D9;
+  --theme-icon-color:  #D8B4FE;
+
+  --color-accent:      var(--theme-accent);
+  --color-accent-soft: var(--theme-accent-soft);
+
+  --color-ai:                    #8B5CF6;
+  --color-ai-soft:               rgba(139, 92, 246, 0.10);
+  --color-ai-header-bg:          rgba(139, 92, 246, 0.05);
+  --color-ai-soft-overlay:       rgba(139, 92, 246, 0.18);
+  --color-ai-soft-overlay-hover: rgba(139, 92, 246, 0.26);
+
+  --color-success: #4ade80;
+  --block-hover-bg: rgba(139, 92, 246, 0.04);
+}
+
 
 /* ─── BASE ─────────────────────────────────────────────── */
 @layer base {
@@ -3839,7 +4201,291 @@
 }
 
 /* ═══════════════════════════════════════════════════════════
-   EXPANDED SIDEBAR — Clinical Depth Design
+   PALETTE OVERRIDES — LIS tokens (buttons, labels, inputs,
+   sidebar, status pills) for the 3 new color palettes.
+   ─────────────────────────────────────────────────────────
+   The "default" palette (no [data-palette] attr) intentionally
+   has ZERO rules here — it keeps using the original :root /
+   [data-theme="dark"] LIS block above, completely unchanged.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ─── OCEAN — Light ────────────────────────────────────────── */
+[data-palette="ocean"] {
+  --lis-primary:        #0EA5E9;
+  --lis-primary-mid:    #7DD3FC;
+  --lis-primary-light:  #DFF4FF;
+  --lis-primary-xlight: #E0F2FE;
+  --lis-primary-deep:   #0B3A5C;
+
+  --lis-warning:        #F59E0B;
+  --lis-danger:         #E24B4A;
+  --lis-danger-xlight:  #FFF0F0;
+
+  --pill-pending-bg:    #FFF1D6;
+  --pill-pending-color: #7A4B05;
+  --pill-process-bg:    #DCEEFF;
+  --pill-process-color: #0C447C;
+  --pill-ready-bg:      #DFF4FF;
+  --pill-ready-color:   #0B3A5C;
+  --pill-critical-bg:   #FCEBEB;
+  --pill-critical-color:#791F1F;
+  --pill-stat-bg:       #E24B4A;
+  --pill-stat-color:    #ffffff;
+
+  --topbar-bg:          #F4FAFF;
+
+  --lis-sb-bg:              #0B1622;
+  --lis-sb-bg-brand:        #081320;
+  --lis-sb-search-bg:       #122236;
+  --lis-sb-sep:             rgba(255,255,255,0.07);
+  --lis-sb-text:            rgba(180,205,225,0.72);
+  --lis-sb-text-hover:      rgba(225,242,255,0.97);
+  --lis-sb-text-active:     #ffffff;
+  --lis-sb-caption:         rgba(140,180,210,0.38);
+  --lis-sb-hover-bg:        rgba(37,99,235,0.14);
+  --lis-sb-hover-border:    #2563EB;
+  --lis-sb-active-bg:       rgba(14,165,233,0.16);
+  --lis-sb-active-border:   #0EA5E9;
+  --lis-sb-active-glow:     rgba(14,165,233,0.35);
+  --lis-sb-icon-idle:       rgba(160,190,215,0.50);
+  --lis-sb-icon-hover:      #93C5FD;
+  --lis-sb-icon-active:     #0EA5E9;
+  --lis-sb-col-icon-bg:     rgba(255,255,255,0.05);
+  --lis-sb-col-icon-hover:  rgba(37,99,235,0.18);
+  --lis-sb-col-icon-active: rgba(14,165,233,0.18);
+}
+[data-palette="ocean"]:not([data-theme="dark"]) {
+  --lis-sb-bg:              #F5FAFF;
+  --lis-sb-bg-brand:        #EAF4FF;
+  --lis-sb-search-bg:       #E3F1FF;
+  --lis-sb-sep:             rgba(37,99,235,0.14);
+  --lis-sb-text:            #3E5C7A;
+  --lis-sb-text-hover:      #14283D;
+  --lis-sb-text-active:     #0B1622;
+  --lis-sb-caption:         #8FA9C2;
+  --lis-sb-hover-bg:        rgba(37,99,235,0.11);
+  --lis-sb-hover-border:    #2563EB;
+  --lis-sb-active-bg:       rgba(14,165,233,0.14);
+  --lis-sb-active-border:   #0284C7;
+  --lis-sb-active-glow:     rgba(14,165,233,0.30);
+  --lis-sb-icon-idle:       #6B89A8;
+  --lis-sb-icon-hover:      #2563EB;
+  --lis-sb-icon-active:     #0284C7;
+  --lis-sb-col-icon-bg:     rgba(37,99,235,0.07);
+  --lis-sb-col-icon-hover:  rgba(37,99,235,0.16);
+  --lis-sb-col-icon-active: rgba(14,165,233,0.16);
+}
+
+/* ─── OCEAN — Dark ─────────────────────────────────────────── */
+[data-theme="dark"][data-palette="ocean"] {
+  --lis-primary:        #0EA5E9;
+  --lis-primary-mid:    #7DD3FC;
+  --lis-primary-light:  #16314A;
+  --lis-primary-xlight: rgba(14,165,233,0.14);
+  --lis-primary-deep:   #DFF4FF;
+
+  --pill-pending-bg:    rgba(245,158,11,0.15);
+  --pill-pending-color: #fbbf57;
+  --pill-process-bg:    rgba(37,99,235,0.25);
+  --pill-process-color: #93C5FD;
+  --pill-ready-bg:      rgba(14,165,233,0.18);
+  --pill-ready-color:   #7DD3FC;
+  --pill-critical-bg:   rgba(226,75,74,0.18);
+  --pill-critical-color:#f87171;
+  --pill-stat-bg:       #7f1d1d;
+  --pill-stat-color:    #fca5a5;
+
+  --topbar-bg:          var(--bg-surface);
+}
+
+/* ─── SUNSET — Light ───────────────────────────────────────── */
+[data-palette="sunset"] {
+  --lis-primary:        #FB7185;
+  --lis-primary-mid:    #FDBA74;
+  --lis-primary-light:  #FFE9D5;
+  --lis-primary-xlight: #FFE4E6;
+  --lis-primary-deep:   #5C1A22;
+
+  --lis-warning:        #F59E0B;
+  --lis-danger:         #E24B4A;
+  --lis-danger-xlight:  #FFF0F0;
+
+  --pill-pending-bg:    #FFF1D6;
+  --pill-pending-color: #7A4B05;
+  --pill-process-bg:    #FFE4E6;
+  --pill-process-color: #9F1239;
+  --pill-ready-bg:      #FFE9D5;
+  --pill-ready-color:   #7C2D12;
+  --pill-critical-bg:   #FCEBEB;
+  --pill-critical-color:#791F1F;
+  --pill-stat-bg:       #E24B4A;
+  --pill-stat-color:    #ffffff;
+
+  --topbar-bg:          #FFF8F7;
+
+  --lis-sb-bg:              #1C1412;
+  --lis-sb-bg-brand:        #160F0D;
+  --lis-sb-search-bg:       #271C19;
+  --lis-sb-sep:             rgba(255,255,255,0.07);
+  --lis-sb-text:            rgba(225,200,190,0.72);
+  --lis-sb-text-hover:      rgba(255,240,235,0.97);
+  --lis-sb-text-active:     #ffffff;
+  --lis-sb-caption:         rgba(210,170,155,0.38);
+  --lis-sb-hover-bg:        rgba(249,115,22,0.14);
+  --lis-sb-hover-border:    #F97316;
+  --lis-sb-active-bg:       rgba(251,113,133,0.16);
+  --lis-sb-active-border:   #FB7185;
+  --lis-sb-active-glow:     rgba(251,113,133,0.35);
+  --lis-sb-icon-idle:       rgba(215,180,165,0.50);
+  --lis-sb-icon-hover:      #FDBA9C;
+  --lis-sb-icon-active:     #FB7185;
+  --lis-sb-col-icon-bg:     rgba(255,255,255,0.05);
+  --lis-sb-col-icon-hover:  rgba(249,115,22,0.18);
+  --lis-sb-col-icon-active: rgba(251,113,133,0.18);
+}
+[data-palette="sunset"]:not([data-theme="dark"]) {
+  --lis-sb-bg:              #FFF8F6;
+  --lis-sb-bg-brand:        #FFEFEC;
+  --lis-sb-search-bg:       #FFE9E4;
+  --lis-sb-sep:             rgba(249,115,22,0.14);
+  --lis-sb-text:            #7A5048;
+  --lis-sb-text-hover:      #3D211C;
+  --lis-sb-text-active:     #1C1412;
+  --lis-sb-caption:         #C2998D;
+  --lis-sb-hover-bg:        rgba(249,115,22,0.11);
+  --lis-sb-hover-border:    #F97316;
+  --lis-sb-active-bg:       rgba(251,113,133,0.14);
+  --lis-sb-active-border:   #E11D48;
+  --lis-sb-active-glow:     rgba(251,113,133,0.30);
+  --lis-sb-icon-idle:       #A87A6E;
+  --lis-sb-icon-hover:      #F97316;
+  --lis-sb-icon-active:     #E11D48;
+  --lis-sb-col-icon-bg:     rgba(249,115,22,0.07);
+  --lis-sb-col-icon-hover:  rgba(249,115,22,0.16);
+  --lis-sb-col-icon-active: rgba(251,113,133,0.16);
+}
+
+/* ─── SUNSET — Dark ────────────────────────────────────────── */
+[data-theme="dark"][data-palette="sunset"] {
+  --lis-primary:        #FB7185;
+  --lis-primary-mid:    #FDBA74;
+  --lis-primary-light:  #3A2924;
+  --lis-primary-xlight: rgba(251,113,133,0.14);
+  --lis-primary-deep:   #FFE9D5;
+
+  --pill-pending-bg:    rgba(245,158,11,0.15);
+  --pill-pending-color: #fbbf57;
+  --pill-process-bg:    rgba(251,113,133,0.22);
+  --pill-process-color: #FDA4AF;
+  --pill-ready-bg:      rgba(249,115,22,0.18);
+  --pill-ready-color:   #FDBA74;
+  --pill-critical-bg:   rgba(226,75,74,0.18);
+  --pill-critical-color:#f87171;
+  --pill-stat-bg:       #7f1d1d;
+  --pill-stat-color:    #fca5a5;
+
+  --topbar-bg:          var(--bg-surface);
+}
+
+/* ─── VIOLET — Light ───────────────────────────────────────── */
+[data-palette="violet"] {
+  --lis-primary:        #8B5CF6;
+  --lis-primary-mid:    #D8B4FE;
+  --lis-primary-light:  #EFDEFF;
+  --lis-primary-xlight: #F1E8FF;
+  --lis-primary-deep:   #3B0764;
+
+  --lis-warning:        #F59E0B;
+  --lis-danger:         #E24B4A;
+  --lis-danger-xlight:  #FFF0F0;
+
+  --pill-pending-bg:    #FFF1D6;
+  --pill-pending-color: #7A4B05;
+  --pill-process-bg:    #FBD0E6;
+  --pill-process-color: #9D174D;
+  --pill-ready-bg:      #F1E8FF;
+  --pill-ready-color:   #581C87;
+  --pill-critical-bg:   #FCEBEB;
+  --pill-critical-color:#791F1F;
+  --pill-stat-bg:       #E24B4A;
+  --pill-stat-color:    #ffffff;
+
+  --topbar-bg:          #FAF8FF;
+
+  --lis-sb-bg:              #16131F;
+  --lis-sb-bg-brand:        #110E18;
+  --lis-sb-search-bg:       #201B2E;
+  --lis-sb-sep:             rgba(255,255,255,0.07);
+  --lis-sb-text:            rgba(205,190,225,0.72);
+  --lis-sb-text-hover:      rgba(244,240,255,0.97);
+  --lis-sb-text-active:     #ffffff;
+  --lis-sb-caption:         rgba(175,155,210,0.38);
+  --lis-sb-hover-bg:        rgba(192,38,211,0.14);
+  --lis-sb-hover-border:    #C026D3;
+  --lis-sb-active-bg:       rgba(139,92,246,0.16);
+  --lis-sb-active-border:   #8B5CF6;
+  --lis-sb-active-glow:     rgba(139,92,246,0.35);
+  --lis-sb-icon-idle:       rgba(190,170,215,0.50);
+  --lis-sb-icon-hover:      #E0AAFA;
+  --lis-sb-icon-active:     #8B5CF6;
+  --lis-sb-col-icon-bg:     rgba(255,255,255,0.05);
+  --lis-sb-col-icon-hover:  rgba(192,38,211,0.18);
+  --lis-sb-col-icon-active: rgba(139,92,246,0.18);
+}
+[data-palette="violet"]:not([data-theme="dark"]) {
+  --lis-sb-bg:              #FAF8FF;
+  --lis-sb-bg-brand:        #F1E8FF;
+  --lis-sb-search-bg:       #EFDEFF;
+  --lis-sb-sep:             rgba(192,38,211,0.14);
+  --lis-sb-text:            #6B5286;
+  --lis-sb-text-hover:      #2A1B3D;
+  --lis-sb-text-active:     #16131F;
+  --lis-sb-caption:         #B79BD1;
+  --lis-sb-hover-bg:        rgba(192,38,211,0.11);
+  --lis-sb-hover-border:    #C026D3;
+  --lis-sb-active-bg:       rgba(139,92,246,0.14);
+  --lis-sb-active-border:   #6D28D9;
+  --lis-sb-active-glow:     rgba(139,92,246,0.30);
+  --lis-sb-icon-idle:       #9377AD;
+  --lis-sb-icon-hover:      #C026D3;
+  --lis-sb-icon-active:     #6D28D9;
+  --lis-sb-col-icon-bg:     rgba(192,38,211,0.07);
+  --lis-sb-col-icon-hover:  rgba(192,38,211,0.16);
+  --lis-sb-col-icon-active: rgba(139,92,246,0.16);
+}
+
+/* ─── VIOLET — Dark ────────────────────────────────────────── */
+[data-theme="dark"][data-palette="violet"] {
+  --lis-primary:        #8B5CF6;
+  --lis-primary-mid:    #D8B4FE;
+  --lis-primary-light:  #2D2545;
+  --lis-primary-xlight: rgba(139,92,246,0.14);
+  --lis-primary-deep:   #EFDEFF;
+
+  --pill-pending-bg:    rgba(245,158,11,0.15);
+  --pill-pending-color: #fbbf57;
+  --pill-process-bg:    rgba(236,72,153,0.22);
+  --pill-process-color: #f9a8d4;
+  --pill-ready-bg:      rgba(139,92,246,0.18);
+  --pill-ready-color:   #D8B4FE;
+  --pill-critical-bg:   rgba(226,75,74,0.18);
+  --pill-critical-color:#f87171;
+  --pill-stat-bg:       #7f1d1d;
+  --pill-stat-color:    #fca5a5;
+
+  --topbar-bg:          var(--bg-surface);
+}
+
+/* ─── Form input focus ring — palette-aware ─────────────────
+   .field-input (used across patient registration, billing,
+   sample tracking forms) hardcodes a lavender ring in the
+   default theme — left untouched. New palettes get a ring
+   that matches their own primary color. ── */
+[data-palette="ocean"]   .field-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--lis-primary-xlight); }
+[data-palette="sunset"]  .field-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--lis-primary-xlight); }
+[data-palette="violet"]  .field-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--lis-primary-xlight); }
+
+
    ═══════════════════════════════════════════════════════════ */
 
 /* ── Shell ── */

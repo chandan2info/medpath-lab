@@ -1,0 +1,165 @@
+From 224f093ac3137747420446ed967ef4ad45e02ddb Mon Sep 17 00:00:00 2001
+From: Claude <claude@anthropic.com>
+Date: Tue, 30 Jun 2026 05:05:01 +0000
+Subject: [PATCH] feat: give each dark palette its own distinct surface tone
+
+- Ocean dark: deep blue-slate surfaces (#0B1622/#122236/#1B3148)
+- Sunset dark: warm charcoal-brown surfaces (#1C1412/#271C19/#3A2924)
+- Violet dark: deep purple-slate surfaces (#16131F/#201B2E/#2D2545, #202733 family)
+- Each palette now overrides bg-page/bg-surface/bg-surface-alt/border/text/scrollbar/shadow
+  tokens in dark mode instead of reusing the original slate (#0f172a) background
+---
+ src/styles.css | 93 +++++++++++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 84 insertions(+), 9 deletions(-)
+
+diff --git a/src/styles.css b/src/styles.css
+index 58d2f1a..292e37c 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -329,6 +329,28 @@
+ 
+ /* ─── OCEAN — Dark ─────────────────────────────────────────── */
+ [data-theme="dark"][data-palette="ocean"] {
++  /* ── Surfaces — deep blue-slate ── */
++  --theme-bg:          #0B1622;
++  --theme-card:        #122236;
++  --theme-surface2:    #1B3148;
++  --theme-border:      #1F3A54;
++  --theme-border-soft: #15273A;
++  --theme-text-main:   #EAF4FF;
++  --theme-text-muted:  #93B3CE;
++  --theme-text-subtle: #5D7E9A;
++
++  --bg-page:           #0B1622;
++  --bg-surface:        #122236;
++  --bg-surface-alt:    #1B3148;
++  --bg-overlay:        rgba(11, 22, 34, 0.96);
++
++  --text-base:         #EAF4FF;
++  --text-muted:        #93B3CE;
++  --text-subtle:       #5D7E9A;
++
++  --border:            #1F3A54;
++  --border-strong:     #2C4D6B;
++
+   --theme-accent:      #0EA5E9;
+   --theme-accent-soft: rgba(14, 165, 233, 0.14);
+ 
+@@ -347,12 +369,15 @@
+   --accent-dark:       #0EA5E9;
+   --accent-light:      rgba(125, 211, 252, 0.15);
+ 
+-  --border:            #334155;
+-  --border-strong:     #475569;
+-
++  --shadow-sm:         0 1px 3px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.3);
++  --shadow-card:       0 4px 6px rgba(0,0,0,0.35), 0 2px 4px rgba(0,0,0,0.25);
++  --shadow-card-hover: 0 20px 40px rgba(0,0,0,0.55), 0 8px 16px rgba(0,0,0,0.3);
++  --shadow-editor:     0 24px 64px rgba(0,0,0,0.6), 0 4px 20px rgba(14,165,233,0.10);
+   --shadow-btn:        0 2px 8px rgba(37,99,235,0.35);
+   --shadow-btn-hover:  0 6px 20px rgba(37,99,235,0.42);
++  --shadow-nav:        0 1px 0 rgba(255,255,255,0.04), 0 4px 16px rgba(0,0,0,0.4);
+ 
++  --scrollbar-track:   #0B1622;
+   --scrollbar-thumb:   #0284C7;
+   --theme-icon-color:  #7DD3FC;
+ 
+@@ -421,6 +446,28 @@
+ 
+ /* ─── SUNSET — Dark ────────────────────────────────────────── */
+ [data-theme="dark"][data-palette="sunset"] {
++  /* ── Surfaces — warm charcoal-brown ── */
++  --theme-bg:          #1C1412;
++  --theme-card:        #271C19;
++  --theme-surface2:    #3A2924;
++  --theme-border:      #3D2B26;
++  --theme-border-soft: #271C19;
++  --theme-text-main:   #FDF1ED;
++  --theme-text-muted:  #C9A99E;
++  --theme-text-subtle: #8E6E64;
++
++  --bg-page:           #1C1412;
++  --bg-surface:        #271C19;
++  --bg-surface-alt:    #3A2924;
++  --bg-overlay:        rgba(28, 20, 18, 0.96);
++
++  --text-base:         #FDF1ED;
++  --text-muted:        #C9A99E;
++  --text-subtle:       #8E6E64;
++
++  --border:            #3D2B26;
++  --border-strong:     #54382F;
++
+   --theme-accent:      #FB7185;
+   --theme-accent-soft: rgba(251, 113, 133, 0.14);
+ 
+@@ -439,12 +486,15 @@
+   --accent-dark:       #FB7185;
+   --accent-light:      rgba(253, 186, 116, 0.15);
+ 
+-  --border:            #334155;
+-  --border-strong:     #475569;
+-
++  --shadow-sm:         0 1px 3px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.3);
++  --shadow-card:       0 4px 6px rgba(0,0,0,0.35), 0 2px 4px rgba(0,0,0,0.25);
++  --shadow-card-hover: 0 20px 40px rgba(0,0,0,0.55), 0 8px 16px rgba(0,0,0,0.3);
++  --shadow-editor:     0 24px 64px rgba(0,0,0,0.6), 0 4px 20px rgba(249,115,22,0.10);
+   --shadow-btn:        0 2px 8px rgba(249,115,22,0.35);
+   --shadow-btn-hover:  0 6px 20px rgba(249,115,22,0.42);
++  --shadow-nav:        0 1px 0 rgba(255,255,255,0.04), 0 4px 16px rgba(0,0,0,0.4);
+ 
++  --scrollbar-track:   #1C1412;
+   --scrollbar-thumb:   #E11D48;
+   --theme-icon-color:  #FDBA74;
+ 
+@@ -513,6 +563,28 @@
+ 
+ /* ─── VIOLET — Dark ────────────────────────────────────────── */
+ [data-theme="dark"][data-palette="violet"] {
++  /* ── Surfaces — deep purple-slate (#202733 family) ── */
++  --theme-bg:          #16131F;
++  --theme-card:        #201B2E;
++  --theme-surface2:    #2D2545;
++  --theme-border:      #322A4A;
++  --theme-border-soft: #201B2E;
++  --theme-text-main:   #F4F0FF;
++  --theme-text-muted:  #B3A6D6;
++  --theme-text-subtle: #7A6B9C;
++
++  --bg-page:           #16131F;
++  --bg-surface:        #201B2E;
++  --bg-surface-alt:    #2D2545;
++  --bg-overlay:        rgba(22, 19, 31, 0.96);
++
++  --text-base:         #F4F0FF;
++  --text-muted:        #B3A6D6;
++  --text-subtle:       #7A6B9C;
++
++  --border:            #322A4A;
++  --border-strong:     #443A63;
++
+   --theme-accent:      #8B5CF6;
+   --theme-accent-soft: rgba(139, 92, 246, 0.14);
+ 
+@@ -531,12 +603,15 @@
+   --accent-dark:       #8B5CF6;
+   --accent-light:      rgba(216, 180, 254, 0.15);
+ 
+-  --border:            #334155;
+-  --border-strong:     #475569;
+-
++  --shadow-sm:         0 1px 3px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.3);
++  --shadow-card:       0 4px 6px rgba(0,0,0,0.35), 0 2px 4px rgba(0,0,0,0.25);
++  --shadow-card-hover: 0 20px 40px rgba(0,0,0,0.55), 0 8px 16px rgba(0,0,0,0.3);
++  --shadow-editor:     0 24px 64px rgba(0,0,0,0.6), 0 4px 20px rgba(192,38,211,0.10);
+   --shadow-btn:        0 2px 8px rgba(192,38,211,0.35);
+   --shadow-btn-hover:  0 6px 20px rgba(192,38,211,0.42);
++  --shadow-nav:        0 1px 0 rgba(255,255,255,0.04), 0 4px 16px rgba(0,0,0,0.4);
+ 
++  --scrollbar-track:   #16131F;
+   --scrollbar-thumb:   #6D28D9;
+   --theme-icon-color:  #D8B4FE;
+ 
+-- 
+2.43.0
+

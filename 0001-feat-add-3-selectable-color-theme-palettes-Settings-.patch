@@ -1,0 +1,636 @@
+From 9ad76ac52e708747694e3e6833486a35db8a719c Mon Sep 17 00:00:00 2001
+From: Claude <claude@anthropic.com>
+Date: Tue, 30 Jun 2026 04:52:07 +0000
+Subject: [PATCH] feat: add 3 selectable color theme palettes + Settings
+ appearance UI
+
+- ThemeService now manages a separate Palette signal (default/ocean/sunset/violet)
+  alongside the existing light/dark Theme signal, applied via data-palette attr
+- styles.css: added Ocean, Sunset, Violet palette token blocks (light+dark variants),
+  original Teal/Indigo brand colors untouched as the 'default' palette
+- Settings page: new Appearance card with clickable theme swatch cards + dark mode toggle
+---
+ src/app/core/services/theme.service.ts        |  73 ++++-
+ .../features/settings/settings.component.ts   | 183 ++++++++++-
+ src/styles.css                                | 287 ++++++++++++++++++
+ 3 files changed, 537 insertions(+), 6 deletions(-)
+
+diff --git a/src/app/core/services/theme.service.ts b/src/app/core/services/theme.service.ts
+index 56f4c2f..139d578 100644
+--- a/src/app/core/services/theme.service.ts
++++ b/src/app/core/services/theme.service.ts
+@@ -2,18 +2,69 @@ import { Injectable, signal, effect } from '@angular/core';
+ 
+ export type Theme = 'light' | 'dark';
+ 
++/** 'default' = original Teal/Indigo brand palette (no data-palette attr). */
++export type Palette = 'default' | 'ocean' | 'sunset' | 'violet';
++
++export interface PaletteOption {
++  id: Palette;
++  label: string;
++  description: string;
++  /** Swatches used for the preview dot/card — kept in sync with styles.css */
++  swatches: { primary: string; secondary: string; accent: string };
++}
++
++export const PALETTE_OPTIONS: PaletteOption[] = [
++  {
++    id: 'default',
++    label: 'Teal & Indigo',
++    description: 'The original MedPath LIS theme.',
++    swatches: { primary: '#3DC9A8', secondary: '#F07057', accent: '#5367FE' },
++  },
++  {
++    id: 'ocean',
++    label: 'Ocean',
++    description: 'Cool blues with a warm amber accent.',
++    swatches: { primary: '#0EA5E9', secondary: '#F59E0B', accent: '#2563EB' },
++  },
++  {
++    id: 'sunset',
++    label: 'Sunset',
++    description: 'Warm coral and amber tones.',
++    swatches: { primary: '#FB7185', secondary: '#FBBF24', accent: '#F97316' },
++  },
++  {
++    id: 'violet',
++    label: 'Violet',
++    description: 'Rich purple with a magenta accent.',
++    swatches: { primary: '#8B5CF6', secondary: '#EC4899', accent: '#C026D3' },
++  },
++];
++
++const THEME_KEY = 'theme';
++const PALETTE_KEY = 'theme-palette';
++
+ @Injectable({ providedIn: 'root' })
+ export class ThemeService {
+   readonly theme = signal<Theme>(this.getStoredTheme());
++  readonly palette = signal<Palette>(this.getStoredPalette());
++
++  readonly paletteOptions = PALETTE_OPTIONS;
+ 
+   constructor() {
+     // Apply immediately on construction to avoid flash
+     this.applyTheme(this.theme());
++    this.applyPalette(this.palette());
+ 
+     effect(() => {
+       const t = this.theme();
+       this.applyTheme(t);
+-      localStorage.setItem('theme', t);
++      localStorage.setItem(THEME_KEY, t);
++    });
++
++    effect(() => {
++      const p = this.palette();
++      this.applyPalette(p);
++      localStorage.setItem(PALETTE_KEY, p);
+     });
+   }
+ 
+@@ -21,6 +72,10 @@ export class ThemeService {
+     this.theme.update(t => (t === 'light' ? 'dark' : 'light'));
+   }
+ 
++  setPalette(p: Palette): void {
++    this.palette.set(p);
++  }
++
+   private applyTheme(t: Theme): void {
+     if (t === 'dark') {
+       document.documentElement.setAttribute('data-theme', 'dark');
+@@ -29,7 +84,21 @@ export class ThemeService {
+     }
+   }
+ 
++  private applyPalette(p: Palette): void {
++    if (p === 'default') {
++      document.documentElement.removeAttribute('data-palette');
++    } else {
++      document.documentElement.setAttribute('data-palette', p);
++    }
++  }
++
+   private getStoredTheme(): Theme {
+-    return (localStorage.getItem('theme') as Theme) ?? 'light';
++    return (localStorage.getItem(THEME_KEY) as Theme) ?? 'light';
++  }
++
++  private getStoredPalette(): Palette {
++    const stored = localStorage.getItem(PALETTE_KEY) as Palette | null;
++    const valid = PALETTE_OPTIONS.some(o => o.id === stored);
++    return valid ? (stored as Palette) : 'default';
+   }
+ }
+diff --git a/src/app/features/settings/settings.component.ts b/src/app/features/settings/settings.component.ts
+index 8834331..9ab6c4a 100644
+--- a/src/app/features/settings/settings.component.ts
++++ b/src/app/features/settings/settings.component.ts
+@@ -1,4 +1,5 @@
+-import { Component, ChangeDetectionStrategy } from '@angular/core';
++import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
++import { ThemeService, Palette } from '../../core/services/theme.service';
+ 
+ @Component({
+   selector: 'app-settings',
+@@ -8,15 +9,183 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
+     <div class="page-header">
+       <div><h1 class="page-title">Settings</h1></div>
+     </div>
+-    <div class="placeholder-page" role="region" aria-label="Settings coming soon">
++
++    <section class="settings-card" aria-labelledby="appearance-heading">
++      <div class="settings-card-head">
++        <i class="ti ti-palette settings-card-icon" aria-hidden="true"></i>
++        <div>
++          <h2 id="appearance-heading" class="settings-card-title">Appearance</h2>
++          <p class="settings-card-sub">Choose a color theme for MedPath LIS. Your selection applies instantly and is saved on this device.</p>
++        </div>
++      </div>
++
++      <div class="theme-grid" role="radiogroup" aria-label="Color theme">
++        @for (option of theme.paletteOptions; track option.id) {
++          <button
++            type="button"
++            class="theme-option"
++            [class.active]="theme.palette() === option.id"
++            role="radio"
++            [attr.aria-checked]="theme.palette() === option.id"
++            (click)="selectPalette(option.id)"
++          >
++            <span class="theme-swatches" aria-hidden="true">
++              <span class="swatch" [style.background]="option.swatches.primary"></span>
++              <span class="swatch" [style.background]="option.swatches.accent"></span>
++              <span class="swatch" [style.background]="option.swatches.secondary"></span>
++            </span>
++            <span class="theme-text">
++              <span class="theme-label">{{ option.label }}</span>
++              <span class="theme-desc">{{ option.description }}</span>
++            </span>
++            @if (theme.palette() === option.id) {
++              <i class="ti ti-circle-check-filled theme-check" aria-hidden="true"></i>
++            }
++          </button>
++        }
++      </div>
++
++      <div class="mode-row">
++        <div class="mode-row-text">
++          <span class="theme-label">Dark mode</span>
++          <span class="theme-desc">Switch between light and dark backgrounds.</span>
++        </div>
++        <button
++          type="button"
++          class="mode-toggle"
++          role="switch"
++          [attr.aria-checked]="theme.theme() === 'dark'"
++          (click)="theme.toggle()"
++        >
++          <i class="ti" [class.ti-sun]="theme.theme() === 'light'" [class.ti-moon]="theme.theme() === 'dark'" aria-hidden="true"></i>
++          {{ theme.theme() === 'dark' ? 'Dark' : 'Light' }}
++        </button>
++      </div>
++    </section>
++
++    <div class="placeholder-page" role="region" aria-label="More settings coming soon">
+       <i class="ti ti-settings placeholder-icon" aria-hidden="true"></i>
+-      <h2 class="placeholder-title">Settings — Coming soon</h2>
++      <h2 class="placeholder-title">More settings — Coming soon</h2>
+       <p class="placeholder-sub">Lab profile, user management, printer config, and backup settings will appear here.</p>
+     </div>`,
+   styles: [`
+     :host { display:block; }
++
+     .page-header { margin-bottom:14px; }
+     .page-title  { font-size:20px; font-weight:500; color:var(--text-primary); margin:0; }
++
++    .settings-card {
++      background: var(--bg-surface);
++      border: 1px solid var(--border);
++      border-radius: var(--radius-lg);
++      box-shadow: var(--shadow-card);
++      padding: var(--space-6);
++      margin-bottom: var(--space-6);
++    }
++
++    .settings-card-head {
++      display:flex;
++      align-items:flex-start;
++      gap: var(--space-3);
++      margin-bottom: var(--space-5);
++    }
++    .settings-card-icon {
++      font-size: 22px;
++      color: var(--primary-deeper);
++      flex-shrink: 0;
++      margin-top: 2px;
++    }
++    .settings-card-title { font-size:15px; font-weight:600; color:var(--text-primary); margin:0 0 2px; }
++    .settings-card-sub   { font-size:13px; color:var(--text-secondary); margin:0; max-width:520px; }
++
++    .theme-grid {
++      display:grid;
++      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
++      gap: var(--space-3);
++    }
++
++    .theme-option {
++      position: relative;
++      display:flex;
++      align-items:center;
++      gap: var(--space-3);
++      text-align:left;
++      padding: var(--space-3) var(--space-4);
++      border: 1.5px solid var(--border);
++      border-radius: var(--radius-md);
++      background: var(--bg-surface-alt);
++      cursor: pointer;
++      transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
++      font-family: inherit;
++    }
++    .theme-option:hover {
++      border-color: var(--primary-light);
++      transform: translateY(-1px);
++    }
++    .theme-option:focus-visible {
++      outline: 2px solid var(--primary-deeper);
++      outline-offset: 2px;
++    }
++    .theme-option.active {
++      border-color: var(--primary-deeper);
++      box-shadow: 0 0 0 3px var(--primary-xlight);
++      background: var(--bg-surface);
++    }
++
++    .theme-swatches {
++      display:flex;
++      flex-shrink:0;
++    }
++    .swatch {
++      width: 18px;
++      height: 18px;
++      border-radius: 50%;
++      border: 2px solid var(--bg-surface);
++      box-shadow: 0 0 0 1px var(--border);
++    }
++    .swatch + .swatch { margin-left: -7px; }
++
++    .theme-text { display:flex; flex-direction:column; gap:1px; min-width:0; }
++    .theme-label { font-size:13px; font-weight:600; color:var(--text-primary); }
++    .theme-desc  { font-size:11.5px; color:var(--text-secondary); }
++
++    .theme-check {
++      position:absolute;
++      top:8px;
++      right:8px;
++      font-size:16px;
++      color: var(--primary-deeper);
++    }
++
++    .mode-row {
++      display:flex;
++      align-items:center;
++      justify-content:space-between;
++      gap: var(--space-4);
++      margin-top: var(--space-5);
++      padding-top: var(--space-5);
++      border-top: 1px solid var(--border);
++    }
++    .mode-row-text { display:flex; flex-direction:column; gap:1px; }
++
++    .mode-toggle {
++      display:flex;
++      align-items:center;
++      gap: var(--space-2);
++      font-size: 13px;
++      font-weight: 600;
++      color: var(--text-primary);
++      background: var(--bg-surface-alt);
++      border: 1.5px solid var(--border);
++      border-radius: var(--radius-md);
++      padding: 8px 14px;
++      cursor: pointer;
++      transition: border-color var(--transition-fast), background var(--transition-fast);
++      font-family: inherit;
++    }
++    .mode-toggle:hover { border-color: var(--primary-light); }
++    .mode-toggle i { font-size: 16px; color: var(--theme-icon-color, var(--primary-deeper)); }
++
+     .placeholder-page { display:flex; flex-direction:column; align-items:center; justify-content:center;
+       padding:60px 20px; gap:14px; text-align:center; }
+     .placeholder-icon { font-size:48px; color:var(--lis-primary,#1D9E75); opacity:0.35; }
+@@ -24,4 +193,10 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
+     .placeholder-sub   { font-size:13px; color:var(--text-secondary); margin:0; max-width:360px; }
+   `]
+ })
+-export class SettingsComponent {}
++export class SettingsComponent {
++  protected readonly theme = inject(ThemeService);
++
++  protected selectPalette(id: Palette): void {
++    this.theme.setPalette(id);
++  }
++}
+diff --git a/src/styles.css b/src/styles.css
+index a84fa71..58d2f1a 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -266,6 +266,293 @@
+   --shadow-float: var(--shadow-editor);
+ }
+ 
++/* ═══════════════════════════════════════════════════════════
++   COLOR PALETTES (independent of light/dark mode)
++   ─────────────────────────────────────────────────────────
++   • Default palette (Teal/Indigo) = the brand colors already
++     defined above in :root and [data-theme="dark"] — untouched.
++   • [data-palette="ocean" | "sunset" | "violet"] on <html>
++     overrides just the brand + derived tokens, in BOTH light
++     and dark mode, via the combined attribute selectors below.
++   • ThemeService.setPalette() sets/removes data-palette.
++   ═══════════════════════════════════════════════════════════ */
++
++/* ─── OCEAN (Blue / Cyan) — Light ─────────────────────────── */
++[data-palette="ocean"] {
++  --primary:           #0EA5E9;
++  --primary-dark:      #0284C7;
++  --primary-deeper:    #2563EB;
++  --primary-light:     #60A5FA;
++  --primary-xlight:    #E0F2FE;
++
++  --secondary:         #F59E0B;
++  --secondary-dark:    #D97706;
++  --secondary-light:   #FDE8C8;
++  --secondary-xlight:  #FFF7E8;
++
++  --accent:            #7DD3FC;
++  --accent-dark:       #0EA5E9;
++  --accent-light:      #DFF4FF;
++
++  --bg-page:           #F4FAFF;
++  --bg-surface:        #ffffff;
++  --bg-surface-alt:    #EAF5FF;
++  --bg-overlay:        rgba(244,250,255,0.95);
++
++  --border:            #D7E9FA;
++  --border-strong:     #BBD9F0;
++
++  --shadow-sm:         0 1px 4px rgba(14,165,233,0.15);
++  --shadow-card:       0 2px 16px rgba(37,99,235,0.10);
++  --shadow-card-hover: 0 12px 36px rgba(37,99,235,0.22);
++  --shadow-editor:     0 24px 64px rgba(37,99,235,0.18), 0 4px 20px rgba(0,0,0,0.06);
++  --shadow-btn:        0 2px 12px rgba(37,99,235,0.35);
++  --shadow-btn-hover:  0 6px 20px rgba(37,99,235,0.42);
++  --shadow-nav:        0 1px 10px rgba(37,99,235,0.12);
++
++  --scrollbar-track:   #EAF5FF;
++  --scrollbar-thumb:   #7DD3FC;
++  --theme-icon-color:  #2563EB;
++
++  --color-accent:      var(--primary-deeper);
++  --color-accent-soft: var(--primary-xlight);
++
++  --color-ai:                    #0EA5E9;
++  --color-ai-soft:               rgba(14, 165, 233, 0.09);
++  --color-ai-header-bg:          rgba(14, 165, 233, 0.04);
++  --color-ai-soft-overlay:       rgba(14, 165, 233, 0.18);
++  --color-ai-soft-overlay-hover: rgba(14, 165, 233, 0.26);
++
++  --color-success: #0EA5E9;
++  --block-hover-bg: rgba(37, 99, 235, 0.05);
++}
++
++/* ─── OCEAN — Dark ─────────────────────────────────────────── */
++[data-theme="dark"][data-palette="ocean"] {
++  --theme-accent:      #0EA5E9;
++  --theme-accent-soft: rgba(14, 165, 233, 0.14);
++
++  --primary:           #0EA5E9;
++  --primary-dark:      #0284C7;
++  --primary-deeper:    #2563EB;
++  --primary-light:     rgba(96, 165, 250, 0.18);
++  --primary-xlight:    rgba(37, 99, 235, 0.10);
++
++  --secondary:         #F59E0B;
++  --secondary-dark:    #D97706;
++  --secondary-light:   rgba(245, 158, 11, 0.18);
++  --secondary-xlight:  rgba(245, 158, 11, 0.10);
++
++  --accent:            #7DD3FC;
++  --accent-dark:       #0EA5E9;
++  --accent-light:      rgba(125, 211, 252, 0.15);
++
++  --border:            #334155;
++  --border-strong:     #475569;
++
++  --shadow-btn:        0 2px 8px rgba(37,99,235,0.35);
++  --shadow-btn-hover:  0 6px 20px rgba(37,99,235,0.42);
++
++  --scrollbar-thumb:   #0284C7;
++  --theme-icon-color:  #7DD3FC;
++
++  --color-accent:      var(--theme-accent);
++  --color-accent-soft: var(--theme-accent-soft);
++
++  --color-ai:                    #0EA5E9;
++  --color-ai-soft:               rgba(14, 165, 233, 0.10);
++  --color-ai-header-bg:          rgba(14, 165, 233, 0.05);
++  --color-ai-soft-overlay:       rgba(14, 165, 233, 0.18);
++  --color-ai-soft-overlay-hover: rgba(14, 165, 233, 0.26);
++
++  --color-success: #38bdf8;
++  --block-hover-bg: rgba(14, 165, 233, 0.04);
++}
++
++/* ─── SUNSET (Coral / Amber) — Light ───────────────────────── */
++[data-palette="sunset"] {
++  --primary:           #FB7185;
++  --primary-dark:      #E11D48;
++  --primary-deeper:    #F97316;
++  --primary-light:     #FDA4AF;
++  --primary-xlight:    #FFE4E6;
++
++  --secondary:         #FBBF24;
++  --secondary-dark:    #D97706;
++  --secondary-light:   #FEF0C7;
++  --secondary-xlight:  #FFFBEB;
++
++  --accent:            #FDBA74;
++  --accent-dark:       #FB7185;
++  --accent-light:      #FFE9D5;
++
++  --bg-page:           #FFF8F7;
++  --bg-surface:        #ffffff;
++  --bg-surface-alt:    #FFEFEC;
++  --bg-overlay:        rgba(255,248,247,0.95);
++
++  --border:            #FBE0DC;
++  --border-strong:     #F6C7C0;
++
++  --shadow-sm:         0 1px 4px rgba(251,113,133,0.15);
++  --shadow-card:       0 2px 16px rgba(249,115,22,0.10);
++  --shadow-card-hover: 0 12px 36px rgba(249,115,22,0.22);
++  --shadow-editor:     0 24px 64px rgba(249,115,22,0.18), 0 4px 20px rgba(0,0,0,0.06);
++  --shadow-btn:        0 2px 12px rgba(249,115,22,0.35);
++  --shadow-btn-hover:  0 6px 20px rgba(249,115,22,0.42);
++  --shadow-nav:        0 1px 10px rgba(249,115,22,0.12);
++
++  --scrollbar-track:   #FFEFEC;
++  --scrollbar-thumb:   #FDBA74;
++  --theme-icon-color:  #F97316;
++
++  --color-accent:      var(--primary-deeper);
++  --color-accent-soft: var(--primary-xlight);
++
++  --color-ai:                    #FB7185;
++  --color-ai-soft:               rgba(251, 113, 133, 0.09);
++  --color-ai-header-bg:          rgba(251, 113, 133, 0.04);
++  --color-ai-soft-overlay:       rgba(251, 113, 133, 0.18);
++  --color-ai-soft-overlay-hover: rgba(251, 113, 133, 0.26);
++
++  --color-success: #34D399;
++  --block-hover-bg: rgba(249, 115, 22, 0.05);
++}
++
++/* ─── SUNSET — Dark ────────────────────────────────────────── */
++[data-theme="dark"][data-palette="sunset"] {
++  --theme-accent:      #FB7185;
++  --theme-accent-soft: rgba(251, 113, 133, 0.14);
++
++  --primary:           #FB7185;
++  --primary-dark:      #E11D48;
++  --primary-deeper:    #F97316;
++  --primary-light:     rgba(253, 164, 175, 0.18);
++  --primary-xlight:    rgba(249, 115, 22, 0.10);
++
++  --secondary:         #FBBF24;
++  --secondary-dark:    #D97706;
++  --secondary-light:   rgba(251, 191, 36, 0.18);
++  --secondary-xlight:  rgba(251, 191, 36, 0.10);
++
++  --accent:            #FDBA74;
++  --accent-dark:       #FB7185;
++  --accent-light:      rgba(253, 186, 116, 0.15);
++
++  --border:            #334155;
++  --border-strong:     #475569;
++
++  --shadow-btn:        0 2px 8px rgba(249,115,22,0.35);
++  --shadow-btn-hover:  0 6px 20px rgba(249,115,22,0.42);
++
++  --scrollbar-thumb:   #E11D48;
++  --theme-icon-color:  #FDBA74;
++
++  --color-accent:      var(--theme-accent);
++  --color-accent-soft: var(--theme-accent-soft);
++
++  --color-ai:                    #FB7185;
++  --color-ai-soft:               rgba(251, 113, 133, 0.10);
++  --color-ai-header-bg:          rgba(251, 113, 133, 0.05);
++  --color-ai-soft-overlay:       rgba(251, 113, 133, 0.18);
++  --color-ai-soft-overlay-hover: rgba(251, 113, 133, 0.26);
++
++  --color-success: #4ade80;
++  --block-hover-bg: rgba(251, 113, 133, 0.04);
++}
++
++/* ─── VIOLET (Purple / Magenta) — Light ────────────────────── */
++[data-palette="violet"] {
++  --primary:           #8B5CF6;
++  --primary-dark:      #6D28D9;
++  --primary-deeper:    #C026D3;
++  --primary-light:     #C4B5FD;
++  --primary-xlight:    #F1E8FF;
++
++  --secondary:         #EC4899;
++  --secondary-dark:    #BE185D;
++  --secondary-light:   #FBD0E6;
++  --secondary-xlight:  #FFF0F8;
++
++  --accent:            #D8B4FE;
++  --accent-dark:       #8B5CF6;
++  --accent-light:      #EFDEFF;
++
++  --bg-page:           #FAF8FF;
++  --bg-surface:        #ffffff;
++  --bg-surface-alt:    #F2ECFF;
++  --bg-overlay:        rgba(250,248,255,0.95);
++
++  --border:            #E5D9FA;
++  --border-strong:     #D2BEF0;
++
++  --shadow-sm:         0 1px 4px rgba(139,92,246,0.15);
++  --shadow-card:       0 2px 16px rgba(192,38,211,0.10);
++  --shadow-card-hover: 0 12px 36px rgba(192,38,211,0.22);
++  --shadow-editor:     0 24px 64px rgba(192,38,211,0.18), 0 4px 20px rgba(0,0,0,0.06);
++  --shadow-btn:        0 2px 12px rgba(192,38,211,0.35);
++  --shadow-btn-hover:  0 6px 20px rgba(192,38,211,0.42);
++  --shadow-nav:        0 1px 10px rgba(192,38,211,0.12);
++
++  --scrollbar-track:   #F2ECFF;
++  --scrollbar-thumb:   #D8B4FE;
++  --theme-icon-color:  #C026D3;
++
++  --color-accent:      var(--primary-deeper);
++  --color-accent-soft: var(--primary-xlight);
++
++  --color-ai:                    #8B5CF6;
++  --color-ai-soft:               rgba(139, 92, 246, 0.09);
++  --color-ai-header-bg:          rgba(139, 92, 246, 0.04);
++  --color-ai-soft-overlay:       rgba(139, 92, 246, 0.18);
++  --color-ai-soft-overlay-hover: rgba(139, 92, 246, 0.26);
++
++  --color-success: #34D399;
++  --block-hover-bg: rgba(192, 38, 211, 0.05);
++}
++
++/* ─── VIOLET — Dark ────────────────────────────────────────── */
++[data-theme="dark"][data-palette="violet"] {
++  --theme-accent:      #8B5CF6;
++  --theme-accent-soft: rgba(139, 92, 246, 0.14);
++
++  --primary:           #8B5CF6;
++  --primary-dark:      #6D28D9;
++  --primary-deeper:    #C026D3;
++  --primary-light:     rgba(196, 181, 253, 0.18);
++  --primary-xlight:    rgba(192, 38, 211, 0.10);
++
++  --secondary:         #EC4899;
++  --secondary-dark:    #BE185D;
++  --secondary-light:   rgba(236, 72, 153, 0.18);
++  --secondary-xlight:  rgba(236, 72, 153, 0.10);
++
++  --accent:            #D8B4FE;
++  --accent-dark:       #8B5CF6;
++  --accent-light:      rgba(216, 180, 254, 0.15);
++
++  --border:            #334155;
++  --border-strong:     #475569;
++
++  --shadow-btn:        0 2px 8px rgba(192,38,211,0.35);
++  --shadow-btn-hover:  0 6px 20px rgba(192,38,211,0.42);
++
++  --scrollbar-thumb:   #6D28D9;
++  --theme-icon-color:  #D8B4FE;
++
++  --color-accent:      var(--theme-accent);
++  --color-accent-soft: var(--theme-accent-soft);
++
++  --color-ai:                    #8B5CF6;
++  --color-ai-soft:               rgba(139, 92, 246, 0.10);
++  --color-ai-header-bg:          rgba(139, 92, 246, 0.05);
++  --color-ai-soft-overlay:       rgba(139, 92, 246, 0.18);
++  --color-ai-soft-overlay-hover: rgba(139, 92, 246, 0.26);
++
++  --color-success: #4ade80;
++  --block-hover-bg: rgba(139, 92, 246, 0.04);
++}
++
+ 
+ /* ─── BASE ─────────────────────────────────────────────── */
+ @layer base {
+-- 
+2.43.0
+

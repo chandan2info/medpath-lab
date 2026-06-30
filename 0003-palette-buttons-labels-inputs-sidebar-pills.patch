@@ -1,0 +1,322 @@
+From 2eaf2a183080f1b707b13f68739b437f2dcc0d57 Mon Sep 17 00:00:00 2001
+From: Claude <claude@anthropic.com>
+Date: Tue, 30 Jun 2026 05:12:11 +0000
+Subject: [PATCH] feat: palette-aware buttons, labels, inputs, sidebar & status
+ pills
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Added [data-palette="ocean|sunset|violet"] overrides for the LIS module
+  token set (--lis-primary*, --lis-sb-*, --pill-*, --topbar-bg) which drives
+  buttons (.lis-btn), labels, sidebar hover/active states, and status pills
+  across patient registration, billing, sample tracking, result entry
+- Added palette-matched focus ring color for .field-input text boxes
+  (previously hardcoded lavender for all themes)
+- Default palette block (:root / [data-theme="dark"] with no [data-palette])
+  is completely untouched — original Teal/Indigo colors unchanged
+- Each palette covers both light and dark mode independently
+---
+ src/styles.css | 286 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 285 insertions(+), 1 deletion(-)
+
+diff --git a/src/styles.css b/src/styles.css
+index 292e37c..8c49778 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -4201,7 +4201,291 @@
+ }
+ 
+ /* ═══════════════════════════════════════════════════════════
+-   EXPANDED SIDEBAR — Clinical Depth Design
++   PALETTE OVERRIDES — LIS tokens (buttons, labels, inputs,
++   sidebar, status pills) for the 3 new color palettes.
++   ─────────────────────────────────────────────────────────
++   The "default" palette (no [data-palette] attr) intentionally
++   has ZERO rules here — it keeps using the original :root /
++   [data-theme="dark"] LIS block above, completely unchanged.
++   ═══════════════════════════════════════════════════════════ */
++
++/* ─── OCEAN — Light ────────────────────────────────────────── */
++[data-palette="ocean"] {
++  --lis-primary:        #0EA5E9;
++  --lis-primary-mid:    #7DD3FC;
++  --lis-primary-light:  #DFF4FF;
++  --lis-primary-xlight: #E0F2FE;
++  --lis-primary-deep:   #0B3A5C;
++
++  --lis-warning:        #F59E0B;
++  --lis-danger:         #E24B4A;
++  --lis-danger-xlight:  #FFF0F0;
++
++  --pill-pending-bg:    #FFF1D6;
++  --pill-pending-color: #7A4B05;
++  --pill-process-bg:    #DCEEFF;
++  --pill-process-color: #0C447C;
++  --pill-ready-bg:      #DFF4FF;
++  --pill-ready-color:   #0B3A5C;
++  --pill-critical-bg:   #FCEBEB;
++  --pill-critical-color:#791F1F;
++  --pill-stat-bg:       #E24B4A;
++  --pill-stat-color:    #ffffff;
++
++  --topbar-bg:          #F4FAFF;
++
++  --lis-sb-bg:              #0B1622;
++  --lis-sb-bg-brand:        #081320;
++  --lis-sb-search-bg:       #122236;
++  --lis-sb-sep:             rgba(255,255,255,0.07);
++  --lis-sb-text:            rgba(180,205,225,0.72);
++  --lis-sb-text-hover:      rgba(225,242,255,0.97);
++  --lis-sb-text-active:     #ffffff;
++  --lis-sb-caption:         rgba(140,180,210,0.38);
++  --lis-sb-hover-bg:        rgba(37,99,235,0.14);
++  --lis-sb-hover-border:    #2563EB;
++  --lis-sb-active-bg:       rgba(14,165,233,0.16);
++  --lis-sb-active-border:   #0EA5E9;
++  --lis-sb-active-glow:     rgba(14,165,233,0.35);
++  --lis-sb-icon-idle:       rgba(160,190,215,0.50);
++  --lis-sb-icon-hover:      #93C5FD;
++  --lis-sb-icon-active:     #0EA5E9;
++  --lis-sb-col-icon-bg:     rgba(255,255,255,0.05);
++  --lis-sb-col-icon-hover:  rgba(37,99,235,0.18);
++  --lis-sb-col-icon-active: rgba(14,165,233,0.18);
++}
++[data-palette="ocean"]:not([data-theme="dark"]) {
++  --lis-sb-bg:              #F5FAFF;
++  --lis-sb-bg-brand:        #EAF4FF;
++  --lis-sb-search-bg:       #E3F1FF;
++  --lis-sb-sep:             rgba(37,99,235,0.14);
++  --lis-sb-text:            #3E5C7A;
++  --lis-sb-text-hover:      #14283D;
++  --lis-sb-text-active:     #0B1622;
++  --lis-sb-caption:         #8FA9C2;
++  --lis-sb-hover-bg:        rgba(37,99,235,0.11);
++  --lis-sb-hover-border:    #2563EB;
++  --lis-sb-active-bg:       rgba(14,165,233,0.14);
++  --lis-sb-active-border:   #0284C7;
++  --lis-sb-active-glow:     rgba(14,165,233,0.30);
++  --lis-sb-icon-idle:       #6B89A8;
++  --lis-sb-icon-hover:      #2563EB;
++  --lis-sb-icon-active:     #0284C7;
++  --lis-sb-col-icon-bg:     rgba(37,99,235,0.07);
++  --lis-sb-col-icon-hover:  rgba(37,99,235,0.16);
++  --lis-sb-col-icon-active: rgba(14,165,233,0.16);
++}
++
++/* ─── OCEAN — Dark ─────────────────────────────────────────── */
++[data-theme="dark"][data-palette="ocean"] {
++  --lis-primary:        #0EA5E9;
++  --lis-primary-mid:    #7DD3FC;
++  --lis-primary-light:  #16314A;
++  --lis-primary-xlight: rgba(14,165,233,0.14);
++  --lis-primary-deep:   #DFF4FF;
++
++  --pill-pending-bg:    rgba(245,158,11,0.15);
++  --pill-pending-color: #fbbf57;
++  --pill-process-bg:    rgba(37,99,235,0.25);
++  --pill-process-color: #93C5FD;
++  --pill-ready-bg:      rgba(14,165,233,0.18);
++  --pill-ready-color:   #7DD3FC;
++  --pill-critical-bg:   rgba(226,75,74,0.18);
++  --pill-critical-color:#f87171;
++  --pill-stat-bg:       #7f1d1d;
++  --pill-stat-color:    #fca5a5;
++
++  --topbar-bg:          var(--bg-surface);
++}
++
++/* ─── SUNSET — Light ───────────────────────────────────────── */
++[data-palette="sunset"] {
++  --lis-primary:        #FB7185;
++  --lis-primary-mid:    #FDBA74;
++  --lis-primary-light:  #FFE9D5;
++  --lis-primary-xlight: #FFE4E6;
++  --lis-primary-deep:   #5C1A22;
++
++  --lis-warning:        #F59E0B;
++  --lis-danger:         #E24B4A;
++  --lis-danger-xlight:  #FFF0F0;
++
++  --pill-pending-bg:    #FFF1D6;
++  --pill-pending-color: #7A4B05;
++  --pill-process-bg:    #FFE4E6;
++  --pill-process-color: #9F1239;
++  --pill-ready-bg:      #FFE9D5;
++  --pill-ready-color:   #7C2D12;
++  --pill-critical-bg:   #FCEBEB;
++  --pill-critical-color:#791F1F;
++  --pill-stat-bg:       #E24B4A;
++  --pill-stat-color:    #ffffff;
++
++  --topbar-bg:          #FFF8F7;
++
++  --lis-sb-bg:              #1C1412;
++  --lis-sb-bg-brand:        #160F0D;
++  --lis-sb-search-bg:       #271C19;
++  --lis-sb-sep:             rgba(255,255,255,0.07);
++  --lis-sb-text:            rgba(225,200,190,0.72);
++  --lis-sb-text-hover:      rgba(255,240,235,0.97);
++  --lis-sb-text-active:     #ffffff;
++  --lis-sb-caption:         rgba(210,170,155,0.38);
++  --lis-sb-hover-bg:        rgba(249,115,22,0.14);
++  --lis-sb-hover-border:    #F97316;
++  --lis-sb-active-bg:       rgba(251,113,133,0.16);
++  --lis-sb-active-border:   #FB7185;
++  --lis-sb-active-glow:     rgba(251,113,133,0.35);
++  --lis-sb-icon-idle:       rgba(215,180,165,0.50);
++  --lis-sb-icon-hover:      #FDBA9C;
++  --lis-sb-icon-active:     #FB7185;
++  --lis-sb-col-icon-bg:     rgba(255,255,255,0.05);
++  --lis-sb-col-icon-hover:  rgba(249,115,22,0.18);
++  --lis-sb-col-icon-active: rgba(251,113,133,0.18);
++}
++[data-palette="sunset"]:not([data-theme="dark"]) {
++  --lis-sb-bg:              #FFF8F6;
++  --lis-sb-bg-brand:        #FFEFEC;
++  --lis-sb-search-bg:       #FFE9E4;
++  --lis-sb-sep:             rgba(249,115,22,0.14);
++  --lis-sb-text:            #7A5048;
++  --lis-sb-text-hover:      #3D211C;
++  --lis-sb-text-active:     #1C1412;
++  --lis-sb-caption:         #C2998D;
++  --lis-sb-hover-bg:        rgba(249,115,22,0.11);
++  --lis-sb-hover-border:    #F97316;
++  --lis-sb-active-bg:       rgba(251,113,133,0.14);
++  --lis-sb-active-border:   #E11D48;
++  --lis-sb-active-glow:     rgba(251,113,133,0.30);
++  --lis-sb-icon-idle:       #A87A6E;
++  --lis-sb-icon-hover:      #F97316;
++  --lis-sb-icon-active:     #E11D48;
++  --lis-sb-col-icon-bg:     rgba(249,115,22,0.07);
++  --lis-sb-col-icon-hover:  rgba(249,115,22,0.16);
++  --lis-sb-col-icon-active: rgba(251,113,133,0.16);
++}
++
++/* ─── SUNSET — Dark ────────────────────────────────────────── */
++[data-theme="dark"][data-palette="sunset"] {
++  --lis-primary:        #FB7185;
++  --lis-primary-mid:    #FDBA74;
++  --lis-primary-light:  #3A2924;
++  --lis-primary-xlight: rgba(251,113,133,0.14);
++  --lis-primary-deep:   #FFE9D5;
++
++  --pill-pending-bg:    rgba(245,158,11,0.15);
++  --pill-pending-color: #fbbf57;
++  --pill-process-bg:    rgba(251,113,133,0.22);
++  --pill-process-color: #FDA4AF;
++  --pill-ready-bg:      rgba(249,115,22,0.18);
++  --pill-ready-color:   #FDBA74;
++  --pill-critical-bg:   rgba(226,75,74,0.18);
++  --pill-critical-color:#f87171;
++  --pill-stat-bg:       #7f1d1d;
++  --pill-stat-color:    #fca5a5;
++
++  --topbar-bg:          var(--bg-surface);
++}
++
++/* ─── VIOLET — Light ───────────────────────────────────────── */
++[data-palette="violet"] {
++  --lis-primary:        #8B5CF6;
++  --lis-primary-mid:    #D8B4FE;
++  --lis-primary-light:  #EFDEFF;
++  --lis-primary-xlight: #F1E8FF;
++  --lis-primary-deep:   #3B0764;
++
++  --lis-warning:        #F59E0B;
++  --lis-danger:         #E24B4A;
++  --lis-danger-xlight:  #FFF0F0;
++
++  --pill-pending-bg:    #FFF1D6;
++  --pill-pending-color: #7A4B05;
++  --pill-process-bg:    #FBD0E6;
++  --pill-process-color: #9D174D;
++  --pill-ready-bg:      #F1E8FF;
++  --pill-ready-color:   #581C87;
++  --pill-critical-bg:   #FCEBEB;
++  --pill-critical-color:#791F1F;
++  --pill-stat-bg:       #E24B4A;
++  --pill-stat-color:    #ffffff;
++
++  --topbar-bg:          #FAF8FF;
++
++  --lis-sb-bg:              #16131F;
++  --lis-sb-bg-brand:        #110E18;
++  --lis-sb-search-bg:       #201B2E;
++  --lis-sb-sep:             rgba(255,255,255,0.07);
++  --lis-sb-text:            rgba(205,190,225,0.72);
++  --lis-sb-text-hover:      rgba(244,240,255,0.97);
++  --lis-sb-text-active:     #ffffff;
++  --lis-sb-caption:         rgba(175,155,210,0.38);
++  --lis-sb-hover-bg:        rgba(192,38,211,0.14);
++  --lis-sb-hover-border:    #C026D3;
++  --lis-sb-active-bg:       rgba(139,92,246,0.16);
++  --lis-sb-active-border:   #8B5CF6;
++  --lis-sb-active-glow:     rgba(139,92,246,0.35);
++  --lis-sb-icon-idle:       rgba(190,170,215,0.50);
++  --lis-sb-icon-hover:      #E0AAFA;
++  --lis-sb-icon-active:     #8B5CF6;
++  --lis-sb-col-icon-bg:     rgba(255,255,255,0.05);
++  --lis-sb-col-icon-hover:  rgba(192,38,211,0.18);
++  --lis-sb-col-icon-active: rgba(139,92,246,0.18);
++}
++[data-palette="violet"]:not([data-theme="dark"]) {
++  --lis-sb-bg:              #FAF8FF;
++  --lis-sb-bg-brand:        #F1E8FF;
++  --lis-sb-search-bg:       #EFDEFF;
++  --lis-sb-sep:             rgba(192,38,211,0.14);
++  --lis-sb-text:            #6B5286;
++  --lis-sb-text-hover:      #2A1B3D;
++  --lis-sb-text-active:     #16131F;
++  --lis-sb-caption:         #B79BD1;
++  --lis-sb-hover-bg:        rgba(192,38,211,0.11);
++  --lis-sb-hover-border:    #C026D3;
++  --lis-sb-active-bg:       rgba(139,92,246,0.14);
++  --lis-sb-active-border:   #6D28D9;
++  --lis-sb-active-glow:     rgba(139,92,246,0.30);
++  --lis-sb-icon-idle:       #9377AD;
++  --lis-sb-icon-hover:      #C026D3;
++  --lis-sb-icon-active:     #6D28D9;
++  --lis-sb-col-icon-bg:     rgba(192,38,211,0.07);
++  --lis-sb-col-icon-hover:  rgba(192,38,211,0.16);
++  --lis-sb-col-icon-active: rgba(139,92,246,0.16);
++}
++
++/* ─── VIOLET — Dark ────────────────────────────────────────── */
++[data-theme="dark"][data-palette="violet"] {
++  --lis-primary:        #8B5CF6;
++  --lis-primary-mid:    #D8B4FE;
++  --lis-primary-light:  #2D2545;
++  --lis-primary-xlight: rgba(139,92,246,0.14);
++  --lis-primary-deep:   #EFDEFF;
++
++  --pill-pending-bg:    rgba(245,158,11,0.15);
++  --pill-pending-color: #fbbf57;
++  --pill-process-bg:    rgba(236,72,153,0.22);
++  --pill-process-color: #f9a8d4;
++  --pill-ready-bg:      rgba(139,92,246,0.18);
++  --pill-ready-color:   #D8B4FE;
++  --pill-critical-bg:   rgba(226,75,74,0.18);
++  --pill-critical-color:#f87171;
++  --pill-stat-bg:       #7f1d1d;
++  --pill-stat-color:    #fca5a5;
++
++  --topbar-bg:          var(--bg-surface);
++}
++
++/* ─── Form input focus ring — palette-aware ─────────────────
++   .field-input (used across patient registration, billing,
++   sample tracking forms) hardcodes a lavender ring in the
++   default theme — left untouched. New palettes get a ring
++   that matches their own primary color. ── */
++[data-palette="ocean"]   .field-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--lis-primary-xlight); }
++[data-palette="sunset"]  .field-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--lis-primary-xlight); }
++[data-palette="violet"]  .field-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--lis-primary-xlight); }
++
++
+    ═══════════════════════════════════════════════════════════ */
+ 
+ /* ── Shell ── */
+-- 
+2.43.0
+
