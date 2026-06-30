@@ -1,0 +1,137 @@
+From cd801afbcbd19c4f6108b5a6a98bd214b56de8b8 Mon Sep 17 00:00:00 2001
+From: UX Redesign <design@medpath.local>
+Date: Tue, 30 Jun 2026 04:09:15 +0000
+Subject: [PATCH 2/2] Light-mode sidebar polish: stronger hover/active contrast
+
+- Bump light-theme sidebar bg to a softer #FBFCFE 'paper' tone with
+  a more defined hairline border, since pure pale-gray read flat
+  next to the white page canvas
+- Strengthen hover/active tint opacity (washes recede faster on
+  light backgrounds than dark ones at the same alpha)
+- Add directional lift shadows for hover/active rows in light mode,
+  since the dark-mode glow technique is barely visible on white
+- Re-tune collapsed-mode (icon-only) hover ring and active ring to
+  ink-toned/teal shadows instead of the dark-mode glow values
+- Darken active icon color (#0E7A63) for AA contrast on the lighter
+  active background tint
+---
+ src/styles.css | 75 +++++++++++++++++++++++++++++++++++++-------------
+ 1 file changed, 56 insertions(+), 19 deletions(-)
+
+diff --git a/src/styles.css b/src/styles.css
+index 9aa72c2..6ff2381 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -3745,32 +3745,37 @@
+   --lis-sb-col-icon-active: rgba(61,201,168,0.18);
+ }
+ 
+-/* ── Light theme token overrides ── */
++/* ── Light theme token overrides ──────────────────────────
++   Sidebar goes "soft paper" (#FBFCFE) rather than stark white —
++   easier on the eyes next to a white page canvas and gives the
++   hairline border something to read against. Hover/active tints
++   bumped up from the dark-mode ratios since washes recede faster
++   on light backgrounds than they do on dark ones. ── */
+ :root:not([data-theme="dark"]) {
+-  --lis-sb-bg:              #F4F6FB;
+-  --lis-sb-bg-brand:        #EEF1F9;
+-  --lis-sb-search-bg:       #E8ECF6;
+-  --lis-sb-sep:             rgba(100,116,180,0.12);
++  --lis-sb-bg:              #FBFCFE;
++  --lis-sb-bg-brand:        #F3F5FB;
++  --lis-sb-search-bg:       #EEF1F9;
++  --lis-sb-sep:             rgba(76,92,160,0.14);
+ 
+-  --lis-sb-text:            #5C6A96;
+-  --lis-sb-text-hover:      #1A2050;
++  --lis-sb-text:            #4B587E;
++  --lis-sb-text-hover:      #181D3D;
+   --lis-sb-text-active:     #0F1020;
+-  --lis-sb-caption:         #9BA6CE;
++  --lis-sb-caption:         #9BA3C7;
+ 
+-  --lis-sb-hover-bg:        rgba(99,102,241,0.07);
+-  --lis-sb-hover-border:    #6366F1;
++  --lis-sb-hover-bg:        rgba(99,102,241,0.11);
++  --lis-sb-hover-border:    #5457E5;
+ 
+-  --lis-sb-active-bg:       rgba(61,201,168,0.10);
+-  --lis-sb-active-border:   #2DAF92;
+-  --lis-sb-active-glow:     rgba(61,201,168,0.20);
++  --lis-sb-active-bg:       rgba(20,166,131,0.13);
++  --lis-sb-active-border:   #149E83;
++  --lis-sb-active-glow:     rgba(20,166,131,0.30);
+ 
+-  --lis-sb-icon-idle:       #8B97C8;
+-  --lis-sb-icon-hover:      #4F46E5;
+-  --lis-sb-icon-active:     #1A7A64;
++  --lis-sb-icon-idle:       #7783AD;
++  --lis-sb-icon-hover:      #4338CA;
++  --lis-sb-icon-active:     #0E7A63;
+ 
+-  --lis-sb-col-icon-bg:     rgba(99,102,241,0.06);
+-  --lis-sb-col-icon-hover:  rgba(99,102,241,0.12);
+-  --lis-sb-col-icon-active: rgba(61,201,168,0.12);
++  --lis-sb-col-icon-bg:     rgba(99,102,241,0.07);
++  --lis-sb-col-icon-hover:  rgba(99,102,241,0.16);
++  --lis-sb-col-icon-active: rgba(20,166,131,0.16);
+ }
+ 
+ /* ── Dark theme explicit (same as :root dark defaults) ── */
+@@ -3807,6 +3812,12 @@
+   box-shadow: 4px 0 32px rgba(0,0,0,0.45) !important;
+   overflow: hidden !important;
+ }
++/* Light mode: dark sidebar shadow reads muddy on a white page —
++   use a soft cool-toned shadow instead, sized down since there's
++   far less luminance contrast to separate from. */
++:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar {
++  box-shadow: 2px 0 20px rgba(76,92,160,0.10) !important;
++}
+ 
+ /* ── Brand strip ── */
+ .pc-sidebar.lis-sidebar .sidebar-brand {
+@@ -3924,6 +3935,21 @@
+   transform: scaleY(1) !important;
+ }
+ 
++/* Light mode: glow alone is too faint against a pale surface — add
++   a soft directional lift so the active row reads as "raised",
++   not just tinted. Hover gets a faint version for proportional
++   feedback before the user commits. */
++:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar .nav-item a:hover {
++  box-shadow: 0 1px 4px rgba(84,87,229,0.10) !important;
++}
++:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar .nav-item a.active {
++  box-shadow: 0 2px 8px rgba(20,166,131,0.18) !important;
++}
++:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar .nav-item a.active:hover {
++  background: rgba(20,166,131,0.20) !important;
++  box-shadow: 0 3px 10px rgba(20,166,131,0.24) !important;
++}
++
+ /* ── Nav icon ── */
+ .pc-sidebar.lis-sidebar .nav-icon {
+   width: 20px !important;
+@@ -4079,6 +4105,17 @@
+   filter: drop-shadow(0 0 5px var(--lis-sb-active-glow)) !important;
+ }
+ 
++/* Light mode: dark-tuned rings/glows above wash out on a pale
++   surface — swap to ink-toned ring + visible (not white) icon. */
++:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar.collapsed .nav-item a:hover {
++  box-shadow: 0 0 0 1px rgba(84,87,229,0.28), 0 2px 6px rgba(84,87,229,0.12) !important;
++}
++:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar.collapsed .nav-item a.active,
++:root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar.collapsed .nav-item a.active:visited {
++  color: var(--lis-sb-icon-active) !important;
++  box-shadow: 0 0 0 1px rgba(20,166,131,0.45), 0 3px 10px rgba(20,166,131,0.22) !important;
++}
++
+ /* Hide text elements in collapsed */
+ .pc-sidebar.lis-sidebar.collapsed .nav-label,
+ .pc-sidebar.lis-sidebar.collapsed .nav-caption,
+-- 
+2.43.0
+

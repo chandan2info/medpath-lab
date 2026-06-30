@@ -1,0 +1,135 @@
+From 4ced1c5e98546484735f4085ffcbd3022b4afbe0 Mon Sep 17 00:00:00 2001
+From: UX Redesign <design@medpath.local>
+Date: Tue, 30 Jun 2026 04:13:56 +0000
+Subject: [PATCH 3/3] Fix sidebar nav-item width inconsistency on hover/active
+
+The hover and active states nudged padding-left from 14px to 17px
+while leaving the link's width unconstrained (flex auto-sizing).
+This silently resized each row's content box on state change,
+making hover/active items appear a different width than idle ones
+in both expanded and collapsed sidebar modes, light and dark.
+
+Fix:
+- Pin an explicit width (calc(100% - 20px)) and box-sizing: border-box
+  on expanded nav links so width is invariant across all states
+- Replace the padding-left jump with a paint-only translateX(3px) on
+  the inner icon/label/badge content, so the 'nudge right' feel is
+  preserved without resizing the row
+- Add box-sizing: border-box to collapsed (icon-only) nav buttons so
+  the hover/active 1px border never changes the visible square size
+- Merge the new transform transition into nav-icon's existing
+  color/filter transition instead of overwriting it
+---
+ src/styles.css | 47 ++++++++++++++++++++++++++++++++++++-----------
+ 1 file changed, 36 insertions(+), 11 deletions(-)
+
+diff --git a/src/styles.css b/src/styles.css
+index 6ff2381..426e26f 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -3857,13 +3857,22 @@
+   padding: 0 !important;
+ }
+ 
+-/* ── Nav link — base state ── */
++/* ── Nav link — base state ──────────────────────────────────
++   width is pinned explicitly (not left to flex auto-sizing) so
++   hover/active never change the row's footprint — only paint
++   (background/color/bar) changes. The old approach nudged
++   padding-left on hover, which silently resized the box and
++   made hover/active rows appear a different width than idle
++   ones. We now keep padding constant and use a tiny content
++   nudge via translateX on the inner spans instead. ── */
+ .pc-sidebar.lis-sidebar .nav-item a,
+ .pc-sidebar.lis-sidebar .nav-item a:link,
+ .pc-sidebar.lis-sidebar .nav-item a:visited {
+   display: flex !important;
+   align-items: center !important;
+   gap: 12px !important;
++  width: calc(100% - 20px) !important;
++  box-sizing: border-box !important;
+   margin: 1px 10px !important;
+   padding: 9px 12px 9px 14px !important;
+   border-radius: var(--lis-sb-radius) !important;
+@@ -3876,11 +3885,7 @@
+   position: relative !important;
+   overflow: hidden !important;
+   white-space: nowrap !important;
+-  /* Left-border reveal animation setup */
+-  transition:
+-    background 0.18s ease,
+-    color 0.18s ease,
+-    padding-left 0.18s ease !important;
++  transition: background 0.18s ease, color 0.18s ease !important;
+ }
+ 
+ /* ── Left accent bar (pseudo element) ── */
+@@ -3898,12 +3903,34 @@
+   transition: opacity 0.18s ease, transform 0.18s ease !important;
+ }
+ 
++/* Inner content (icon + label) nudges right 3px on hover/active
++   via transform — this is paint-only, it never touches layout,
++   so the row's width and right edge stay perfectly fixed.
++   (.nav-icon declares its own transition, merged with color/filter,
++   in its dedicated rule further below — not redeclared here.) */
++.pc-sidebar.lis-sidebar .nav-item a .nav-label,
++.pc-sidebar.lis-sidebar .nav-item a .nav-badge,
++.pc-sidebar.lis-sidebar .nav-item a .badge {
++  transition: transform 0.18s ease !important;
++}
++.pc-sidebar.lis-sidebar .nav-item a:hover .nav-icon,
++.pc-sidebar.lis-sidebar .nav-item a:hover .nav-label,
++.pc-sidebar.lis-sidebar .nav-item a.active .nav-icon,
++.pc-sidebar.lis-sidebar .nav-item a.active .nav-label {
++  transform: translateX(3px) !important;
++}
++.pc-sidebar.lis-sidebar .nav-item a:hover .nav-badge,
++.pc-sidebar.lis-sidebar .nav-item a:hover .badge,
++.pc-sidebar.lis-sidebar .nav-item a.active .nav-badge,
++.pc-sidebar.lis-sidebar .nav-item a.active .badge {
++  transform: translateX(3px) !important;
++}
++
+ /* ── Nav link — HOVER: frosted indigo left-reveal ── */
+ .pc-sidebar.lis-sidebar .nav-item a:hover {
+   background: var(--lis-sb-hover-bg) !important;
+   color: var(--lis-sb-text-hover) !important;
+   border: none !important;
+-  padding-left: 17px !important;
+ }
+ .pc-sidebar.lis-sidebar .nav-item a:hover::before {
+   opacity: 1 !important;
+@@ -3917,7 +3944,6 @@
+   color: var(--lis-sb-text-active) !important;
+   font-weight: 600 !important;
+   border: none !important;
+-  padding-left: 17px !important;
+   box-shadow: none !important;
+ }
+ .pc-sidebar.lis-sidebar .nav-item a.active::before {
+@@ -3960,7 +3986,7 @@
+   justify-content: center !important;
+   flex-shrink: 0 !important;
+   color: var(--lis-sb-icon-idle) !important;
+-  transition: color 0.18s ease, filter 0.18s ease !important;
++  transition: color 0.18s ease, filter 0.18s ease, transform 0.18s ease !important;
+ }
+ .pc-sidebar.lis-sidebar .nav-item a:hover .nav-icon,
+ .pc-sidebar.lis-sidebar .nav-item a:hover .nav-icon i {
+@@ -4070,11 +4096,10 @@
+   padding: 0 !important;
+   width: var(--lis-sb-col-icon-box) !important;
+   height: var(--lis-sb-col-icon-box) !important;
++  box-sizing: border-box !important;
+   border-radius: 12px !important;
+   background: var(--lis-sb-col-icon-bg) !important;
+   gap: 0 !important;
+-  /* Reset left-bar — not needed in icon mode */
+-  padding-left: 0 !important;
+   border: 1px solid transparent !important;
+   transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease !important;
+ }
+-- 
+2.43.0
+

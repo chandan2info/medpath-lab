@@ -7,85 +7,152 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 .page-title { font-size: 22px; font-weight: 500; color: var(--text-primary); margin: 0 0 4px; }
 .breadcrumb { display: flex; list-style: none; padding: 0; margin: 0; gap: 6px; font-size: 12px; color: var(--text-secondary); }
 .breadcrumb a { color: var(--text-secondary); text-decoration: none; }
-.breadcrumb a:hover { color: var(--lis-primary, #1D9E75); }
+.breadcrumb a:hover { color: var(--lis-primary); }
 .breadcrumb li + li::before { content: '/'; margin-right: 6px; }
 
-/* ── Layout ──────────────────────────────────── */
+/* ── Layout ──────────────────────────────────────────────
+   Grid sizing: the list column is wide enough that name +
+   meta + status pill never collide. minmax(0, 1fr) on the
+   preview column stops the report sheet (which has fixed-ish
+   table content) from pushing the grid wider than the page. ── */
 .reports-layout {
   display: grid;
-  grid-template-columns: 288px 1fr;
-  gap: 16px;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 20px;
   align-items: start;
 }
-@media (max-width: 900px) { .reports-layout { grid-template-columns: 1fr; } }
+@media (max-width: 1100px) {
+  .reports-layout { grid-template-columns: 280px minmax(0, 1fr); gap: 16px; }
+}
+@media (max-width: 900px) {
+  .reports-layout { grid-template-columns: 1fr; }
+}
 
-/* ── Report list ─────────────────────────────── */
+/* ── Report list ───────────────────────────────
+   Card itself supplies header padding; the row list needs its
+   own small vertical inset so the first/last row isn't flush
+   against the card's rounded corners. ── */
+.report-list { display: flex; flex-direction: column; }
+.report-list > [role="list"] {
+  padding: 6px 0;
+  max-height: calc(100vh - 220px);
+  overflow-y: auto;
+}
+
 .report-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
+  gap: 12px;
+  padding: 11px 18px;
   border-bottom: 0.5px solid var(--border-color);
   cursor: pointer;
-  transition: background 0.1s;
+  transition: background 0.12s ease;
 }
 .report-row:last-child { border-bottom: none; }
 .report-row:hover { background: var(--body-bg); }
-.report-row--selected { background: var(--lis-primary-xlight, #E1F5EE); }
+.report-row--selected {
+  background: var(--lis-primary-xlight);
+  box-shadow: inset 3px 0 0 var(--lis-primary);
+}
 
 .rr-av {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: var(--lis-primary-xlight, #E1F5EE);
+  background: var(--lis-primary-xlight);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--lis-primary-deep, #085041);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--lis-primary-deep);
   flex-shrink: 0;
 }
 .rr-info { flex: 1; min-width: 0; }
-.rr-name { font-size: 12px; font-weight: 500; color: var(--text-primary); }
-.rr-meta { font-size: 10px; color: var(--text-secondary); }
+.rr-name {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rr-meta {
+  font-size: 10.5px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 1px 0;
+}
+.report-row .lis-mono { font-size: 10px; }
 
-/* .lis-mono font-size is 11px from global — no override needed */
+/* Status pill never wraps or shrinks oddly */
+.report-row > div:last-child { flex-shrink: 0; }
 
-/* ── Preview area ────────────────────────────── */
-.report-preview-area { display: flex; flex-direction: column; gap: 10px; }
+/* ── Preview area ──────────────────────────────
+   The toolbar and the sheet are a deliberate flex column with
+   consistent gap — matches the rhythm of the list card so the
+   two columns feel like one composition, not two unrelated
+   blocks side by side. ── */
+.report-preview-area { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 .preview-toolbar { display: flex; justify-content: flex-end; }
-.preview-actions { display: flex; gap: 7px; flex-wrap: wrap; }
+.preview-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
-/* ── Report sheet (print-ready) ────────────── */
+/* ── Empty state (no report selected) ─────────── */
+.preview-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 360px;
+  background: var(--card-bg);
+  border: 0.5px solid var(--border-color);
+  border-radius: var(--lis-card-radius);
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 32px;
+}
+.preview-empty i { font-size: 32px; opacity: 0.4; }
+.preview-empty p { margin: 0; font-size: 13px; }
+
+/* ── Report sheet (print-ready) ────────────────
+   Subtle elevation lifts the document off the page so it
+   reads as a discrete artifact, especially important in dark
+   mode where the flat-bordered version blended into the page
+   background with almost no separation. ── */
 .report-sheet {
   background: var(--card-bg);
   border: 0.5px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
+  box-shadow: var(--shadow-card, 0 1px 3px rgba(0,0,0,0.08));
 }
 @media print {
   .report-sheet { border: none; border-radius: 0; box-shadow: none; }
   .preview-toolbar { display: none; }
 }
 
-/* Header band */
+/* Header band — brand teal, theme-aware via --rpt-* tokens so
+   it stays legible (not washed-out white-on-near-white) in
+   dark mode while keeping its "branded document" identity. */
 .rpt-header {
-  background: #085041;
-  padding: 14px 18px;
+  background: var(--rpt-band-bg);
+  padding: 16px 20px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 .rpt-logo {
   width: 38px;
   height: 38px;
-  background: var(--lis-primary, #1D9E75);
+  background: var(--lis-primary);
   border-radius: 9px;
   display: flex;
   align-items: center;
@@ -93,149 +160,179 @@
   flex-shrink: 0;
 }
 .rpt-logo i { color: #fff; font-size: 19px; }
-.rpt-lab { flex: 1; }
-.rpt-lab-name { font-size: 14px; font-weight: 500; color: #fff; }
-.rpt-lab-tag  { font-size: 11px; color: #9FE1CB; margin-top: 1px; }
-.rpt-lab-addr { font-size: 11px; color: #9FE1CB; margin-top: 1px; }
-.rpt-meta { text-align: right; }
-.rpt-date { font-size: 11px; color: #9FE1CB; }
+.rpt-lab { flex: 1; min-width: 0; }
+.rpt-lab-name { font-size: 14px; font-weight: 600; color: var(--rpt-band-text); }
+.rpt-lab-tag  { font-size: 11px; color: var(--rpt-band-text-sub); margin-top: 2px; }
+.rpt-lab-addr { font-size: 11px; color: var(--rpt-band-text-sub); margin-top: 1px; }
+.rpt-meta { text-align: right; flex-shrink: 0; }
+.rpt-date { font-size: 11px; color: var(--rpt-band-text-sub); }
 .rpt-nabl {
   background: rgba(255,255,255,0.15);
-  padding: 3px 9px;
+  padding: 3px 10px;
   border-radius: 20px;
   font-size: 11px;
-  color: #E1F5EE;
-  margin-top: 5px;
+  color: var(--rpt-band-text);
+  margin-top: 6px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
 }
 .rpt-nabl i { font-size: 10px; }
 
-/* Patient band */
+/* Patient band — fixed 3-col grid reads fine down to ~560px;
+   below that it wraps to 2 then 1 column so labels never
+   collide with values. */
 .rpt-pat-band {
-  background: var(--lis-primary-xlight, #F0FAF6);
-  padding: 10px 18px;
+  background: var(--rpt-tint-bg);
+  padding: 14px 20px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  border-bottom: 2px solid var(--lis-primary, #1D9E75);
+  gap: 12px 16px;
+  border-bottom: 2px solid var(--rpt-tint-border);
 }
-.rpt-pf { display: flex; flex-direction: column; gap: 1px; }
+@media (max-width: 640px) {
+  .rpt-pat-band { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 420px) {
+  .rpt-pat-band { grid-template-columns: 1fr; }
+}
+.rpt-pf { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .rpt-pl {
-  font-size: 11px;
-  color: #0F6E56;
-  font-weight: 500;
+  font-size: 10.5px;
+  color: var(--rpt-tint-label);
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
-.rpt-pv { font-size: 11px; color: var(--text-primary); font-weight: 500; }
-/* Monospace variant for IDs — replaces inline style */
-.rpt-pv--mono { font-family: monospace; }
+.rpt-pv {
+  font-size: 12px;
+  color: var(--text-primary);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rpt-pv--mono { font-family: var(--font-mono, monospace); }
 
 /* Title band */
 .rpt-title-band {
-  background: #085041;
-  padding: 7px 18px;
+  background: var(--rpt-band-bg);
+  padding: 9px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 .rpt-title-text {
-  font-size: 12px;
-  font-weight: 500;
-  color: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--rpt-band-text);
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
 }
-.rpt-title-text i { font-size: 11px; }
-/* SID chip inside title band — replaces inline style */
-.rpt-sid-chip { font-size: 11px; color: #9FE1CB; }
+.rpt-title-text i { font-size: 12px; }
+.rpt-sid-chip { font-size: 11px; color: var(--rpt-band-text-sub); }
 
-/* Body */
-.rpt-body { padding: 14px 18px; }
+/* Body — consistent 20px horizontal inset matches the bands
+   above and below it, so the whole sheet reads as one
+   continuous column of content rather than each section
+   defining its own padding independently. */
+.rpt-body { padding: 18px 20px 20px; }
+
 .rpt-note {
-  background: #FFF8E7;
-  border-left: 3px solid #EF9F27;
-  padding: 8px 11px;
+  background: var(--rpt-note-bg);
+  border-left: 3px solid var(--rpt-note-border);
+  padding: 10px 14px;
   border-radius: 0 6px 6px 0;
-  margin-bottom: 18px;
-  font-size: 11px;
-  color: #412402;
-  line-height: 1.5;
-}
-.rpt-grp-title {
-  font-size: 12px;
-  font-weight: 500;
-  color: #085041;
-  margin-bottom: 6px;
-  padding-bottom: 4px;
-  border-bottom: 1px solid #E1F5EE;
+  margin-bottom: 20px;
+  font-size: 11.5px;
+  color: var(--rpt-note-text);
+  line-height: 1.55;
 }
 
-/* Results table */
-.rpt-tbl { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 18px; }
+.rpt-grp-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--rpt-tint-label);
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--rpt-tint-bg);
+}
+
+/* Results table — wrapped in a scroll container below so five
+   columns of clinical data never get crushed or clipped on
+   narrow screens; the table keeps a sane minimum width and
+   scrolls horizontally instead. */
+.rpt-tbl-wrap {
+  overflow-x: auto;
+  margin-bottom: 20px;
+  -webkit-overflow-scrolling: touch;
+}
+.rpt-tbl { width: 100%; min-width: 480px; border-collapse: collapse; font-size: 11.5px; margin-bottom: 0; }
 .rpt-tbl th {
-  padding: 5px 8px;
+  padding: 6px 10px;
   text-align: left;
-  font-size: 11px;
-  color: #0F6E56;
-  font-weight: 500;
-  border-bottom: 1px solid #E1F5EE;
+  font-size: 10.5px;
+  color: var(--rpt-tint-label);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-color);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 .rpt-tbl td {
-  padding: 6px 8px;
-  border-bottom: 0.5px solid var(--lis-primary-xlight, #F0FAF6);
+  padding: 8px 10px;
+  border-bottom: 0.5px solid var(--border-color);
   color: var(--text-primary);
 }
 .rpt-tbl tbody tr:last-child td { border-bottom: none; }
-.rpt-row-crit { background: var(--lis-danger-xlight, #FFF0F0); }
+.rpt-row-crit { background: var(--rpt-crit-bg); }
 .rpt-bold { font-weight: 600; }
-.rpt-flag-normal   { color: #0F6E56; }
+.rpt-flag-normal   { color: var(--rpt-tint-label); }
 .rpt-flag-high,
 .rpt-flag-low,
-.rpt-flag-critical { color: #E24B4A; font-weight: 500; }
-.rpt-ref { font-size: 11px; color: #6B7280; }
+.rpt-flag-critical { color: var(--rpt-flag-danger); font-weight: 600; }
+.rpt-ref { font-size: 11px; color: var(--rpt-ref-text); }
 
 /* Footer */
 .rpt-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--lis-primary-xlight, #F0FAF6);
-  padding: 10px 18px;
-  border-top: 2px solid var(--lis-primary, #1D9E75);
+  gap: 16px;
+  flex-wrap: wrap;
+  background: var(--rpt-tint-bg);
+  padding: 14px 20px;
+  border-top: 2px solid var(--rpt-tint-border);
 }
-.rpt-qr-area { display: flex; align-items: center; gap: 9px; }
+.rpt-qr-area { display: flex; align-items: center; gap: 10px; }
 .rpt-qr {
   width: 42px;
   height: 42px;
-  background: #E1F5EE;
+  background: var(--lis-primary-xlight);
   border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
-.rpt-qr i { font-size: 22px; color: var(--lis-primary, #1D9E75); }
-.rpt-qr-text { font-size: 11px; color: #0F6E56; line-height: 1.5; }
-/* Monospace URL — replaces inline style */
-.rpt-mono-url { font-family: monospace; font-size: 11px; }
+.rpt-qr i { font-size: 22px; color: var(--lis-primary); }
+.rpt-qr-text { font-size: 11px; color: var(--rpt-tint-label); line-height: 1.5; }
+.rpt-mono-url { font-family: var(--font-mono, monospace); font-size: 11px; }
 
 .rpt-sign { text-align: right; }
-.rpt-sign-pre  { font-size: 11px; color: #0F6E56; margin-bottom: 3px; }
-.rpt-sign-name { font-size: 12px; font-weight: 500; color: #04342C; }
-.rpt-sign-role { font-size: 11px; color: #0F6E56; }
-.rpt-sign-reg  { font-size: 11px; color: #0F6E56; margin-top: 2px; }
+.rpt-sign-pre  { font-size: 11px; color: var(--rpt-tint-label); margin-bottom: 3px; }
+.rpt-sign-name { font-size: 12.5px; font-weight: 600; color: var(--rpt-tint-strong); }
+.rpt-sign-role { font-size: 11px; color: var(--rpt-tint-label); }
+.rpt-sign-reg  { font-size: 11px; color: var(--rpt-tint-label); margin-top: 2px; }
 
-/* Empty state */
+/* Empty list state */
 .reports-empty {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 24px 14px;
+  padding: 28px 18px;
   font-size: 13px;
   color: var(--text-secondary);
 }
