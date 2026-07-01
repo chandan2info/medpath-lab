@@ -1,0 +1,178 @@
+From 23162dab9015046e15cdcd3b8efaa3fc72646133 Mon Sep 17 00:00:00 2001
+From: Claude <claude@anthropic.com>
+Date: Wed, 1 Jul 2026 05:17:12 +0000
+Subject: [PATCH 1/4] landing: match nav to reference design, add global
+ light/dark theme toggle
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Nav CTA now shows a single outline 'Book a test' button (matches
+  design reference) instead of duplicate View reports + solid button.
+- Added an always-visible sun/moon theme toggle button in the top nav
+  (desktop) and a matching row in the mobile drawer, wired to the
+  existing ThemeService so it flips [data-theme=dark] on <html> and
+  re-themes the entire app (all pages, all palettes), not just the
+  landing page.
+- Wrapped nav-cta + theme toggle + hamburger in a new .lp-nav-right
+  flex group so right-edge alignment is preserved at every breakpoint.
+- No changes to src/styles.css — default Teal/Indigo theme is
+  untouched.
+---
+ .../lis-home/lis-landing.component.css        | 22 +++++++++--
+ .../lis-home/lis-landing.component.html       | 37 +++++++++++++------
+ .../lis-home/lis-landing.component.ts         | 12 +++++-
+ 3 files changed, 55 insertions(+), 16 deletions(-)
+
+diff --git a/src/app/features/lis-home/lis-landing.component.css b/src/app/features/lis-home/lis-landing.component.css
+index 0b7633d..869e402 100644
+--- a/src/app/features/lis-home/lis-landing.component.css
++++ b/src/app/features/lis-home/lis-landing.component.css
+@@ -10,9 +10,19 @@
+     .lp-link { padding:0 14px; font-size:13px; color:var(--text-secondary); cursor:pointer; height:56px; display:flex; align-items:center; border-bottom:2px solid transparent; text-decoration:none; }
+     .lp-link--active { color:#1D9E75; border-bottom-color:#1D9E75; font-weight:500; }
+     .lp-link:hover { color:var(--text-primary); }
+-    .lp-nav-cta { display:flex; align-items:center; gap:8px; }
+-    .lp-btn-outline { padding:6px 14px; border:1.5px solid #1D9E75; border-radius:8px; font-size:12px; color:#1D9E75; cursor:pointer; background:transparent; font-weight:500; font-family:inherit; }
++    .lp-nav-right { display:flex; align-items:center; gap:10px; margin-left:auto; }
++    .lp-nav-cta { display:flex; align-items:center; gap:8px; i { font-size:13px; } }
++    .lp-btn-outline { padding:6px 14px; border:1.5px solid #1D9E75; border-radius:8px; font-size:12px; color:#1D9E75; cursor:pointer; background:transparent; font-weight:500; display:inline-flex; align-items:center; gap:5px; font-family:inherit; }
+     .lp-btn-solid  { padding:6px 14px; border:1.5px solid #1D9E75; border-radius:8px; font-size:12px; color:#fff; cursor:pointer; background:#1D9E75; font-weight:500; display:inline-flex; align-items:center; gap:5px; font-family:inherit; i { font-size:13px; } }
++    .lp-theme-toggle {
++      display:flex; align-items:center; justify-content:center;
++      width:32px; height:32px; border-radius:8px;
++      border:1px solid var(--border-color); background:var(--card-bg);
++      color:var(--text-secondary); cursor:pointer; flex-shrink:0;
++      transition:border-color 0.15s, color 0.15s;
++      i { font-size:15px; }
++      &:hover { border-color:#1D9E75; color:#1D9E75; }
++    }
+     .lp-btn-ghost  { padding:8px 18px; background:transparent; color:#085041; border:1.5px solid #5DCAA5; border-radius:9px; font-size:13px; font-weight:500; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-family:inherit; i { font-size:14px; } }
+ 
+     /* Hero */
+@@ -97,7 +107,7 @@
+     .lp-footer-bottom { border-top:1px solid rgba(255,255,255,0.08); padding-top:12px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:11px; color:#5DCAA5; }
+     .lp-footer-policy { display:flex; gap:14px; a { font-size:11px; color:#5DCAA5; text-decoration:none; &:hover { color:#fff; } } }
+     /* Mobile hamburger & drawer */
+-    .lp-hamburger { display:none; background:none; border:none; font-size:20px; color:var(--text-primary); cursor:pointer; padding:6px; margin-left:auto; }
++    .lp-hamburger { display:none; background:none; border:none; font-size:20px; color:var(--text-primary); cursor:pointer; padding:6px; }
+     @media (max-width:768px) {
+       .lp-nav-links, .lp-nav-cta { display:none; }
+       .lp-hamburger { display:flex; align-items:center; }
+@@ -109,6 +119,12 @@
+       box-shadow:0 8px 24px rgba(0,0,0,0.12);
+     }
+     .lp-mob-link { padding:13px 0; font-size:14px; color:var(--text-primary); text-decoration:none; border-bottom:0.5px solid var(--border-color); }
++    .lp-mob-theme {
++      display:flex; align-items:center; gap:8px; width:100%;
++      background:none; border:none; border-bottom:0.5px solid var(--border-color);
++      cursor:pointer; font-family:inherit; text-align:left;
++      i { font-size:16px; color:#1D9E75; }
++    }
+     .lp-mob-cta  { margin-top:14px; justify-content:center; width:100%; }
+ 
+     /* Welcome band mobile fix */
+diff --git a/src/app/features/lis-home/lis-landing.component.html b/src/app/features/lis-home/lis-landing.component.html
+index c393393..df45201 100644
+--- a/src/app/features/lis-home/lis-landing.component.html
++++ b/src/app/features/lis-home/lis-landing.component.html
+@@ -15,20 +15,29 @@
+         <a class="lp-link" href="#login-card" role="listitem">Reports</a>
+         <a class="lp-link" href="#footer" role="listitem">Contact us</a>
+       </div>
+-      <div class="lp-nav-cta">
+-        <button class="lp-btn-outline" type="button">View reports</button>
+-        <button class="lp-btn-solid" type="button" (click)="scrollToLogin()">
+-          <i class="ti ti-calendar" aria-hidden="true"></i> Book a test
++      <div class="lp-nav-right">
++        <div class="lp-nav-cta">
++          <button class="lp-btn-outline" type="button" (click)="scrollToLogin()">
++            <i class="ti ti-calendar" aria-hidden="true"></i> Book a test
++          </button>
++        </div>
++        <!-- Theme toggle — applies light/dark across the whole app -->
++        <button class="lp-theme-toggle" type="button"
++          (click)="toggleTheme()"
++          [attr.aria-label]="isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
++          [attr.aria-pressed]="isDark()"
++          title="Toggle light / dark theme">
++          <i [class]="isDark() ? 'ti ti-sun' : 'ti ti-moon'" aria-hidden="true"></i>
++        </button>
++        <!-- Mobile hamburger -->
++        <button class="lp-hamburger" type="button"
++          (click)="mobileMenuOpen.set(!mobileMenuOpen())"
++          [attr.aria-expanded]="mobileMenuOpen()"
++          aria-label="Toggle navigation menu"
++          aria-controls="lp-mobile-menu">
++          <i [class]="mobileMenuOpen() ? 'ti ti-x' : 'ti ti-menu-2'" aria-hidden="true"></i>
+         </button>
+       </div>
+-      <!-- Mobile hamburger -->
+-      <button class="lp-hamburger" type="button"
+-        (click)="mobileMenuOpen.set(!mobileMenuOpen())"
+-        [attr.aria-expanded]="mobileMenuOpen()"
+-        aria-label="Toggle navigation menu"
+-        aria-controls="lp-mobile-menu">
+-        <i [class]="mobileMenuOpen() ? 'ti ti-x' : 'ti ti-menu-2'" aria-hidden="true"></i>
+-      </button>
+     </nav>
+     <!-- Mobile drawer -->
+     @if (mobileMenuOpen()) {
+@@ -39,6 +48,10 @@
+         <a class="lp-mob-link" href="#" (click)="mobileMenuOpen.set(false)">Our process</a>
+         <a class="lp-mob-link" href="#" (click)="mobileMenuOpen.set(false)">Reports</a>
+         <a class="lp-mob-link" href="#" (click)="mobileMenuOpen.set(false)">Contact us</a>
++        <button class="lp-mob-link lp-mob-theme" type="button" (click)="toggleTheme()">
++          <i [class]="isDark() ? 'ti ti-sun' : 'ti ti-moon'" aria-hidden="true"></i>
++          {{ isDark() ? 'Switch to light mode' : 'Switch to dark mode' }}
++        </button>
+         <button class="lp-btn-solid lp-mob-cta" type="button" (click)="scrollToLogin(); mobileMenuOpen.set(false)">
+           <i class="ti ti-calendar" aria-hidden="true"></i> Book a test
+         </button>
+diff --git a/src/app/features/lis-home/lis-landing.component.ts b/src/app/features/lis-home/lis-landing.component.ts
+index 649c187..05be870 100644
+--- a/src/app/features/lis-home/lis-landing.component.ts
++++ b/src/app/features/lis-home/lis-landing.component.ts
+@@ -1,7 +1,8 @@
+-import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
++import { Component, signal, computed, inject, ChangeDetectionStrategy } from '@angular/core';
+ import { Router } from '@angular/router';
+ import { FormsModule } from '@angular/forms';
+ import { UserSessionService } from '../../core/services/user-session.service';
++import { ThemeService } from '../../core/services/theme.service';
+ 
+ @Component({
+   selector: 'app-lis-landing',
+@@ -12,6 +13,8 @@ import { UserSessionService } from '../../core/services/user-session.service';
+     styleUrl: './lis-landing.component.css',
+ })
+ export class LisLandingComponent {
++  private readonly themeService = inject(ThemeService);
++
+   username = '';
+   password = '';
+   remember = false;
+@@ -19,6 +22,9 @@ export class LisLandingComponent {
+   loginError = signal(false);
+   mobileMenuOpen = signal(false);
+ 
++  /** Drives the sun/moon icon and a11y labels on the theme toggle. */
++  protected readonly isDark = computed(() => this.themeService.theme() === 'dark');
++
+   protected readonly testCats = [
+     { name:'Blood tests',    icon:'droplet',           desc:'CBC, Sugar, Lipid profile & more' },
+     { name:'Thyroid tests',  icon:'activity',          desc:'T3, T4, TSH & advanced panels' },
+@@ -53,6 +59,10 @@ export class LisLandingComponent {
+     this.showPw.set(!this.showPw());
+   }
+ 
++  toggleTheme(): void {
++    this.themeService.toggle();
++  }
++
+   login(): void {
+     if (this.session.login(this.username, this.password)) {
+       this.loginError.set(false);
+-- 
+2.43.0
+

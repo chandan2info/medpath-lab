@@ -1,0 +1,104 @@
+From cc6ae37b47bd5a470ea5fde8acd74c860f9906af Mon Sep 17 00:00:00 2001
+From: Claude <claude@anthropic.com>
+Date: Wed, 1 Jul 2026 15:57:42 +0000
+Subject: [PATCH 5/5] landing: restore dot-grid accent, un-hide microscope in
+ hero photo, circular category icons
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Three concrete gaps vs the reference, called out with a real
+screenshot of the running page:
+
+- Bottom-left dot-grid decorative accent was missing entirely — added
+  a small radial-gradient dot pattern (brand teal, low opacity, faded
+  via a corner mask) positioned in the hero's bottom-left corner.
+
+- The microscope in the hero background photo was effectively hidden:
+  the login card (max-width 295px) was eating almost the entire
+  380px right column, leaving ~18px of gutter per side for the photo
+  to show through, and the overlay gradient stayed fairly opaque all
+  the way to the right edge. Fixed by (a) widening the right column
+  380px -> 420px for real breathing room around the card, (b) sharply
+  easing the overlay to near-transparent (0.05) by the right edge
+  instead of 0.22, and (c) repositioning the background photo itself
+  (background-position: right top) so the microscope's upper body
+  sits above/beside the card rather than directly behind it.
+
+- Test category icon badges (Blood tests, Thyroid tests, etc.) were
+  rendering as rounded squares (border-radius:9px, a pre-existing
+  value) instead of the circular badges in the reference. Switched to
+  border-radius:50% and bumped 38px -> 44px so the icon has the same
+  breathing room inside the now-round badge. Why-choose card icons
+  were left untouched — those are rounded squares in the reference
+  too, so that part already matched.
+---
+ .../lis-home/lis-landing.component.css        | 27 ++++++++++++++-----
+ .../lis-home/lis-landing.component.html       |  1 +
+ 2 files changed, 21 insertions(+), 7 deletions(-)
+
+diff --git a/src/app/features/lis-home/lis-landing.component.css b/src/app/features/lis-home/lis-landing.component.css
+index 0602582..f7ffd2e 100644
+--- a/src/app/features/lis-home/lis-landing.component.css
++++ b/src/app/features/lis-home/lis-landing.component.css
+@@ -28,17 +28,30 @@
+     /* Hero — full-width blurred laboratory photo behind everything,
+        tinted with the brand mint so it reads as one cohesive band
+        rather than a stock photo pasted on top. Overlay is densest
+-       over the text (left) for readability and eases off toward the
+-       login card (right), where the photo's own subject — tubes and
+-       microscope — sits closest to the card. */
++       over the text (left) for readability and eases off sharply
++       toward the login card (right) so the photo's own subject —
++       tubes and a microscope — stays clearly visible around the card
++       rather than being washed out. */
+     .lp-hero {
+-      position:relative; display:grid; grid-template-columns:1fr 380px; min-height:320px;
++      position:relative; display:grid; grid-template-columns:1fr 420px; min-height:340px;
+       background-image:
+-        linear-gradient(90deg, rgba(240,250,246,0.96) 0%, rgba(240,250,246,0.88) 32%, rgba(240,250,246,0.55) 58%, rgba(240,250,246,0.22) 100%),
++        linear-gradient(90deg, rgba(240,250,246,0.97) 0%, rgba(240,250,246,0.93) 28%, rgba(240,250,246,0.6) 48%, rgba(240,250,246,0.22) 68%, rgba(240,250,246,0.05) 100%),
+         url('/assets/images/lab-hero-bg.jpg');
+       background-size: cover;
+-      background-position: center right;
++      background-position: right top;
+       background-repeat: no-repeat;
++      overflow:hidden;
++    }
++    /* Decorative dot-grid accent, bottom-left corner of the hero */
++    .lp-hero-dots {
++      position:absolute; left:-10px; bottom:-10px; width:150px; height:120px;
++      background-image: radial-gradient(circle, #1D9E75 1.6px, transparent 1.6px);
++      background-size: 15px 15px;
++      opacity:0.28;
++      pointer-events:none;
++      z-index:0;
++      mask-image: linear-gradient(to top right, black 40%, transparent 90%);
++      -webkit-mask-image: linear-gradient(to top right, black 40%, transparent 90%);
+     }
+     @media (max-width:900px) {
+       .lp-hero { grid-template-columns:1fr; }
+@@ -81,7 +94,7 @@
+     @media (max-width:1100px) { .lp-cat-grid { grid-template-columns:repeat(3,1fr); } }
+     @media (max-width:600px)  { .lp-cat-grid { grid-template-columns:repeat(2,1fr); } }
+     .lp-cat-card { background:var(--card-bg); border:0.5px solid var(--border-color); border-radius:10px; padding:14px 10px; text-align:center; cursor:pointer; transition:border-color 0.15s; &:hover { border-color:#5DCAA5; } }
+-    .lp-cat-icon { width:38px; height:38px; background:#E1F5EE; border-radius:9px; display:flex; align-items:center; justify-content:center; margin:0 auto 9px; i { font-size:19px; color:#1D9E75; } }
++    .lp-cat-icon { width:44px; height:44px; background:#E1F5EE; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 9px; i { font-size:19px; color:#1D9E75; } }
+     .lp-cat-name { font-size:12px; font-weight:500; color:var(--text-primary); margin-bottom:3px; }
+     .lp-cat-desc { font-size:10px; color:var(--text-secondary); line-height:1.4; }
+ 
+diff --git a/src/app/features/lis-home/lis-landing.component.html b/src/app/features/lis-home/lis-landing.component.html
+index 126d419..cb0c9bf 100644
+--- a/src/app/features/lis-home/lis-landing.component.html
++++ b/src/app/features/lis-home/lis-landing.component.html
+@@ -60,6 +60,7 @@
+ 
+     <!-- Hero -->
+     <section class="lp-hero" id="hero" aria-label="Lab introduction">
++      <div class="lp-hero-dots" aria-hidden="true"></div>
+       <div class="lp-hero-left">
+         <div class="lp-eyebrow">
+           <i class="ti ti-certificate" aria-hidden="true"></i> NABL Accredited Laboratory
+-- 
+2.43.0
+

@@ -1,0 +1,41 @@
+From 7976b8ea9094c7c874d335a71f9f5144b9bd8789 Mon Sep 17 00:00:00 2001
+From: Claude <claude@anthropic.com>
+Date: Wed, 1 Jul 2026 05:22:42 +0000
+Subject: [PATCH 2/4] styles: fix broken comment block causing esbuild
+ css-syntax-error warning
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+A prior commit ('added new theme color') deleted the opening banner
+line of the '/* EXPANDED SIDEBAR — Clinical Depth Design */' comment
+but left its closing '*/' in place. Everything between the previous
+comment's real end and this stray '*/' (the ocean/sunset/violet
+focus-ring rules) was silently swallowed into a comment, and the
+dangling '*/' then read as a syntax error to esbuild/CSS parsers.
+
+Restored the missing opening banner line so the comment is
+well-formed again. No rule content changed — purely a comment-nesting
+fix. Verified: zero /* */ mismatches across styles.css and
+'ng build --configuration development' now produces no CSS warnings.
+---
+ src/styles.css | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/styles.css b/src/styles.css
+index 8c49778..2657da4 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -4485,7 +4485,8 @@
+ [data-palette="sunset"]  .field-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--lis-primary-xlight); }
+ [data-palette="violet"]  .field-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--lis-primary-xlight); }
+ 
+-
++/* ═══════════════════════════════════════════════════════════
++   EXPANDED SIDEBAR — Clinical Depth Design
+    ═══════════════════════════════════════════════════════════ */
+ 
+ /* ── Shell ── */
+-- 
+2.43.0
+

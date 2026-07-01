@@ -1,0 +1,195 @@
+From afb8b95f5fd6ab3996aec0f4c1609ae721378982 Mon Sep 17 00:00:00 2001
+From: Claude <claude@anthropic.com>
+Date: Wed, 1 Jul 2026 05:28:20 +0000
+Subject: [PATCH 3/4] landing: add real color coding + decorative hero
+ background (match reference)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Addresses visual gaps vs the reference design:
+
+- Test category cards, stat tiles, and why-choose cards were all
+  rendering in a single flat teal, whereas the reference uses a
+  distinct pastel color per item (blue/purple/orange/red/teal/amber).
+  Added bg/fg color fields to the component's data arrays and bound
+  them via [style.background]/[style.color] on the icon circles.
+- Stats band had no icons at all (design reference shows a colored
+  icon above each number) — added icon markup + per-stat color.
+- Hero-right was flat mint green with no imagery, unlike the
+  reference's blurred lab-photo background. Rather than pull in an
+  external photo (licensing/availability risk), added a self-contained
+  inline SVG decorative layer — blurred vial cluster + microscope
+  silhouette — positioned behind the login card via z-index. No
+  external asset dependency, nothing to break.
+
+No changes to styles.css or any other route — landing page component
+files only.
+---
+ .../lis-home/lis-landing.component.css        |  4 +-
+ .../lis-home/lis-landing.component.html       | 60 ++++++++++++++++++-
+ .../lis-home/lis-landing.component.ts         | 28 ++++-----
+ 3 files changed, 75 insertions(+), 17 deletions(-)
+
+diff --git a/src/app/features/lis-home/lis-landing.component.css b/src/app/features/lis-home/lis-landing.component.css
+index 869e402..93090a2 100644
+--- a/src/app/features/lis-home/lis-landing.component.css
++++ b/src/app/features/lis-home/lis-landing.component.css
+@@ -36,9 +36,10 @@
+     .lp-trust-item { display:flex; align-items:center; gap:6px; font-size:12px; color:#085041; i { font-size:14px; color:#1D9E75; } }
+     .lp-hero-btns { display:flex; gap:10px; flex-wrap:wrap; }
+     .lp-hero-right { display:flex; align-items:center; justify-content:center; background:#E1F5EE; padding:24px; position:relative; overflow:hidden; }
++    .lp-hero-bg { position:absolute; inset:0; width:100%; height:100%; z-index:0; }
+ 
+     /* Login card */
+-    .lp-login-card { background:var(--card-bg); border:0.5px solid #9FE1CB; border-radius:14px; padding:22px; width:100%; max-width:295px; box-shadow:0 4px 24px rgba(29,158,117,0.08); }
++    .lp-login-card { background:var(--card-bg); border:0.5px solid #9FE1CB; border-radius:14px; padding:22px; width:100%; max-width:295px; box-shadow:0 4px 24px rgba(29,158,117,0.08); position:relative; z-index:1; }
+     .lp-lc-head   { text-align:center; margin-bottom:18px; }
+     .lp-lc-icon   { width:42px; height:42px; background:#E1F5EE; border-radius:11px; display:flex; align-items:center; justify-content:center; margin:0 auto 9px; i { color:#1D9E75; font-size:21px; } }
+     .lp-lc-title  { font-size:14px; font-weight:500; color:var(--text-primary); }
+@@ -73,6 +74,7 @@
+     .lp-stats-band { background:#085041; padding:20px 28px; display:grid; grid-template-columns:repeat(4,1fr); gap:0; }
+     @media (max-width:700px) { .lp-stats-band { grid-template-columns:repeat(2,1fr); gap:12px; } }
+     .lp-stat { text-align:center; padding:0 14px; border-right:1px solid rgba(255,255,255,0.12); &:last-child { border-right:none; } }
++    .lp-stat-icon { font-size:20px; margin-bottom:6px; }
+     .lp-stat-val { font-size:20px; font-weight:500; color:#fff; }
+     .lp-stat-lbl { font-size:11px; color:#9FE1CB; margin-top:3px; }
+ 
+diff --git a/src/app/features/lis-home/lis-landing.component.html b/src/app/features/lis-home/lis-landing.component.html
+index df45201..3c540be 100644
+--- a/src/app/features/lis-home/lis-landing.component.html
++++ b/src/app/features/lis-home/lis-landing.component.html
+@@ -86,6 +86,61 @@
+ 
+       <!-- Login card -->
+       <div class="lp-hero-right">
++        <!-- Decorative "soft blurred medical laboratory" backdrop:
++             white bench + multi-colored sample tubes (center) + a
++             microscope silhouette (right). Heavy Gaussian blur and
++             low opacity keep it purely atmospheric so it never
++             competes with the login card in front of it. Built as an
++             inline SVG rather than a stock photo — no external asset,
++             nothing that can 404 or drift out of license. -->
++        <svg class="lp-hero-bg" viewBox="0 0 380 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
++          <defs>
++            <linearGradient id="lpBenchGrad" x1="0" y1="0" x2="0" y2="1">
++              <stop offset="0%"  stop-color="#FFFFFF" stop-opacity="0"/>
++              <stop offset="20%" stop-color="#FFFFFF" stop-opacity="0.9"/>
++              <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.95"/>
++            </linearGradient>
++            <linearGradient id="lpScopeGrad" x1="0" y1="0" x2="1" y2="1">
++              <stop offset="0%"  stop-color="#C4CCD8"/>
++              <stop offset="100%" stop-color="#8A93A3"/>
++            </linearGradient>
++            <filter id="lpBlurBench" x="-30%" y="-30%" width="160%" height="160%">
++              <feGaussianBlur stdDeviation="22"/>
++            </filter>
++            <filter id="lpBlurTubes" x="-50%" y="-50%" width="200%" height="200%">
++              <feGaussianBlur stdDeviation="10"/>
++            </filter>
++            <filter id="lpBlurScope" x="-50%" y="-50%" width="200%" height="200%">
++              <feGaussianBlur stdDeviation="13"/>
++            </filter>
++          </defs>
++
++          <!-- Clean white laboratory bench, blurred into the base -->
++          <rect x="-20" y="270" width="420" height="150" fill="url(#lpBenchGrad)" filter="url(#lpBlurBench)"/>
++
++          <!-- Test tubes with colored samples, center -->
++          <g filter="url(#lpBlurTubes)" opacity="0.55">
++            <rect x="130" y="150" width="16" height="130" rx="8" fill="#3DC9A8"/>
++            <rect x="158" y="120" width="16" height="160" rx="8" fill="#F5A623"/>
++            <rect x="186" y="165" width="16" height="115" rx="8" fill="#E8626B"/>
++            <rect x="214" y="135" width="16" height="145" rx="8" fill="#5B8DEF"/>
++            <rect x="242" y="155" width="16" height="125" rx="8" fill="#9B7FE8"/>
++            <circle cx="138" cy="140" r="10" fill="#0B7A5C"/>
++            <circle cx="166" cy="110" r="10" fill="#B5730E"/>
++            <circle cx="194" cy="155" r="10" fill="#A8323A"/>
++            <circle cx="222" cy="125" r="10" fill="#2E5FC9"/>
++            <circle cx="250" cy="145" r="10" fill="#6947C4"/>
++          </g>
++
++          <!-- Microscope silhouette, right side -->
++          <g filter="url(#lpBlurScope)" opacity="0.4">
++            <rect x="270" y="250" width="90" height="20" rx="8" fill="url(#lpScopeGrad)"/>
++            <rect x="300" y="150" width="20" height="105" rx="9" fill="url(#lpScopeGrad)"/>
++            <ellipse cx="310" cy="150" rx="34" ry="16" fill="url(#lpScopeGrad)"/>
++            <rect x="292" y="95" width="26" height="60" rx="12" fill="url(#lpScopeGrad)" transform="rotate(-18 305 125)"/>
++            <circle cx="288" cy="85" r="13" fill="url(#lpScopeGrad)"/>
++          </g>
++        </svg>
+         <div class="lp-login-card" id="login-card" role="region" aria-label="Operator login">
+           <div class="lp-lc-head">
+             <div class="lp-lc-icon" aria-hidden="true"><i class="ti ti-lock"></i></div>
+@@ -145,7 +200,7 @@
+       <div class="lp-cat-grid">
+         @for (cat of testCats; track cat.name) {
+           <div class="lp-cat-card">
+-            <div class="lp-cat-icon" aria-hidden="true"><i [class]="'ti ti-' + cat.icon"></i></div>
++            <div class="lp-cat-icon" [style.background]="cat.bg" aria-hidden="true"><i [class]="'ti ti-' + cat.icon" [style.color]="cat.fg"></i></div>
+             <div class="lp-cat-name">{{ cat.name }}</div>
+             <div class="lp-cat-desc">{{ cat.desc }}</div>
+           </div>
+@@ -157,6 +212,7 @@
+     <div class="lp-stats-band" role="region" aria-label="Lab statistics">
+       @for (s of stats; track s.label) {
+         <div class="lp-stat">
++          <div class="lp-stat-icon" [style.color]="s.fg" aria-hidden="true"><i [class]="'ti ti-' + s.icon"></i></div>
+           <div class="lp-stat-val">{{ s.value }}</div>
+           <div class="lp-stat-lbl">{{ s.label }}</div>
+         </div>
+@@ -170,7 +226,7 @@
+       <div class="lp-why-grid">
+         @for (w of whyCards; track w.title) {
+           <div class="lp-why-card">
+-            <div class="lp-why-icon" aria-hidden="true"><i [class]="'ti ti-' + w.icon"></i></div>
++            <div class="lp-why-icon" [style.background]="w.bg" aria-hidden="true"><i [class]="'ti ti-' + w.icon" [style.color]="w.fg"></i></div>
+             <div class="lp-why-title">{{ w.title }}</div>
+             <div class="lp-why-desc">{{ w.desc }}</div>
+           </div>
+diff --git a/src/app/features/lis-home/lis-landing.component.ts b/src/app/features/lis-home/lis-landing.component.ts
+index 05be870..72c3b09 100644
+--- a/src/app/features/lis-home/lis-landing.component.ts
++++ b/src/app/features/lis-home/lis-landing.component.ts
+@@ -26,24 +26,24 @@ export class LisLandingComponent {
+   protected readonly isDark = computed(() => this.themeService.theme() === 'dark');
+ 
+   protected readonly testCats = [
+-    { name:'Blood tests',    icon:'droplet',           desc:'CBC, Sugar, Lipid profile & more' },
+-    { name:'Thyroid tests',  icon:'activity',          desc:'T3, T4, TSH & advanced panels' },
+-    { name:'Liver function', icon:'heart-rate-monitor',desc:'LFT, liver enzymes & more' },
+-    { name:'Diabetes tests', icon:'needle',            desc:'FBS, PPBS, HbA1c & more' },
+-    { name:'Kidney function',icon:'lungs',             desc:'KFT, Creatinine, Urea & more' },
+-    { name:'Vitamin tests',  icon:'pill',              desc:'Vitamin D, B12 & more' },
++    { name:'Blood tests',    icon:'droplet',           desc:'CBC, Sugar, Lipid profile & more',       bg:'#DCEAFE', fg:'#3B82F6' },
++    { name:'Thyroid tests',  icon:'activity',          desc:'T3, T4, TSH & advanced panels',          bg:'#F1E4FB', fg:'#8B5CF6' },
++    { name:'Liver function', icon:'heart-rate-monitor',desc:'LFT, liver enzymes & more',              bg:'#FDECD5', fg:'#F59E0B' },
++    { name:'Diabetes tests', icon:'needle',            desc:'FBS, PPBS, HbA1c & more',                bg:'#FCE1E4', fg:'#EF4444' },
++    { name:'Kidney function',icon:'lungs',             desc:'KFT, Creatinine, Urea & more',           bg:'#D8F2E8', fg:'#14B8A6' },
++    { name:'Vitamin tests',  icon:'pill',              desc:'Vitamin D, B12 & more',                  bg:'#FDF1D6', fg:'#F0B429' },
+   ];
+   protected readonly stats = [
+-    { value:'10,000+',   label:'Happy patients' },
+-    { value:'1,50,000+', label:'Tests conducted' },
+-    { value:'98.6%',     label:'Accurate results' },
+-    { value:'24–48 hrs', label:'Report delivery' },
++    { value:'10,000+',   label:'Happy patients',   icon:'users',        fg:'#1D9E75' },
++    { value:'1,50,000+', label:'Tests conducted',  icon:'flask',        fg:'#3B82F6' },
++    { value:'98.6%',     label:'Accurate results', icon:'target-arrow', fg:'#8B5CF6' },
++    { value:'24–48 hrs', label:'Report delivery',  icon:'clock',        fg:'#F59E0B' },
+   ];
+   protected readonly whyCards = [
+-    { icon:'certificate',  title:'Certified lab',         desc:'NABL certified laboratory with the highest quality standards and accreditation.' },
+-    { icon:'cpu',          title:'Advanced technology',   desc:'State-of-the-art diagnostic equipment for precise, reliable results every time.' },
+-    { icon:'stethoscope',  title:'Expert professionals',  desc:'Experienced pathologists and lab technicians overseeing every test.' },
+-    { icon:'headset',      title:'Patient support',       desc:'We are here to help you at every step — from booking to report collection.' },
++    { icon:'certificate',  title:'Certified lab',         desc:'NABL certified laboratory with the highest quality standards and accreditation.', bg:'#D8F2E8', fg:'#1D9E75' },
++    { icon:'cpu',          title:'Advanced technology',   desc:'State-of-the-art diagnostic equipment for precise, reliable results every time.', bg:'#E0E7FF', fg:'#6366F1' },
++    { icon:'stethoscope',  title:'Expert professionals',  desc:'Experienced pathologists and lab technicians overseeing every test.',              bg:'#FDECD5', fg:'#F59E0B' },
++    { icon:'headset',      title:'Patient support',       desc:'We are here to help you at every step — from booking to report collection.',       bg:'#FCE1E4', fg:'#F43F5E' },
+   ];
+ 
+   constructor(
+-- 
+2.43.0
+

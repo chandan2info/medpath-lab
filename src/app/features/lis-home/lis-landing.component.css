@@ -10,25 +10,51 @@
     .lp-link { padding:0 14px; font-size:13px; color:var(--text-secondary); cursor:pointer; height:56px; display:flex; align-items:center; border-bottom:2px solid transparent; text-decoration:none; }
     .lp-link--active { color:#1D9E75; border-bottom-color:#1D9E75; font-weight:500; }
     .lp-link:hover { color:var(--text-primary); }
-    .lp-nav-cta { display:flex; align-items:center; gap:8px; }
-    .lp-btn-outline { padding:6px 14px; border:1.5px solid #1D9E75; border-radius:8px; font-size:12px; color:#1D9E75; cursor:pointer; background:transparent; font-weight:500; font-family:inherit; }
+    .lp-nav-right { display:flex; align-items:center; gap:10px; margin-left:auto; }
+    .lp-nav-cta { display:flex; align-items:center; gap:8px; i { font-size:13px; } }
+    .lp-btn-outline { padding:6px 14px; border:1.5px solid #1D9E75; border-radius:8px; font-size:12px; color:#1D9E75; cursor:pointer; background:transparent; font-weight:500; display:inline-flex; align-items:center; gap:5px; font-family:inherit; }
     .lp-btn-solid  { padding:6px 14px; border:1.5px solid #1D9E75; border-radius:8px; font-size:12px; color:#fff; cursor:pointer; background:#1D9E75; font-weight:500; display:inline-flex; align-items:center; gap:5px; font-family:inherit; i { font-size:13px; } }
+    .lp-theme-toggle {
+      display:flex; align-items:center; justify-content:center;
+      width:32px; height:32px; border-radius:8px;
+      border:1px solid var(--border-color); background:var(--card-bg);
+      color:var(--text-secondary); cursor:pointer; flex-shrink:0;
+      transition:border-color 0.15s, color 0.15s;
+      i { font-size:15px; }
+      &:hover { border-color:#1D9E75; color:#1D9E75; }
+    }
     .lp-btn-ghost  { padding:8px 18px; background:transparent; color:#085041; border:1.5px solid #5DCAA5; border-radius:9px; font-size:13px; font-weight:500; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-family:inherit; i { font-size:14px; } }
 
-    /* Hero */
-    .lp-hero { display:grid; grid-template-columns:1fr 380px; min-height:320px; background:#F0FAF6; }
-    @media (max-width:900px) { .lp-hero { grid-template-columns:1fr; } }
-    .lp-hero-left { padding:36px 32px 32px; display:flex; flex-direction:column; justify-content:center; }
+    /* Hero — full-width blurred laboratory photo behind everything,
+       tinted with the brand mint so it reads as one cohesive band
+       rather than a stock photo pasted on top. Overlay is densest
+       over the text (left) for readability and eases off toward the
+       login card (right), where the photo's own subject — tubes and
+       microscope — sits closest to the card. */
+    .lp-hero {
+      position:relative; display:grid; grid-template-columns:1fr 380px; min-height:320px;
+      background-image:
+        linear-gradient(90deg, rgba(240,250,246,0.96) 0%, rgba(240,250,246,0.88) 32%, rgba(240,250,246,0.55) 58%, rgba(240,250,246,0.22) 100%),
+        url('/assets/images/lab-hero-bg.jpg');
+      background-size: cover;
+      background-position: center right;
+      background-repeat: no-repeat;
+    }
+    @media (max-width:900px) {
+      .lp-hero { grid-template-columns:1fr; }
+      .lp-hero { background-image: linear-gradient(rgba(240,250,246,0.93), rgba(240,250,246,0.93)), url('/assets/images/lab-hero-bg.jpg'); }
+    }
+    .lp-hero-left { padding:36px 32px 32px; display:flex; flex-direction:column; justify-content:center; position:relative; z-index:1; }
     .lp-eyebrow { display:inline-flex; align-items:center; gap:6px; font-size:11px; color:#085041; font-weight:500; background:#D8F2E8; padding:4px 10px; border-radius:20px; margin-bottom:12px; width:fit-content; i { font-size:12px; } }
     .lp-h1  { font-size:28px; font-weight:500; color:#04342C; line-height:1.25; margin:0 0 10px; }
     .lp-sub { font-size:13px; color:#0F6E56; line-height:1.6; margin:0 0 18px; max-width:360px; }
     .lp-trust { display:flex; gap:18px; margin-bottom:22px; flex-wrap:wrap; }
     .lp-trust-item { display:flex; align-items:center; gap:6px; font-size:12px; color:#085041; i { font-size:14px; color:#1D9E75; } }
     .lp-hero-btns { display:flex; gap:10px; flex-wrap:wrap; }
-    .lp-hero-right { display:flex; align-items:center; justify-content:center; background:#E1F5EE; padding:24px; position:relative; overflow:hidden; }
+    .lp-hero-right { display:flex; align-items:center; justify-content:center; padding:24px; position:relative; z-index:1; }
 
     /* Login card */
-    .lp-login-card { background:var(--card-bg); border:0.5px solid #9FE1CB; border-radius:14px; padding:22px; width:100%; max-width:295px; box-shadow:0 4px 24px rgba(29,158,117,0.08); }
+    .lp-login-card { background:var(--card-bg); border:0.5px solid #9FE1CB; border-radius:14px; padding:22px; width:100%; max-width:295px; box-shadow:0 4px 24px rgba(29,158,117,0.08); position:relative; z-index:1; }
     .lp-lc-head   { text-align:center; margin-bottom:18px; }
     .lp-lc-icon   { width:42px; height:42px; background:#E1F5EE; border-radius:11px; display:flex; align-items:center; justify-content:center; margin:0 auto 9px; i { color:#1D9E75; font-size:21px; } }
     .lp-lc-title  { font-size:14px; font-weight:500; color:var(--text-primary); }
@@ -63,6 +89,7 @@
     .lp-stats-band { background:#085041; padding:20px 28px; display:grid; grid-template-columns:repeat(4,1fr); gap:0; }
     @media (max-width:700px) { .lp-stats-band { grid-template-columns:repeat(2,1fr); gap:12px; } }
     .lp-stat { text-align:center; padding:0 14px; border-right:1px solid rgba(255,255,255,0.12); &:last-child { border-right:none; } }
+    .lp-stat-icon { font-size:20px; margin-bottom:6px; }
     .lp-stat-val { font-size:20px; font-weight:500; color:#fff; }
     .lp-stat-lbl { font-size:11px; color:#9FE1CB; margin-top:3px; }
 
@@ -97,7 +124,7 @@
     .lp-footer-bottom { border-top:1px solid rgba(255,255,255,0.08); padding-top:12px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:11px; color:#5DCAA5; }
     .lp-footer-policy { display:flex; gap:14px; a { font-size:11px; color:#5DCAA5; text-decoration:none; &:hover { color:#fff; } } }
     /* Mobile hamburger & drawer */
-    .lp-hamburger { display:none; background:none; border:none; font-size:20px; color:var(--text-primary); cursor:pointer; padding:6px; margin-left:auto; }
+    .lp-hamburger { display:none; background:none; border:none; font-size:20px; color:var(--text-primary); cursor:pointer; padding:6px; }
     @media (max-width:768px) {
       .lp-nav-links, .lp-nav-cta { display:none; }
       .lp-hamburger { display:flex; align-items:center; }
@@ -109,6 +136,12 @@
       box-shadow:0 8px 24px rgba(0,0,0,0.12);
     }
     .lp-mob-link { padding:13px 0; font-size:14px; color:var(--text-primary); text-decoration:none; border-bottom:0.5px solid var(--border-color); }
+    .lp-mob-theme {
+      display:flex; align-items:center; gap:8px; width:100%;
+      background:none; border:none; border-bottom:0.5px solid var(--border-color);
+      cursor:pointer; font-family:inherit; text-align:left;
+      i { font-size:16px; color:#1D9E75; }
+    }
     .lp-mob-cta  { margin-top:14px; justify-content:center; width:100%; }
 
     /* Welcome band mobile fix */

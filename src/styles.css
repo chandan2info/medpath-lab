@@ -4485,7 +4485,8 @@
 [data-palette="sunset"]  .field-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--lis-primary-xlight); }
 [data-palette="violet"]  .field-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--lis-primary-xlight); }
 
-
+/* ═══════════════════════════════════════════════════════════
+   EXPANDED SIDEBAR — Clinical Depth Design
    ═══════════════════════════════════════════════════════════ */
 
 /* ── Shell ── */

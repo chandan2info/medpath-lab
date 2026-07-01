@@ -15,20 +15,29 @@
         <a class="lp-link" href="#login-card" role="listitem">Reports</a>
         <a class="lp-link" href="#footer" role="listitem">Contact us</a>
       </div>
-      <div class="lp-nav-cta">
-        <button class="lp-btn-outline" type="button">View reports</button>
-        <button class="lp-btn-solid" type="button" (click)="scrollToLogin()">
-          <i class="ti ti-calendar" aria-hidden="true"></i> Book a test
+      <div class="lp-nav-right">
+        <div class="lp-nav-cta">
+          <button class="lp-btn-outline" type="button" (click)="scrollToLogin()">
+            <i class="ti ti-calendar" aria-hidden="true"></i> Book a test
+          </button>
+        </div>
+        <!-- Theme toggle — applies light/dark across the whole app -->
+        <button class="lp-theme-toggle" type="button"
+          (click)="toggleTheme()"
+          [attr.aria-label]="isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+          [attr.aria-pressed]="isDark()"
+          title="Toggle light / dark theme">
+          <i [class]="isDark() ? 'ti ti-sun' : 'ti ti-moon'" aria-hidden="true"></i>
+        </button>
+        <!-- Mobile hamburger -->
+        <button class="lp-hamburger" type="button"
+          (click)="mobileMenuOpen.set(!mobileMenuOpen())"
+          [attr.aria-expanded]="mobileMenuOpen()"
+          aria-label="Toggle navigation menu"
+          aria-controls="lp-mobile-menu">
+          <i [class]="mobileMenuOpen() ? 'ti ti-x' : 'ti ti-menu-2'" aria-hidden="true"></i>
         </button>
       </div>
-      <!-- Mobile hamburger -->
-      <button class="lp-hamburger" type="button"
-        (click)="mobileMenuOpen.set(!mobileMenuOpen())"
-        [attr.aria-expanded]="mobileMenuOpen()"
-        aria-label="Toggle navigation menu"
-        aria-controls="lp-mobile-menu">
-        <i [class]="mobileMenuOpen() ? 'ti ti-x' : 'ti ti-menu-2'" aria-hidden="true"></i>
-      </button>
     </nav>
     <!-- Mobile drawer -->
     @if (mobileMenuOpen()) {
@@ -39,6 +48,10 @@
         <a class="lp-mob-link" href="#" (click)="mobileMenuOpen.set(false)">Our process</a>
         <a class="lp-mob-link" href="#" (click)="mobileMenuOpen.set(false)">Reports</a>
         <a class="lp-mob-link" href="#" (click)="mobileMenuOpen.set(false)">Contact us</a>
+        <button class="lp-mob-link lp-mob-theme" type="button" (click)="toggleTheme()">
+          <i [class]="isDark() ? 'ti ti-sun' : 'ti ti-moon'" aria-hidden="true"></i>
+          {{ isDark() ? 'Switch to light mode' : 'Switch to dark mode' }}
+        </button>
         <button class="lp-btn-solid lp-mob-cta" type="button" (click)="scrollToLogin(); mobileMenuOpen.set(false)">
           <i class="ti ti-calendar" aria-hidden="true"></i> Book a test
         </button>
@@ -132,7 +145,7 @@
       <div class="lp-cat-grid">
         @for (cat of testCats; track cat.name) {
           <div class="lp-cat-card">
-            <div class="lp-cat-icon" aria-hidden="true"><i [class]="'ti ti-' + cat.icon"></i></div>
+            <div class="lp-cat-icon" [style.background]="cat.bg" aria-hidden="true"><i [class]="'ti ti-' + cat.icon" [style.color]="cat.fg"></i></div>
             <div class="lp-cat-name">{{ cat.name }}</div>
             <div class="lp-cat-desc">{{ cat.desc }}</div>
           </div>
@@ -144,6 +157,7 @@
     <div class="lp-stats-band" role="region" aria-label="Lab statistics">
       @for (s of stats; track s.label) {
         <div class="lp-stat">
+          <div class="lp-stat-icon" [style.color]="s.fg" aria-hidden="true"><i [class]="'ti ti-' + s.icon"></i></div>
           <div class="lp-stat-val">{{ s.value }}</div>
           <div class="lp-stat-lbl">{{ s.label }}</div>
         </div>
@@ -157,7 +171,7 @@
       <div class="lp-why-grid">
         @for (w of whyCards; track w.title) {
           <div class="lp-why-card">
-            <div class="lp-why-icon" aria-hidden="true"><i [class]="'ti ti-' + w.icon"></i></div>
+            <div class="lp-why-icon" [style.background]="w.bg" aria-hidden="true"><i [class]="'ti ti-' + w.icon" [style.color]="w.fg"></i></div>
             <div class="lp-why-title">{{ w.title }}</div>
             <div class="lp-why-desc">{{ w.desc }}</div>
           </div>
