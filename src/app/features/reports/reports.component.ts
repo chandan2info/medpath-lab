@@ -1,4 +1,4 @@
-import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgClass } from '@angular/common';
 
@@ -38,5 +38,19 @@ export class ReportsComponent {
   protected readonly reports  = REPORTS;
   protected readonly kftRows  = KFT_ROWS;
   selected = signal<ReportRow | null>(REPORTS[0]);
+  query = signal('');
+
+  filteredReports = computed(() => {
+    const q = this.query().trim().toLowerCase();
+    if (!q) return this.reports;
+    return this.reports.filter(r =>
+      r.patientName.toLowerCase().includes(q) ||
+      r.test.toLowerCase().includes(q) ||
+      r.id.toLowerCase().includes(q)
+    );
+  });
+
+  pendingCount = computed(() => this.reports.filter(r => r.status === 'pending').length);
+
   initials(name: string) { return name.split(' ').map(w => w[0]).join('').slice(0,2); }
 }

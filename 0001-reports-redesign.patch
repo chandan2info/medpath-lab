@@ -1,0 +1,773 @@
+From 6ee8377fa69735650a8f844b2d666064ef245494 Mon Sep 17 00:00:00 2001
+From: UX Redesign <design@medpath.local>
+Date: Wed, 1 Jul 2026 04:50:11 +0000
+Subject: [PATCH] Redesign Reports page to match approved reference mockup
+
+---
+ .../features/reports/reports.component.css    | 207 +++++++---
+ .../features/reports/reports.component.html   | 369 ++++++++++--------
+ src/app/features/reports/reports.component.ts |  16 +-
+ 3 files changed, 384 insertions(+), 208 deletions(-)
+
+diff --git a/src/app/features/reports/reports.component.css b/src/app/features/reports/reports.component.css
+index ae994f6..1879747 100644
+--- a/src/app/features/reports/reports.component.css
++++ b/src/app/features/reports/reports.component.css
+@@ -1,6 +1,10 @@
+ :host { display: block; }
+ 
+-/* ── Page header ─────────────────────────────── */
++/* ── Page header ─────────────────────────────────────────
++   Action buttons live in the header row (next to the title)
++   rather than a separate toolbar strip above the sheet — this
++   matches how the rest of the app pairs page title + primary
++   actions on one line, and saves a full row of vertical space. */
+ .page-header {
+   display: flex;
+   align-items: flex-start;
+@@ -15,6 +19,9 @@
+ .breadcrumb a:hover { color: var(--lis-primary); }
+ .breadcrumb li + li::before { content: '/'; margin-right: 6px; }
+ 
++.page-header-actions { padding-top: 4px; }
++.preview-actions { display: flex; gap: 8px; flex-wrap: wrap; }
++
+ /* ── Layout ──────────────────────────────────────────────
+    Grid sizing: the list column is wide enough that name +
+    meta + status pill never collide. minmax(0, 1fr) on the
+@@ -33,14 +40,54 @@
+   .reports-layout { grid-template-columns: 1fr; }
+ }
+ 
+-/* ── Report list ───────────────────────────────
+-   Card itself supplies header padding; the row list needs its
+-   own small vertical inset so the first/last row isn't flush
+-   against the card's rounded corners. ── */
++/* ── Report list card ──────────────────────────────────── */
+ .report-list { display: flex; flex-direction: column; }
+-.report-list > [role="list"] {
+-  padding: 6px 0;
+-  max-height: calc(100vh - 220px);
++.lis-card__header { position: relative; }
++.report-filter-btn {
++  margin-left: auto;
++  width: 28px;
++  height: 28px;
++  border: 0.5px solid var(--border-color);
++  border-radius: 7px;
++  background: transparent;
++  color: var(--text-secondary);
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  cursor: pointer;
++  flex-shrink: 0;
++  transition: background 0.14s ease, color 0.14s ease;
++}
++.report-filter-btn:hover { background: var(--body-bg); color: var(--text-primary); }
++.report-filter-btn i { font-size: 15px; }
++
++/* Search box — sits between the card header and the row list,
++   own bottom border so it reads as a distinct control strip. */
++.report-search {
++  display: flex;
++  align-items: center;
++  gap: 8px;
++  padding: 10px 16px;
++  border-bottom: 0.5px solid var(--border-color);
++  flex-shrink: 0;
++}
++.report-search i { font-size: 15px; color: var(--text-subtle, var(--text-secondary)); flex-shrink: 0; }
++.report-search input {
++  flex: 1;
++  border: none;
++  background: none;
++  font-size: 12.5px;
++  color: var(--text-primary);
++  outline: none;
++  min-width: 0;
++  font-family: inherit;
++}
++.report-search input::placeholder { color: var(--text-secondary); }
++
++.report-rows {
++  padding: 4px 0;
++  max-height: calc(100vh - 360px);
++  min-height: 200px;
+   overflow-y: auto;
+ }
+ 
+@@ -48,7 +95,7 @@
+   display: flex;
+   align-items: center;
+   gap: 12px;
+-  padding: 11px 18px;
++  padding: 11px 16px;
+   border-bottom: 0.5px solid var(--border-color);
+   cursor: pointer;
+   transition: background 0.12s ease;
+@@ -91,20 +138,48 @@
+   margin: 1px 0;
+ }
+ .report-row .lis-mono { font-size: 10px; }
+-
+-/* Status pill never wraps or shrinks oddly */
+ .report-row > div:last-child { flex-shrink: 0; }
+ 
+-/* ── Preview area ──────────────────────────────
+-   The toolbar and the sheet are a deliberate flex column with
+-   consistent gap — matches the rhythm of the list card so the
+-   two columns feel like one composition, not two unrelated
+-   blocks side by side. ── */
++/* Pagination footer */
++.report-pagination {
++  display: flex;
++  align-items: center;
++  justify-content: space-between;
++  gap: 10px;
++  flex-wrap: wrap;
++  padding: 12px 16px;
++  border-top: 0.5px solid var(--border-color);
++  font-size: 11px;
++  color: var(--text-secondary);
++}
++.report-pagination-controls { display: flex; align-items: center; gap: 4px; }
++.page-btn {
++  width: 26px;
++  height: 26px;
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  border: 0.5px solid var(--border-color);
++  border-radius: 6px;
++  background: transparent;
++  color: var(--text-secondary);
++  font-size: 11px;
++  cursor: pointer;
++  transition: background 0.12s ease;
++}
++.page-btn:disabled { opacity: 0.4; cursor: default; }
++.page-btn:not(:disabled):hover { background: var(--body-bg); }
++.page-btn--active {
++  background: var(--lis-primary);
++  border-color: var(--lis-primary);
++  color: #fff;
++  font-weight: 600;
++}
++
++/* ── Preview area ──────────────────────────────────────── */
+ .report-preview-area { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+-.preview-toolbar { display: flex; justify-content: flex-end; }
+-.preview-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+ 
+-/* ── Empty state (no report selected) ─────────── */
++/* ── Empty state ───────────────────────────────────────── */
+ .preview-empty {
+   display: flex;
+   flex-direction: column;
+@@ -122,11 +197,9 @@
+ .preview-empty i { font-size: 32px; opacity: 0.4; }
+ .preview-empty p { margin: 0; font-size: 13px; }
+ 
+-/* ── Report sheet (print-ready) ────────────────
++/* ── Report sheet (print-ready) ───────────────────────────
+    Subtle elevation lifts the document off the page so it
+-   reads as a discrete artifact, especially important in dark
+-   mode where the flat-bordered version blended into the page
+-   background with almost no separation. ── */
++   reads as a discrete artifact in both themes. ── */
+ .report-sheet {
+   background: var(--card-bg);
+   border: 0.5px solid var(--border-color);
+@@ -136,12 +209,10 @@
+ }
+ @media print {
+   .report-sheet { border: none; border-radius: 0; box-shadow: none; }
+-  .preview-toolbar { display: none; }
++  .page-header-actions { display: none; }
+ }
+ 
+-/* Header band — brand teal, theme-aware via --rpt-* tokens so
+-   it stays legible (not washed-out white-on-near-white) in
+-   dark mode while keeping its "branded document" identity. */
++/* Header band — brand teal, theme-aware via --rpt-* tokens. */
+ .rpt-header {
+   background: var(--rpt-band-bg);
+   padding: 16px 20px;
+@@ -179,24 +250,38 @@
+ }
+ .rpt-nabl i { font-size: 10px; }
+ 
+-/* Patient band — fixed 3-col grid reads fine down to ~560px;
+-   below that it wraps to 2 then 1 column so labels never
+-   collide with values. */
++/* Patient band — icon-prefixed 2-column field grid. Six
++   fields fit two even columns of three rows; this stays
++   legible without ever crowding values against labels the
++   way a 3-up grid can on a narrower preview area. */
+ .rpt-pat-band {
+   background: var(--rpt-tint-bg);
+-  padding: 14px 20px;
++  padding: 16px 20px;
+   display: grid;
+   grid-template-columns: repeat(3, 1fr);
+-  gap: 12px 16px;
++  gap: 14px 16px;
+   border-bottom: 2px solid var(--rpt-tint-border);
+ }
+-@media (max-width: 640px) {
++@media (max-width: 720px) {
+   .rpt-pat-band { grid-template-columns: repeat(2, 1fr); }
+ }
+ @media (max-width: 420px) {
+   .rpt-pat-band { grid-template-columns: 1fr; }
+ }
+-.rpt-pf { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
++.rpt-pf { display: flex; align-items: flex-start; gap: 9px; min-width: 0; }
++.rpt-pf-icon {
++  width: 26px;
++  height: 26px;
++  border-radius: 7px;
++  background: var(--lis-primary-xlight);
++  color: var(--lis-primary-deep);
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  font-size: 13px;
++  flex-shrink: 0;
++  margin-top: 1px;
++}
+ .rpt-pl {
+   font-size: 10.5px;
+   color: var(--rpt-tint-label);
+@@ -211,6 +296,7 @@
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
++  margin-top: 1px;
+ }
+ .rpt-pv--mono { font-family: var(--font-mono, monospace); }
+ 
+@@ -235,10 +321,7 @@
+ .rpt-title-text i { font-size: 12px; }
+ .rpt-sid-chip { font-size: 11px; color: var(--rpt-band-text-sub); }
+ 
+-/* Body — consistent 20px horizontal inset matches the bands
+-   above and below it, so the whole sheet reads as one
+-   continuous column of content rather than each section
+-   defining its own padding independently. */
++/* Body */
+ .rpt-body { padding: 18px 20px 20px; }
+ 
+ .rpt-note {
+@@ -249,7 +332,12 @@
+   margin-bottom: 20px;
+   font-size: 11.5px;
+   color: var(--rpt-note-text);
+-  line-height: 1.55;
++  line-height: 1.6;
++}
++.rpt-note-sep {
++  display: block;
++  margin-top: 3px;
++  opacity: 0.85;
+ }
+ 
+ .rpt-grp-title {
+@@ -295,37 +383,60 @@
+ .rpt-flag-critical { color: var(--rpt-flag-danger); font-weight: 600; }
+ .rpt-ref { font-size: 11px; color: var(--rpt-ref-text); }
+ 
+-/* Footer */
++/* Footer — QR/verify block on the left, signature block on
++   the right. The signature is a hand-drawn SVG squiggle plus
++   a small verify-shield badge, matching a "signed and
++   authenticated" document convention. */
+ .rpt-footer {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+-  gap: 16px;
++  gap: 20px;
+   flex-wrap: wrap;
+   background: var(--rpt-tint-bg);
+-  padding: 14px 20px;
++  padding: 16px 20px;
+   border-top: 2px solid var(--rpt-tint-border);
+ }
+ .rpt-qr-area { display: flex; align-items: center; gap: 10px; }
+ .rpt-qr {
+-  width: 42px;
+-  height: 42px;
++  width: 44px;
++  height: 44px;
+   background: var(--lis-primary-xlight);
+-  border-radius: 6px;
++  border-radius: 8px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   flex-shrink: 0;
+ }
+-.rpt-qr i { font-size: 22px; color: var(--lis-primary); }
++.rpt-qr i { font-size: 24px; color: var(--lis-primary); }
+ .rpt-qr-text { font-size: 11px; color: var(--rpt-tint-label); line-height: 1.5; }
++.rpt-qr-title { display: block; font-weight: 600; color: var(--text-primary); font-size: 11.5px; margin-bottom: 1px; }
+ .rpt-mono-url { font-family: var(--font-mono, monospace); font-size: 11px; }
+ 
+-.rpt-sign { text-align: right; }
++.rpt-sign { display: flex; align-items: center; gap: 14px; }
++.rpt-sign-meta { text-align: right; }
+ .rpt-sign-pre  { font-size: 11px; color: var(--rpt-tint-label); margin-bottom: 3px; }
+ .rpt-sign-name { font-size: 12.5px; font-weight: 600; color: var(--rpt-tint-strong); }
+ .rpt-sign-role { font-size: 11px; color: var(--rpt-tint-label); }
+-.rpt-sign-reg  { font-size: 11px; color: var(--rpt-tint-label); margin-top: 2px; }
++.rpt-signature {
++  width: 72px;
++  height: 30px;
++  flex-shrink: 0;
++}
++.rpt-signature path { stroke: var(--rpt-tint-strong); }
++.rpt-verify-badge {
++  width: 30px;
++  height: 30px;
++  border-radius: 50%;
++  background: var(--lis-primary);
++  color: #fff;
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  font-size: 16px;
++  flex-shrink: 0;
++  box-shadow: 0 2px 8px rgba(61,201,168,0.35);
++}
+ 
+ /* Empty list state */
+ .reports-empty {
+diff --git a/src/app/features/reports/reports.component.html b/src/app/features/reports/reports.component.html
+index b52037d..da50806 100644
+--- a/src/app/features/reports/reports.component.html
++++ b/src/app/features/reports/reports.component.html
+@@ -1,178 +1,229 @@
+ <div class="page-header">
+-      <div>
+-        <h1 class="page-title">Reports</h1>
+-        <nav aria-label="Breadcrumb"><ol class="breadcrumb">
+-          <li><a routerLink="/dashboard/home">Home</a></li>
+-          <li aria-current="page">Reports</li>
+-        </ol></nav>
+-      </div>
++  <div>
++    <h1 class="page-title">Reports</h1>
++    <nav aria-label="Breadcrumb"><ol class="breadcrumb">
++      <li><a routerLink="/dashboard/home">Home</a></li>
++      <li aria-current="page">Reports</li>
++    </ol></nav>
++  </div>
++  @if (selected()) {
++    <div class="preview-actions page-header-actions">
++      <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm">
++        <i class="ti ti-download" aria-hidden="true"></i> Download PDF
++      </button>
++      <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm">
++        <i class="ti ti-send" aria-hidden="true"></i> Send to patient
++      </button>
++      <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm">
++        <i class="ti ti-brand-whatsapp" aria-hidden="true"></i> WhatsApp
++      </button>
++      <button type="button" class="lis-btn lis-btn--primary lis-btn--sm">
++        <i class="ti ti-printer" aria-hidden="true"></i> Print
++      </button>
++    </div>
++  }
++</div>
++
++<div class="reports-layout">
++  <!-- Report list -->
++  <div class="lis-card report-list">
++    <div class="lis-card__header">
++      <i class="ti ti-file-text lis-card-icon" aria-hidden="true"></i>
++      <h2 class="lis-card__title">All reports</h2>
++      <span class="lis-badge lis-badge--danger">{{ pendingCount() }} pending</span>
++      <button type="button" class="report-filter-btn" aria-label="Filter reports">
++        <i class="ti ti-adjustments-horizontal" aria-hidden="true"></i>
++      </button>
+     </div>
+ 
+-    <div class="reports-layout">
+-      <!-- Report list -->
+-      <div class="lis-card report-list">
+-        <div class="lis-card__header">
+-          <i class="ti ti-file-text lis-card-icon" aria-hidden="true"></i>
+-          <h2 class="lis-card__title">All reports</h2>
+-          <span class="lis-badge lis-badge--danger">5 pending</span>
++    <div class="report-search">
++      <i class="ti ti-search" aria-hidden="true"></i>
++      <input
++        type="search"
++        placeholder="Search reports…"
++        autocomplete="off"
++        [value]="query()"
++        (input)="query.set($any($event.target).value)"
++        aria-label="Search reports"
++      />
++    </div>
++
++    <div role="list" aria-label="Report list" class="report-rows">
++      @if (filteredReports().length === 0) {
++        <div class="reports-empty" role="status">
++          <i class="ti ti-file-off" aria-hidden="true"></i>
++          <span>No reports found.</span>
+         </div>
+-        <div role="list" aria-label="Report list">
+-          @if (reports.length === 0) {
+-            <div class="reports-empty" role="status">
+-              <i class="ti ti-file-off" aria-hidden="true"></i>
+-              <span>No reports found.</span>
+-            </div>
+-          }
+-          @for (r of reports; track r.id) {
+-            <div class="report-row" role="listitem"
+-              [class.report-row--selected]="selected()?.id === r.id"
+-              (click)="selected.set(r)"
+-              [attr.aria-selected]="selected()?.id === r.id"
+-            >
+-              <div class="rr-av" aria-hidden="true">{{ initials(r.patientName) }}</div>
+-              <div class="rr-info">
+-                <div class="rr-name">{{ r.patientName }}</div>
+-                <div class="rr-meta">{{ r.test }} · {{ r.date }}</div>
+-                <div class="lis-mono">{{ r.id }}</div>
+-              </div>
+-              <div>
+-                @if (r.status === 'pending') {
+-                  <span class="lis-pill lis-pill--pending">Pending</span>
+-                } @else {
+-                  <span class="lis-pill lis-pill--ready">Dispatched</span>
+-                }
+-              </div>
+-            </div>
+-          }
++      }
++      @for (r of filteredReports(); track r.id) {
++        <div class="report-row" role="listitem"
++          [class.report-row--selected]="selected()?.id === r.id"
++          (click)="selected.set(r)"
++          [attr.aria-selected]="selected()?.id === r.id"
++        >
++          <div class="rr-av" aria-hidden="true">{{ initials(r.patientName) }}</div>
++          <div class="rr-info">
++            <div class="rr-name">{{ r.patientName }}</div>
++            <div class="rr-meta">{{ r.test }} · {{ r.date }}</div>
++            <div class="lis-mono">{{ r.id }}</div>
++          </div>
++          <div>
++            @if (r.status === 'pending') {
++              <span class="lis-pill lis-pill--pending">Pending</span>
++            } @else {
++              <span class="lis-pill lis-pill--ready">Dispatched</span>
++            }
++          </div>
+         </div>
++      }
++    </div>
++
++    <div class="report-pagination">
++      <span>Showing 1 to {{ filteredReports().length }} of {{ reports.length }} reports</span>
++      <div class="report-pagination-controls">
++        <button type="button" class="page-btn" aria-label="Previous page" disabled>
++          <i class="ti ti-chevron-left" aria-hidden="true"></i>
++        </button>
++        <span class="page-btn page-btn--active">1</span>
++        <button type="button" class="page-btn" aria-label="Next page" disabled>
++          <i class="ti ti-chevron-right" aria-hidden="true"></i>
++        </button>
+       </div>
++    </div>
++  </div>
+ 
+-      <!-- Report preview -->
+-      @if (selected()) {
+-        <div class="report-preview-area">
+-          <!-- Action bar -->
+-          <div class="preview-toolbar">
+-            <div class="preview-actions">
+-              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm">
+-                <i class="ti ti-download" aria-hidden="true"></i> Download PDF
+-              </button>
+-              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm">
+-                <i class="ti ti-send" aria-hidden="true"></i> Send to patient
+-              </button>
+-              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm">
+-                <i class="ti ti-whatsapp" aria-hidden="true"></i> WhatsApp
+-              </button>
+-              <button type="button" class="lis-btn lis-btn--primary lis-btn--sm">
+-                <i class="ti ti-printer" aria-hidden="true"></i> Print
+-              </button>
++  <!-- Report preview -->
++  @if (selected()) {
++    <div class="report-preview-area">
++      <!-- Print-ready report sheet -->
++      <div class="report-sheet" id="report-sheet" aria-label="Report preview">
++        <!-- Header -->
++        <div class="rpt-header">
++          <div class="rpt-logo" aria-hidden="true">
++            <i class="ti ti-flask"></i>
++          </div>
++          <div class="rpt-lab">
++            <div class="rpt-lab-name">MedPath Diagnostics</div>
++            <div class="rpt-lab-tag">Accurate Results. Better Health.</div>
++            <div class="rpt-lab-addr">123, Health Street, Medical Area, Bengaluru — 560001 · +91 98765 43210 · info&#64;medpathdiagnostics.com</div>
++          </div>
++          <div class="rpt-meta">
++            <div class="rpt-date">Report date: 23 Jun 2026</div>
++            <div class="rpt-nabl">
++              <i class="ti ti-shield-check" aria-hidden="true"></i> NABL Accredited
+             </div>
+           </div>
++        </div>
+ 
+-          <!-- Print-ready report sheet -->
+-          <div class="report-sheet" id="report-sheet" aria-label="Report preview">
+-            <!-- Header -->
+-            <div class="rpt-header">
+-              <div class="rpt-logo" aria-hidden="true">
+-                <i class="ti ti-flask"></i>
+-              </div>
+-              <div class="rpt-lab">
+-                <div class="rpt-lab-name">MedPath Diagnostics</div>
+-                <div class="rpt-lab-tag">Accurate Results. Better Health.</div>
+-                <div class="rpt-lab-addr">123, Health Street, Medical Area, Bengaluru — 560001 · +91 98765 43210</div>
+-              </div>
+-              <div class="rpt-meta">
+-                <div class="rpt-date">Report date: 23 Jun 2026</div>
+-                <div class="rpt-nabl">
+-                  <i class="ti ti-certificate" aria-hidden="true"></i> NABL Accredited
+-                </div>
+-              </div>
+-            </div>
++        <!-- Patient band -->
++        <div class="rpt-pat-band">
++          <div class="rpt-pf">
++            <i class="ti ti-user rpt-pf-icon" aria-hidden="true"></i>
++            <div><div class="rpt-pl">Patient</div><div class="rpt-pv">Arun Pillai</div></div>
++          </div>
++          <div class="rpt-pf">
++            <i class="ti ti-fingerprint rpt-pf-icon" aria-hidden="true"></i>
++            <div><div class="rpt-pl">Patient ID</div><div class="rpt-pv rpt-pv--mono">PAT-2406-0316</div></div>
++          </div>
++          <div class="rpt-pf">
++            <i class="ti ti-calendar-check rpt-pf-icon" aria-hidden="true"></i>
++            <div><div class="rpt-pl">Collected on</div><div class="rpt-pv">23 Jun 2026 · 9:20 AM</div></div>
++          </div>
++          <div class="rpt-pf">
++            <i class="ti ti-gender-bigender rpt-pf-icon" aria-hidden="true"></i>
++            <div><div class="rpt-pl">Age / Sex</div><div class="rpt-pv">61 years / Male</div></div>
++          </div>
++          <div class="rpt-pf">
++            <i class="ti ti-stethoscope rpt-pf-icon" aria-hidden="true"></i>
++            <div><div class="rpt-pl">Referred by</div><div class="rpt-pv">Dr. Suresh Menon</div></div>
++          </div>
++          <div class="rpt-pf">
++            <i class="ti ti-calendar-event rpt-pf-icon" aria-hidden="true"></i>
++            <div><div class="rpt-pl">Reported on</div><div class="rpt-pv">23 Jun 2026 · 11:05 AM</div></div>
++          </div>
++        </div>
+ 
+-            <!-- Patient band -->
+-            <div class="rpt-pat-band">
+-              <div class="rpt-pf"><div class="rpt-pl">Patient name</div><div class="rpt-pv">Arun Pillai</div></div>
+-              <div class="rpt-pf"><div class="rpt-pl">Age / Sex</div><div class="rpt-pv">61 years / Male</div></div>
+-              <div class="rpt-pf"><div class="rpt-pl">Patient ID</div><div class="rpt-pv rpt-pv--mono">PAT-2406-0316</div></div>
+-              <div class="rpt-pf"><div class="rpt-pl">Referred by</div><div class="rpt-pv">Dr. Suresh Menon</div></div>
+-              <div class="rpt-pf"><div class="rpt-pl">Collected on</div><div class="rpt-pv">23 Jun 2026 · 9:20 AM</div></div>
+-              <div class="rpt-pf"><div class="rpt-pl">Reported on</div><div class="rpt-pv">23 Jun 2026 · 11:05 AM</div></div>
+-            </div>
++        <!-- Title band -->
++        <div class="rpt-title-band">
++          <div class="rpt-title-text">
++            <i class="ti ti-droplet" aria-hidden="true"></i>
++            Kidney Function Test (KFT)
++          </div>
++          <div class="lis-mono rpt-sid-chip">SMP-2406-087</div>
++        </div>
+ 
+-            <!-- Title band -->
+-            <div class="rpt-title-band">
+-              <div class="rpt-title-text">
+-                <i class="ti ti-flask" aria-hidden="true"></i>
+-                Kidney Function Test (KFT)
+-              </div>
+-              <div class="lis-mono rpt-sid-chip">SMP-2406-087</div>
+-            </div>
++        <!-- Body -->
++        <div class="rpt-body">
++          <div class="rpt-note">
++            <strong>Note:</strong> Critical value — Serum Potassium (K⁺) is significantly elevated. Referring physician has been notified.
++            <span class="rpt-note-sep">Specimen: Serum (Red top SST) &nbsp;·&nbsp; Fasting: Non-fasting</span>
++          </div>
+ 
+-            <!-- Body -->
+-            <div class="rpt-body">
+-              <div class="rpt-note">
+-                <strong>Note:</strong> Critical value — Serum Potassium (K⁺) is significantly elevated.
+-                Referring physician has been notified. Fasting: Non-fasting. Specimen: Serum (Red top SST).
+-              </div>
++          <div class="rpt-grp-title">Biochemistry — Renal profile</div>
++          <div class="rpt-tbl-wrap">
++          <table class="rpt-tbl" role="table">
++            <thead>
++              <tr>
++                <th scope="col">Parameter</th>
++                <th scope="col">Result</th>
++                <th scope="col">Unit</th>
++                <th scope="col">Reference range</th>
++                <th scope="col">Flag</th>
++              </tr>
++            </thead>
++            <tbody>
++              @for (row of kftRows; track row.name) {
++                <tr [class.rpt-row-crit]="row.flag === 'critical'">
++                  <td [class.rpt-bold]="row.flag === 'critical'">{{ row.name }}</td>
++                  <td [class]="'rpt-flag-' + row.flag">
++                    <strong>{{ row.result }}</strong>
++                    @if (row.flag === 'critical') { <span> ↑↑</span> }
++                    @else if (row.flag === 'high') { <span> ↑</span> }
++                    @else if (row.flag === 'low')  { <span> ↓</span> }
++                  </td>
++                  <td>{{ row.unit }}</td>
++                  <td class="rpt-ref">{{ row.ref }}</td>
++                  <td [class]="'rpt-flag-' + row.flag">
++                    @if (row.flag === 'critical') { <strong>CRITICAL</strong> }
++                    @else if (row.flag === 'high') { High }
++                    @else if (row.flag === 'low')  { Low }
++                    @else { Normal }
++                  </td>
++                </tr>
++              }
++            </tbody>
++          </table>
++          </div>
+ 
+-              <div class="rpt-grp-title">Biochemistry — Renal profile</div>
+-              <div class="rpt-tbl-wrap">
+-              <table class="rpt-tbl" role="table">
+-                <thead>
+-                  <tr>
+-                    <th scope="col">Parameter</th>
+-                    <th scope="col">Result</th>
+-                    <th scope="col">Unit</th>
+-                    <th scope="col">Reference range</th>
+-                    <th scope="col">Flag</th>
+-                  </tr>
+-                </thead>
+-                <tbody>
+-                  @for (row of kftRows; track row.name) {
+-                    <tr [class.rpt-row-crit]="row.flag === 'critical'">
+-                      <td [class.rpt-bold]="row.flag === 'critical'">{{ row.name }}</td>
+-                      <td [class]="'rpt-flag-' + row.flag">
+-                        <strong>{{ row.result }}</strong>
+-                        @if (row.flag === 'critical') { <span> ↑↑</span> }
+-                        @else if (row.flag === 'high') { <span> ↑</span> }
+-                        @else if (row.flag === 'low')  { <span> ↓</span> }
+-                      </td>
+-                      <td>{{ row.unit }}</td>
+-                      <td class="rpt-ref">{{ row.ref }}</td>
+-                      <td [class]="'rpt-flag-' + row.flag">
+-                        @if (row.flag === 'critical') { <strong>CRITICAL</strong> }
+-                        @else if (row.flag === 'high') { High }
+-                        @else if (row.flag === 'low')  { Low }
+-                        @else { Normal }
+-                      </td>
+-                    </tr>
+-                  }
+-                </tbody>
+-              </table>
++          <!-- Footer -->
++          <div class="rpt-footer">
++            <div class="rpt-qr-area">
++              <div class="rpt-qr" aria-hidden="true"><i class="ti ti-qrcode"></i></div>
++              <div class="rpt-qr-text">
++                <span class="rpt-qr-title">Scan to verify</span>
++                Authenticity: SMP-2406-087<br>
++                <span class="rpt-mono-url">medpathdiagnostics.com/verify</span>
+               </div>
+-
+-              <!-- Footer -->
+-              <div class="rpt-footer">
+-                <div class="rpt-qr-area">
+-                  <div class="rpt-qr" aria-hidden="true"><i class="ti ti-qrcode"></i></div>
+-                  <div class="rpt-qr-text">
+-                    Scan to verify<br>
+-                    <span class="rpt-mono-url">rpt.medpath.in/SMP-2406-087</span>
+-                  </div>
+-                </div>
+-                <div class="rpt-sign">
+-                  <div class="rpt-sign-pre">Authorised by</div>
+-                  <div class="rpt-sign-name">Dr. Priya Hegde</div>
+-                  <div class="rpt-sign-role">MD Pathology · MedPath Diagnostics</div>
+-                  <div class="rpt-sign-reg">Reg. No. MCI-2019-048721</div>
+-                </div>
++            </div>
++            <div class="rpt-sign">
++              <div class="rpt-sign-meta">
++                <div class="rpt-sign-pre">Authorised by</div>
++                <div class="rpt-sign-name">Dr. Priya Hegde</div>
++                <div class="rpt-sign-role">MD Pathology</div>
+               </div>
++              <svg class="rpt-signature" viewBox="0 0 110 44" aria-hidden="true">
++                <path d="M6 32 C 14 14, 22 14, 27 26 C 31 35, 35 20, 41 18 C 47 16, 50 30, 56 24 C 62 18, 66 12, 73 20 C 78 26, 84 14, 92 18 C 98 21, 100 28, 104 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
++              </svg>
++              <div class="rpt-verify-badge" aria-hidden="true"><i class="ti ti-shield-check"></i></div>
+             </div>
+           </div>
+         </div>
+-      } @else {
+-        <div class="preview-empty">
+-          <i class="ti ti-file-search" aria-hidden="true"></i>
+-          <p>Select a report from the list to preview it here.</p>
+-        </div>
+-      }
+-    </div>
+\ No newline at end of file
++      </div>
++    </div>
++  } @else {
++    <div class="preview-empty">
++      <i class="ti ti-file-search" aria-hidden="true"></i>
++      <p>Select a report from the list to preview it here.</p>
++    </div>
++  }
++</div>
+diff --git a/src/app/features/reports/reports.component.ts b/src/app/features/reports/reports.component.ts
+index 8327451..3558bfd 100644
+--- a/src/app/features/reports/reports.component.ts
++++ b/src/app/features/reports/reports.component.ts
+@@ -1,4 +1,4 @@
+-import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
++import { Component, signal, computed, ChangeDetectionStrategy } from '@angular/core';
+ import { RouterLink } from '@angular/router';
+ import { NgClass } from '@angular/common';
+ 
+@@ -38,5 +38,19 @@ export class ReportsComponent {
+   protected readonly reports  = REPORTS;
+   protected readonly kftRows  = KFT_ROWS;
+   selected = signal<ReportRow | null>(REPORTS[0]);
++  query = signal('');
++
++  filteredReports = computed(() => {
++    const q = this.query().trim().toLowerCase();
++    if (!q) return this.reports;
++    return this.reports.filter(r =>
++      r.patientName.toLowerCase().includes(q) ||
++      r.test.toLowerCase().includes(q) ||
++      r.id.toLowerCase().includes(q)
++    );
++  });
++
++  pendingCount = computed(() => this.reports.filter(r => r.status === 'pending').length);
++
+   initials(name: string) { return name.split(' ').map(w => w[0]).join('').slice(0,2); }
+ }
+-- 
+2.43.0
+
