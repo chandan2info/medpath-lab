@@ -3,6 +3,10 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { UserSessionService } from '../../core/services/user-session.service';
 import { ThemeService } from '../../core/services/theme.service';
+import { environment } from '../../../environments/environment';
+
+/** localStorage key used to remember the last username when "Remember me" is checked. */
+const REMEMBERED_USERNAME_KEY = 'medpath.lis.rememberedUsername';
 
 @Component({
   selector: 'app-lis-landing',
@@ -24,6 +28,9 @@ export class LisLandingComponent {
 
   /** Drives the sun/moon icon and a11y labels on the theme toggle. */
   protected readonly isDark = computed(() => this.themeService.theme() === 'dark');
+
+  /** Only show the demo-credentials hint outside of production builds. */
+  protected readonly showDemoHint = !environment.production;
 
   protected readonly testCats = [
     { name:'Blood tests',    icon:'droplet',           desc:'CBC, Sugar, Lipid profile & more',       bg:'#DCEAFE', fg:'#3B82F6' },
@@ -49,7 +56,13 @@ export class LisLandingComponent {
   constructor(
     private router: Router,
     private session: UserSessionService
-  ) {}
+  ) {
+    const rememberedUsername = localStorage.getItem(REMEMBERED_USERNAME_KEY);
+    if (rememberedUsername) {
+      this.username = rememberedUsername;
+      this.remember = true;
+    }
+  }
 
   scrollToLogin(): void {
     document.getElementById('login-card')?.scrollIntoView({ behavior:'smooth', block:'center' });
@@ -66,6 +79,11 @@ export class LisLandingComponent {
   login(): void {
     if (this.session.login(this.username, this.password)) {
       this.loginError.set(false);
+      if (this.remember) {
+        localStorage.setItem(REMEMBERED_USERNAME_KEY, this.username);
+      } else {
+        localStorage.removeItem(REMEMBERED_USERNAME_KEY);
+      }
       this.router.navigate(['/dashboard/home']);
     } else {
       this.loginError.set(true);

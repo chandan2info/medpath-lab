@@ -130,10 +130,12 @@
             <i class="ti ti-shield-check" aria-hidden="true"></i>
             Secured · Single-user · MedPath LIS v2.4
           </div>
-          <div class="lp-demo-hint" role="note">
-            <i class="ti ti-info-circle" aria-hidden="true"></i>
-            Demo — username: <code>ravi.anand</code> &nbsp;password: <code>MedPath&#64;2024</code>
-          </div>
+          @if (showDemoHint) {
+            <div class="lp-demo-hint" role="note">
+              <i class="ti ti-info-circle" aria-hidden="true"></i>
+              Demo — username: <code>ravi.anand</code> &nbsp;password: <code>MedPath&#64;2024</code>
+            </div>
+          }
         </div>
       </div>
     </section>

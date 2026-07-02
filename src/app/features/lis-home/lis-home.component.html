@@ -10,7 +10,7 @@
 <div class="welcome-band" role="region" aria-label="Day summary">
   <div class="wb-left">
     <div class="wb-greet">Good morning, {{ dash.worklist().length ? (dash.worklist()[0].patientName.split(' ')[0]) : 'Operator' }}.</div>
-    <div class="wb-sub">{{ dash.stats().samples }} samples in progress · {{ dash.kpis()[2].value }} reports ready to dispatch · 1 STAT pending.</div>
+    <div class="wb-sub">{{ dash.stats().samples }} samples in progress · {{ dash.kpis().at(2)?.value ?? '—' }} reports ready to dispatch · 1 STAT pending.</div>
     <div class="wb-pills" aria-hidden="true">
       <span class="wb-pill"><i class="ti ti-users"></i> {{ dash.kpis()[0].value }} patients today</span>
       <span class="wb-pill"><i class="ti ti-bolt"></i> 1 STAT pending</span>
@@ -38,7 +38,7 @@
   <!-- Worklist -->
   <div class="lis-card" role="region" aria-label="Urgent worklist">
     <div class="lis-card__header">
-      <i class="ti ti-list-check" class="lis-card-icon lis-card-icon--danger" aria-hidden="true"></i>
+      <i class="ti ti-list-check lis-card-icon lis-card-icon--danger" aria-hidden="true"></i>
       <h2 class="lis-card__title">Urgent worklist</h2>
       <span class="lis-badge lis-badge--danger">1 STAT · 1 critical</span>
       <a routerLink="/dashboard/tracking" class="lis-link" aria-label="View all samples">View all →</a>
@@ -68,7 +68,7 @@
   <!-- Alerts -->
   <div class="lis-card" role="region" aria-label="Lab alerts">
     <div class="lis-card__header">
-      <i class="ti ti-bell" class="lis-card-icon lis-card-icon--danger" aria-hidden="true"></i>
+      <i class="ti ti-bell lis-card-icon lis-card-icon--danger" aria-hidden="true"></i>
       <h2 class="lis-card__title">Alerts</h2>
     </div>
     @if (dash.alerts().length === 0) {
@@ -92,7 +92,7 @@
 <!-- Quick actions -->
 <div class="lis-card" role="region" aria-label="Quick actions">
   <div class="lis-card__header">
-    <i class="ti ti-apps" class="lis-card-icon" aria-hidden="true"></i>
+    <i class="ti ti-apps lis-card-icon" aria-hidden="true"></i>
     <h2 class="lis-card__title">Quick actions</h2>
   </div>
   <div class="qa-grid">
