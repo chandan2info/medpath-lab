@@ -331,7 +331,7 @@
    columns of three rows without crowding labels against values
    the way a 3-up grid can on a narrower preview area. */
 .rpt-pat-band {
-  background: var(--card-bg);
+  background: var(--rpt-tint-bg);
   padding: 18px 22px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -380,18 +380,20 @@
 }
 .rpt-pv--mono { font-family: var(--font-mono, monospace); }
 
-/* Title row — sits on the plain card surface (no fill) now
-   that the patient card floats over the header; a hairline
-   rule separates it from the note box below. */
+/* Title card — a distinct nested card (not just a hairline
+   row) so it reads consistently with the patient card and
+   footer card floating on the white body. */
 .rpt-title-band {
-  background: transparent;
-  padding: 4px 20px 14px;
+  background: var(--rpt-tint-bg);
+  border: 1px solid var(--rpt-tint-border);
+  border-radius: 10px;
+  margin: 0 20px 18px;
+  padding: 10px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
-  border-bottom: 1px solid var(--border-color);
 }
 .rpt-title-text {
   font-size: 14px;
@@ -478,7 +480,8 @@
   flex-wrap: wrap;
   background: var(--rpt-tint-bg);
   padding: 16px 20px;
-  border-top: 2px solid var(--rpt-tint-border);
+  border: 1px solid var(--rpt-tint-border);
+  border-radius: 12px;
 }
 .rpt-qr-area { display: flex; align-items: center; gap: 10px; }
 .rpt-qr {
