@@ -270,18 +270,33 @@
 
 /* ── Report sheet (print-ready) ───────────────────────────
    Subtle elevation lifts the document off the page so it
-   reads as a discrete artifact in both themes. ── */
+   reads as a discrete artifact in both themes. Inner content
+   is grouped into three bordered panels (top / mid / footer)
+   so each logical section reads as its own card, rather than
+   individual elements floating loose inside one big body. ── */
 .report-sheet {
   background: var(--card-bg);
   border: 0.5px solid var(--border-color);
   border-radius: 16px;
-  overflow: hidden;
+  padding: 20px;
   box-shadow: var(--shadow-card-hover, 0 10px 32px rgba(0,0,0,0.10));
 }
 @media print {
-  .report-sheet { border: none; border-radius: 0; box-shadow: none; }
+  .report-sheet { border: none; border-radius: 0; box-shadow: none; padding: 0; }
   .page-header-actions { display: none; }
 }
+
+/* Panel — shared card chrome for the three grouped sections. */
+.rpt-panel {
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  margin-bottom: 16px;
+  background: var(--card-bg);
+}
+.rpt-panel:last-child { margin-bottom: 0; }
+.rpt-panel--top { overflow: hidden; } /* clips the header gradient to the panel's rounded corners */
+.rpt-panel--mid { padding: 16px 18px 18px; }
+.rpt-panel--footer { padding: 14px 18px; }
 
 /* Header band — brand teal gradient, theme-aware via --rpt-* tokens.
    Extra bottom padding leaves room for the patient card, which
@@ -325,28 +340,29 @@
 }
 .rpt-nabl i { font-size: 10px; }
 
-/* Patient band — floats as a white card pulled up over the
-   header gradient, matching the "cutout" look of the mockup.
-   Icon-prefixed 2-column field grid: six fields fit two even
-   columns of three rows without crowding labels against values
-   the way a 3-up grid can on a narrower preview area. */
+/* Patient band — floats as a card pulled up over the header
+   gradient, matching the "cutout" look of the mockup, staying
+   inside the shared top panel border. Icon-prefixed 2-column
+   field grid: six fields fit two even columns of three rows
+   without crowding labels against values the way a 3-up grid
+   can on a narrower preview area. */
 .rpt-pat-band {
   background: var(--rpt-tint-bg);
   padding: 18px 22px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 14px 16px;
-  margin: -36px 20px 20px;
+  margin: -32px 16px 16px;
   position: relative;
   z-index: 2;
-  border-radius: 14px;
-  box-shadow: 0 12px 28px rgba(0,0,0,0.14);
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
 }
 @media (max-width: 720px) {
   .rpt-pat-band { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 420px) {
-  .rpt-pat-band { grid-template-columns: 1fr; margin: -28px 14px 20px; padding: 16px; }
+  .rpt-pat-band { grid-template-columns: 1fr; margin: -24px 12px 16px; padding: 16px; }
 }
 .rpt-pf { display: flex; align-items: flex-start; gap: 9px; min-width: 0; }
 .rpt-pf-icon {
@@ -380,20 +396,18 @@
 }
 .rpt-pv--mono { font-family: var(--font-mono, monospace); }
 
-/* Title card — a distinct nested card (not just a hairline
-   row) so it reads consistently with the patient card and
-   footer card floating on the white body. */
+/* Title row — plain row (no border/fill of its own) since it
+   now shares the mid panel's single border with the note and
+   table below it; a hairline separates it from that content. */
 .rpt-title-band {
-  background: var(--rpt-tint-bg);
-  border: 1px solid var(--rpt-tint-border);
-  border-radius: 10px;
-  margin: 0 20px 18px;
-  padding: 10px 16px;
+  padding: 0 0 12px;
+  margin-bottom: 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
+  border-bottom: 1px solid var(--border-color);
 }
 .rpt-title-text {
   font-size: 14px;
@@ -405,9 +419,6 @@
 }
 .rpt-title-text i { font-size: 13px; }
 .rpt-sid-chip { font-size: 12px; font-weight: 500; color: var(--rpt-tint-label); }
-
-/* Body */
-.rpt-body { padding: 18px 20px 20px; }
 
 .rpt-note {
   background: var(--rpt-note-bg);
@@ -478,10 +489,6 @@
   justify-content: space-between;
   gap: 20px;
   flex-wrap: wrap;
-  background: var(--rpt-tint-bg);
-  padding: 16px 20px;
-  border: 1px solid var(--rpt-tint-border);
-  border-radius: 12px;
 }
 .rpt-qr-area { display: flex; align-items: center; gap: 10px; }
 .rpt-qr {

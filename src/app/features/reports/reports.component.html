@@ -117,7 +117,8 @@
     <div class="report-preview-area">
       <!-- Print-ready report sheet -->
       <div class="report-sheet" id="report-sheet" aria-label="Report preview">
-        <!-- Header -->
+        <!-- Top panel: header + patient band, grouped as one card -->
+        <div class="rpt-panel rpt-panel--top">
         <div class="rpt-header">
           <div class="rpt-logo" aria-hidden="true">
             <i class="ti ti-flask"></i>
@@ -162,8 +163,10 @@
             <div><div class="rpt-pl">Reported on</div><div class="rpt-pv">23 Jun 2026 · 11:05 AM</div></div>
           </div>
         </div>
+        </div>
 
-        <!-- Title band -->
+        <!-- Middle panel: title + note + results table, grouped as one card -->
+        <div class="rpt-panel rpt-panel--mid">
         <div class="rpt-title-band">
           <div class="rpt-title-text">
             <i class="ti ti-droplet" aria-hidden="true"></i>
@@ -172,50 +175,50 @@
           <div class="lis-mono rpt-sid-chip">SMP-2406-087</div>
         </div>
 
-        <!-- Body -->
-        <div class="rpt-body">
-          <div class="rpt-note">
-            <strong>Note:</strong> Critical value — Serum Potassium (K⁺) is significantly elevated. Referring physician has been notified.
-            <span class="rpt-note-sep">Specimen: Serum (Red top SST) &nbsp;·&nbsp; Fasting: Non-fasting</span>
-          </div>
+        <div class="rpt-note">
+          <strong>Note:</strong> Critical value — Serum Potassium (K⁺) is significantly elevated. Referring physician has been notified.
+          <span class="rpt-note-sep">Specimen: Serum (Red top SST) &nbsp;·&nbsp; Fasting: Non-fasting</span>
+        </div>
 
-          <div class="rpt-grp-title">Biochemistry — Renal profile</div>
-          <div class="rpt-tbl-wrap">
-          <table class="rpt-tbl" role="table">
-            <thead>
-              <tr>
-                <th scope="col">Parameter</th>
-                <th scope="col">Result</th>
-                <th scope="col">Unit</th>
-                <th scope="col">Reference range</th>
-                <th scope="col">Flag</th>
+        <div class="rpt-grp-title">Biochemistry — Renal profile</div>
+        <div class="rpt-tbl-wrap">
+        <table class="rpt-tbl" role="table">
+          <thead>
+            <tr>
+              <th scope="col">Parameter</th>
+              <th scope="col">Result</th>
+              <th scope="col">Unit</th>
+              <th scope="col">Reference range</th>
+              <th scope="col">Flag</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of kftRows; track row.name) {
+              <tr [class.rpt-row-crit]="row.flag === 'critical'">
+                <td [class.rpt-bold]="row.flag === 'critical'">{{ row.name }}</td>
+                <td [class]="'rpt-flag-' + row.flag">
+                  <strong>{{ row.result }}</strong>
+                  @if (row.flag === 'critical') { <span> ↑↑</span> }
+                  @else if (row.flag === 'high') { <span> ↑</span> }
+                  @else if (row.flag === 'low')  { <span> ↓</span> }
+                </td>
+                <td>{{ row.unit }}</td>
+                <td class="rpt-ref">{{ row.ref }}</td>
+                <td [class]="'rpt-flag-' + row.flag">
+                  @if (row.flag === 'critical') { <strong>CRITICAL</strong> }
+                  @else if (row.flag === 'high') { High }
+                  @else if (row.flag === 'low')  { Low }
+                  @else { Normal }
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              @for (row of kftRows; track row.name) {
-                <tr [class.rpt-row-crit]="row.flag === 'critical'">
-                  <td [class.rpt-bold]="row.flag === 'critical'">{{ row.name }}</td>
-                  <td [class]="'rpt-flag-' + row.flag">
-                    <strong>{{ row.result }}</strong>
-                    @if (row.flag === 'critical') { <span> ↑↑</span> }
-                    @else if (row.flag === 'high') { <span> ↑</span> }
-                    @else if (row.flag === 'low')  { <span> ↓</span> }
-                  </td>
-                  <td>{{ row.unit }}</td>
-                  <td class="rpt-ref">{{ row.ref }}</td>
-                  <td [class]="'rpt-flag-' + row.flag">
-                    @if (row.flag === 'critical') { <strong>CRITICAL</strong> }
-                    @else if (row.flag === 'high') { High }
-                    @else if (row.flag === 'low')  { Low }
-                    @else { Normal }
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-          </div>
+            }
+          </tbody>
+        </table>
+        </div>
+        </div>
 
-          <!-- Footer -->
+        <!-- Footer panel -->
+        <div class="rpt-panel rpt-panel--footer">
           <div class="rpt-footer">
             <div class="rpt-qr-area">
               <div class="rpt-qr" aria-hidden="true"><i class="ti ti-qrcode"></i></div>

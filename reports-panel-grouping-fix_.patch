@@ -1,5 +1,5 @@
 diff --git a/src/app/features/reports/reports.component.css b/src/app/features/reports/reports.component.css
-index 7339b58..2cd90e5 100644
+index 08a329a..2cd90e5 100644
 --- a/src/app/features/reports/reports.component.css
 +++ b/src/app/features/reports/reports.component.css
 @@ -270,19 +270,34 @@
@@ -56,8 +56,7 @@ index 7339b58..2cd90e5 100644
 +   without crowding labels against values the way a 3-up grid
 +   can on a narrower preview area. */
  .rpt-pat-band {
--  background: var(--card-bg);
-+  background: var(--rpt-tint-bg);
+   background: var(--rpt-tint-bg);
    padding: 18px 22px;
    display: grid;
    grid-template-columns: repeat(3, 1fr);
@@ -80,25 +79,34 @@ index 7339b58..2cd90e5 100644
  }
  .rpt-pf { display: flex; align-items: flex-start; gap: 9px; min-width: 0; }
  .rpt-pf-icon {
-@@ -380,12 +396,12 @@
+@@ -380,20 +396,18 @@
  }
  .rpt-pv--mono { font-family: var(--font-mono, monospace); }
  
--/* Title row — sits on the plain card surface (no fill) now
--   that the patient card floats over the header; a hairline
--   rule separates it from the note box below. */
+-/* Title card — a distinct nested card (not just a hairline
+-   row) so it reads consistently with the patient card and
+-   footer card floating on the white body. */
 +/* Title row — plain row (no border/fill of its own) since it
 +   now shares the mid panel's single border with the note and
 +   table below it; a hairline separates it from that content. */
  .rpt-title-band {
--  background: transparent;
--  padding: 4px 20px 14px;
+-  background: var(--rpt-tint-bg);
+-  border: 1px solid var(--rpt-tint-border);
+-  border-radius: 10px;
+-  margin: 0 20px 18px;
+-  padding: 10px 16px;
 +  padding: 0 0 12px;
 +  margin-bottom: 14px;
    display: flex;
    align-items: center;
    justify-content: space-between;
-@@ -404,9 +420,6 @@
+   gap: 12px;
+   flex-wrap: wrap;
++  border-bottom: 1px solid var(--border-color);
+ }
+ .rpt-title-text {
+   font-size: 14px;
+@@ -406,9 +420,6 @@
  .rpt-title-text i { font-size: 13px; }
  .rpt-sid-chip { font-size: 12px; font-weight: 500; color: var(--rpt-tint-label); }
  
@@ -108,13 +116,14 @@ index 7339b58..2cd90e5 100644
  .rpt-note {
    background: var(--rpt-note-bg);
    border-left: 3px solid var(--rpt-note-border);
-@@ -476,9 +489,6 @@
+@@ -478,10 +489,6 @@
    justify-content: space-between;
    gap: 20px;
    flex-wrap: wrap;
 -  background: var(--rpt-tint-bg);
 -  padding: 16px 20px;
--  border-top: 2px solid var(--rpt-tint-border);
+-  border: 1px solid var(--rpt-tint-border);
+-  border-radius: 12px;
  }
  .rpt-qr-area { display: flex; align-items: center; gap: 10px; }
  .rpt-qr {
