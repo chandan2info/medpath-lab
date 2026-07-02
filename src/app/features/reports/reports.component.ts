@@ -7,6 +7,24 @@ interface ReportRow {
   test: string; date: string; status: 'pending' | 'dispatched';
 }
 
+interface ReportStat {
+  id: string;
+  label: string;
+  value: string;
+  icon: string;
+  variant: 'primary' | 'warning' | 'success' | 'danger';
+  delta: string;
+  deltaType: 'up' | 'down' | 'neutral';
+  spark: string; // normalized 0-100 points, space separated "x,y x,y ..."
+}
+
+const REPORT_STATS: ReportStat[] = [
+  { id: 'total',      label: 'Total Reports',   value: '1,248', icon: 'file-text',      variant: 'primary', delta: '+12.5% vs last month', deltaType: 'up',      spark: '0,28 16,24 32,26 48,18 64,20 80,10 100,6' },
+  { id: 'pending',    label: 'Pending Reports', value: '5',     icon: 'hourglass',      variant: 'warning', delta: 'Needs attention',       deltaType: 'neutral', spark: '0,20 16,10 32,16 48,8 64,18 80,12 100,4' },
+  { id: 'dispatched', label: 'Dispatched',      value: '320',   icon: 'circle-check',   variant: 'success',  delta: '+8.2% vs last month',   deltaType: 'up',      spark: '0,26 16,22 32,24 48,14 64,18 80,8 100,10' },
+  { id: 'critical',   label: 'Critical Alerts', value: '12',    icon: 'alert-triangle', variant: 'danger',  delta: 'Requires follow-up',    deltaType: 'down',    spark: '0,10 16,18 32,12 48,22 64,14 80,24 100,18' },
+];
+
 const REPORTS: ReportRow[] = [
   { id:'RPT-2406-041', patientName:'Arun Pillai',   patientId:'PAT-0316', test:'KFT',          date:'23 Jun 2026', status:'pending' },
   { id:'RPT-2406-040', patientName:'Priya Sharma',  patientId:'PAT-0315', test:'Thyroid panel', date:'23 Jun 2026', status:'pending' },
@@ -37,6 +55,7 @@ const KFT_ROWS = [
 export class ReportsComponent {
   protected readonly reports  = REPORTS;
   protected readonly kftRows  = KFT_ROWS;
+  protected readonly stats    = REPORT_STATS;
   selected = signal<ReportRow | null>(REPORTS[0]);
   query = signal('');
 

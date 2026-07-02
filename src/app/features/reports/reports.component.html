@@ -24,6 +24,26 @@
   }
 </div>
 
+<section class="reports-stats-grid" aria-label="Report summary">
+  @for (s of stats; track s.id) {
+    <div class="rsc-card">
+      <div class="rsc-top">
+        <div class="rsc-icon" [class]="'rsc-icon--' + s.variant" aria-hidden="true">
+          <i class="ti ti-{{ s.icon }}"></i>
+        </div>
+        <div class="rsc-body">
+          <div class="rsc-label">{{ s.label }}</div>
+          <div class="rsc-value">{{ s.value }}</div>
+        </div>
+        <svg class="rsc-spark" [class]="'rsc-spark--' + s.variant" viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true">
+          <polyline [attr.points]="s.spark" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </div>
+      <div class="rsc-delta" [class]="'rsc-delta--' + s.deltaType">{{ s.delta }}</div>
+    </div>
+  }
+</section>
+
 <div class="reports-layout">
   <!-- Report list -->
   <div class="lis-card report-list">

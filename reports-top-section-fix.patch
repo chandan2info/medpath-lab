@@ -1,0 +1,311 @@
+diff --git a/src/app/features/reports/reports.component.css b/src/app/features/reports/reports.component.css
+index 1879747..7339b58 100644
+--- a/src/app/features/reports/reports.component.css
++++ b/src/app/features/reports/reports.component.css
+@@ -22,6 +22,77 @@
+ .page-header-actions { padding-top: 4px; }
+ .preview-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+ 
++/* ── Summary stat cards ────────────────────────────────────
++   Four-up overview row (Total / Pending / Dispatched / Critical).
++   Colors ride the same semantic tokens used everywhere else
++   (--primary-*, --lis-warning, --lis-primary, --lis-danger) so
++   the row re-themes automatically across light/dark and every
++   palette (ocean, sunset, violet) without any local overrides. */
++.reports-stats-grid {
++  display: grid;
++  grid-template-columns: repeat(4, 1fr);
++  gap: 16px;
++  margin-bottom: 20px;
++}
++@media (max-width: 1100px) {
++  .reports-stats-grid { grid-template-columns: repeat(2, 1fr); }
++}
++@media (max-width: 560px) {
++  .reports-stats-grid { grid-template-columns: 1fr; }
++}
++
++.rsc-card {
++  background: var(--card-bg);
++  border: 0.5px solid var(--border-color);
++  border-radius: var(--lis-card-radius);
++  padding: 16px 18px;
++  box-shadow: var(--shadow-card, 0 1px 3px rgba(0,0,0,0.06));
++  transition: transform 0.14s ease, box-shadow 0.14s ease;
++}
++.rsc-card:hover {
++  transform: translateY(-1px);
++  box-shadow: var(--shadow-card-hover, 0 8px 24px rgba(0,0,0,0.10));
++}
++
++.rsc-top { display: flex; align-items: flex-start; gap: 12px; }
++
++.rsc-icon {
++  width: 40px;
++  height: 40px;
++  border-radius: 10px;
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  font-size: 19px;
++  flex-shrink: 0;
++}
++.rsc-icon--primary { background: var(--primary-xlight); color: var(--primary-deeper); }
++.rsc-icon--warning  { background: rgba(239,159,39,0.14); color: var(--lis-warning); }
++.rsc-icon--success  { background: var(--lis-primary-xlight); color: var(--lis-primary); }
++.rsc-icon--danger   { background: var(--lis-danger-xlight); color: var(--lis-danger); }
++
++.rsc-body { flex: 1; min-width: 0; }
++.rsc-label {
++  font-size: 11.5px;
++  color: var(--text-secondary);
++  margin-bottom: 3px;
++  white-space: nowrap;
++  overflow: hidden;
++  text-overflow: ellipsis;
++}
++.rsc-value { font-size: 22px; font-weight: 600; color: var(--text-primary); line-height: 1.15; }
++
++.rsc-spark { width: 64px; height: 26px; flex-shrink: 0; margin-top: 2px; }
++.rsc-spark--primary polyline { stroke: var(--primary-deeper); }
++.rsc-spark--warning  polyline { stroke: var(--lis-warning); }
++.rsc-spark--success  polyline { stroke: var(--lis-primary); }
++.rsc-spark--danger   polyline { stroke: var(--lis-danger); }
++
++.rsc-delta { font-size: 11px; font-weight: 500; margin-top: 10px; }
++.rsc-delta--up      { color: var(--lis-primary); }
++.rsc-delta--down     { color: var(--lis-danger); }
++.rsc-delta--neutral  { color: var(--lis-warning); }
++
+ /* ── Layout ──────────────────────────────────────────────
+    Grid sizing: the list column is wide enough that name +
+    meta + status pill never collide. minmax(0, 1fr) on the
+@@ -203,70 +274,79 @@
+ .report-sheet {
+   background: var(--card-bg);
+   border: 0.5px solid var(--border-color);
+-  border-radius: 10px;
++  border-radius: 16px;
+   overflow: hidden;
+-  box-shadow: var(--shadow-card, 0 1px 3px rgba(0,0,0,0.08));
++  box-shadow: var(--shadow-card-hover, 0 10px 32px rgba(0,0,0,0.10));
+ }
+ @media print {
+   .report-sheet { border: none; border-radius: 0; box-shadow: none; }
+   .page-header-actions { display: none; }
+ }
+ 
+-/* Header band — brand teal, theme-aware via --rpt-* tokens. */
++/* Header band — brand teal gradient, theme-aware via --rpt-* tokens.
++   Extra bottom padding leaves room for the patient card, which
++   floats up over the band (see .rpt-pat-band below). */
+ .rpt-header {
+-  background: var(--rpt-band-bg);
+-  padding: 16px 20px;
++  background: linear-gradient(135deg, var(--rpt-band-bg) 0%, var(--rpt-band-bg-2) 100%);
++  padding: 22px 24px 54px;
+   display: flex;
+   align-items: center;
+   gap: 14px;
++  position: relative;
+ }
+ .rpt-logo {
+-  width: 38px;
+-  height: 38px;
+-  background: var(--lis-primary);
+-  border-radius: 9px;
++  width: 42px;
++  height: 42px;
++  background: #ffffff;
++  border-radius: 11px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   flex-shrink: 0;
++  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+ }
+-.rpt-logo i { color: #fff; font-size: 19px; }
++.rpt-logo i { color: var(--rpt-band-bg); font-size: 20px; }
+ .rpt-lab { flex: 1; min-width: 0; }
+-.rpt-lab-name { font-size: 14px; font-weight: 600; color: var(--rpt-band-text); }
+-.rpt-lab-tag  { font-size: 11px; color: var(--rpt-band-text-sub); margin-top: 2px; }
+-.rpt-lab-addr { font-size: 11px; color: var(--rpt-band-text-sub); margin-top: 1px; }
++.rpt-lab-name { font-size: 15px; font-weight: 600; color: var(--rpt-band-text); }
++.rpt-lab-tag  { font-size: 11.5px; color: var(--rpt-band-text-sub); margin-top: 2px; }
++.rpt-lab-addr { font-size: 11.5px; color: var(--rpt-band-text-sub); margin-top: 1px; }
+ .rpt-meta { text-align: right; flex-shrink: 0; }
+-.rpt-date { font-size: 11px; color: var(--rpt-band-text-sub); }
++.rpt-date { font-size: 11.5px; color: var(--rpt-band-text-sub); }
+ .rpt-nabl {
+   background: rgba(255,255,255,0.15);
+   padding: 3px 10px;
+   border-radius: 20px;
+   font-size: 11px;
+   color: var(--rpt-band-text);
+-  margin-top: 6px;
++  margin-top: 8px;
+   display: inline-flex;
+   align-items: center;
+   gap: 4px;
+ }
+ .rpt-nabl i { font-size: 10px; }
+ 
+-/* Patient band — icon-prefixed 2-column field grid. Six
+-   fields fit two even columns of three rows; this stays
+-   legible without ever crowding values against labels the
+-   way a 3-up grid can on a narrower preview area. */
++/* Patient band — floats as a white card pulled up over the
++   header gradient, matching the "cutout" look of the mockup.
++   Icon-prefixed 2-column field grid: six fields fit two even
++   columns of three rows without crowding labels against values
++   the way a 3-up grid can on a narrower preview area. */
+ .rpt-pat-band {
+-  background: var(--rpt-tint-bg);
+-  padding: 16px 20px;
++  background: var(--card-bg);
++  padding: 18px 22px;
+   display: grid;
+   grid-template-columns: repeat(3, 1fr);
+   gap: 14px 16px;
+-  border-bottom: 2px solid var(--rpt-tint-border);
++  margin: -36px 20px 20px;
++  position: relative;
++  z-index: 2;
++  border-radius: 14px;
++  box-shadow: 0 12px 28px rgba(0,0,0,0.14);
+ }
+ @media (max-width: 720px) {
+   .rpt-pat-band { grid-template-columns: repeat(2, 1fr); }
+ }
+ @media (max-width: 420px) {
+-  .rpt-pat-band { grid-template-columns: 1fr; }
++  .rpt-pat-band { grid-template-columns: 1fr; margin: -28px 14px 20px; padding: 16px; }
+ }
+ .rpt-pf { display: flex; align-items: flex-start; gap: 9px; min-width: 0; }
+ .rpt-pf-icon {
+@@ -300,26 +380,29 @@
+ }
+ .rpt-pv--mono { font-family: var(--font-mono, monospace); }
+ 
+-/* Title band */
++/* Title row — sits on the plain card surface (no fill) now
++   that the patient card floats over the header; a hairline
++   rule separates it from the note box below. */
+ .rpt-title-band {
+-  background: var(--rpt-band-bg);
+-  padding: 9px 20px;
++  background: transparent;
++  padding: 4px 20px 14px;
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   gap: 12px;
+   flex-wrap: wrap;
++  border-bottom: 1px solid var(--border-color);
+ }
+ .rpt-title-text {
+-  font-size: 12.5px;
++  font-size: 14px;
+   font-weight: 600;
+-  color: var(--rpt-band-text);
++  color: var(--rpt-tint-label);
+   display: flex;
+   align-items: center;
+-  gap: 6px;
++  gap: 7px;
+ }
+-.rpt-title-text i { font-size: 12px; }
+-.rpt-sid-chip { font-size: 11px; color: var(--rpt-band-text-sub); }
++.rpt-title-text i { font-size: 13px; }
++.rpt-sid-chip { font-size: 12px; font-weight: 500; color: var(--rpt-tint-label); }
+ 
+ /* Body */
+ .rpt-body { padding: 18px 20px 20px; }
+diff --git a/src/app/features/reports/reports.component.html b/src/app/features/reports/reports.component.html
+index da50806..0310007 100644
+--- a/src/app/features/reports/reports.component.html
++++ b/src/app/features/reports/reports.component.html
+@@ -24,6 +24,26 @@
+   }
+ </div>
+ 
++<section class="reports-stats-grid" aria-label="Report summary">
++  @for (s of stats; track s.id) {
++    <div class="rsc-card">
++      <div class="rsc-top">
++        <div class="rsc-icon" [class]="'rsc-icon--' + s.variant" aria-hidden="true">
++          <i class="ti ti-{{ s.icon }}"></i>
++        </div>
++        <div class="rsc-body">
++          <div class="rsc-label">{{ s.label }}</div>
++          <div class="rsc-value">{{ s.value }}</div>
++        </div>
++        <svg class="rsc-spark" [class]="'rsc-spark--' + s.variant" viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true">
++          <polyline [attr.points]="s.spark" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
++        </svg>
++      </div>
++      <div class="rsc-delta" [class]="'rsc-delta--' + s.deltaType">{{ s.delta }}</div>
++    </div>
++  }
++</section>
++
+ <div class="reports-layout">
+   <!-- Report list -->
+   <div class="lis-card report-list">
+diff --git a/src/app/features/reports/reports.component.ts b/src/app/features/reports/reports.component.ts
+index 3558bfd..4d5a9a4 100644
+--- a/src/app/features/reports/reports.component.ts
++++ b/src/app/features/reports/reports.component.ts
+@@ -7,6 +7,24 @@ interface ReportRow {
+   test: string; date: string; status: 'pending' | 'dispatched';
+ }
+ 
++interface ReportStat {
++  id: string;
++  label: string;
++  value: string;
++  icon: string;
++  variant: 'primary' | 'warning' | 'success' | 'danger';
++  delta: string;
++  deltaType: 'up' | 'down' | 'neutral';
++  spark: string; // normalized 0-100 points, space separated "x,y x,y ..."
++}
++
++const REPORT_STATS: ReportStat[] = [
++  { id: 'total',      label: 'Total Reports',   value: '1,248', icon: 'file-text',      variant: 'primary', delta: '+12.5% vs last month', deltaType: 'up',      spark: '0,28 16,24 32,26 48,18 64,20 80,10 100,6' },
++  { id: 'pending',    label: 'Pending Reports', value: '5',     icon: 'hourglass',      variant: 'warning', delta: 'Needs attention',       deltaType: 'neutral', spark: '0,20 16,10 32,16 48,8 64,18 80,12 100,4' },
++  { id: 'dispatched', label: 'Dispatched',      value: '320',   icon: 'circle-check',   variant: 'success',  delta: '+8.2% vs last month',   deltaType: 'up',      spark: '0,26 16,22 32,24 48,14 64,18 80,8 100,10' },
++  { id: 'critical',   label: 'Critical Alerts', value: '12',    icon: 'alert-triangle', variant: 'danger',  delta: 'Requires follow-up',    deltaType: 'down',    spark: '0,10 16,18 32,12 48,22 64,14 80,24 100,18' },
++];
++
+ const REPORTS: ReportRow[] = [
+   { id:'RPT-2406-041', patientName:'Arun Pillai',   patientId:'PAT-0316', test:'KFT',          date:'23 Jun 2026', status:'pending' },
+   { id:'RPT-2406-040', patientName:'Priya Sharma',  patientId:'PAT-0315', test:'Thyroid panel', date:'23 Jun 2026', status:'pending' },
+@@ -37,6 +55,7 @@ const KFT_ROWS = [
+ export class ReportsComponent {
+   protected readonly reports  = REPORTS;
+   protected readonly kftRows  = KFT_ROWS;
++  protected readonly stats    = REPORT_STATS;
+   selected = signal<ReportRow | null>(REPORTS[0]);
+   query = signal('');
+ 
+diff --git a/src/styles.css b/src/styles.css
+index 8c49778..c8d29c4 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -4013,6 +4013,7 @@
+      needs its own deep-teal brand band + light tint, in both
+      themes, rather than inheriting page colors. */
+   --rpt-band-bg:        #085041;
++  --rpt-band-bg-2:      #12946F;
+   --rpt-band-text:      #ffffff;
+   --rpt-band-text-sub:  #9FE1CB;
+   --rpt-tint-bg:        #F0FAF6;
+@@ -4065,6 +4066,7 @@
+      dark-safe equivalents instead of falling back to
+      near-white hex values. */
+   --rpt-band-bg:        #064837;
++  --rpt-band-bg-2:      #0E7757;
+   --rpt-band-text:      #ffffff;
+   --rpt-band-text-sub:  #91E1CB;
+   --rpt-tint-bg:        rgba(61,201,168,0.10);

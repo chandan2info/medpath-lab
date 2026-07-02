@@ -22,6 +22,77 @@
 .page-header-actions { padding-top: 4px; }
 .preview-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
+/* ── Summary stat cards ────────────────────────────────────
+   Four-up overview row (Total / Pending / Dispatched / Critical).
+   Colors ride the same semantic tokens used everywhere else
+   (--primary-*, --lis-warning, --lis-primary, --lis-danger) so
+   the row re-themes automatically across light/dark and every
+   palette (ocean, sunset, violet) without any local overrides. */
+.reports-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+@media (max-width: 1100px) {
+  .reports-stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) {
+  .reports-stats-grid { grid-template-columns: 1fr; }
+}
+
+.rsc-card {
+  background: var(--card-bg);
+  border: 0.5px solid var(--border-color);
+  border-radius: var(--lis-card-radius);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-card, 0 1px 3px rgba(0,0,0,0.06));
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+}
+.rsc-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card-hover, 0 8px 24px rgba(0,0,0,0.10));
+}
+
+.rsc-top { display: flex; align-items: flex-start; gap: 12px; }
+
+.rsc-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  flex-shrink: 0;
+}
+.rsc-icon--primary { background: var(--primary-xlight); color: var(--primary-deeper); }
+.rsc-icon--warning  { background: rgba(239,159,39,0.14); color: var(--lis-warning); }
+.rsc-icon--success  { background: var(--lis-primary-xlight); color: var(--lis-primary); }
+.rsc-icon--danger   { background: var(--lis-danger-xlight); color: var(--lis-danger); }
+
+.rsc-body { flex: 1; min-width: 0; }
+.rsc-label {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rsc-value { font-size: 22px; font-weight: 600; color: var(--text-primary); line-height: 1.15; }
+
+.rsc-spark { width: 64px; height: 26px; flex-shrink: 0; margin-top: 2px; }
+.rsc-spark--primary polyline { stroke: var(--primary-deeper); }
+.rsc-spark--warning  polyline { stroke: var(--lis-warning); }
+.rsc-spark--success  polyline { stroke: var(--lis-primary); }
+.rsc-spark--danger   polyline { stroke: var(--lis-danger); }
+
+.rsc-delta { font-size: 11px; font-weight: 500; margin-top: 10px; }
+.rsc-delta--up      { color: var(--lis-primary); }
+.rsc-delta--down     { color: var(--lis-danger); }
+.rsc-delta--neutral  { color: var(--lis-warning); }
+
 /* ── Layout ──────────────────────────────────────────────
    Grid sizing: the list column is wide enough that name +
    meta + status pill never collide. minmax(0, 1fr) on the
