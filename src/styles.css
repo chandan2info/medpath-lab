@@ -4013,6 +4013,7 @@
      needs its own deep-teal brand band + light tint, in both
      themes, rather than inheriting page colors. */
   --rpt-band-bg:        #085041;
+  --rpt-band-bg-2:      #12946F;
   --rpt-band-text:      #ffffff;
   --rpt-band-text-sub:  #9FE1CB;
   --rpt-tint-bg:        #F0FAF6;
@@ -4065,6 +4066,7 @@
      dark-safe equivalents instead of falling back to
      near-white hex values. */
   --rpt-band-bg:        #064837;
+  --rpt-band-bg-2:      #0E7757;
   --rpt-band-text:      #ffffff;
   --rpt-band-text-sub:  #91E1CB;
   --rpt-tint-bg:        rgba(61,201,168,0.10);
