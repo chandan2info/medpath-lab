@@ -51,9 +51,6 @@
       <i class="ti ti-file-text lis-card-icon" aria-hidden="true"></i>
       <h2 class="lis-card__title">All reports</h2>
       <span class="lis-badge lis-badge--danger">{{ pendingCount() }} pending</span>
-      <button type="button" class="report-filter-btn" aria-label="Filter reports">
-        <i class="ti ti-adjustments-horizontal" aria-hidden="true"></i>
-      </button>
     </div>
 
     <div class="report-search">
@@ -63,9 +60,18 @@
         placeholder="Search reports…"
         autocomplete="off"
         [value]="query()"
-        (input)="query.set($any($event.target).value)"
+        (input)="setQuery($any($event.target).value)"
         aria-label="Search reports"
       />
+    </div>
+
+    <div class="report-status-filter" role="group" aria-label="Filter reports by status">
+      <button type="button" class="report-status-pill" [class.report-status-pill--active]="statusFilter() === 'all'"
+        (click)="setStatusFilter('all')" [attr.aria-pressed]="statusFilter() === 'all'">All</button>
+      <button type="button" class="report-status-pill" [class.report-status-pill--active]="statusFilter() === 'pending'"
+        (click)="setStatusFilter('pending')" [attr.aria-pressed]="statusFilter() === 'pending'">Pending</button>
+      <button type="button" class="report-status-pill" [class.report-status-pill--active]="statusFilter() === 'dispatched'"
+        (click)="setStatusFilter('dispatched')" [attr.aria-pressed]="statusFilter() === 'dispatched'">Dispatched</button>
     </div>
 
     <div role="list" aria-label="Report list" class="report-rows">
@@ -75,7 +81,7 @@
           <span>No reports found.</span>
         </div>
       }
-      @for (r of filteredReports(); track r.id) {
+      @for (r of pagedReports(); track r.id) {
         <div class="report-row" role="listitem"
           [class.report-row--selected]="selected()?.id === r.id"
           (click)="selected.set(r)"
@@ -99,13 +105,23 @@
     </div>
 
     <div class="report-pagination">
-      <span>Showing 1 to {{ filteredReports().length }} of {{ reports.length }} reports</span>
+      <span>
+        @if (filteredReports().length === 0) {
+          No reports match
+        } @else {
+          Showing {{ rangeStart() }}–{{ rangeEnd() }} of {{ filteredReports().length }} reports
+        }
+      </span>
       <div class="report-pagination-controls">
-        <button type="button" class="page-btn" aria-label="Previous page" disabled>
+        <button type="button" class="page-btn" aria-label="Previous page" [disabled]="currentPage() === 1" (click)="prevPage()">
           <i class="ti ti-chevron-left" aria-hidden="true"></i>
         </button>
-        <span class="page-btn page-btn--active">1</span>
-        <button type="button" class="page-btn" aria-label="Next page" disabled>
+        @for (p of totalPagesArray(); track p) {
+          <button type="button" class="page-btn" [class.page-btn--active]="p === currentPage()"
+            [attr.aria-current]="p === currentPage() ? 'page' : null"
+            [attr.aria-label]="'Page ' + p" (click)="goToPage(p)">{{ p }}</button>
+        }
+        <button type="button" class="page-btn" aria-label="Next page" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
           <i class="ti ti-chevron-right" aria-hidden="true"></i>
         </button>
       </div>

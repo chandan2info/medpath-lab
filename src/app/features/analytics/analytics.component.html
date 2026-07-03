@@ -173,10 +173,51 @@
     <div class="an-table-wrap">
       <table class="an-table">
         <thead>
-          <tr><th>Test</th><th>Orders</th><th>Revenue</th><th>Change</th></tr>
+          <tr>
+            <th scope="col" [attr.aria-sort]="testsSort.ariaSort('name')">
+              <button type="button" class="th-sort" [class.th-sort--active]="testsSort.isActive('name')" (click)="testsSort.toggle('name')">
+                Test
+                <i class="ti th-sort-icon"
+                   [class.ti-arrows-sort]="!testsSort.isActive('name')"
+                   [class.ti-sort-ascending]="testsSort.isActive('name') && testsSort.dir() === 'asc'"
+                   [class.ti-sort-descending]="testsSort.isActive('name') && testsSort.dir() === 'desc'"
+                   aria-hidden="true"></i>
+              </button>
+            </th>
+            <th scope="col" [attr.aria-sort]="testsSort.ariaSort('orders')">
+              <button type="button" class="th-sort" [class.th-sort--active]="testsSort.isActive('orders')" (click)="testsSort.toggle('orders')">
+                Orders
+                <i class="ti th-sort-icon"
+                   [class.ti-arrows-sort]="!testsSort.isActive('orders')"
+                   [class.ti-sort-ascending]="testsSort.isActive('orders') && testsSort.dir() === 'asc'"
+                   [class.ti-sort-descending]="testsSort.isActive('orders') && testsSort.dir() === 'desc'"
+                   aria-hidden="true"></i>
+              </button>
+            </th>
+            <th scope="col" [attr.aria-sort]="testsSort.ariaSort('revenue')">
+              <button type="button" class="th-sort" [class.th-sort--active]="testsSort.isActive('revenue')" (click)="testsSort.toggle('revenue')">
+                Revenue
+                <i class="ti th-sort-icon"
+                   [class.ti-arrows-sort]="!testsSort.isActive('revenue')"
+                   [class.ti-sort-ascending]="testsSort.isActive('revenue') && testsSort.dir() === 'asc'"
+                   [class.ti-sort-descending]="testsSort.isActive('revenue') && testsSort.dir() === 'desc'"
+                   aria-hidden="true"></i>
+              </button>
+            </th>
+            <th scope="col" [attr.aria-sort]="testsSort.ariaSort('changePercent')">
+              <button type="button" class="th-sort" [class.th-sort--active]="testsSort.isActive('changePercent')" (click)="testsSort.toggle('changePercent')">
+                Change
+                <i class="ti th-sort-icon"
+                   [class.ti-arrows-sort]="!testsSort.isActive('changePercent')"
+                   [class.ti-sort-ascending]="testsSort.isActive('changePercent') && testsSort.dir() === 'asc'"
+                   [class.ti-sort-descending]="testsSort.isActive('changePercent') && testsSort.dir() === 'desc'"
+                   aria-hidden="true"></i>
+              </button>
+            </th>
+          </tr>
         </thead>
         <tbody>
-          @for (t of data.topTests(); track t.id) {
+          @for (t of sortedTopTests(); track t.id) {
             <tr class="an-table__row">
               <td class="an-table__primary">{{ t.name }}</td>
               <td>{{ t.orders }}</td>
@@ -201,10 +242,51 @@
     <div class="an-table-wrap">
       <table class="an-table">
         <thead>
-          <tr><th>Doctor</th><th>Referrals</th><th>Revenue</th><th>Change</th></tr>
+          <tr>
+            <th scope="col" [attr.aria-sort]="doctorsSort.ariaSort('name')">
+              <button type="button" class="th-sort" [class.th-sort--active]="doctorsSort.isActive('name')" (click)="doctorsSort.toggle('name')">
+                Doctor
+                <i class="ti th-sort-icon"
+                   [class.ti-arrows-sort]="!doctorsSort.isActive('name')"
+                   [class.ti-sort-ascending]="doctorsSort.isActive('name') && doctorsSort.dir() === 'asc'"
+                   [class.ti-sort-descending]="doctorsSort.isActive('name') && doctorsSort.dir() === 'desc'"
+                   aria-hidden="true"></i>
+              </button>
+            </th>
+            <th scope="col" [attr.aria-sort]="doctorsSort.ariaSort('referrals')">
+              <button type="button" class="th-sort" [class.th-sort--active]="doctorsSort.isActive('referrals')" (click)="doctorsSort.toggle('referrals')">
+                Referrals
+                <i class="ti th-sort-icon"
+                   [class.ti-arrows-sort]="!doctorsSort.isActive('referrals')"
+                   [class.ti-sort-ascending]="doctorsSort.isActive('referrals') && doctorsSort.dir() === 'asc'"
+                   [class.ti-sort-descending]="doctorsSort.isActive('referrals') && doctorsSort.dir() === 'desc'"
+                   aria-hidden="true"></i>
+              </button>
+            </th>
+            <th scope="col" [attr.aria-sort]="doctorsSort.ariaSort('revenue')">
+              <button type="button" class="th-sort" [class.th-sort--active]="doctorsSort.isActive('revenue')" (click)="doctorsSort.toggle('revenue')">
+                Revenue
+                <i class="ti th-sort-icon"
+                   [class.ti-arrows-sort]="!doctorsSort.isActive('revenue')"
+                   [class.ti-sort-ascending]="doctorsSort.isActive('revenue') && doctorsSort.dir() === 'asc'"
+                   [class.ti-sort-descending]="doctorsSort.isActive('revenue') && doctorsSort.dir() === 'desc'"
+                   aria-hidden="true"></i>
+              </button>
+            </th>
+            <th scope="col" [attr.aria-sort]="doctorsSort.ariaSort('changePercent')">
+              <button type="button" class="th-sort" [class.th-sort--active]="doctorsSort.isActive('changePercent')" (click)="doctorsSort.toggle('changePercent')">
+                Change
+                <i class="ti th-sort-icon"
+                   [class.ti-arrows-sort]="!doctorsSort.isActive('changePercent')"
+                   [class.ti-sort-ascending]="doctorsSort.isActive('changePercent') && doctorsSort.dir() === 'asc'"
+                   [class.ti-sort-descending]="doctorsSort.isActive('changePercent') && doctorsSort.dir() === 'desc'"
+                   aria-hidden="true"></i>
+              </button>
+            </th>
+          </tr>
         </thead>
         <tbody>
-          @for (doc of data.topDoctors(); track doc.id) {
+          @for (doc of sortedTopDoctors(); track doc.id) {
             <tr class="an-table__row">
               <td class="an-table__primary">
                 {{ doc.name }}

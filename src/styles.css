@@ -1805,6 +1805,46 @@
 .user-name { font-size: 12px; font-weight: 700; color: var(--text-base); }
 .user-role { font-size: 10px; color: var(--text-subtle); }
 
+/* ══════════════════════════════════════════════════════
+   SORTABLE TABLE HEADERS (shared)
+   Wrap a column label in <button class="th-sort"> inside the
+   <th>, set [attr.aria-sort] on the <th> itself. Inherits font,
+   color, case and spacing from whichever table hosts it, so it
+   drops into any existing table without per-page CSS.
+   Paired with shared/utils/table-sort.ts (TableSort<T>).
+   ══════════════════════════════════════════════════════ */
+.th-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  margin: -4px -8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  white-space: inherit;
+  transition: background 0.14s ease, color 0.14s ease;
+}
+.th-sort:hover { background: var(--lis-primary-xlight); color: var(--text-primary); }
+.th-sort:active { transform: scale(0.96); }
+.th-sort:focus-visible { outline: 2px solid var(--lis-primary); outline-offset: 1px; }
+.th-sort--active { color: var(--text-primary); }
+
+.th-sort-icon {
+  font-size: 13px;
+  color: var(--text-secondary);
+  opacity: 0.45;
+  transition: color 0.14s ease, opacity 0.14s ease, transform 0.14s ease;
+  flex-shrink: 0;
+}
+.th-sort:hover .th-sort-icon { opacity: 0.8; }
+.th-sort--active .th-sort-icon { color: var(--lis-primary); opacity: 1; }
+
 /* Content Scroll Area */
 .content-scroll {
   flex: 1;

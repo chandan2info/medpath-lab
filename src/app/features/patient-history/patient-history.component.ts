@@ -1,7 +1,6 @@
 import { Component, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgClass } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 
 interface PatientRecord {
   id: string; name: string; age: number; sex: string;
@@ -40,19 +39,19 @@ const PATIENTS: PatientRecord[] = [
 @Component({
   selector: 'app-patient-history',
   standalone: true,
-  imports: [RouterLink, NgClass, FormsModule],
+  imports: [RouterLink, NgClass],
   changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './patient-history.component.html',
     styleUrl: './patient-history.component.css',
 })
 export class PatientHistoryComponent {
   protected readonly allPatients = PATIENTS;
-  searchQ         = '';
+  searchQ         = signal('');
   selectedPatient = signal<PatientRecord | null>(PATIENTS[0]);
   activeTab       = signal('Visit history');
 
   filtered = computed(() => {
-    const q = this.searchQ.toLowerCase();
+    const q = this.searchQ().trim().toLowerCase();
     if (!q) return this.allPatients;
     return this.allPatients.filter(p =>
       p.name.toLowerCase().includes(q) ||

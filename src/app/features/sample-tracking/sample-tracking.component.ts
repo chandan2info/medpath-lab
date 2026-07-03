@@ -9,6 +9,16 @@ import { NgClass, DatePipe, TitleCasePipe } from '@angular/common';
 import { StatusPillComponent } from '../../shared/components/status-pill/status-pill.component';
 import { Sample, SampleStatus } from '../../shared/models/lis.models';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
+import { TableSort } from '../../shared/utils/table-sort';
+
+/** Sortable projection of a Sample row — priority/status ranked so STAT/critical sort to the top. */
+interface SampleRow extends Sample {
+  prioritySortRank: number;
+  statusSortRank: number;
+}
+
+const PRIORITY_RANK: Record<Sample['priority'], number> = { stat: 0, urgent: 1, routine: 2 };
+const STATUS_RANK: Record<SampleStatus, number> = { critical: 0, processing: 1, pending: 2, ready: 3, dispatched: 4 };
 
 const SAMPLES: Sample[] = [
   { id:'SMP-2406-087', patientId:'PAT-0316', patientName:'Arun Pillai',     tests:['KFT','Urine R/M'],  priority:'stat',    status:'critical',   collectedAt:'9:20 AM',  etaLabel:'Now',   tubes:[{id:'087-A',color:'#E24B4A',label:'Red top (SST)',   tests:['KFT']},{id:'087-B',color:'#C9A227',label:'Yellow (Urine)',tests:['Urine R/M']}] },
@@ -86,6 +96,18 @@ export class SampleTrackingComponent implements OnInit {
       (f === 'all' || s.status === f || (f === 'critical' && s.priority === 'stat')) &&
       (s.patientName.toLowerCase().includes(q) || s.id.toLowerCase().includes(q))
     );
+  });
+
+  // ── Column sorting ───────────────────────────────────────────
+  protected readonly sort = new TableSort<SampleRow>('statusSortRank', 'asc');
+
+  protected readonly sortedSamples = computed<SampleRow[]>(() => {
+    const rows: SampleRow[] = this.filteredSamples().map(s => ({
+      ...s,
+      prioritySortRank: PRIORITY_RANK[s.priority],
+      statusSortRank: STATUS_RANK[s.status],
+    }));
+    return this.sort.apply(rows);
   });
 
   selectSample(s: Sample): void { this.selectedSample.set(s); }

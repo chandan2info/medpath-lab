@@ -178,17 +178,62 @@
     <table class="sample-tbl" role="table" aria-label="Sample queue">
       <thead>
         <tr>
-          <th scope="col">Sample ID</th>
-          <th scope="col">Patient</th>
+          <th scope="col" [attr.aria-sort]="sort.ariaSort('id')">
+            <button type="button" class="th-sort" [class.th-sort--active]="sort.isActive('id')" (click)="sort.toggle('id')">
+              Sample ID
+              <i class="ti th-sort-icon"
+                 [class.ti-arrows-sort]="!sort.isActive('id')"
+                 [class.ti-sort-ascending]="sort.isActive('id') && sort.dir() === 'asc'"
+                 [class.ti-sort-descending]="sort.isActive('id') && sort.dir() === 'desc'"
+                 aria-hidden="true"></i>
+            </button>
+          </th>
+          <th scope="col" [attr.aria-sort]="sort.ariaSort('patientName')">
+            <button type="button" class="th-sort" [class.th-sort--active]="sort.isActive('patientName')" (click)="sort.toggle('patientName')">
+              Patient
+              <i class="ti th-sort-icon"
+                 [class.ti-arrows-sort]="!sort.isActive('patientName')"
+                 [class.ti-sort-ascending]="sort.isActive('patientName') && sort.dir() === 'asc'"
+                 [class.ti-sort-descending]="sort.isActive('patientName') && sort.dir() === 'desc'"
+                 aria-hidden="true"></i>
+            </button>
+          </th>
           <th scope="col">Tube(s)</th>
           <th scope="col">Tests ordered</th>
-          <th scope="col">Priority</th>
-          <th scope="col">Status</th>
-          <th scope="col">ETA</th>
+          <th scope="col" [attr.aria-sort]="sort.ariaSort('prioritySortRank')">
+            <button type="button" class="th-sort" [class.th-sort--active]="sort.isActive('prioritySortRank')" (click)="sort.toggle('prioritySortRank')">
+              Priority
+              <i class="ti th-sort-icon"
+                 [class.ti-arrows-sort]="!sort.isActive('prioritySortRank')"
+                 [class.ti-sort-ascending]="sort.isActive('prioritySortRank') && sort.dir() === 'asc'"
+                 [class.ti-sort-descending]="sort.isActive('prioritySortRank') && sort.dir() === 'desc'"
+                 aria-hidden="true"></i>
+            </button>
+          </th>
+          <th scope="col" [attr.aria-sort]="sort.ariaSort('statusSortRank')">
+            <button type="button" class="th-sort" [class.th-sort--active]="sort.isActive('statusSortRank')" (click)="sort.toggle('statusSortRank')">
+              Status
+              <i class="ti th-sort-icon"
+                 [class.ti-arrows-sort]="!sort.isActive('statusSortRank')"
+                 [class.ti-sort-ascending]="sort.isActive('statusSortRank') && sort.dir() === 'asc'"
+                 [class.ti-sort-descending]="sort.isActive('statusSortRank') && sort.dir() === 'desc'"
+                 aria-hidden="true"></i>
+            </button>
+          </th>
+          <th scope="col" [attr.aria-sort]="sort.ariaSort('etaLabel')">
+            <button type="button" class="th-sort" [class.th-sort--active]="sort.isActive('etaLabel')" (click)="sort.toggle('etaLabel')">
+              ETA
+              <i class="ti th-sort-icon"
+                 [class.ti-arrows-sort]="!sort.isActive('etaLabel')"
+                 [class.ti-sort-ascending]="sort.isActive('etaLabel') && sort.dir() === 'asc'"
+                 [class.ti-sort-descending]="sort.isActive('etaLabel') && sort.dir() === 'desc'"
+                 aria-hidden="true"></i>
+            </button>
+          </th>
         </tr>
       </thead>
       <tbody>
-        @for (s of filteredSamples(); track s.id) {
+        @for (s of sortedSamples(); track s.id) {
           <tr (click)="selectSample(s)"
             [class.row--selected]="selectedSample()?.id === s.id"
             [attr.aria-selected]="selectedSample()?.id === s.id">

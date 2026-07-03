@@ -44,6 +44,9 @@ const KFT_ROWS = [
   { name:'eGFR (CKD-EPI)',      result:'32',  unit:'mL/min', ref:'≥ 60',       flag:'low'      },
 ];
 
+const PAGE_SIZE = 5;
+type ReportStatusFilter = 'all' | 'pending' | 'dispatched';
+
 @Component({
   selector: 'app-reports',
   standalone: true,
@@ -58,18 +61,52 @@ export class ReportsComponent {
   protected readonly stats    = REPORT_STATS;
   selected = signal<ReportRow | null>(REPORTS[0]);
   query = signal('');
+  statusFilter = signal<ReportStatusFilter>('all');
+  page = signal(1);
+  readonly pageSize = PAGE_SIZE;
 
+  /** Text + status filtered, but not yet paginated — used for the "N pending" badge and page-count math. */
   filteredReports = computed(() => {
     const q = this.query().trim().toLowerCase();
-    if (!q) return this.reports;
+    const status = this.statusFilter();
     return this.reports.filter(r =>
-      r.patientName.toLowerCase().includes(q) ||
-      r.test.toLowerCase().includes(q) ||
-      r.id.toLowerCase().includes(q)
+      (status === 'all' || r.status === status) &&
+      (!q || r.patientName.toLowerCase().includes(q) || r.test.toLowerCase().includes(q) || r.id.toLowerCase().includes(q))
     );
   });
 
+  totalPages = computed(() => Math.max(1, Math.ceil(this.filteredReports().length / PAGE_SIZE)));
+  totalPagesArray = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
+
+  /** Clamp so an out-of-range page (e.g. after a filter shrinks the result set) never shows a blank list. */
+  currentPage = computed(() => Math.min(this.page(), this.totalPages()));
+
+  pagedReports = computed(() => {
+    const start = (this.currentPage() - 1) * PAGE_SIZE;
+    return this.filteredReports().slice(start, start + PAGE_SIZE);
+  });
+
+  rangeStart = computed(() => this.filteredReports().length === 0 ? 0 : (this.currentPage() - 1) * PAGE_SIZE + 1);
+  rangeEnd   = computed(() => Math.min(this.currentPage() * PAGE_SIZE, this.filteredReports().length));
+
   pendingCount = computed(() => this.reports.filter(r => r.status === 'pending').length);
+
+  setQuery(q: string): void {
+    this.query.set(q);
+    this.page.set(1); // any new search starts back at page 1
+  }
+
+  setStatusFilter(status: ReportStatusFilter): void {
+    this.statusFilter.set(status);
+    this.page.set(1);
+  }
+
+  goToPage(p: number): void {
+    this.page.set(Math.min(Math.max(1, p), this.totalPages()));
+  }
+
+  prevPage(): void { this.goToPage(this.currentPage() - 1); }
+  nextPage(): void { this.goToPage(this.currentPage() + 1); }
 
   initials(name: string) { return name.split(' ').map(w => w[0]).join('').slice(0,2); }
 }

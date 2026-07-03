@@ -114,23 +114,34 @@
 /* ── Report list card ──────────────────────────────────── */
 .report-list { display: flex; flex-direction: column; }
 .lis-card__header { position: relative; }
-.report-filter-btn {
-  margin-left: auto;
-  width: 28px;
-  height: 28px;
+/* Status filter — All / Pending / Dispatched */
+.report-status-filter {
+  display: flex;
+  gap: 6px;
+  padding: 10px 16px;
+  border-bottom: 0.5px solid var(--border-color);
+  flex-shrink: 0;
+}
+.report-status-pill {
+  padding: 5px 12px;
   border: 0.5px solid var(--border-color);
-  border-radius: 7px;
+  border-radius: 20px;
   background: transparent;
   color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  font-size: 11.5px;
+  font-weight: 500;
   cursor: pointer;
-  flex-shrink: 0;
-  transition: background 0.14s ease, color 0.14s ease;
+  transition: background 0.14s ease, border-color 0.14s ease, color 0.14s ease, transform 0.1s ease;
 }
-.report-filter-btn:hover { background: var(--body-bg); color: var(--text-primary); }
-.report-filter-btn i { font-size: 15px; }
+.report-status-pill:hover { background: var(--body-bg); color: var(--text-primary); }
+.report-status-pill:active { transform: scale(0.96); }
+.report-status-pill:focus-visible { outline: 2px solid var(--lis-primary); outline-offset: 1px; }
+.report-status-pill--active {
+  background: var(--lis-primary-xlight);
+  border-color: var(--lis-primary);
+  color: var(--lis-primary-deep);
+  font-weight: 600;
+}
 
 /* Search box — sits between the card header and the row list,
    own bottom border so it reads as a distinct control strip. */
@@ -240,12 +251,15 @@
 }
 .page-btn:disabled { opacity: 0.4; cursor: default; }
 .page-btn:not(:disabled):hover { background: var(--body-bg); }
+.page-btn:not(:disabled):active { transform: scale(0.92); }
+.page-btn:focus-visible { outline: 2px solid var(--lis-primary); outline-offset: 1px; }
 .page-btn--active {
   background: var(--lis-primary);
   border-color: var(--lis-primary);
   color: #fff;
   font-weight: 600;
 }
+.page-btn--active:not(:disabled):hover { background: var(--lis-primary-deep, var(--lis-primary)); }
 
 /* ── Preview area ──────────────────────────────────────── */
 .report-preview-area { display: flex; flex-direction: column; gap: 14px; min-width: 0; }

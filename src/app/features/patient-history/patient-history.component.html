@@ -15,7 +15,12 @@
 <div class="ph-search" role="search">
   <i class="ti ti-search" aria-hidden="true"></i>
   <input type="search" placeholder="Search by name, phone or patient ID…"
-    [(ngModel)]="searchQ" aria-label="Search patients" />
+    [value]="searchQ()" (input)="searchQ.set($any($event.target).value)" aria-label="Search patients" />
+  @if (searchQ()) {
+    <button type="button" class="ph-search-clear" aria-label="Clear search" (click)="searchQ.set('')">
+      <i class="ti ti-x" aria-hidden="true"></i>
+    </button>
+  }
   <i class="ti ti-adjustments-horizontal ph-search-filter" aria-label="Filter patients"></i>
 </div>
 

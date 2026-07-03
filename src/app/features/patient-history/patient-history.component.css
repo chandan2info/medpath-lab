@@ -36,6 +36,19 @@
   flex: 1;
 }
 .ph-search input::placeholder { color: var(--text-secondary); }
+.ph-search-clear {
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 3px;
+  border-radius: 50%;
+  line-height: 1;
+  display: flex;
+  transition: background 0.14s ease, color 0.14s ease;
+}
+.ph-search-clear:hover { color: var(--text-primary); background: var(--body-bg); }
 .ph-search-filter {
   margin-left: auto;
   color: var(--text-secondary);

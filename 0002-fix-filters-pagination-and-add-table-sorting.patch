@@ -1,0 +1,769 @@
+From 72cbfc7bb83f12851838fb55dae0f0379e830977 Mon Sep 17 00:00:00 2001
+From: Angular Dev <dev@medpath.local>
+Date: Fri, 3 Jul 2026 17:56:34 +0000
+Subject: [PATCH] fix(filters/pagination): repair broken filter, wire real
+ pagination, add column sorting
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Audited every page for filter/pagination/table bugs.
+
+Bugs fixed:
+- Patient History: the search box was two-way bound to a plain
+  ('') property inside a computed() — computed() only reacts to
+  signal reads, so it had zero tracked dependencies and the
+  filtered list never updated after the first render. Typing in
+  the box silently did nothing. Converted searchQ to a signal,
+  switched the input off ngModel to [value]/(input), added a
+  clear (x) button, dropped the now-unused FormsModule import.
+- Reports: the pagination footer was fully static markup —
+  'Showing 1 to N of N', a hardcoded page '1', and permanently
+  disabled prev/next buttons — so it never did anything even
+  though the page already had more rows than fit. Replaced it
+  with real client-side pagination (5/page): working prev/next,
+  numbered page buttons, correct 'Showing X-Y of Z', and the
+  range auto-clamps if a filter shrinks the result set below the
+  current page. Also wired up the 'Filter reports' icon button,
+  which had no click handler at all, into a working All / Pending
+  / Dispatched status filter — combined with search, and both
+  reset back to page 1 on change.
+
+New: shared/utils/table-sort.ts — a small generic TableSort<T>
+helper (click-to-sort, asc/desc toggle, numeric-aware compare,
+optional per-column accessors for derived/formatted values like
+currency strings) plus a shared .th-sort header style in
+styles.css so any table can adopt it without per-page CSS.
+
+Sorting added to every real data table in the app:
+- Analytics — 'Top tests ordered' (test, orders, revenue, change)
+  and 'Top referring doctors' (doctor, referrals, revenue,
+  change); revenue sorts by numeric amount, not the '₹4,750'
+  string.
+- Sample Tracking — sample queue (ID, patient, priority, status,
+  ETA); priority/status sort by clinical urgency rank (STAT/
+  critical first) rather than alphabetically. Tube(s) and Tests
+  ordered columns are left unsortable since they're multi-value.
+
+Not touched: report-preview / result-entry / print-style report
+tables — these render one patient's fixed lab panel in a set
+clinical order, not a sortable list, so sorting them would be
+wrong. features/dashboard (crypto ticker) isn't wired into any
+route — confirmed dead scaffold code, left alone.
+---
+ .../analytics/analytics.component.html        | 90 +++++++++++++++++-
+ .../features/analytics/analytics.component.ts | 17 +++-
+ .../patient-history.component.css             | 13 +++
+ .../patient-history.component.html            |  7 +-
+ .../patient-history.component.ts              |  7 +-
+ .../features/reports/reports.component.css    | 38 +++++---
+ .../features/reports/reports.component.html   | 34 +++++--
+ src/app/features/reports/reports.component.ts | 45 ++++++++-
+ .../sample-tracking.component.html            | 57 ++++++++++--
+ .../sample-tracking.component.ts              | 22 +++++
+ src/app/shared/utils/table-sort.ts            | 93 +++++++++++++++++++
+ src/styles.css                                | 40 ++++++++
+ 12 files changed, 422 insertions(+), 41 deletions(-)
+ create mode 100644 src/app/shared/utils/table-sort.ts
+
+diff --git a/src/app/features/analytics/analytics.component.html b/src/app/features/analytics/analytics.component.html
+index ddd6c07..9f2603c 100644
+--- a/src/app/features/analytics/analytics.component.html
++++ b/src/app/features/analytics/analytics.component.html
+@@ -173,10 +173,51 @@
+     <div class="an-table-wrap">
+       <table class="an-table">
+         <thead>
+-          <tr><th>Test</th><th>Orders</th><th>Revenue</th><th>Change</th></tr>
++          <tr>
++            <th scope="col" [attr.aria-sort]="testsSort.ariaSort('name')">
++              <button type="button" class="th-sort" [class.th-sort--active]="testsSort.isActive('name')" (click)="testsSort.toggle('name')">
++                Test
++                <i class="ti th-sort-icon"
++                   [class.ti-arrows-sort]="!testsSort.isActive('name')"
++                   [class.ti-sort-ascending]="testsSort.isActive('name') && testsSort.dir() === 'asc'"
++                   [class.ti-sort-descending]="testsSort.isActive('name') && testsSort.dir() === 'desc'"
++                   aria-hidden="true"></i>
++              </button>
++            </th>
++            <th scope="col" [attr.aria-sort]="testsSort.ariaSort('orders')">
++              <button type="button" class="th-sort" [class.th-sort--active]="testsSort.isActive('orders')" (click)="testsSort.toggle('orders')">
++                Orders
++                <i class="ti th-sort-icon"
++                   [class.ti-arrows-sort]="!testsSort.isActive('orders')"
++                   [class.ti-sort-ascending]="testsSort.isActive('orders') && testsSort.dir() === 'asc'"
++                   [class.ti-sort-descending]="testsSort.isActive('orders') && testsSort.dir() === 'desc'"
++                   aria-hidden="true"></i>
++              </button>
++            </th>
++            <th scope="col" [attr.aria-sort]="testsSort.ariaSort('revenue')">
++              <button type="button" class="th-sort" [class.th-sort--active]="testsSort.isActive('revenue')" (click)="testsSort.toggle('revenue')">
++                Revenue
++                <i class="ti th-sort-icon"
++                   [class.ti-arrows-sort]="!testsSort.isActive('revenue')"
++                   [class.ti-sort-ascending]="testsSort.isActive('revenue') && testsSort.dir() === 'asc'"
++                   [class.ti-sort-descending]="testsSort.isActive('revenue') && testsSort.dir() === 'desc'"
++                   aria-hidden="true"></i>
++              </button>
++            </th>
++            <th scope="col" [attr.aria-sort]="testsSort.ariaSort('changePercent')">
++              <button type="button" class="th-sort" [class.th-sort--active]="testsSort.isActive('changePercent')" (click)="testsSort.toggle('changePercent')">
++                Change
++                <i class="ti th-sort-icon"
++                   [class.ti-arrows-sort]="!testsSort.isActive('changePercent')"
++                   [class.ti-sort-ascending]="testsSort.isActive('changePercent') && testsSort.dir() === 'asc'"
++                   [class.ti-sort-descending]="testsSort.isActive('changePercent') && testsSort.dir() === 'desc'"
++                   aria-hidden="true"></i>
++              </button>
++            </th>
++          </tr>
+         </thead>
+         <tbody>
+-          @for (t of data.topTests(); track t.id) {
++          @for (t of sortedTopTests(); track t.id) {
+             <tr class="an-table__row">
+               <td class="an-table__primary">{{ t.name }}</td>
+               <td>{{ t.orders }}</td>
+@@ -201,10 +242,51 @@
+     <div class="an-table-wrap">
+       <table class="an-table">
+         <thead>
+-          <tr><th>Doctor</th><th>Referrals</th><th>Revenue</th><th>Change</th></tr>
++          <tr>
++            <th scope="col" [attr.aria-sort]="doctorsSort.ariaSort('name')">
++              <button type="button" class="th-sort" [class.th-sort--active]="doctorsSort.isActive('name')" (click)="doctorsSort.toggle('name')">
++                Doctor
++                <i class="ti th-sort-icon"
++                   [class.ti-arrows-sort]="!doctorsSort.isActive('name')"
++                   [class.ti-sort-ascending]="doctorsSort.isActive('name') && doctorsSort.dir() === 'asc'"
++                   [class.ti-sort-descending]="doctorsSort.isActive('name') && doctorsSort.dir() === 'desc'"
++                   aria-hidden="true"></i>
++              </button>
++            </th>
++            <th scope="col" [attr.aria-sort]="doctorsSort.ariaSort('referrals')">
++              <button type="button" class="th-sort" [class.th-sort--active]="doctorsSort.isActive('referrals')" (click)="doctorsSort.toggle('referrals')">
++                Referrals
++                <i class="ti th-sort-icon"
++                   [class.ti-arrows-sort]="!doctorsSort.isActive('referrals')"
++                   [class.ti-sort-ascending]="doctorsSort.isActive('referrals') && doctorsSort.dir() === 'asc'"
++                   [class.ti-sort-descending]="doctorsSort.isActive('referrals') && doctorsSort.dir() === 'desc'"
++                   aria-hidden="true"></i>
++              </button>
++            </th>
++            <th scope="col" [attr.aria-sort]="doctorsSort.ariaSort('revenue')">
++              <button type="button" class="th-sort" [class.th-sort--active]="doctorsSort.isActive('revenue')" (click)="doctorsSort.toggle('revenue')">
++                Revenue
++                <i class="ti th-sort-icon"
++                   [class.ti-arrows-sort]="!doctorsSort.isActive('revenue')"
++                   [class.ti-sort-ascending]="doctorsSort.isActive('revenue') && doctorsSort.dir() === 'asc'"
++                   [class.ti-sort-descending]="doctorsSort.isActive('revenue') && doctorsSort.dir() === 'desc'"
++                   aria-hidden="true"></i>
++              </button>
++            </th>
++            <th scope="col" [attr.aria-sort]="doctorsSort.ariaSort('changePercent')">
++              <button type="button" class="th-sort" [class.th-sort--active]="doctorsSort.isActive('changePercent')" (click)="doctorsSort.toggle('changePercent')">
++                Change
++                <i class="ti th-sort-icon"
++                   [class.ti-arrows-sort]="!doctorsSort.isActive('changePercent')"
++                   [class.ti-sort-ascending]="doctorsSort.isActive('changePercent') && doctorsSort.dir() === 'asc'"
++                   [class.ti-sort-descending]="doctorsSort.isActive('changePercent') && doctorsSort.dir() === 'desc'"
++                   aria-hidden="true"></i>
++              </button>
++            </th>
++          </tr>
+         </thead>
+         <tbody>
+-          @for (doc of data.topDoctors(); track doc.id) {
++          @for (doc of sortedTopDoctors(); track doc.id) {
+             <tr class="an-table__row">
+               <td class="an-table__primary">
+                 {{ doc.name }}
+diff --git a/src/app/features/analytics/analytics.component.ts b/src/app/features/analytics/analytics.component.ts
+index 24df03b..d3be767 100644
+--- a/src/app/features/analytics/analytics.component.ts
++++ b/src/app/features/analytics/analytics.component.ts
+@@ -16,7 +16,11 @@ import {
+   ApexPlotOptions,
+ } from 'ng-apexcharts';
+ import { AnalyticsDataService } from './services/analytics-data.service';
+-import { DateRange } from './models/analytics.models';
++import { DateRange, TopTest, ReferringDoctor } from './models/analytics.models';
++import { TableSort } from '../../shared/utils/table-sort';
++
++/** "₹4,750" → 4750, for numeric sorting of currency-string columns. */
++const toAmount = (revenue: string): number => Number(revenue.replace(/[^\d.-]/g, '')) || 0;
+ 
+ interface RangeOption {
+   id: DateRange;
+@@ -43,6 +47,17 @@ export class AnalyticsComponent {
+   protected readonly rangeOptions = RANGE_OPTIONS;
+   protected readonly Math = Math;
+ 
++  // ── Table sorting (Top tests / Top referring doctors) ───────
++  protected readonly testsSort = new TableSort<TopTest>('orders', 'desc', {
++    revenue: row => toAmount(row.revenue),
++  });
++  protected readonly sortedTopTests = computed(() => this.testsSort.apply(this.data.topTests()));
++
++  protected readonly doctorsSort = new TableSort<ReferringDoctor>('referrals', 'desc', {
++    revenue: row => toAmount(row.revenue),
++  });
++  protected readonly sortedTopDoctors = computed(() => this.doctorsSort.apply(this.data.topDoctors()));
++
+   activeRange(id: DateRange): boolean {
+     return this.data.range() === id;
+   }
+diff --git a/src/app/features/patient-history/patient-history.component.css b/src/app/features/patient-history/patient-history.component.css
+index d6fa178..3226435 100644
+--- a/src/app/features/patient-history/patient-history.component.css
++++ b/src/app/features/patient-history/patient-history.component.css
+@@ -36,6 +36,19 @@
+   flex: 1;
+ }
+ .ph-search input::placeholder { color: var(--text-secondary); }
++.ph-search-clear {
++  color: var(--text-secondary);
++  font-size: 14px;
++  cursor: pointer;
++  background: none;
++  border: none;
++  padding: 3px;
++  border-radius: 50%;
++  line-height: 1;
++  display: flex;
++  transition: background 0.14s ease, color 0.14s ease;
++}
++.ph-search-clear:hover { color: var(--text-primary); background: var(--body-bg); }
+ .ph-search-filter {
+   margin-left: auto;
+   color: var(--text-secondary);
+diff --git a/src/app/features/patient-history/patient-history.component.html b/src/app/features/patient-history/patient-history.component.html
+index f715a7a..6cfa636 100644
+--- a/src/app/features/patient-history/patient-history.component.html
++++ b/src/app/features/patient-history/patient-history.component.html
+@@ -15,7 +15,12 @@
+ <div class="ph-search" role="search">
+   <i class="ti ti-search" aria-hidden="true"></i>
+   <input type="search" placeholder="Search by name, phone or patient ID…"
+-    [(ngModel)]="searchQ" aria-label="Search patients" />
++    [value]="searchQ()" (input)="searchQ.set($any($event.target).value)" aria-label="Search patients" />
++  @if (searchQ()) {
++    <button type="button" class="ph-search-clear" aria-label="Clear search" (click)="searchQ.set('')">
++      <i class="ti ti-x" aria-hidden="true"></i>
++    </button>
++  }
+   <i class="ti ti-adjustments-horizontal ph-search-filter" aria-label="Filter patients"></i>
+ </div>
+ 
+diff --git a/src/app/features/patient-history/patient-history.component.ts b/src/app/features/patient-history/patient-history.component.ts
+index d65d0df..c7f93f4 100644
+--- a/src/app/features/patient-history/patient-history.component.ts
++++ b/src/app/features/patient-history/patient-history.component.ts
+@@ -1,7 +1,6 @@
+ import { Component, signal, computed, ChangeDetectionStrategy } from '@angular/core';
+ import { RouterLink } from '@angular/router';
+ import { NgClass } from '@angular/common';
+-import { FormsModule } from '@angular/forms';
+ 
+ interface PatientRecord {
+   id: string; name: string; age: number; sex: string;
+@@ -40,19 +39,19 @@ const PATIENTS: PatientRecord[] = [
+ @Component({
+   selector: 'app-patient-history',
+   standalone: true,
+-  imports: [RouterLink, NgClass, FormsModule],
++  imports: [RouterLink, NgClass],
+   changeDetection: ChangeDetectionStrategy.OnPush,
+     templateUrl: './patient-history.component.html',
+     styleUrl: './patient-history.component.css',
+ })
+ export class PatientHistoryComponent {
+   protected readonly allPatients = PATIENTS;
+-  searchQ         = '';
++  searchQ         = signal('');
+   selectedPatient = signal<PatientRecord | null>(PATIENTS[0]);
+   activeTab       = signal('Visit history');
+ 
+   filtered = computed(() => {
+-    const q = this.searchQ.toLowerCase();
++    const q = this.searchQ().trim().toLowerCase();
+     if (!q) return this.allPatients;
+     return this.allPatients.filter(p =>
+       p.name.toLowerCase().includes(q) ||
+diff --git a/src/app/features/reports/reports.component.css b/src/app/features/reports/reports.component.css
+index 2cd90e5..1f959d2 100644
+--- a/src/app/features/reports/reports.component.css
++++ b/src/app/features/reports/reports.component.css
+@@ -114,23 +114,34 @@
+ /* ── Report list card ──────────────────────────────────── */
+ .report-list { display: flex; flex-direction: column; }
+ .lis-card__header { position: relative; }
+-.report-filter-btn {
+-  margin-left: auto;
+-  width: 28px;
+-  height: 28px;
++/* Status filter — All / Pending / Dispatched */
++.report-status-filter {
++  display: flex;
++  gap: 6px;
++  padding: 10px 16px;
++  border-bottom: 0.5px solid var(--border-color);
++  flex-shrink: 0;
++}
++.report-status-pill {
++  padding: 5px 12px;
+   border: 0.5px solid var(--border-color);
+-  border-radius: 7px;
++  border-radius: 20px;
+   background: transparent;
+   color: var(--text-secondary);
+-  display: flex;
+-  align-items: center;
+-  justify-content: center;
++  font-size: 11.5px;
++  font-weight: 500;
+   cursor: pointer;
+-  flex-shrink: 0;
+-  transition: background 0.14s ease, color 0.14s ease;
++  transition: background 0.14s ease, border-color 0.14s ease, color 0.14s ease, transform 0.1s ease;
++}
++.report-status-pill:hover { background: var(--body-bg); color: var(--text-primary); }
++.report-status-pill:active { transform: scale(0.96); }
++.report-status-pill:focus-visible { outline: 2px solid var(--lis-primary); outline-offset: 1px; }
++.report-status-pill--active {
++  background: var(--lis-primary-xlight);
++  border-color: var(--lis-primary);
++  color: var(--lis-primary-deep);
++  font-weight: 600;
+ }
+-.report-filter-btn:hover { background: var(--body-bg); color: var(--text-primary); }
+-.report-filter-btn i { font-size: 15px; }
+ 
+ /* Search box — sits between the card header and the row list,
+    own bottom border so it reads as a distinct control strip. */
+@@ -240,12 +251,15 @@
+ }
+ .page-btn:disabled { opacity: 0.4; cursor: default; }
+ .page-btn:not(:disabled):hover { background: var(--body-bg); }
++.page-btn:not(:disabled):active { transform: scale(0.92); }
++.page-btn:focus-visible { outline: 2px solid var(--lis-primary); outline-offset: 1px; }
+ .page-btn--active {
+   background: var(--lis-primary);
+   border-color: var(--lis-primary);
+   color: #fff;
+   font-weight: 600;
+ }
++.page-btn--active:not(:disabled):hover { background: var(--lis-primary-deep, var(--lis-primary)); }
+ 
+ /* ── Preview area ──────────────────────────────────────── */
+ .report-preview-area { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+diff --git a/src/app/features/reports/reports.component.html b/src/app/features/reports/reports.component.html
+index 5c2d453..b58c810 100644
+--- a/src/app/features/reports/reports.component.html
++++ b/src/app/features/reports/reports.component.html
+@@ -51,9 +51,6 @@
+       <i class="ti ti-file-text lis-card-icon" aria-hidden="true"></i>
+       <h2 class="lis-card__title">All reports</h2>
+       <span class="lis-badge lis-badge--danger">{{ pendingCount() }} pending</span>
+-      <button type="button" class="report-filter-btn" aria-label="Filter reports">
+-        <i class="ti ti-adjustments-horizontal" aria-hidden="true"></i>
+-      </button>
+     </div>
+ 
+     <div class="report-search">
+@@ -63,11 +60,20 @@
+         placeholder="Search reports…"
+         autocomplete="off"
+         [value]="query()"
+-        (input)="query.set($any($event.target).value)"
++        (input)="setQuery($any($event.target).value)"
+         aria-label="Search reports"
+       />
+     </div>
+ 
++    <div class="report-status-filter" role="group" aria-label="Filter reports by status">
++      <button type="button" class="report-status-pill" [class.report-status-pill--active]="statusFilter() === 'all'"
++        (click)="setStatusFilter('all')" [attr.aria-pressed]="statusFilter() === 'all'">All</button>
++      <button type="button" class="report-status-pill" [class.report-status-pill--active]="statusFilter() === 'pending'"
++        (click)="setStatusFilter('pending')" [attr.aria-pressed]="statusFilter() === 'pending'">Pending</button>
++      <button type="button" class="report-status-pill" [class.report-status-pill--active]="statusFilter() === 'dispatched'"
++        (click)="setStatusFilter('dispatched')" [attr.aria-pressed]="statusFilter() === 'dispatched'">Dispatched</button>
++    </div>
++
+     <div role="list" aria-label="Report list" class="report-rows">
+       @if (filteredReports().length === 0) {
+         <div class="reports-empty" role="status">
+@@ -75,7 +81,7 @@
+           <span>No reports found.</span>
+         </div>
+       }
+-      @for (r of filteredReports(); track r.id) {
++      @for (r of pagedReports(); track r.id) {
+         <div class="report-row" role="listitem"
+           [class.report-row--selected]="selected()?.id === r.id"
+           (click)="selected.set(r)"
+@@ -99,13 +105,23 @@
+     </div>
+ 
+     <div class="report-pagination">
+-      <span>Showing 1 to {{ filteredReports().length }} of {{ reports.length }} reports</span>
++      <span>
++        @if (filteredReports().length === 0) {
++          No reports match
++        } @else {
++          Showing {{ rangeStart() }}–{{ rangeEnd() }} of {{ filteredReports().length }} reports
++        }
++      </span>
+       <div class="report-pagination-controls">
+-        <button type="button" class="page-btn" aria-label="Previous page" disabled>
++        <button type="button" class="page-btn" aria-label="Previous page" [disabled]="currentPage() === 1" (click)="prevPage()">
+           <i class="ti ti-chevron-left" aria-hidden="true"></i>
+         </button>
+-        <span class="page-btn page-btn--active">1</span>
+-        <button type="button" class="page-btn" aria-label="Next page" disabled>
++        @for (p of totalPagesArray(); track p) {
++          <button type="button" class="page-btn" [class.page-btn--active]="p === currentPage()"
++            [attr.aria-current]="p === currentPage() ? 'page' : null"
++            [attr.aria-label]="'Page ' + p" (click)="goToPage(p)">{{ p }}</button>
++        }
++        <button type="button" class="page-btn" aria-label="Next page" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
+           <i class="ti ti-chevron-right" aria-hidden="true"></i>
+         </button>
+       </div>
+diff --git a/src/app/features/reports/reports.component.ts b/src/app/features/reports/reports.component.ts
+index 4d5a9a4..59135a5 100644
+--- a/src/app/features/reports/reports.component.ts
++++ b/src/app/features/reports/reports.component.ts
+@@ -44,6 +44,9 @@ const KFT_ROWS = [
+   { name:'eGFR (CKD-EPI)',      result:'32',  unit:'mL/min', ref:'≥ 60',       flag:'low'      },
+ ];
+ 
++const PAGE_SIZE = 5;
++type ReportStatusFilter = 'all' | 'pending' | 'dispatched';
++
+ @Component({
+   selector: 'app-reports',
+   standalone: true,
+@@ -58,18 +61,52 @@ export class ReportsComponent {
+   protected readonly stats    = REPORT_STATS;
+   selected = signal<ReportRow | null>(REPORTS[0]);
+   query = signal('');
++  statusFilter = signal<ReportStatusFilter>('all');
++  page = signal(1);
++  readonly pageSize = PAGE_SIZE;
+ 
++  /** Text + status filtered, but not yet paginated — used for the "N pending" badge and page-count math. */
+   filteredReports = computed(() => {
+     const q = this.query().trim().toLowerCase();
+-    if (!q) return this.reports;
++    const status = this.statusFilter();
+     return this.reports.filter(r =>
+-      r.patientName.toLowerCase().includes(q) ||
+-      r.test.toLowerCase().includes(q) ||
+-      r.id.toLowerCase().includes(q)
++      (status === 'all' || r.status === status) &&
++      (!q || r.patientName.toLowerCase().includes(q) || r.test.toLowerCase().includes(q) || r.id.toLowerCase().includes(q))
+     );
+   });
+ 
++  totalPages = computed(() => Math.max(1, Math.ceil(this.filteredReports().length / PAGE_SIZE)));
++  totalPagesArray = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
++
++  /** Clamp so an out-of-range page (e.g. after a filter shrinks the result set) never shows a blank list. */
++  currentPage = computed(() => Math.min(this.page(), this.totalPages()));
++
++  pagedReports = computed(() => {
++    const start = (this.currentPage() - 1) * PAGE_SIZE;
++    return this.filteredReports().slice(start, start + PAGE_SIZE);
++  });
++
++  rangeStart = computed(() => this.filteredReports().length === 0 ? 0 : (this.currentPage() - 1) * PAGE_SIZE + 1);
++  rangeEnd   = computed(() => Math.min(this.currentPage() * PAGE_SIZE, this.filteredReports().length));
++
+   pendingCount = computed(() => this.reports.filter(r => r.status === 'pending').length);
+ 
++  setQuery(q: string): void {
++    this.query.set(q);
++    this.page.set(1); // any new search starts back at page 1
++  }
++
++  setStatusFilter(status: ReportStatusFilter): void {
++    this.statusFilter.set(status);
++    this.page.set(1);
++  }
++
++  goToPage(p: number): void {
++    this.page.set(Math.min(Math.max(1, p), this.totalPages()));
++  }
++
++  prevPage(): void { this.goToPage(this.currentPage() - 1); }
++  nextPage(): void { this.goToPage(this.currentPage() + 1); }
++
+   initials(name: string) { return name.split(' ').map(w => w[0]).join('').slice(0,2); }
+ }
+diff --git a/src/app/features/sample-tracking/sample-tracking.component.html b/src/app/features/sample-tracking/sample-tracking.component.html
+index 8002a19..4926a90 100644
+--- a/src/app/features/sample-tracking/sample-tracking.component.html
++++ b/src/app/features/sample-tracking/sample-tracking.component.html
+@@ -178,17 +178,62 @@
+     <table class="sample-tbl" role="table" aria-label="Sample queue">
+       <thead>
+         <tr>
+-          <th scope="col">Sample ID</th>
+-          <th scope="col">Patient</th>
++          <th scope="col" [attr.aria-sort]="sort.ariaSort('id')">
++            <button type="button" class="th-sort" [class.th-sort--active]="sort.isActive('id')" (click)="sort.toggle('id')">
++              Sample ID
++              <i class="ti th-sort-icon"
++                 [class.ti-arrows-sort]="!sort.isActive('id')"
++                 [class.ti-sort-ascending]="sort.isActive('id') && sort.dir() === 'asc'"
++                 [class.ti-sort-descending]="sort.isActive('id') && sort.dir() === 'desc'"
++                 aria-hidden="true"></i>
++            </button>
++          </th>
++          <th scope="col" [attr.aria-sort]="sort.ariaSort('patientName')">
++            <button type="button" class="th-sort" [class.th-sort--active]="sort.isActive('patientName')" (click)="sort.toggle('patientName')">
++              Patient
++              <i class="ti th-sort-icon"
++                 [class.ti-arrows-sort]="!sort.isActive('patientName')"
++                 [class.ti-sort-ascending]="sort.isActive('patientName') && sort.dir() === 'asc'"
++                 [class.ti-sort-descending]="sort.isActive('patientName') && sort.dir() === 'desc'"
++                 aria-hidden="true"></i>
++            </button>
++          </th>
+           <th scope="col">Tube(s)</th>
+           <th scope="col">Tests ordered</th>
+-          <th scope="col">Priority</th>
+-          <th scope="col">Status</th>
+-          <th scope="col">ETA</th>
++          <th scope="col" [attr.aria-sort]="sort.ariaSort('prioritySortRank')">
++            <button type="button" class="th-sort" [class.th-sort--active]="sort.isActive('prioritySortRank')" (click)="sort.toggle('prioritySortRank')">
++              Priority
++              <i class="ti th-sort-icon"
++                 [class.ti-arrows-sort]="!sort.isActive('prioritySortRank')"
++                 [class.ti-sort-ascending]="sort.isActive('prioritySortRank') && sort.dir() === 'asc'"
++                 [class.ti-sort-descending]="sort.isActive('prioritySortRank') && sort.dir() === 'desc'"
++                 aria-hidden="true"></i>
++            </button>
++          </th>
++          <th scope="col" [attr.aria-sort]="sort.ariaSort('statusSortRank')">
++            <button type="button" class="th-sort" [class.th-sort--active]="sort.isActive('statusSortRank')" (click)="sort.toggle('statusSortRank')">
++              Status
++              <i class="ti th-sort-icon"
++                 [class.ti-arrows-sort]="!sort.isActive('statusSortRank')"
++                 [class.ti-sort-ascending]="sort.isActive('statusSortRank') && sort.dir() === 'asc'"
++                 [class.ti-sort-descending]="sort.isActive('statusSortRank') && sort.dir() === 'desc'"
++                 aria-hidden="true"></i>
++            </button>
++          </th>
++          <th scope="col" [attr.aria-sort]="sort.ariaSort('etaLabel')">
++            <button type="button" class="th-sort" [class.th-sort--active]="sort.isActive('etaLabel')" (click)="sort.toggle('etaLabel')">
++              ETA
++              <i class="ti th-sort-icon"
++                 [class.ti-arrows-sort]="!sort.isActive('etaLabel')"
++                 [class.ti-sort-ascending]="sort.isActive('etaLabel') && sort.dir() === 'asc'"
++                 [class.ti-sort-descending]="sort.isActive('etaLabel') && sort.dir() === 'desc'"
++                 aria-hidden="true"></i>
++            </button>
++          </th>
+         </tr>
+       </thead>
+       <tbody>
+-        @for (s of filteredSamples(); track s.id) {
++        @for (s of sortedSamples(); track s.id) {
+           <tr (click)="selectSample(s)"
+             [class.row--selected]="selectedSample()?.id === s.id"
+             [attr.aria-selected]="selectedSample()?.id === s.id">
+diff --git a/src/app/features/sample-tracking/sample-tracking.component.ts b/src/app/features/sample-tracking/sample-tracking.component.ts
+index 53f1c39..566928a 100644
+--- a/src/app/features/sample-tracking/sample-tracking.component.ts
++++ b/src/app/features/sample-tracking/sample-tracking.component.ts
+@@ -9,6 +9,16 @@ import { NgClass, DatePipe, TitleCasePipe } from '@angular/common';
+ import { StatusPillComponent } from '../../shared/components/status-pill/status-pill.component';
+ import { Sample, SampleStatus } from '../../shared/models/lis.models';
+ import { PatientFlowService } from '../../core/services/patient-flow.service';
++import { TableSort } from '../../shared/utils/table-sort';
++
++/** Sortable projection of a Sample row — priority/status ranked so STAT/critical sort to the top. */
++interface SampleRow extends Sample {
++  prioritySortRank: number;
++  statusSortRank: number;
++}
++
++const PRIORITY_RANK: Record<Sample['priority'], number> = { stat: 0, urgent: 1, routine: 2 };
++const STATUS_RANK: Record<SampleStatus, number> = { critical: 0, processing: 1, pending: 2, ready: 3, dispatched: 4 };
+ 
+ const SAMPLES: Sample[] = [
+   { id:'SMP-2406-087', patientId:'PAT-0316', patientName:'Arun Pillai',     tests:['KFT','Urine R/M'],  priority:'stat',    status:'critical',   collectedAt:'9:20 AM',  etaLabel:'Now',   tubes:[{id:'087-A',color:'#E24B4A',label:'Red top (SST)',   tests:['KFT']},{id:'087-B',color:'#C9A227',label:'Yellow (Urine)',tests:['Urine R/M']}] },
+@@ -88,6 +98,18 @@ export class SampleTrackingComponent implements OnInit {
+     );
+   });
+ 
++  // ── Column sorting ───────────────────────────────────────────
++  protected readonly sort = new TableSort<SampleRow>('statusSortRank', 'asc');
++
++  protected readonly sortedSamples = computed<SampleRow[]>(() => {
++    const rows: SampleRow[] = this.filteredSamples().map(s => ({
++      ...s,
++      prioritySortRank: PRIORITY_RANK[s.priority],
++      statusSortRank: STATUS_RANK[s.status],
++    }));
++    return this.sort.apply(rows);
++  });
++
+   selectSample(s: Sample): void { this.selectedSample.set(s); }
+ 
+   initials(name: string): string {
+diff --git a/src/app/shared/utils/table-sort.ts b/src/app/shared/utils/table-sort.ts
+new file mode 100644
+index 0000000..11e5788
+--- /dev/null
++++ b/src/app/shared/utils/table-sort.ts
+@@ -0,0 +1,93 @@
++import { signal, Signal } from '@angular/core';
++
++export type SortDirection = 'asc' | 'desc';
++
++/**
++ * TableSort<T>
++ * ────────────
++ * Generic, reusable column-sort state for any HTML table.
++ * One instance per table — works with any row shape.
++ *
++ * Usage in a component:
++ *   protected readonly sort = new TableSort<TopTest>();
++ *   protected readonly rows = computed(() => this.sort.apply(this.data.topTests()));
++ *
++ * Usage in the template (repeat per column):
++ *   <th scope="col" [attr.aria-sort]="sort.ariaSort('orders')">
++ *     <button type="button" class="th-sort"
++ *       [class.th-sort--active]="sort.isActive('orders')"
++ *       (click)="sort.toggle('orders')">
++ *       Orders
++ *       <i class="ti th-sort-icon"
++ *          [class.ti-arrows-sort]="!sort.isActive('orders')"
++ *          [class.ti-sort-ascending]="sort.isActive('orders') && sort.dir() === 'asc'"
++ *          [class.ti-sort-descending]="sort.isActive('orders') && sort.dir() === 'desc'"
++ *          aria-hidden="true"></i>
++ *     </button>
++ *   </th>
++ */
++export class TableSort<T> {
++  private readonly _key = signal<keyof T | null>(null);
++  private readonly _dir = signal<SortDirection>('asc');
++
++  readonly key: Signal<keyof T | null> = this._key.asReadonly();
++  readonly dir: Signal<SortDirection> = this._dir.asReadonly();
++
++  /**
++   * Per-column value extractors, for columns whose displayed field
++   * isn't directly comparable — e.g. a "₹4,750" string column that
++   * should sort by its numeric amount, not lexically.
++   */
++  constructor(
++    initialKey: keyof T | null = null,
++    initialDir: SortDirection = 'asc',
++    private readonly accessors: Partial<Record<keyof T, (row: T) => string | number>> = {},
++  ) {
++    this._key.set(initialKey);
++    this._dir.set(initialDir);
++  }
++
++  /** Click handler for a column header — 1st click sorts ascending, 2nd flips to descending. */
++  toggle(column: keyof T): void {
++    if (this._key() === column) {
++      this._dir.update(d => (d === 'asc' ? 'desc' : 'asc'));
++    } else {
++      this._key.set(column);
++      this._dir.set('asc');
++    }
++  }
++
++  isActive(column: keyof T): boolean {
++    return this._key() === column;
++  }
++
++  /** For [attr.aria-sort] on the <th> — screen readers announce the active sort. */
++  ariaSort(column: keyof T): 'ascending' | 'descending' | 'none' {
++    if (this._key() !== column) return 'none';
++    return this._dir() === 'asc' ? 'ascending' : 'descending';
++  }
++
++  /**
++   * Returns a new, sorted array — the source array is never mutated.
++   * Numbers sort numerically; everything else sorts locale-aware
++   * (so "Test 2" sorts before "Test 10"). Nullish values always sink
++   * to the bottom, regardless of direction.
++   */
++  apply(rows: readonly T[]): T[] {
++    const key = this._key();
++    if (!key) return [...rows];
++    const dir = this._dir() === 'asc' ? 1 : -1;
++
++    const getValue = this.accessors[key];
++
++    return [...rows].sort((a, b) => {
++      const av = getValue ? getValue(a) : a[key];
++      const bv = getValue ? getValue(b) : b[key];
++      if (av == null && bv == null) return 0;
++      if (av == null) return 1;
++      if (bv == null) return -1;
++      if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * dir;
++      return String(av).localeCompare(String(bv), undefined, { numeric: true, sensitivity: 'base' }) * dir;
++    });
++  }
++}
+diff --git a/src/styles.css b/src/styles.css
+index eac258c..c040a58 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -1805,6 +1805,46 @@
+ .user-name { font-size: 12px; font-weight: 700; color: var(--text-base); }
+ .user-role { font-size: 10px; color: var(--text-subtle); }
+ 
++/* ══════════════════════════════════════════════════════
++   SORTABLE TABLE HEADERS (shared)
++   Wrap a column label in <button class="th-sort"> inside the
++   <th>, set [attr.aria-sort] on the <th> itself. Inherits font,
++   color, case and spacing from whichever table hosts it, so it
++   drops into any existing table without per-page CSS.
++   Paired with shared/utils/table-sort.ts (TableSort<T>).
++   ══════════════════════════════════════════════════════ */
++.th-sort {
++  display: inline-flex;
++  align-items: center;
++  gap: 5px;
++  background: none;
++  border: none;
++  padding: 4px 8px;
++  margin: -4px -8px;
++  border-radius: 6px;
++  cursor: pointer;
++  font: inherit;
++  color: inherit;
++  text-transform: inherit;
++  letter-spacing: inherit;
++  white-space: inherit;
++  transition: background 0.14s ease, color 0.14s ease;
++}
++.th-sort:hover { background: var(--lis-primary-xlight); color: var(--text-primary); }
++.th-sort:active { transform: scale(0.96); }
++.th-sort:focus-visible { outline: 2px solid var(--lis-primary); outline-offset: 1px; }
++.th-sort--active { color: var(--text-primary); }
++
++.th-sort-icon {
++  font-size: 13px;
++  color: var(--text-secondary);
++  opacity: 0.45;
++  transition: color 0.14s ease, opacity 0.14s ease, transform 0.14s ease;
++  flex-shrink: 0;
++}
++.th-sort:hover .th-sort-icon { opacity: 0.8; }
++.th-sort--active .th-sort-icon { color: var(--lis-primary); opacity: 1; }
++
+ /* Content Scroll Area */
+ .content-scroll {
+   flex: 1;
+-- 
+2.43.0
+

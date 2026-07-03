@@ -16,7 +16,11 @@ import {
   ApexPlotOptions,
 } from 'ng-apexcharts';
 import { AnalyticsDataService } from './services/analytics-data.service';
-import { DateRange } from './models/analytics.models';
+import { DateRange, TopTest, ReferringDoctor } from './models/analytics.models';
+import { TableSort } from '../../shared/utils/table-sort';
+
+/** "₹4,750" → 4750, for numeric sorting of currency-string columns. */
+const toAmount = (revenue: string): number => Number(revenue.replace(/[^\d.-]/g, '')) || 0;
 
 interface RangeOption {
   id: DateRange;
@@ -42,6 +46,17 @@ export class AnalyticsComponent {
   protected readonly data = inject(AnalyticsDataService);
   protected readonly rangeOptions = RANGE_OPTIONS;
   protected readonly Math = Math;
+
+  // ── Table sorting (Top tests / Top referring doctors) ───────
+  protected readonly testsSort = new TableSort<TopTest>('orders', 'desc', {
+    revenue: row => toAmount(row.revenue),
+  });
+  protected readonly sortedTopTests = computed(() => this.testsSort.apply(this.data.topTests()));
+
+  protected readonly doctorsSort = new TableSort<ReferringDoctor>('referrals', 'desc', {
+    revenue: row => toAmount(row.revenue),
+  });
+  protected readonly sortedTopDoctors = computed(() => this.doctorsSort.apply(this.data.topDoctors()));
 
   activeRange(id: DateRange): boolean {
     return this.data.range() === id;
