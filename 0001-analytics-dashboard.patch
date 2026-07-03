@@ -1,0 +1,1022 @@
+From 5f2c5158c929afc499739111f789e0ef8aba5eac Mon Sep 17 00:00:00 2001
+From: Chandan <chandan@example.com>
+Date: Fri, 3 Jul 2026 11:16:54 +0000
+Subject: [PATCH] feat(analytics): build operator-focused Analytics dashboard
+
+- Add AnalyticsDataService with signals for date-range (today/7d/30d/quarter)
+  and department filters, driving KPIs, trend, status breakdown, TAT, top
+  tests and top referring doctors.
+- Replace Analytics placeholder with a full operator dashboard: KPI strip
+  with sparklines, revenue/volume trend (ApexCharts area), sample status
+  donut with interactive legend, department TAT bars with target markers
+  and over-target flags, top tests and top referring doctors tables.
+- Responsive layout (5/3/2/1 col KPI grid, stacked charts <1180px).
+- Distinctive hover/active language reused from the sidebar: indigo hover
+  wash + teal active glow on range/department chips, left accent bar on
+  table row hover, lift + shadow on KPI card hover.
+---
+ .../analytics/analytics.component.css         | 257 ++++++++++++++++++
+ .../analytics/analytics.component.html        | 226 +++++++++++++++
+ .../features/analytics/analytics.component.ts | 155 +++++++++--
+ .../analytics/models/analytics.models.ts      |  66 +++++
+ .../services/analytics-data.service.ts        | 252 +++++++++++++++++
+ 5 files changed, 935 insertions(+), 21 deletions(-)
+ create mode 100644 src/app/features/analytics/analytics.component.css
+ create mode 100644 src/app/features/analytics/analytics.component.html
+ create mode 100644 src/app/features/analytics/models/analytics.models.ts
+ create mode 100644 src/app/features/analytics/services/analytics-data.service.ts
+
+diff --git a/src/app/features/analytics/analytics.component.css b/src/app/features/analytics/analytics.component.css
+new file mode 100644
+index 0000000..3c1ed67
+--- /dev/null
++++ b/src/app/features/analytics/analytics.component.css
+@@ -0,0 +1,257 @@
++:host { display: block; }
++
++.page-header-actions { display: flex; gap: 8px; }
++
++/* ── Loading fade ─────────────────────────────────────────── */
++.an-fade { opacity: 0.5; pointer-events: none; transition: opacity 0.2s ease; }
++
++/* ── Date range bar ───────────────────────────────────────── */
++.an-range-bar {
++  display: flex;
++  align-items: center;
++  gap: 8px;
++  flex-wrap: wrap;
++  margin: 14px 0 16px;
++}
++.an-range-bar__spacer { flex: 1 1 auto; }
++
++.an-chip {
++  position: relative;
++  padding: 7px 16px;
++  min-height: 34px;
++  border-radius: 20px;
++  border: 0.5px solid var(--border-color);
++  background: var(--card-bg);
++  color: var(--text-secondary);
++  font-size: 12.5px;
++  font-weight: 500;
++  cursor: pointer;
++  overflow: hidden;
++  transition: color 0.15s ease, border-color 0.15s ease, background 0.18s ease, transform 0.12s ease;
++}
++.an-chip::before {
++  content: '';
++  position: absolute;
++  inset: 0;
++  border-radius: inherit;
++  background: rgba(99, 102, 241, 0.10); /* indigo hover wash — mirrors sidebar hover accent */
++  opacity: 0;
++  transition: opacity 0.15s ease;
++}
++.an-chip:hover {
++  color: var(--text-primary);
++  border-color: #6366F1;
++  transform: translateY(-1px);
++}
++.an-chip:hover::before { opacity: 1; }
++.an-chip:active { transform: translateY(0); }
++.an-chip--active {
++  color: #fff;
++  border-color: var(--lis-primary, #3DC9A8);
++  background: var(--lis-primary, #3DC9A8);
++  box-shadow: 0 0 0 3px rgba(61, 201, 168, 0.22); /* teal active glow — mirrors sidebar active state */
++}
++.an-chip--active::before { opacity: 0; }
++.an-chip--active:hover { color: #fff; border-color: var(--lis-primary, #3DC9A8); }
++
++.an-collect {
++  display: flex;
++  align-items: center;
++  gap: 6px;
++  padding: 7px 14px;
++  border-radius: 20px;
++  background: var(--body-bg);
++  border: 0.5px solid var(--border-color);
++  font-size: 12px;
++  color: var(--text-secondary);
++  transition: opacity 0.2s ease;
++}
++.an-collect i { color: var(--lis-primary, #3DC9A8); font-size: 14px; }
++.an-collect strong { color: var(--text-primary); font-weight: 600; }
++.an-collect__dues { color: #E24B4A; }
++.an-collect__sep { opacity: 0.5; }
++.an-collect--loading { opacity: 0.55; }
++
++/* ── KPI grid ─────────────────────────────────────────────── */
++.an-kpi-grid {
++  display: grid;
++  grid-template-columns: repeat(5, 1fr);
++  gap: 12px;
++  margin-bottom: 16px;
++}
++.an-kpi-card {
++  background: var(--card-bg);
++  border: 0.5px solid var(--border-color);
++  border-radius: var(--lis-card-radius, 10px);
++  padding: 14px 16px;
++  transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
++}
++.an-kpi-card:hover {
++  box-shadow: var(--shadow-card-hover, 0 12px 36px rgba(83,103,254,0.16));
++  border-color: rgba(99, 102, 241, 0.35);
++  transform: translateY(-2px);
++}
++.an-kpi-top { display: flex; align-items: flex-start; gap: 10px; position: relative; }
++.an-kpi-icon {
++  width: 34px; height: 34px; border-radius: 9px;
++  display: flex; align-items: center; justify-content: center;
++  font-size: 16px; flex: 0 0 auto;
++}
++.an-kpi-icon--primary { background: var(--lis-primary-xlight, #E8EBFF); color: var(--lis-primary, #3DC9A8); }
++.an-kpi-icon--accent  { background: rgba(83,103,254,0.10); color: #5367FE; }
++.an-kpi-icon--warning { background: #FAEEDA; color: #A9660C; }
++.an-kpi-icon--danger  { background: #FCEBEB; color: #C0392B; }
++.an-kpi-body { min-width: 0; flex: 1; }
++.an-kpi-label { font-size: 11.5px; color: var(--text-secondary); margin-bottom: 3px; }
++.an-kpi-value { font-size: 20px; font-weight: 600; color: var(--text-primary); line-height: 1.15; }
++.an-kpi-spark { width: 56px; height: 26px; flex: 0 0 auto; }
++.an-kpi-spark--primary polyline { stroke: var(--lis-primary, #3DC9A8); }
++.an-kpi-spark--accent  polyline { stroke: #5367FE; }
++.an-kpi-spark--warning polyline { stroke: #EF9F27; }
++.an-kpi-spark--danger  polyline { stroke: #E24B4A; }
++.an-kpi-delta { margin-top: 8px; font-size: 11px; }
++.an-kpi-delta--up      { color: #0F6E56; }
++.an-kpi-delta--down    { color: #C0392B; }
++.an-kpi-delta--neutral { color: var(--text-secondary); }
++
++/* ── Chart rows ───────────────────────────────────────────── */
++.an-row { margin-bottom: 16px; }
++.an-row--split {
++  display: grid;
++  grid-template-columns: 1.7fr 1fr;
++  gap: 16px;
++}
++.an-chart-body { padding-top: 4px; }
++.an-chart-body--donut { display: flex; flex-direction: column; align-items: center; }
++
++.an-legend {
++  list-style: none;
++  margin: 4px 0 0;
++  padding: 0;
++  width: 100%;
++  display: flex;
++  flex-direction: column;
++  gap: 2px;
++}
++.an-legend__item {
++  display: flex;
++  align-items: center;
++  gap: 8px;
++  padding: 6px 8px;
++  border-radius: 8px;
++  font-size: 12px;
++  color: var(--text-secondary);
++  transition: background 0.15s ease, padding-left 0.15s ease;
++}
++.an-legend__item:hover {
++  background: rgba(99, 102, 241, 0.08);
++  padding-left: 12px;
++  color: var(--text-primary);
++}
++.an-legend__dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; }
++.an-legend__label { flex: 1; }
++.an-legend__count { font-weight: 600; color: var(--text-primary); }
++
++/* ── Department TAT ──────────────────────────────────────── */
++.an-tat-card .lis-card__header { flex-wrap: wrap; row-gap: 8px; }
++.an-dept-filter { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
++.an-dept-chip {
++  padding: 4px 11px;
++  min-height: 28px;
++  border-radius: 14px;
++  border: 0.5px solid var(--border-color);
++  background: var(--body-bg);
++  color: var(--text-secondary);
++  font-size: 11px;
++  font-weight: 500;
++  cursor: pointer;
++  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
++}
++.an-dept-chip:hover { color: #4338CA; border-color: #6366F1; background: rgba(99,102,241,0.08); }
++.an-dept-chip--active {
++  color: var(--lis-primary-deep, #0F6E56);
++  border-color: var(--lis-primary, #3DC9A8);
++  background: var(--lis-primary-xlight, #E1F5EE);
++}
++
++.an-tat-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
++.an-tat-row {
++  display: grid;
++  grid-template-columns: 160px 1fr 150px;
++  align-items: center;
++  gap: 14px;
++  padding: 6px 8px;
++  border-radius: 8px;
++  transition: background 0.15s ease;
++}
++.an-tat-row:hover { background: var(--body-bg); }
++.an-tat-name { font-size: 13px; font-weight: 500; color: var(--text-primary); display: flex; flex-direction: column; gap: 2px; }
++.an-tat-samples { font-size: 10.5px; font-weight: 400; color: var(--text-secondary); }
++.an-tat-bar { position: relative; height: 8px; border-radius: 6px; background: var(--body-bg); overflow: visible; }
++.an-tat-bar__fill { height: 100%; border-radius: 6px; background: var(--lis-primary, #3DC9A8); transition: width 0.4s cubic-bezier(0.4,0,0.2,1); }
++.an-tat-bar__fill--over { background: #E24B4A; }
++.an-tat-bar__target { position: absolute; top: -3px; width: 2px; height: 14px; background: var(--text-secondary); opacity: 0.5; }
++.an-tat-value { font-size: 12px; color: var(--text-primary); font-weight: 600; text-align: right; }
++.an-tat-value--over { color: #C0392B; }
++.an-tat-target { font-weight: 400; color: var(--text-secondary); }
++.an-empty { padding: 20px; text-align: center; color: var(--text-secondary); font-size: 12.5px; }
++
++/* ── Tables ──────────────────────────────────────────────── */
++.an-table-wrap { overflow-x: auto; }
++.an-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
++.an-table thead th {
++  text-align: left;
++  padding: 10px 20px;
++  font-size: 10.5px;
++  text-transform: uppercase;
++  letter-spacing: 0.03em;
++  color: var(--text-secondary);
++  border-bottom: 0.5px solid var(--border-color);
++  white-space: nowrap;
++}
++.an-table tbody td {
++  padding: 11px 20px;
++  border-bottom: 0.5px solid var(--border-color);
++  color: var(--text-primary);
++}
++.an-table__row {
++  position: relative;
++  transition: background 0.15s ease;
++}
++.an-table__row::before {
++  content: '';
++  position: absolute;
++  left: 0; top: 0; bottom: 0;
++  width: 3px;
++  background: var(--lis-primary, #3DC9A8);
++  transform: scaleY(0);
++  transition: transform 0.15s ease;
++}
++.an-table__row:hover { background: rgba(99, 102, 241, 0.06); }
++.an-table__row:hover::before { transform: scaleY(1); }
++.an-table__row:last-child td { border-bottom: none; }
++.an-table__primary { font-weight: 500; display: flex; flex-direction: column; gap: 2px; }
++.an-table__sub { font-weight: 400; font-size: 11px; color: var(--text-secondary); }
++
++.an-change { display: inline-flex; align-items: center; gap: 2px; font-weight: 600; font-size: 11.5px; }
++.an-change--up   { color: #0F6E56; }
++.an-change--down { color: #C0392B; }
++
++/* ── Responsive ──────────────────────────────────────────── */
++@media (max-width: 1180px) {
++  .an-kpi-grid { grid-template-columns: repeat(3, 1fr); }
++  .an-row--split { grid-template-columns: 1fr; }
++}
++
++@media (max-width: 720px) {
++  .an-kpi-grid { grid-template-columns: repeat(2, 1fr); }
++  .page-header-actions { flex-wrap: wrap; }
++  .an-tat-row { grid-template-columns: 1fr; gap: 6px; }
++  .an-tat-value { text-align: left; }
++  .an-range-bar { gap: 6px; }
++  .an-chip { padding: 6px 12px; font-size: 12px; }
++}
++
++@media (max-width: 480px) {
++  .an-kpi-grid { grid-template-columns: 1fr; }
++}
+diff --git a/src/app/features/analytics/analytics.component.html b/src/app/features/analytics/analytics.component.html
+new file mode 100644
+index 0000000..ddd6c07
+--- /dev/null
++++ b/src/app/features/analytics/analytics.component.html
+@@ -0,0 +1,226 @@
++<div class="page-header">
++  <div>
++    <h1 class="page-title">Analytics</h1>
++    <nav aria-label="Breadcrumb"><ol class="breadcrumb">
++      <li><a routerLink="/dashboard/home">Home</a></li>
++      <li aria-current="page">Analytics</li>
++    </ol></nav>
++  </div>
++  <div class="page-header-actions">
++    <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="data.refresh()">
++      <i class="ti ti-refresh" aria-hidden="true"></i> Refresh
++    </button>
++    <button type="button" class="lis-btn lis-btn--primary lis-btn--sm">
++      <i class="ti ti-download" aria-hidden="true"></i> Export report
++    </button>
++  </div>
++</div>
++
++<!-- Date range filter chips -->
++<div class="an-range-bar" role="tablist" aria-label="Date range">
++  @for (opt of rangeOptions; track opt.id) {
++    <button
++      type="button"
++      role="tab"
++      class="an-chip"
++      [class.an-chip--active]="activeRange(opt.id)"
++      [attr.aria-selected]="activeRange(opt.id)"
++      (click)="selectRange(opt.id)"
++    >
++      {{ opt.label }}
++    </button>
++  }
++  <span class="an-range-bar__spacer"></span>
++  <div class="an-collect" [class.an-collect--loading]="data.loading()">
++    <i class="ti ti-wallet" aria-hidden="true"></i>
++    <span>Collection rate <strong>{{ data.collectionRatePct() }}%</strong></span>
++    <span class="an-collect__sep">·</span>
++    <span>Dues <strong class="an-collect__dues">{{ data.outstandingDues() }}</strong></span>
++  </div>
++</div>
++
++<!-- KPI row -->
++<section class="an-kpi-grid" aria-label="Key metrics" [class.an-fade]="data.loading()">
++  @for (k of data.kpis(); track k.id) {
++    <div class="an-kpi-card">
++      <div class="an-kpi-top">
++        <div class="an-kpi-icon" [ngClass]="'an-kpi-icon--' + k.variant" aria-hidden="true">
++          <i class="ti ti-{{ k.icon }}"></i>
++        </div>
++        <div class="an-kpi-body">
++          <div class="an-kpi-label">{{ k.label }}</div>
++          <div class="an-kpi-value">{{ k.value }}</div>
++        </div>
++        <svg class="an-kpi-spark" [ngClass]="'an-kpi-spark--' + k.variant" viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true">
++          <polyline [attr.points]="k.spark" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
++        </svg>
++      </div>
++      <div class="an-kpi-delta" [ngClass]="'an-kpi-delta--' + k.deltaType">{{ k.delta }}</div>
++    </div>
++  }
++</section>
++
++<!-- Trend + status breakdown -->
++<div class="an-row an-row--split" [class.an-fade]="data.loading()">
++  <div class="lis-card an-chart-card">
++    <div class="lis-card__header">
++      <i class="ti ti-chart-area-line lis-card-icon" aria-hidden="true"></i>
++      <h2 class="lis-card__title">Revenue &amp; volume trend</h2>
++    </div>
++    <div class="lis-card__body an-chart-body">
++      <apx-chart
++        [series]="trendSeries()"
++        [chart]="trendChart"
++        [xaxis]="{ categories: trendCategories(), labels: { style: { fontSize: '11px' } } }"
++        [yaxis]="trendYaxis"
++        [stroke]="trendStroke"
++        [fill]="trendFill"
++        [grid]="trendGrid"
++        [dataLabels]="trendDataLabels"
++        [tooltip]="trendTooltip"
++        [colors]="trendColors"
++        [legend]="trendLegend"
++      ></apx-chart>
++    </div>
++  </div>
++
++  <div class="lis-card an-chart-card an-chart-card--donut">
++    <div class="lis-card__header">
++      <i class="ti ti-chart-donut lis-card-icon" aria-hidden="true"></i>
++      <h2 class="lis-card__title">Sample status</h2>
++      <span class="lis-badge">{{ data.totalSamplesInStatus() }} total</span>
++    </div>
++    <div class="lis-card__body an-chart-body an-chart-body--donut">
++      <apx-chart
++        [series]="statusSeries()"
++        [chart]="statusChart"
++        [labels]="statusLabels()"
++        [colors]="statusColors()"
++        [legend]="statusLegend"
++        [dataLabels]="statusDataLabels"
++        [plotOptions]="statusPlotOptions"
++      ></apx-chart>
++      <ul class="an-legend">
++        @for (s of data.statusBreakdown(); track s.status) {
++          <li class="an-legend__item">
++            <span class="an-legend__dot" [style.background]="s.color"></span>
++            <span class="an-legend__label">{{ s.label }}</span>
++            <span class="an-legend__count">{{ s.count }}</span>
++          </li>
++        }
++      </ul>
++    </div>
++  </div>
++</div>
++
++<!-- Department TAT -->
++<div class="an-row" [class.an-fade]="data.loading()">
++  <div class="lis-card an-tat-card">
++    <div class="lis-card__header">
++      <i class="ti ti-clock-hour-4 lis-card-icon" aria-hidden="true"></i>
++      <h2 class="lis-card__title">Turnaround time by department</h2>
++      @if (data.departmentsOverTarget() > 0) {
++        <span class="lis-badge lis-badge--danger">{{ data.departmentsOverTarget() }} over target</span>
++      }
++      <div class="an-dept-filter">
++        <button type="button" class="an-dept-chip" [class.an-dept-chip--active]="data.departmentFilter() === 'all'" (click)="selectDepartment('all')">All</button>
++        @for (d of data.allDepartments(); track d.id) {
++          <button
++            type="button"
++            class="an-dept-chip"
++            [class.an-dept-chip--active]="data.departmentFilter() === d.id"
++            (click)="selectDepartment(d.id)"
++          >{{ d.department }}</button>
++        }
++      </div>
++    </div>
++    <div class="lis-card__body">
++      <ul class="an-tat-list">
++        @for (d of data.departmentTat(); track d.id) {
++          <li class="an-tat-row">
++            <div class="an-tat-name">
++              {{ d.department }}
++              <span class="an-tat-samples">{{ d.samples }} samples</span>
++            </div>
++            <div class="an-tat-bar">
++              <div
++                class="an-tat-bar__fill"
++                [class.an-tat-bar__fill--over]="tatFlag(d.avgHours, d.targetHours) === 'over'"
++                [style.width.%]="tatPct(d.avgHours, d.targetHours)"
++              ></div>
++              <div class="an-tat-bar__target" [style.left.%]="tatPct(d.targetHours, d.targetHours) / 1.4"></div>
++            </div>
++            <div class="an-tat-value" [class.an-tat-value--over]="tatFlag(d.avgHours, d.targetHours) === 'over'">
++              {{ d.avgHours }}h <span class="an-tat-target">/ {{ d.targetHours }}h target</span>
++            </div>
++          </li>
++        }
++        @if (data.departmentTat().length === 0) {
++          <li class="an-empty">No department matches this filter.</li>
++        }
++      </ul>
++    </div>
++  </div>
++</div>
++
++<!-- Top tests + top doctors -->
++<div class="an-row an-row--split" [class.an-fade]="data.loading()">
++  <div class="lis-card">
++    <div class="lis-card__header">
++      <i class="ti ti-flask lis-card-icon" aria-hidden="true"></i>
++      <h2 class="lis-card__title">Top tests ordered</h2>
++    </div>
++    <div class="an-table-wrap">
++      <table class="an-table">
++        <thead>
++          <tr><th>Test</th><th>Orders</th><th>Revenue</th><th>Change</th></tr>
++        </thead>
++        <tbody>
++          @for (t of data.topTests(); track t.id) {
++            <tr class="an-table__row">
++              <td class="an-table__primary">{{ t.name }}</td>
++              <td>{{ t.orders }}</td>
++              <td>{{ t.revenue }}</td>
++              <td>
++                <span class="an-change" [class.an-change--up]="t.changePercent >= 0" [class.an-change--down]="t.changePercent < 0">
++                  {{ t.changePercent >= 0 ? '↑' : '↓' }} {{ Math.abs(t.changePercent) }}%
++                </span>
++              </td>
++            </tr>
++          }
++        </tbody>
++      </table>
++    </div>
++  </div>
++
++  <div class="lis-card">
++    <div class="lis-card__header">
++      <i class="ti ti-stethoscope lis-card-icon" aria-hidden="true"></i>
++      <h2 class="lis-card__title">Top referring doctors</h2>
++    </div>
++    <div class="an-table-wrap">
++      <table class="an-table">
++        <thead>
++          <tr><th>Doctor</th><th>Referrals</th><th>Revenue</th><th>Change</th></tr>
++        </thead>
++        <tbody>
++          @for (doc of data.topDoctors(); track doc.id) {
++            <tr class="an-table__row">
++              <td class="an-table__primary">
++                {{ doc.name }}
++                <span class="an-table__sub">{{ doc.clinic }}</span>
++              </td>
++              <td>{{ doc.referrals }}</td>
++              <td>{{ doc.revenue }}</td>
++              <td>
++                <span class="an-change" [class.an-change--up]="doc.changePercent >= 0" [class.an-change--down]="doc.changePercent < 0">
++                  {{ doc.changePercent >= 0 ? '↑' : '↓' }} {{ Math.abs(doc.changePercent) }}%
++                </span>
++              </td>
++            </tr>
++          }
++        </tbody>
++      </table>
++    </div>
++  </div>
++</div>
+diff --git a/src/app/features/analytics/analytics.component.ts b/src/app/features/analytics/analytics.component.ts
+index a2b35f6..24df03b 100644
+--- a/src/app/features/analytics/analytics.component.ts
++++ b/src/app/features/analytics/analytics.component.ts
+@@ -1,27 +1,140 @@
+-import { Component, ChangeDetectionStrategy } from '@angular/core';
++import { Component, inject, computed, ChangeDetectionStrategy } from '@angular/core';
++import { NgClass } from '@angular/common';
++import { RouterLink } from '@angular/router';
++import {
++  NgApexchartsModule,
++  ApexAxisChartSeries,
++  ApexChart,
++  ApexYAxis,
++  ApexStroke,
++  ApexFill,
++  ApexGrid,
++  ApexTooltip,
++  ApexDataLabels,
++  ApexLegend,
++  ApexNonAxisChartSeries,
++  ApexPlotOptions,
++} from 'ng-apexcharts';
++import { AnalyticsDataService } from './services/analytics-data.service';
++import { DateRange } from './models/analytics.models';
++
++interface RangeOption {
++  id: DateRange;
++  label: string;
++}
++
++const RANGE_OPTIONS: RangeOption[] = [
++  { id: 'today',   label: 'Today' },
++  { id: '7d',      label: '7 Days' },
++  { id: '30d',     label: '30 Days' },
++  { id: 'quarter', label: 'Quarter' },
++];
+ 
+ @Component({
+   selector: 'app-analytics',
+   standalone: true,
++  imports: [NgClass, RouterLink, NgApexchartsModule],
+   changeDetection: ChangeDetectionStrategy.OnPush,
+-  template: `
+-    <div class="page-header">
+-      <div><h1 class="page-title">Analytics</h1></div>
+-    </div>
+-    <div class="placeholder-page" role="region" aria-label="Analytics coming soon">
+-      <i class="ti ti-chart-bar placeholder-icon" aria-hidden="true"></i>
+-      <h2 class="placeholder-title">Analytics — Coming soon</h2>
+-      <p class="placeholder-sub">Revenue trends, test volume charts, and TAT reports will appear here.</p>
+-    </div>`,
+-  styles: [`
+-    :host { display:block; }
+-    .page-header { margin-bottom:14px; }
+-    .page-title  { font-size:20px; font-weight:500; color:var(--text-primary); margin:0; }
+-    .placeholder-page { display:flex; flex-direction:column; align-items:center; justify-content:center;
+-      padding:60px 20px; gap:14px; text-align:center; }
+-    .placeholder-icon { font-size:48px; color:var(--lis-primary,#1D9E75); opacity:0.35; }
+-    .placeholder-title { font-size:18px; font-weight:500; color:var(--text-primary); margin:0; }
+-    .placeholder-sub   { font-size:13px; color:var(--text-secondary); margin:0; max-width:360px; }
+-  `]
++  templateUrl: './analytics.component.html',
++  styleUrl: './analytics.component.css',
+ })
+-export class AnalyticsComponent {}
++export class AnalyticsComponent {
++  protected readonly data = inject(AnalyticsDataService);
++  protected readonly rangeOptions = RANGE_OPTIONS;
++  protected readonly Math = Math;
++
++  activeRange(id: DateRange): boolean {
++    return this.data.range() === id;
++  }
++
++  selectRange(id: DateRange): void {
++    this.data.setRange(id);
++  }
++
++  selectDepartment(id: string | 'all'): void {
++    this.data.setDepartmentFilter(id);
++  }
++
++  tatFlag(avg: number, target: number): 'over' | 'at' {
++    return avg > target ? 'over' : 'at';
++  }
++
++  tatPct(avg: number, target: number): number {
++    return Math.min(100, Math.round((avg / (target * 1.4)) * 100));
++  }
++
++  // ── Revenue / volume trend (area chart) ─────────────────────
++  protected readonly trendSeries = computed<ApexAxisChartSeries>(() => {
++    const t = this.data.trend();
++    return [
++      { name: 'Revenue (₹)', data: t.map(p => p.revenue) },
++      { name: 'Samples',     data: t.map(p => p.volume) },
++    ];
++  });
++
++  protected readonly trendCategories = computed<string[]>(() =>
++    this.data.trend().map(p => p.label)
++  );
++
++  protected readonly trendChart: ApexChart = {
++    type: 'area',
++    height: 280,
++    fontFamily: 'DM Sans, system-ui, sans-serif',
++    toolbar: { show: false },
++    zoom: { enabled: false },
++    animations: { speed: 350 },
++  };
++  protected readonly trendStroke: ApexStroke = { curve: 'smooth', width: [2.5, 2.5] };
++  protected readonly trendFill: ApexFill = {
++    type: 'gradient',
++    gradient: { shadeIntensity: 1, opacityFrom: 0.35, opacityTo: 0.02, stops: [0, 90, 100] },
++  };
++  protected readonly trendGrid: ApexGrid = {
++    borderColor: 'var(--border-color)',
++    strokeDashArray: 3,
++    yaxis: { lines: { show: true } },
++  };
++  protected readonly trendDataLabels: ApexDataLabels = { enabled: false };
++  protected readonly trendTooltip: ApexTooltip = { theme: 'light', shared: true };
++  protected readonly trendColors = ['#3DC9A8', '#5367FE'];
++  protected readonly trendLegend: ApexLegend = {
++    position: 'top',
++    horizontalAlign: 'right',
++    fontSize: '12px',
++    markers: { width: 8, height: 8 },
++  };
++  protected readonly trendYaxis: ApexYAxis[] = [
++    { title: { text: undefined }, labels: { style: { fontSize: '11px' } } },
++  ];
++
++  // ── Status breakdown (donut) ─────────────────────────────────
++  protected readonly statusSeries = computed<ApexNonAxisChartSeries>(() =>
++    this.data.statusBreakdown().map(s => s.count)
++  );
++  protected readonly statusLabels = computed<string[]>(() =>
++    this.data.statusBreakdown().map(s => s.label)
++  );
++  protected readonly statusColors = computed<string[]>(() =>
++    this.data.statusBreakdown().map(s => s.color)
++  );
++  protected readonly statusChart: ApexChart = {
++    type: 'donut',
++    height: 220,
++    fontFamily: 'DM Sans, system-ui, sans-serif',
++    animations: { speed: 350 },
++  };
++  protected readonly statusLegend: ApexLegend = { show: false };
++  protected readonly statusDataLabels: ApexDataLabels = { enabled: false };
++  protected readonly statusPlotOptions: ApexPlotOptions = {
++    pie: {
++      donut: {
++        size: '72%',
++        labels: {
++          show: true,
++          total: { show: true, label: 'Samples', fontSize: '11px' },
++          value: { fontSize: '18px', fontWeight: 500 },
++        },
++      },
++    },
++  };
++}
+diff --git a/src/app/features/analytics/models/analytics.models.ts b/src/app/features/analytics/models/analytics.models.ts
+new file mode 100644
+index 0000000..925a339
+--- /dev/null
++++ b/src/app/features/analytics/models/analytics.models.ts
+@@ -0,0 +1,66 @@
++// ─────────────────────────────────────────────
++//  MedPath LIS — Analytics Domain Models
++// ─────────────────────────────────────────────
++
++export type DateRange = 'today' | '7d' | '30d' | 'quarter';
++
++export interface AnalyticsKpi {
++  id: string;
++  label: string;
++  value: string;
++  delta: string;
++  deltaType: 'up' | 'down' | 'neutral';
++  icon: string;
++  variant: 'primary' | 'accent' | 'warning' | 'danger';
++  spark: string; // "x,y x,y ..." normalized points for inline sparkline
++}
++
++export interface TrendPoint {
++  label: string;
++  revenue: number;
++  volume: number;
++}
++
++export interface StatusSlice {
++  status: 'pending' | 'processing' | 'ready' | 'dispatched' | 'critical';
++  label: string;
++  count: number;
++  color: string;
++}
++
++export interface DepartmentTat {
++  id: string;
++  department: string;
++  avgHours: number;
++  targetHours: number;
++  samples: number;
++}
++
++export interface TopTest {
++  id: string;
++  name: string;
++  orders: number;
++  revenue: string;
++  changePercent: number;
++}
++
++export interface ReferringDoctor {
++  id: string;
++  name: string;
++  clinic: string;
++  referrals: number;
++  revenue: string;
++  changePercent: number;
++}
++
++export interface AnalyticsSnapshot {
++  range: DateRange;
++  kpis: AnalyticsKpi[];
++  trend: TrendPoint[];
++  statusBreakdown: StatusSlice[];
++  departmentTat: DepartmentTat[];
++  topTests: TopTest[];
++  topDoctors: ReferringDoctor[];
++  collectionRatePct: number;
++  outstandingDues: string;
++}
+diff --git a/src/app/features/analytics/services/analytics-data.service.ts b/src/app/features/analytics/services/analytics-data.service.ts
+new file mode 100644
+index 0000000..3c6fe89
+--- /dev/null
++++ b/src/app/features/analytics/services/analytics-data.service.ts
+@@ -0,0 +1,252 @@
++import { Injectable, signal, computed } from '@angular/core';
++import {
++  AnalyticsSnapshot,
++  DateRange,
++  AnalyticsKpi,
++  TrendPoint,
++  StatusSlice,
++  DepartmentTat,
++  TopTest,
++  ReferringDoctor,
++} from '../models/analytics.models';
++
++/** In production this service would call the reporting API per range. */
++const SNAPSHOTS: Record<DateRange, AnalyticsSnapshot> = {
++  today: {
++    range: 'today',
++    collectionRatePct: 82,
++    outstandingDues: '₹4,200',
++    kpis: [
++      { id: 'revenue',  label: 'Revenue',          value: '₹18,450', delta: '↑ 6.4% vs yesterday', deltaType: 'up',      icon: 'currency-rupee', variant: 'primary', spark: '0,24 16,20 32,22 48,14 64,16 80,8 100,6' },
++      { id: 'samples',  label: 'Samples processed', value: '61',      delta: '↑ 9 vs yesterday',    deltaType: 'up',      icon: 'test-pipe',      variant: 'accent',  spark: '0,26 16,22 32,18 48,20 64,12 80,14 100,8' },
++      { id: 'tat',      label: 'Avg turnaround',    value: '3.4 hrs', delta: '↓ 0.3 hrs improved',  deltaType: 'up',      icon: 'clock-hour-4',   variant: 'accent',  spark: '0,10 16,16 32,12 48,18 64,14 80,20 100,16' },
++      { id: 'critical', label: 'Critical flags',    value: '2',       delta: 'Needs review',        deltaType: 'neutral', icon: 'alert-triangle', variant: 'danger',  spark: '0,8 16,14 32,10 48,20 64,12 80,18 100,14' },
++      { id: 'collect',  label: 'Collection rate',   value: '82%',     delta: '↓ 3 pts vs yesterday', deltaType: 'down',   icon: 'wallet',         variant: 'warning', spark: '0,20 16,18 32,22 48,16 64,20 80,14 100,18' },
++    ],
++    trend: [
++      { label: '8 AM', revenue: 1200, volume: 4 },
++      { label: '9 AM', revenue: 2600, volume: 9 },
++      { label: '10 AM', revenue: 3100, volume: 12 },
++      { label: '11 AM', revenue: 2400, volume: 10 },
++      { label: '12 PM', revenue: 3800, volume: 14 },
++      { label: '1 PM', revenue: 2100, volume: 7 },
++      { label: '2 PM', revenue: 3350, volume: 11 },
++    ],
++    statusBreakdown: [
++      { status: 'pending',    label: 'Pending',    count: 8,  color: '#EF9F27' },
++      { status: 'processing', label: 'Processing', count: 14, color: '#5367FE' },
++      { status: 'ready',      label: 'Ready',      count: 11, color: '#3DC9A8' },
++      { status: 'dispatched', label: 'Dispatched', count: 26, color: '#0F6E56' },
++      { status: 'critical',   label: 'Critical',   count: 2,  color: '#E24B4A' },
++    ],
++    departmentTat: [
++      { id: 'hema',  department: 'Hematology',  avgHours: 2.1, targetHours: 3, samples: 22 },
++      { id: 'bio',   department: 'Biochemistry', avgHours: 3.8, targetHours: 4, samples: 18 },
++      { id: 'micro', department: 'Microbiology', avgHours: 6.4, targetHours: 5, samples: 6 },
++      { id: 'path',  department: 'Pathology',    avgHours: 4.2, targetHours: 6, samples: 9 },
++      { id: 'immu',  department: 'Immunology',   avgHours: 5.6, targetHours: 5, samples: 6 },
++    ],
++    topTests: [
++      { id: 't1', name: 'CBC',              orders: 19, revenue: '₹4,750', changePercent: 8.2 },
++      { id: 't2', name: 'Lipid profile',    orders: 14, revenue: '₹6,300', changePercent: 4.1 },
++      { id: 't3', name: 'HbA1c',            orders: 11, revenue: '₹3,850', changePercent: -2.6 },
++      { id: 't4', name: 'Thyroid panel',    orders: 9,  revenue: '₹4,050', changePercent: 12.5 },
++      { id: 't5', name: 'KFT',              orders: 8,  revenue: '₹2,960', changePercent: -1.2 },
++    ],
++    topDoctors: [
++      { id: 'd1', name: 'Dr. Anita Rao',     clinic: 'Sunrise Clinic',      referrals: 12, revenue: '₹9,400', changePercent: 6.8 },
++      { id: 'd2', name: 'Dr. Vikram Shah',   clinic: 'Cityview Hospital',   referrals: 9,  revenue: '₹7,150', changePercent: 3.2 },
++      { id: 'd3', name: 'Dr. Fatima Sheikh', clinic: 'Green Valley Health', referrals: 7,  revenue: '₹5,300', changePercent: -1.9 },
++    ],
++  },
++  '7d': {
++    range: '7d',
++    collectionRatePct: 88,
++    outstandingDues: '₹21,600',
++    kpis: [
++      { id: 'revenue',  label: 'Revenue',          value: '₹1.28L',  delta: '↑ 11.2% vs prior 7d', deltaType: 'up',      icon: 'currency-rupee', variant: 'primary', spark: '0,28 16,22 32,24 48,16 64,18 80,10 100,6' },
++      { id: 'samples',  label: 'Samples processed', value: '418',     delta: '↑ 34 vs prior 7d',    deltaType: 'up',      icon: 'test-pipe',      variant: 'accent',  spark: '0,24 16,20 32,16 48,18 64,10 80,12 100,6' },
++      { id: 'tat',      label: 'Avg turnaround',    value: '3.9 hrs', delta: '↑ 0.2 hrs slower',    deltaType: 'down',    icon: 'clock-hour-4',   variant: 'accent',  spark: '0,12 16,18 32,14 48,20 64,16 80,22 100,18' },
++      { id: 'critical', label: 'Critical flags',    value: '9',       delta: '3 unresolved',        deltaType: 'neutral', icon: 'alert-triangle', variant: 'danger',  spark: '0,10 16,16 32,12 48,22 64,14 80,20 100,16' },
++      { id: 'collect',  label: 'Collection rate',   value: '88%',     delta: '↑ 2 pts vs prior 7d', deltaType: 'up',      icon: 'wallet',         variant: 'warning', spark: '0,18 16,16 32,20 48,14 64,18 80,12 100,16' },
++    ],
++    trend: [
++      { label: 'Mon', revenue: 15200, volume: 52 },
++      { label: 'Tue', revenue: 17400, volume: 58 },
++      { label: 'Wed', revenue: 14800, volume: 49 },
++      { label: 'Thu', revenue: 19600, volume: 63 },
++      { label: 'Fri', revenue: 21100, volume: 70 },
++      { label: 'Sat', revenue: 22300, volume: 74 },
++      { label: 'Sun', revenue: 12800, volume: 41 },
++    ],
++    statusBreakdown: [
++      { status: 'pending',    label: 'Pending',    count: 22, color: '#EF9F27' },
++      { status: 'processing', label: 'Processing', count: 38, color: '#5367FE' },
++      { status: 'ready',      label: 'Ready',      count: 41, color: '#3DC9A8' },
++      { status: 'dispatched', label: 'Dispatched', count: 308, color: '#0F6E56' },
++      { status: 'critical',   label: 'Critical',   count: 9,  color: '#E24B4A' },
++    ],
++    departmentTat: [
++      { id: 'hema',  department: 'Hematology',  avgHours: 2.4, targetHours: 3, samples: 148 },
++      { id: 'bio',   department: 'Biochemistry', avgHours: 4.1, targetHours: 4, samples: 122 },
++      { id: 'micro', department: 'Microbiology', avgHours: 6.0, targetHours: 5, samples: 44 },
++      { id: 'path',  department: 'Pathology',    avgHours: 4.8, targetHours: 6, samples: 61 },
++      { id: 'immu',  department: 'Immunology',   avgHours: 5.2, targetHours: 5, samples: 43 },
++    ],
++    topTests: [
++      { id: 't1', name: 'CBC',              orders: 132, revenue: '₹33,000', changePercent: 9.4 },
++      { id: 't2', name: 'Lipid profile',    orders: 98,  revenue: '₹44,100', changePercent: 6.7 },
++      { id: 't3', name: 'HbA1c',            orders: 76,  revenue: '₹26,600', changePercent: -0.8 },
++      { id: 't4', name: 'Thyroid panel',    orders: 61,  revenue: '₹27,450', changePercent: 15.1 },
++      { id: 't5', name: 'KFT',              orders: 54,  revenue: '₹19,980', changePercent: 2.3 },
++    ],
++    topDoctors: [
++      { id: 'd1', name: 'Dr. Anita Rao',     clinic: 'Sunrise Clinic',      referrals: 74, revenue: '₹58,300', changePercent: 8.1 },
++      { id: 'd2', name: 'Dr. Vikram Shah',   clinic: 'Cityview Hospital',   referrals: 61, revenue: '₹47,900', changePercent: 5.4 },
++      { id: 'd3', name: 'Dr. Fatima Sheikh', clinic: 'Green Valley Health', referrals: 48, revenue: '₹36,150', changePercent: -0.6 },
++    ],
++  },
++  '30d': {
++    range: '30d',
++    collectionRatePct: 91,
++    outstandingDues: '₹68,900',
++    kpis: [
++      { id: 'revenue',  label: 'Revenue',          value: '₹5.62L',  delta: '↑ 14.8% vs prior 30d', deltaType: 'up',      icon: 'currency-rupee', variant: 'primary', spark: '0,30 16,24 32,26 48,18 64,20 80,10 100,4' },
++      { id: 'samples',  label: 'Samples processed', value: '1,864',   delta: '↑ 212 vs prior 30d',   deltaType: 'up',      icon: 'test-pipe',      variant: 'accent',  spark: '0,26 16,22 32,18 48,20 64,12 80,14 100,6' },
++      { id: 'tat',      label: 'Avg turnaround',    value: '4.1 hrs', delta: '↓ 0.4 hrs improved',   deltaType: 'up',      icon: 'clock-hour-4',   variant: 'accent',  spark: '0,14 16,18 32,12 48,20 64,16 80,10 100,14' },
++      { id: 'critical', label: 'Critical flags',    value: '31',      delta: '4 unresolved',         deltaType: 'neutral', icon: 'alert-triangle', variant: 'danger',  spark: '0,12 16,18 32,14 48,20 64,16 80,22 100,18' },
++      { id: 'collect',  label: 'Collection rate',   value: '91%',     delta: '↑ 4 pts vs prior 30d', deltaType: 'up',      icon: 'wallet',         variant: 'warning', spark: '0,20 16,18 32,22 48,16 64,20 80,14 100,10' },
++    ],
++    trend: [
++      { label: 'W1', revenue: 118000, volume: 412 },
++      { label: 'W2', revenue: 134000, volume: 468 },
++      { label: 'W3', revenue: 141000, volume: 489 },
++      { label: 'W4', revenue: 169000, volume: 495 },
++    ],
++    statusBreakdown: [
++      { status: 'pending',    label: 'Pending',    count: 46,  color: '#EF9F27' },
++      { status: 'processing', label: 'Processing', count: 88,  color: '#5367FE' },
++      { status: 'ready',      label: 'Ready',      count: 102, color: '#3DC9A8' },
++      { status: 'dispatched', label: 'Dispatched', count: 1597, color: '#0F6E56' },
++      { status: 'critical',   label: 'Critical',   count: 31, color: '#E24B4A' },
++    ],
++    departmentTat: [
++      { id: 'hema',  department: 'Hematology',  avgHours: 2.6, targetHours: 3, samples: 612 },
++      { id: 'bio',   department: 'Biochemistry', avgHours: 4.3, targetHours: 4, samples: 534 },
++      { id: 'micro', department: 'Microbiology', avgHours: 5.8, targetHours: 5, samples: 198 },
++      { id: 'path',  department: 'Pathology',    avgHours: 5.1, targetHours: 6, samples: 261 },
++      { id: 'immu',  department: 'Immunology',   avgHours: 4.9, targetHours: 5, samples: 259 },
++    ],
++    topTests: [
++      { id: 't1', name: 'CBC',              orders: 542, revenue: '₹1,35,500', changePercent: 10.6 },
++      { id: 't2', name: 'Lipid profile',    orders: 401, revenue: '₹1,80,450', changePercent: 7.9 },
++      { id: 't3', name: 'HbA1c',            orders: 318, revenue: '₹1,11,300', changePercent: 1.4 },
++      { id: 't4', name: 'Thyroid panel',    orders: 256, revenue: '₹1,15,200', changePercent: 13.2 },
++      { id: 't5', name: 'KFT',              orders: 221, revenue: '₹81,770',   changePercent: 3.8 },
++    ],
++    topDoctors: [
++      { id: 'd1', name: 'Dr. Anita Rao',     clinic: 'Sunrise Clinic',      referrals: 298, revenue: '₹2,34,600', changePercent: 9.7 },
++      { id: 'd2', name: 'Dr. Vikram Shah',   clinic: 'Cityview Hospital',   referrals: 246, revenue: '₹1,93,400', changePercent: 6.2 },
++      { id: 'd3', name: 'Dr. Fatima Sheikh', clinic: 'Green Valley Health', referrals: 189, revenue: '₹1,42,800', changePercent: 0.9 },
++    ],
++  },
++  quarter: {
++    range: 'quarter',
++    collectionRatePct: 94,
++    outstandingDues: '₹1,84,200',
++    kpis: [
++      { id: 'revenue',  label: 'Revenue',          value: '₹16.4L',  delta: '↑ 18.3% vs prior quarter', deltaType: 'up',      icon: 'currency-rupee', variant: 'primary', spark: '0,32 16,26 32,28 48,18 64,20 80,10 100,4' },
++      { id: 'samples',  label: 'Samples processed', value: '5,412',   delta: '↑ 640 vs prior quarter',   deltaType: 'up',      icon: 'test-pipe',      variant: 'accent',  spark: '0,26 16,22 32,18 48,20 64,12 80,14 100,6' },
++      { id: 'tat',      label: 'Avg turnaround',    value: '4.3 hrs', delta: '↓ 0.6 hrs improved',       deltaType: 'up',      icon: 'clock-hour-4',   variant: 'accent',  spark: '0,16 16,20 32,14 48,22 64,18 80,12 100,16' },
++      { id: 'critical', label: 'Critical flags',    value: '84',      delta: '11 unresolved',            deltaType: 'neutral', icon: 'alert-triangle', variant: 'danger',  spark: '0,14 16,20 32,16 48,22 64,18 80,24 100,20' },
++      { id: 'collect',  label: 'Collection rate',   value: '94%',     delta: '↑ 5 pts vs prior quarter', deltaType: 'up',      icon: 'wallet',         variant: 'warning', spark: '0,22 16,20 32,24 48,18 64,22 80,16 100,12' },
++    ],
++    trend: [
++      { label: 'Jan', revenue: 480000, volume: 1620 },
++      { label: 'Feb', revenue: 512000, volume: 1740 },
++      { label: 'Mar', revenue: 648000, volume: 2052 },
++    ],
++    statusBreakdown: [
++      { status: 'pending',    label: 'Pending',    count: 58,   color: '#EF9F27' },
++      { status: 'processing', label: 'Processing', count: 104,  color: '#5367FE' },
++      { status: 'ready',      label: 'Ready',      count: 121,  color: '#3DC9A8' },
++      { status: 'dispatched', label: 'Dispatched', count: 5045, color: '#0F6E56' },
++      { status: 'critical',   label: 'Critical',   count: 84,   color: '#E24B4A' },
++    ],
++    departmentTat: [
++      { id: 'hema',  department: 'Hematology',  avgHours: 2.7, targetHours: 3, samples: 1780 },
++      { id: 'bio',   department: 'Biochemistry', avgHours: 4.5, targetHours: 4, samples: 1546 },
++      { id: 'micro', department: 'Microbiology', avgHours: 5.6, targetHours: 5, samples: 572 },
++      { id: 'path',  department: 'Pathology',    avgHours: 5.3, targetHours: 6, samples: 754 },
++      { id: 'immu',  department: 'Immunology',   avgHours: 4.7, targetHours: 5, samples: 760 },
++    ],
++    topTests: [
++      { id: 't1', name: 'CBC',              orders: 1568, revenue: '₹3,92,000', changePercent: 12.1 },
++      { id: 't2', name: 'Lipid profile',    orders: 1142, revenue: '₹5,13,900', changePercent: 8.6 },
++      { id: 't3', name: 'HbA1c',            orders: 902,  revenue: '₹3,15,700', changePercent: 3.2 },
++      { id: 't4', name: 'Thyroid panel',    orders: 731,  revenue: '₹3,28,950', changePercent: 14.9 },
++      { id: 't5', name: 'KFT',              orders: 618,  revenue: '₹2,28,660', changePercent: 5.1 },
++    ],
++    topDoctors: [
++      { id: 'd1', name: 'Dr. Anita Rao',     clinic: 'Sunrise Clinic',      referrals: 842, revenue: '₹6,62,000', changePercent: 11.4 },
++      { id: 'd2', name: 'Dr. Vikram Shah',   clinic: 'Cityview Hospital',   referrals: 706, revenue: '₹5,55,300', changePercent: 7.8 },
++      { id: 'd3', name: 'Dr. Fatima Sheikh', clinic: 'Green Valley Health', referrals: 534, revenue: '₹4,03,600', changePercent: 2.1 },
++    ],
++  },
++};
++
++@Injectable({ providedIn: 'root' })
++export class AnalyticsDataService {
++  private readonly _range = signal<DateRange>('7d');
++  private readonly _departmentFilter = signal<string | 'all'>('all');
++  private readonly _loading = signal(false);
++
++  readonly range = this._range.asReadonly();
++  readonly departmentFilter = this._departmentFilter.asReadonly();
++  readonly loading = this._loading.asReadonly();
++
++  private readonly _snapshot = computed<AnalyticsSnapshot>(() => SNAPSHOTS[this._range()]);
++
++  readonly kpis            = computed<AnalyticsKpi[]>(() => this._snapshot().kpis);
++  readonly trend           = computed<TrendPoint[]>(() => this._snapshot().trend);
++  readonly statusBreakdown = computed<StatusSlice[]>(() => this._snapshot().statusBreakdown);
++  readonly collectionRatePct = computed<number>(() => this._snapshot().collectionRatePct);
++  readonly outstandingDues   = computed<string>(() => this._snapshot().outstandingDues);
++
++  readonly allDepartments = computed<DepartmentTat[]>(() => this._snapshot().departmentTat);
++
++  readonly departmentTat = computed<DepartmentTat[]>(() => {
++    const rows = this._snapshot().departmentTat;
++    const filter = this._departmentFilter();
++    return filter === 'all' ? rows : rows.filter(r => r.id === filter);
++  });
++
++  readonly topTests   = computed<TopTest[]>(() => this._snapshot().topTests);
++  readonly topDoctors = computed<ReferringDoctor[]>(() => this._snapshot().topDoctors);
++
++  readonly totalSamplesInStatus = computed<number>(() =>
++    this.statusBreakdown().reduce((sum, s) => sum + s.count, 0)
++  );
++
++  readonly departmentsOverTarget = computed<number>(() =>
++    this._snapshot().departmentTat.filter(d => d.avgHours > d.targetHours).length
++  );
++
++  setRange(range: DateRange): void {
++    if (range === this._range()) return;
++    this._loading.set(true);
++    this._range.set(range);
++    // Simulate async refresh latency (replace with real HTTP call)
++    setTimeout(() => this._loading.set(false), 240);
++  }
++
++  setDepartmentFilter(id: string | 'all'): void {
++    this._departmentFilter.set(id);
++  }
++
++  /** Simulate a live refresh (wire to WebSocket / polling in production) */
++  refresh(): void {
++    this._loading.set(true);
++    setTimeout(() => this._loading.set(false), 300);
++  }
++}
+-- 
+2.43.0
+

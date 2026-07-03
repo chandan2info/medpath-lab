@@ -1,0 +1,226 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Analytics</h1>
+    <nav aria-label="Breadcrumb"><ol class="breadcrumb">
+      <li><a routerLink="/dashboard/home">Home</a></li>
+      <li aria-current="page">Analytics</li>
+    </ol></nav>
+  </div>
+  <div class="page-header-actions">
+    <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="data.refresh()">
+      <i class="ti ti-refresh" aria-hidden="true"></i> Refresh
+    </button>
+    <button type="button" class="lis-btn lis-btn--primary lis-btn--sm">
+      <i class="ti ti-download" aria-hidden="true"></i> Export report
+    </button>
+  </div>
+</div>
+
+<!-- Date range filter chips -->
+<div class="an-range-bar" role="tablist" aria-label="Date range">
+  @for (opt of rangeOptions; track opt.id) {
+    <button
+      type="button"
+      role="tab"
+      class="an-chip"
+      [class.an-chip--active]="activeRange(opt.id)"
+      [attr.aria-selected]="activeRange(opt.id)"
+      (click)="selectRange(opt.id)"
+    >
+      {{ opt.label }}
+    </button>
+  }
+  <span class="an-range-bar__spacer"></span>
+  <div class="an-collect" [class.an-collect--loading]="data.loading()">
+    <i class="ti ti-wallet" aria-hidden="true"></i>
+    <span>Collection rate <strong>{{ data.collectionRatePct() }}%</strong></span>
+    <span class="an-collect__sep">·</span>
+    <span>Dues <strong class="an-collect__dues">{{ data.outstandingDues() }}</strong></span>
+  </div>
+</div>
+
+<!-- KPI row -->
+<section class="an-kpi-grid" aria-label="Key metrics" [class.an-fade]="data.loading()">
+  @for (k of data.kpis(); track k.id) {
+    <div class="an-kpi-card">
+      <div class="an-kpi-top">
+        <div class="an-kpi-icon" [ngClass]="'an-kpi-icon--' + k.variant" aria-hidden="true">
+          <i class="ti ti-{{ k.icon }}"></i>
+        </div>
+        <div class="an-kpi-body">
+          <div class="an-kpi-label">{{ k.label }}</div>
+          <div class="an-kpi-value">{{ k.value }}</div>
+        </div>
+        <svg class="an-kpi-spark" [ngClass]="'an-kpi-spark--' + k.variant" viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true">
+          <polyline [attr.points]="k.spark" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </div>
+      <div class="an-kpi-delta" [ngClass]="'an-kpi-delta--' + k.deltaType">{{ k.delta }}</div>
+    </div>
+  }
+</section>
+
+<!-- Trend + status breakdown -->
+<div class="an-row an-row--split" [class.an-fade]="data.loading()">
+  <div class="lis-card an-chart-card">
+    <div class="lis-card__header">
+      <i class="ti ti-chart-area-line lis-card-icon" aria-hidden="true"></i>
+      <h2 class="lis-card__title">Revenue &amp; volume trend</h2>
+    </div>
+    <div class="lis-card__body an-chart-body">
+      <apx-chart
+        [series]="trendSeries()"
+        [chart]="trendChart"
+        [xaxis]="{ categories: trendCategories(), labels: { style: { fontSize: '11px' } } }"
+        [yaxis]="trendYaxis"
+        [stroke]="trendStroke"
+        [fill]="trendFill"
+        [grid]="trendGrid"
+        [dataLabels]="trendDataLabels"
+        [tooltip]="trendTooltip"
+        [colors]="trendColors"
+        [legend]="trendLegend"
+      ></apx-chart>
+    </div>
+  </div>
+
+  <div class="lis-card an-chart-card an-chart-card--donut">
+    <div class="lis-card__header">
+      <i class="ti ti-chart-donut lis-card-icon" aria-hidden="true"></i>
+      <h2 class="lis-card__title">Sample status</h2>
+      <span class="lis-badge">{{ data.totalSamplesInStatus() }} total</span>
+    </div>
+    <div class="lis-card__body an-chart-body an-chart-body--donut">
+      <apx-chart
+        [series]="statusSeries()"
+        [chart]="statusChart"
+        [labels]="statusLabels()"
+        [colors]="statusColors()"
+        [legend]="statusLegend"
+        [dataLabels]="statusDataLabels"
+        [plotOptions]="statusPlotOptions"
+      ></apx-chart>
+      <ul class="an-legend">
+        @for (s of data.statusBreakdown(); track s.status) {
+          <li class="an-legend__item">
+            <span class="an-legend__dot" [style.background]="s.color"></span>
+            <span class="an-legend__label">{{ s.label }}</span>
+            <span class="an-legend__count">{{ s.count }}</span>
+          </li>
+        }
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Department TAT -->
+<div class="an-row" [class.an-fade]="data.loading()">
+  <div class="lis-card an-tat-card">
+    <div class="lis-card__header">
+      <i class="ti ti-clock-hour-4 lis-card-icon" aria-hidden="true"></i>
+      <h2 class="lis-card__title">Turnaround time by department</h2>
+      @if (data.departmentsOverTarget() > 0) {
+        <span class="lis-badge lis-badge--danger">{{ data.departmentsOverTarget() }} over target</span>
+      }
+      <div class="an-dept-filter">
+        <button type="button" class="an-dept-chip" [class.an-dept-chip--active]="data.departmentFilter() === 'all'" (click)="selectDepartment('all')">All</button>
+        @for (d of data.allDepartments(); track d.id) {
+          <button
+            type="button"
+            class="an-dept-chip"
+            [class.an-dept-chip--active]="data.departmentFilter() === d.id"
+            (click)="selectDepartment(d.id)"
+          >{{ d.department }}</button>
+        }
+      </div>
+    </div>
+    <div class="lis-card__body">
+      <ul class="an-tat-list">
+        @for (d of data.departmentTat(); track d.id) {
+          <li class="an-tat-row">
+            <div class="an-tat-name">
+              {{ d.department }}
+              <span class="an-tat-samples">{{ d.samples }} samples</span>
+            </div>
+            <div class="an-tat-bar">
+              <div
+                class="an-tat-bar__fill"
+                [class.an-tat-bar__fill--over]="tatFlag(d.avgHours, d.targetHours) === 'over'"
+                [style.width.%]="tatPct(d.avgHours, d.targetHours)"
+              ></div>
+              <div class="an-tat-bar__target" [style.left.%]="tatPct(d.targetHours, d.targetHours) / 1.4"></div>
+            </div>
+            <div class="an-tat-value" [class.an-tat-value--over]="tatFlag(d.avgHours, d.targetHours) === 'over'">
+              {{ d.avgHours }}h <span class="an-tat-target">/ {{ d.targetHours }}h target</span>
+            </div>
+          </li>
+        }
+        @if (data.departmentTat().length === 0) {
+          <li class="an-empty">No department matches this filter.</li>
+        }
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Top tests + top doctors -->
+<div class="an-row an-row--split" [class.an-fade]="data.loading()">
+  <div class="lis-card">
+    <div class="lis-card__header">
+      <i class="ti ti-flask lis-card-icon" aria-hidden="true"></i>
+      <h2 class="lis-card__title">Top tests ordered</h2>
+    </div>
+    <div class="an-table-wrap">
+      <table class="an-table">
+        <thead>
+          <tr><th>Test</th><th>Orders</th><th>Revenue</th><th>Change</th></tr>
+        </thead>
+        <tbody>
+          @for (t of data.topTests(); track t.id) {
+            <tr class="an-table__row">
+              <td class="an-table__primary">{{ t.name }}</td>
+              <td>{{ t.orders }}</td>
+              <td>{{ t.revenue }}</td>
+              <td>
+                <span class="an-change" [class.an-change--up]="t.changePercent >= 0" [class.an-change--down]="t.changePercent < 0">
+                  {{ t.changePercent >= 0 ? '↑' : '↓' }} {{ Math.abs(t.changePercent) }}%
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="lis-card">
+    <div class="lis-card__header">
+      <i class="ti ti-stethoscope lis-card-icon" aria-hidden="true"></i>
+      <h2 class="lis-card__title">Top referring doctors</h2>
+    </div>
+    <div class="an-table-wrap">
+      <table class="an-table">
+        <thead>
+          <tr><th>Doctor</th><th>Referrals</th><th>Revenue</th><th>Change</th></tr>
+        </thead>
+        <tbody>
+          @for (doc of data.topDoctors(); track doc.id) {
+            <tr class="an-table__row">
+              <td class="an-table__primary">
+                {{ doc.name }}
+                <span class="an-table__sub">{{ doc.clinic }}</span>
+              </td>
+              <td>{{ doc.referrals }}</td>
+              <td>{{ doc.revenue }}</td>
+              <td>
+                <span class="an-change" [class.an-change--up]="doc.changePercent >= 0" [class.an-change--down]="doc.changePercent < 0">
+                  {{ doc.changePercent >= 0 ? '↑' : '↓' }} {{ Math.abs(doc.changePercent) }}%
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
