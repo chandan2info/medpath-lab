@@ -70,15 +70,6 @@
         <div class="topbar-divider" aria-hidden="true"></div>
 
         <!-- Operator -->
-        <button class="topbar-avatar-btn" aria-label="Operator menu" aria-haspopup="true">
-          <div class="lis-topbar-avatar" aria-hidden="true">
-            {{ session.operator()?.initials }}
-          </div>
-          <div class="avatar-info hidden sm:block">
-            <p class="avatar-name">{{ session.operator()?.name }}</p>
-            <p class="avatar-role">{{ session.operator()?.role }}</p>
-          </div>
-          <i class="ti ti-chevron-down avatar-chevron hidden sm:block" aria-hidden="true"></i>
-        </button>
+        <app-user-chip variant="topbar" align="right"></app-user-chip>
       </div>
     </header>

@@ -3,12 +3,12 @@ import { NgClass } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { SidebarService }    from '../../../core/services/sidebar.service';
 import { ThemeService }      from '../../../core/services/theme.service';
-import { UserSessionService } from '../../../core/services/user-session.service';
+import { UserChipComponent } from '../../../shared/components/user-chip/user-chip.component';
 
 @Component({
   selector: 'app-topbar',
   standalone: true,
-  imports: [NgClass, RouterLink],
+  imports: [NgClass, RouterLink, UserChipComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './topbar.component.html',
     styleUrl: './topbar.component.css',
@@ -16,6 +16,5 @@ import { UserSessionService } from '../../../core/services/user-session.service'
 export class TopbarComponent {
   protected readonly sidebar = inject(SidebarService);
   protected readonly theme   = inject(ThemeService);
-  protected readonly session = inject(UserSessionService);
   readonly searchQuery = signal('');
 }

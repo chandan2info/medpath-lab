@@ -5,7 +5,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { NgClass, AsyncPipe } from '@angular/common';
 import { SidebarService }    from '../../../core/services/sidebar.service';
 import { NavigationService } from '../../../core/services/navigation.service';
-import { UserSessionService } from '../../../core/services/user-session.service';
+import { UserChipComponent } from '../../../shared/components/user-chip/user-chip.component';
 import { NavBadges } from '../../../shared/models/lis.models';
 import { Subscription } from 'rxjs';
 
@@ -44,7 +44,7 @@ const NAV: NavEntry[] = [
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, NgClass, AsyncPipe],
+  imports: [RouterLink, RouterLinkActive, NgClass, AsyncPipe, UserChipComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.css',
@@ -52,7 +52,6 @@ const NAV: NavEntry[] = [
 export class SidebarComponent implements OnInit, OnDestroy {
   protected readonly sidebar   = inject(SidebarService);
   protected readonly nav$      = inject(NavigationService);
-  protected readonly session   = inject(UserSessionService);
   protected readonly nav       = NAV;
   protected readonly isSection = isSection;
 

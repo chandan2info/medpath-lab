@@ -1,0 +1,61 @@
+<div
+  class="chip-root"
+  [class.variant-sidebar]="variant() === 'sidebar'"
+  (focusout)="onFocusOut($event)"
+>
+  <button
+    type="button"
+    class="chip-trigger"
+    [class.open]="open()"
+    (click)="toggle()"
+    aria-haspopup="menu"
+    [attr.aria-expanded]="open()"
+    aria-label="Account menu"
+  >
+    <span class="chip-avatar" aria-hidden="true">
+      {{ operator()?.initials }}
+      <span class="chip-status-dot"></span>
+    </span>
+
+    <span class="chip-text hidden sm:flex">
+      <span class="chip-name">{{ operator()?.name }}</span>
+      <span class="chip-role">{{ operator()?.role }}</span>
+    </span>
+
+    <i class="ti ti-chevron-down chip-chevron hidden sm:flex" aria-hidden="true"></i>
+  </button>
+
+  @if (open()) {
+    <div
+      class="chip-menu"
+      [class.align-left]="align() === 'left'"
+      [class.place-up]="placement() === 'up'"
+      role="menu"
+      aria-label="Account"
+    >
+      <div class="chip-menu-header">
+        <span class="chip-menu-avatar" aria-hidden="true">{{ operator()?.initials }}</span>
+        <div class="chip-menu-id">
+          <p class="chip-menu-name">{{ operator()?.name }}</p>
+          <p class="chip-menu-lab">{{ operator()?.labName }}</p>
+        </div>
+      </div>
+
+      <div class="chip-menu-sep" role="separator"></div>
+
+      @for (item of links; track item.label) {
+        <a class="chip-menu-item" role="menuitem" [routerLink]="item.link" (click)="close()">
+          <i class="ti {{ item.icon }}" aria-hidden="true"></i>
+          {{ item.label }}
+        </a>
+      }
+
+      <div class="chip-menu-sep" role="separator"></div>
+
+      <button type="button" class="chip-menu-item danger" role="menuitem" (click)="signOut()">
+        <i class="ti ti-logout" aria-hidden="true"></i>
+        Sign out
+      </button>
+    </div>
+  }
+</div>
