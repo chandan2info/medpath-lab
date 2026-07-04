@@ -24,7 +24,11 @@ export class LisLandingComponent {
   remember = false;
   showPw   = signal(false);
   loginError = signal(false);
+  usernameError = signal(false);
+  passwordError = signal(false);
+  loginLoading = signal(false);
   mobileMenuOpen = signal(false);
+  activeSection = signal('hero');
 
   /** Drives the sun/moon icon and a11y labels on the theme toggle. */
   protected readonly isDark = computed(() => this.themeService.theme() === 'dark');
@@ -65,7 +69,14 @@ export class LisLandingComponent {
   }
 
   scrollToLogin(): void {
-    document.getElementById('login-card')?.scrollIntoView({ behavior:'smooth', block:'center' });
+    this.activeSection.set('login-card');
+    document.getElementById('login-card')?.scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+
+  scrollToSection(sectionId: string): void {
+    this.activeSection.set(sectionId);
+    this.mobileMenuOpen.set(false);
+    document.getElementById(sectionId)?.scrollIntoView({ behavior:'smooth', block:'start' });
   }
 
   togglePasswordVisibility(): void {
@@ -76,17 +87,44 @@ export class LisLandingComponent {
     this.themeService.toggle();
   }
 
-  login(): void {
-    if (this.session.login(this.username, this.password)) {
-      this.loginError.set(false);
-      if (this.remember) {
-        localStorage.setItem(REMEMBERED_USERNAME_KEY, this.username);
-      } else {
-        localStorage.removeItem(REMEMBERED_USERNAME_KEY);
-      }
-      this.router.navigate(['/dashboard/home']);
+  /** Demo-credential badge click — fills and focuses the relevant field. */
+  fillDemoField(field: 'username' | 'password', value: string, inputId: string): void {
+    if (field === 'username') {
+      this.username = value;
+      this.usernameError.set(false);
     } else {
-      this.loginError.set(true);
+      this.password = value;
+      this.passwordError.set(false);
     }
+    document.getElementById(inputId)?.focus();
+  }
+
+  login(): void {
+    const usernameEmpty = this.username.trim() === '';
+    const passwordEmpty = this.password.trim() === '';
+    this.usernameError.set(usernameEmpty);
+    this.passwordError.set(passwordEmpty);
+    if (usernameEmpty || passwordEmpty) {
+      return;
+    }
+
+    this.loginError.set(false);
+    this.loginLoading.set(true);
+
+    // Small delay so the loading state on the submit button is perceptible —
+    // the underlying session check itself is synchronous.
+    setTimeout(() => {
+      if (this.session.login(this.username, this.password)) {
+        if (this.remember) {
+          localStorage.setItem(REMEMBERED_USERNAME_KEY, this.username);
+        } else {
+          localStorage.removeItem(REMEMBERED_USERNAME_KEY);
+        }
+        this.router.navigate(['/dashboard/home']);
+      } else {
+        this.loginLoading.set(false);
+        this.loginError.set(true);
+      }
+    }, 450);
   }
 }

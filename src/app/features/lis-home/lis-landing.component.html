@@ -8,12 +8,12 @@
         </div>
       </div>
       <div class="lp-nav-links" role="list">
-        <a class="lp-link lp-link--active" href="#" role="listitem">Home</a>
-        <a class="lp-link" href="#about" role="listitem">About us</a>
-        <a class="lp-link" href="#tests" role="listitem">Tests</a>
-        <a class="lp-link" href="#why" role="listitem">Our process</a>
-        <a class="lp-link" href="#login-card" role="listitem">Reports</a>
-        <a class="lp-link" href="#footer" role="listitem">Contact us</a>
+        <a class="lp-link" [class.lp-link--active]="activeSection() === 'hero'" href="#hero" role="listitem" (click)="scrollToSection('hero'); $event.preventDefault()">Home</a>
+        <a class="lp-link" [class.lp-link--active]="activeSection() === 'why'" href="#why" role="listitem" (click)="scrollToSection('why'); $event.preventDefault()">About us</a>
+        <a class="lp-link" [class.lp-link--active]="activeSection() === 'tests'" href="#tests" role="listitem" (click)="scrollToSection('tests'); $event.preventDefault()">Tests</a>
+        <a class="lp-link" [class.lp-link--active]="activeSection() === 'why'" href="#why" role="listitem" (click)="scrollToSection('why'); $event.preventDefault()">Our process</a>
+        <a class="lp-link" [class.lp-link--active]="activeSection() === 'login-card'" href="#login-card" role="listitem" (click)="scrollToSection('login-card'); $event.preventDefault()">Reports</a>
+        <a class="lp-link" [class.lp-link--active]="activeSection() === 'footer'" href="#footer" role="listitem" (click)="scrollToSection('footer'); $event.preventDefault()">Contact us</a>
       </div>
       <div class="lp-nav-right">
         <div class="lp-nav-cta">
@@ -42,12 +42,12 @@
     <!-- Mobile drawer -->
     @if (mobileMenuOpen()) {
       <div class="lp-mobile-menu" id="lp-mobile-menu" role="dialog" aria-label="Mobile navigation">
-        <a class="lp-mob-link" href="#" (click)="mobileMenuOpen.set(false)">Home</a>
-        <a class="lp-mob-link" href="#" (click)="mobileMenuOpen.set(false)">About us</a>
-        <a class="lp-mob-link" href="#" (click)="mobileMenuOpen.set(false)">Tests</a>
-        <a class="lp-mob-link" href="#" (click)="mobileMenuOpen.set(false)">Our process</a>
-        <a class="lp-mob-link" href="#" (click)="mobileMenuOpen.set(false)">Reports</a>
-        <a class="lp-mob-link" href="#" (click)="mobileMenuOpen.set(false)">Contact us</a>
+        <a class="lp-mob-link" href="#hero" (click)="scrollToSection('hero'); $event.preventDefault()">Home</a>
+        <a class="lp-mob-link" href="#why" (click)="scrollToSection('why'); $event.preventDefault()">About us</a>
+        <a class="lp-mob-link" href="#tests" (click)="scrollToSection('tests'); $event.preventDefault()">Tests</a>
+        <a class="lp-mob-link" href="#why" (click)="scrollToSection('why'); $event.preventDefault()">Our process</a>
+        <a class="lp-mob-link" href="#login-card" (click)="scrollToSection('login-card'); $event.preventDefault()">Reports</a>
+        <a class="lp-mob-link" href="#footer" (click)="scrollToSection('footer'); $event.preventDefault()">Contact us</a>
         <button class="lp-mob-link lp-mob-theme" type="button" (click)="toggleTheme()">
           <i [class]="isDark() ? 'ti ti-sun' : 'ti ti-moon'" aria-hidden="true"></i>
           {{ isDark() ? 'Switch to light mode' : 'Switch to dark mode' }}
@@ -59,33 +59,43 @@
     }
 
     <!-- Hero -->
-    <section class="lp-hero" id="hero" aria-label="Lab introduction">
-      <div class="lp-hero-left">
-        <div class="lp-eyebrow">
-          <i class="ti ti-certificate" aria-hidden="true"></i> NABL Accredited Laboratory
-        </div>
-        <h1 class="lp-h1">Your health,<br>our priority.</h1>
-        <p class="lp-sub">
-          Advanced diagnostics with accurate results and personalised care you can trust —
-          all from a single, streamlined system.
-        </p>
-        <div class="lp-trust" aria-label="Key qualities">
-          <div class="lp-trust-item"><i class="ti ti-shield-check" aria-hidden="true"></i> Accurate results</div>
-          <div class="lp-trust-item"><i class="ti ti-clock" aria-hidden="true"></i> Timely reports</div>
-          <div class="lp-trust-item"><i class="ti ti-headset" aria-hidden="true"></i> Expert support</div>
-        </div>
-        <div class="lp-hero-btns">
-          <button class="lp-btn-solid" type="button" (click)="scrollToLogin()">
-            <i class="ti ti-calendar" aria-hidden="true"></i> Book a test
-          </button>
-          <button class="lp-btn-ghost" type="button">
-            <i class="ti ti-file-text" aria-hidden="true"></i> View reports
-          </button>
+    <header class="lp-hero" id="hero" aria-label="Lab introduction">
+      <div class="lp-hero-decor" aria-hidden="true">
+        <div class="lp-hero-photo"></div>
+        <div class="lp-hero-white-overlay"></div>
+        <div class="lp-hero-glow"></div>
+        <div class="lp-hero-dots"></div>
+        <div class="lp-hero-wave">
+          <svg viewBox="0 0 1440 74" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0,32 C240,74 480,0 720,22 C960,44 1200,74 1440,32 L1440,74 L0,74 Z" fill="currentColor"></path>
+          </svg>
         </div>
       </div>
 
-      <!-- Login card -->
-      <div class="lp-hero-right">
+      <div class="lp-hero-wrap">
+        <div class="lp-hero-copy">
+          <span class="lp-eyebrow"><i class="ti ti-shield-check" aria-hidden="true"></i> NABL Accredited Laboratory</span>
+          <h1 class="lp-h1">Your health,<span>our priority.</span></h1>
+          <p class="lp-sub">
+            Advanced diagnostics with accurate results and reliable reporting — modern pathology
+            services built around a single, streamlined system you can trust.
+          </p>
+          <div class="lp-trust" aria-label="Key qualities">
+            <div class="lp-trust-item"><i class="ti ti-circle-check" aria-hidden="true"></i> Accurate results</div>
+            <div class="lp-trust-item"><i class="ti ti-clock" aria-hidden="true"></i> Timely reports</div>
+            <div class="lp-trust-item"><i class="ti ti-headset" aria-hidden="true"></i> Expert support</div>
+          </div>
+          <div class="lp-hero-btns">
+            <button class="lp-btn-solid lp-btn-hero" type="button" (click)="scrollToLogin()">
+              <i class="ti ti-calendar-plus" aria-hidden="true"></i> Book a test
+            </button>
+            <button class="lp-btn-ghost lp-btn-hero" type="button">
+              <i class="ti ti-file-text" aria-hidden="true"></i> View reports
+            </button>
+          </div>
+        </div>
+
+        <!-- Login card -->
         <div class="lp-login-card" id="login-card" role="region" aria-label="Operator login">
           <div class="lp-lc-head">
             <div class="lp-lc-icon" aria-hidden="true"><i class="ti ti-lock"></i></div>
@@ -100,32 +110,47 @@
             </div>
           }
 
-          <div class="lp-field">
-            <label for="lp-user">Username</label>
-            <input id="lp-user" type="text" [(ngModel)]="username" placeholder="Enter your username" autocomplete="username" />
-          </div>
-          <div class="lp-field">
-            <label for="lp-pass">Password</label>
-            <div class="lp-pw-wrap">
-              <input id="lp-pass" [type]="showPw() ? 'text' : 'password'" [(ngModel)]="password"
-                placeholder="Enter password" autocomplete="current-password" />
-              <button type="button" class="lp-pw-eye"
+          <form (ngSubmit)="login()" novalidate>
+            <div class="lp-field" [class.lp-field--error]="usernameError()">
+              <input id="lp-user" type="text" [(ngModel)]="username" name="username"
+                placeholder=" " autocomplete="username" aria-required="true"
+                (input)="usernameError.set(false)" />
+              <label for="lp-user">Username</label>
+              <span class="lp-field-icon" aria-hidden="true"><i class="ti ti-user"></i></span>
+              @if (usernameError()) {
+                <div class="lp-field-err" role="alert"><i class="ti ti-alert-circle" aria-hidden="true"></i> Please enter your username</div>
+              }
+            </div>
+
+            <div class="lp-field" [class.lp-field--error]="passwordError()">
+              <input id="lp-pass" [type]="showPw() ? 'text' : 'password'" [(ngModel)]="password" name="password"
+                placeholder=" " autocomplete="current-password" aria-required="true"
+                (input)="passwordError.set(false)" />
+              <label for="lp-pass">Password</label>
+              <button type="button" class="lp-field-icon lp-pw-eye"
                 (click)="togglePasswordVisibility()"
-                [attr.aria-label]="showPw() ? 'Hide password' : 'Show password'"
-              >
+                [attr.aria-pressed]="showPw()"
+                [attr.aria-label]="showPw() ? 'Hide password' : 'Show password'">
                 <i [class]="showPw() ? 'ti ti-eye-off' : 'ti ti-eye'" aria-hidden="true"></i>
               </button>
+              @if (passwordError()) {
+                <div class="lp-field-err" role="alert"><i class="ti ti-alert-circle" aria-hidden="true"></i> Please enter your password</div>
+              }
             </div>
-          </div>
-          <div class="lp-remember-row">
-            <label class="lp-check">
-              <input type="checkbox" [(ngModel)]="remember" /> Remember me
-            </label>
-            <a href="#" class="lp-forgot">Forgot password?</a>
-          </div>
-          <button type="button" class="lp-signin-btn" (click)="login()">
-            <i class="ti ti-login" aria-hidden="true"></i> Sign in to dashboard
-          </button>
+
+            <div class="lp-remember-row">
+              <label class="lp-check">
+                <input type="checkbox" [(ngModel)]="remember" name="remember" /> Remember me
+              </label>
+              <a href="#" class="lp-forgot">Forgot password?</a>
+            </div>
+
+            <button type="submit" class="lp-signin-btn" [disabled]="loginLoading()" [class.lp-signin-btn--loading]="loginLoading()">
+              <span class="lp-btn-label"><i class="ti ti-login-2" aria-hidden="true"></i> Sign in to dashboard</span>
+              <span class="lp-spinner" aria-hidden="true"></span>
+            </button>
+          </form>
+
           <div class="lp-secure-row">
             <i class="ti ti-shield-check" aria-hidden="true"></i>
             Secured · Single-user · MedPath LIS v2.4
@@ -133,12 +158,15 @@
           @if (showDemoHint) {
             <div class="lp-demo-hint" role="note">
               <i class="ti ti-info-circle" aria-hidden="true"></i>
-              Demo — username: <code>ravi.anand</code> &nbsp;password: <code>MedPath&#64;2024</code>
+              Demo — username:
+              <button type="button" class="lp-demo-badge" (click)="fillDemoField('username', 'ravi.anand', 'lp-user')">ravi.anand</button>
+              password:
+              <button type="button" class="lp-demo-badge" (click)="fillDemoField('password', 'MedPath@2024', 'lp-pass')">MedPath&#64;2024</button>
             </div>
           }
         </div>
       </div>
-    </section>
+    </header>
 
     <!-- Test categories -->
     <section class="lp-section lp-section--alt" id="tests" aria-label="Test categories">
@@ -146,10 +174,13 @@
       <div class="lp-section-sub">Comprehensive pathology testing across all major disciplines</div>
       <div class="lp-cat-grid">
         @for (cat of testCats; track cat.name) {
-          <div class="lp-cat-card">
-            <div class="lp-cat-icon" [style.background]="cat.bg" aria-hidden="true"><i [class]="'ti ti-' + cat.icon" [style.color]="cat.fg"></i></div>
+          <div class="lp-cat-card" [style.--cat-accent]="cat.fg" [style.--cat-surface]="cat.bg">
+            <div class="lp-cat-icon" aria-hidden="true"><i [class]="'ti ti-' + cat.icon"></i></div>
             <div class="lp-cat-name">{{ cat.name }}</div>
             <div class="lp-cat-desc">{{ cat.desc }}</div>
+            <button class="lp-cat-arrow" type="button" [attr.aria-label]="'Explore ' + cat.name">
+              <i class="ti ti-arrow-right" aria-hidden="true"></i>
+            </button>
           </div>
         }
       </div>
@@ -158,9 +189,11 @@
     <!-- Stats band -->
     <div class="lp-stats-band" role="region" aria-label="Lab statistics">
       @for (s of stats; track s.label) {
-        <div class="lp-stat">
-          <div class="lp-stat-icon" [style.color]="s.fg" aria-hidden="true"><i [class]="'ti ti-' + s.icon"></i></div>
-          <div class="lp-stat-val">{{ s.value }}</div>
+        <div class="lp-stat" [class.lp-stat--happy]="s.label === 'Happy patients'">
+          <div class="lp-stat-main">
+            <div class="lp-stat-icon" [style.color]="s.fg" aria-hidden="true"><i [class]="'ti ti-' + s.icon"></i></div>
+            <div class="lp-stat-val" [style.color]="s.fg">{{ s.value }}</div>
+          </div>
           <div class="lp-stat-lbl">{{ s.label }}</div>
         </div>
       }
