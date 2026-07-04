@@ -1,0 +1,769 @@
+From bce26eae74cf33f6e4b435bf2162ea51fe8f24d7 Mon Sep 17 00:00:00 2001
+From: Chandan <chandan@medpath.dev>
+Date: Sat, 4 Jul 2026 18:46:36 +0000
+Subject: [PATCH] Sample Collection: redesign for high-frequency operational
+ use (UX review)
+
+Addresses the UX review point-by-point:
+
+- Patient identity dominates: 20px/700 name, accent patient ID, large
+  status chip (Awaiting Collection / Collected), avatar status ring.
+  Related fields (mobile, doctor, fasting, priority) grouped below a
+  divider instead of one flat text block.
+- Priority gets real colour language: routine = blue, urgent = amber,
+  stat = red, matching the existing status-pill palette.
+- Sample tubes are now cards: full-height colour strip, 'Required'
+  chip, larger barcode (+35%), and per-tube Print/Preview/Reprint
+  icon actions.
+- Collection panel reordered as a workflow (Collector -> Time ->
+  Sample type -> Notes -> Print Labels -> Mark as Collected), with
+  Mark as Collected promoted to a 52px primary CTA with shadow/hover
+  lift, and Print Labels kept as the secondary/outline action.
+- Workflow trail replaced with a full lifecycle timeline (Registered
+  through Report Ready) using a dot-and-connecting-line pattern with
+  done/active/pending states, instead of 4 nav-like step chips.
+- Empty space below now holds a Collection Checklist (identity
+  verified, barcode attached, tube mixed, sealed, consent) with a
+  live completed-count.
+- Empty state copy/icon updated to 'No Samples Pending'.
+- Accessibility/interaction passes: readonly inputs get more
+  contrast, focus-visible rings on inputs/checklist items, 40px+
+  icon touch targets, hover/press feedback on buttons and tube
+  cards, and keyboard shortcuts (Enter = Mark as Collected, Ctrl/Cmd+P
+  = Print Labels).
+
+Out of scope for this patch (affects other screens, not just Sample
+Collection): sidebar section grouping, global search bar shortcuts,
+and top-header operational widgets (scanner/printer/queue status).
+Happy to take those on separately if wanted.
+---
+ .../sample-collection.component.css           | 245 +++++++++++++-----
+ .../sample-collection.component.html          | 227 ++++++++++------
+ .../sample-collection.component.ts            | 107 +++++++-
+ 3 files changed, 443 insertions(+), 136 deletions(-)
+
+diff --git a/src/app/features/sample-collection/sample-collection.component.css b/src/app/features/sample-collection/sample-collection.component.css
+index 03fd6bb..191f8c8 100644
+--- a/src/app/features/sample-collection/sample-collection.component.css
++++ b/src/app/features/sample-collection/sample-collection.component.css
+@@ -1,90 +1,217 @@
+ :host { display:block; }
+-.page-header { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:18px; }
++.page-header { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:16px; }
+ .page-title  { font-size:22px; font-weight:500; color:var(--text-primary); margin:0 0 4px; }
+ .breadcrumb  { display:flex; list-style:none; padding:0; margin:0; gap:6px; font-size:12px; color:var(--text-secondary); }
+ .breadcrumb a { color:var(--text-secondary); text-decoration:none; &:hover{color:var(--lis-primary,#1D9E75);} }
+ .breadcrumb li+li::before { content:'/'; margin-right:6px; }
+ 
+-/* ── Workflow trail ──────────────────────────── */
+-.workflow-trail { display: flex; align-items: center; gap: 6px; background: var(--body-bg); border: 0.5px solid var(--border-color); border-radius: 9px; padding: 6px 12px; }
+-.wf-step { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-secondary); i { font-size: 13px; } }
+-.wf-step--active { color: var(--lis-primary-deep, #085041); font-weight: 500; i { color: var(--lis-primary, #1D9E75); } }
+-.wf-step--done   { color: var(--lis-primary, #1D9E75); font-weight: 500; i { color: var(--lis-primary, #1D9E75); } }
+-.wf-arrow { font-size: 11px; color: var(--border-color); }
+-
+-/* ── Current patient block ──────────────────── */
+-.current-patient-block { margin-bottom: 16px; }
+-
+-/* Patient identity band — mirrors the icon-prefixed field style
+-   used for the patient band on the Reports preview, so patient
+-   info reads consistently across the two screens. */
+-.cp-id-band {
+-  margin: 12px 16px 0;
+-  padding: 16px 18px;
+-  background: var(--rpt-tint-bg);
+-  border-radius: 12px;
+-}
+-.cp-id-head { display: flex; align-items: center; gap: 12px; }
+-.cp-av { width: 42px; height: 42px; border-radius: 50%; background: var(--lis-primary, #1D9E75); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; text-transform: uppercase; flex-shrink: 0; }
+-.cp-id-main { flex: 1; min-width: 0; }
+-.cp-name    { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+-.cp-id-sub  { font-size: 11px; color: var(--rpt-tint-label); margin-top: 2px; }
+-.cp-priority { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); border: 0.5px solid var(--lis-primary-mid, #5DCAA5); text-transform: capitalize; }
+-.cp-priority--stat { background: #FCEBEB; color: #791F1F; border-color: #E24B4A; }
+-
+-.cp-fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 16px; margin-top: 14px; }
+-@media (max-width: 700px) { .cp-fields { grid-template-columns: 1fr; } }
+-.cp-field { display: flex; align-items: flex-start; gap: 9px; min-width: 0; }
+-.cp-field-icon {
+-  width: 26px; height: 26px; border-radius: 7px; flex-shrink: 0; margin-top: 1px;
++/* ══════════════════════════════════════════════
++   Process timeline — full pipeline, dot + line
++   ══════════════════════════════════════════════ */
++.proc-timeline {
++  display: flex; align-items: flex-start; gap: 0;
++  background: var(--card-bg); border: 0.5px solid var(--border-color);
++  border-radius: 12px; padding: 16px 18px 14px;
++  margin-bottom: 18px; overflow-x: auto;
++}
++.proc-step { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; width: 92px; }
++.proc-dot {
++  width: 30px; height: 30px; border-radius: 50%;
++  display: flex; align-items: center; justify-content: center;
++  font-size: 14px; color: var(--text-secondary);
++  background: var(--body-bg); border: 1.5px solid var(--border-color);
++  transition: background .2s, border-color .2s, color .2s, box-shadow .2s;
++}
++.proc-step--done .proc-dot {
++  background: var(--lis-primary, #1D9E75); border-color: var(--lis-primary, #1D9E75); color: #fff;
++}
++.proc-step--active .proc-dot {
++  background: var(--lis-primary-xlight, #E1F5EE); border-color: var(--lis-primary, #1D9E75);
++  color: var(--lis-primary-deep, #085041);
++  box-shadow: 0 0 0 4px var(--lis-primary-xlight, #E1F5EE);
++  animation: pulseDot 1.8s ease-in-out infinite;
++}
++@keyframes pulseDot {
++  0%, 100% { box-shadow: 0 0 0 4px var(--lis-primary-xlight, #E1F5EE); }
++  50%      { box-shadow: 0 0 0 7px var(--lis-primary-xlight, #E1F5EE); }
++}
++.proc-label { font-size: 10.5px; color: var(--text-secondary); text-align: center; white-space: nowrap; transition: color .2s; }
++.proc-step--done .proc-label, .proc-step--active .proc-label { color: var(--text-primary); font-weight: 500; }
++.proc-line { flex: 1; height: 1.5px; background: var(--border-color); margin: 15px -2px 0; min-width: 16px; transition: background .3s; }
++.proc-line--done { background: var(--lis-primary, #1D9E75); }
++
++/* ══════════════════════════════════════════════
++   Patient summary — identity + status dominate
++   ══════════════════════════════════════════════ */
++.patient-summary { margin-bottom: 16px; padding: 18px 20px; }
++.ps-head { display: flex; align-items: center; gap: 14px; }
++.ps-av-wrap {
++  flex-shrink: 0; padding: 3px; border-radius: 50%;
++  border: 2px solid #E8B84B; transition: border-color .25s;
++}
++.ps-av-wrap--done { border-color: var(--lis-primary, #1D9E75); }
++.ps-av {
++  width: 48px; height: 48px; border-radius: 50%;
++  background: var(--lis-primary, #1D9E75); color: #fff;
++  display: flex; align-items: center; justify-content: center;
++  font-size: 16px; font-weight: 700; text-transform: uppercase;
++}
++.ps-id-main { flex: 1; min-width: 0; }
++.ps-name { font-size: 20px; font-weight: 700; color: var(--text-primary); line-height: 1.25; }
++.ps-sub  { font-size: 12.5px; color: var(--text-secondary); margin-top: 3px; }
++.ps-pid  { color: var(--lis-primary-deep, #085041); font-weight: 600; }
++.ps-dot  { margin: 0 4px; }
++
++.status-chip {
++  display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;
++  font-size: 12.5px; font-weight: 600; padding: 8px 14px; border-radius: 20px;
++  transition: background .2s, color .2s;
++}
++.status-chip--warn { background: #FAEEDA; color: #633806; }
++.status-chip--done { background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); animation: fadeIn .3s ease; }
++
++.ps-divider { height: 1px; background: var(--border-color); margin: 16px 0; }
++
++.ps-fields { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px 16px; }
++@media (max-width: 900px) { .ps-fields { grid-template-columns: repeat(2, 1fr); } }
++@media (max-width: 480px) { .ps-fields { grid-template-columns: 1fr; } }
++.ps-field { display: flex; align-items: flex-start; gap: 9px; min-width: 0; }
++.ps-field-icon {
++  width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0; margin-top: 1px;
+   background: var(--lis-primary-xlight); color: var(--lis-primary-deep);
+-  display: flex; align-items: center; justify-content: center; font-size: 13px;
++  display: flex; align-items: center; justify-content: center; font-size: 14px;
+ }
+-.cp-field-label { font-size: 10.5px; color: var(--rpt-tint-label); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+-.cp-field-value { font-size: 12px; color: var(--text-primary); font-weight: 500; margin-top: 1px; }
++.ps-field-label { font-size: 10.5px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
++.ps-field-value { font-size: 13px; color: var(--text-primary); font-weight: 600; margin-top: 2px; }
+ 
++.prio-badge {
++  display: inline-flex; align-items: center; gap: 4px; margin-top: 2px;
++  font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 20px;
++  border: 1px solid transparent; text-transform: capitalize;
++}
++
++/* ══════════════════════════════════════════════
++   Sample cards + Collection panel
++   ══════════════════════════════════════════════ */
+ .cp-layout {
+   display: grid;
+-  grid-template-columns: 1fr 220px;
+-  gap: 16px; padding: 16px;
++  grid-template-columns: 1fr 300px;
++  gap: 20px; margin-bottom: 20px;
+   align-items: start;
+ }
+ @media (max-width: 900px) { .cp-layout { grid-template-columns: 1fr; } }
+ 
+-/* Tubes */
+-.cp-tubes { display: flex; flex-direction: column; gap: 10px; }
+-.cp-tube  {
+-  display: flex; align-items: center; gap: 10px;
+-  padding: 10px 12px; border: 0.5px solid var(--border-color);
+-  border-radius: 10px; background: var(--body-bg);
+-}
+-.tube-body-wrap { display: flex; flex-direction: column; align-items: center; gap: 0; flex-shrink: 0; }
+-.tube-body-cap  { width: 14px; height: 10px; border-radius: 4px 4px 0 0; }
+-.tube-body-body { width: 10px; height: 30px; border-radius: 0 0 5px 5px; background: rgba(0,0,0,.06); border: 1px solid var(--border-color); }
+-.tube-detail { flex: 1; min-width: 0; }
+-.tube-label  { font-size: 12px; font-weight: 500; color: var(--text-primary); }
+-.tube-tests  { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+-.tube-barcode { display: flex; flex-direction: column; align-items: center; gap: 3px; }
++.tube-cards { display: flex; flex-direction: column; gap: 14px; }
++.tube-card2 {
++  display: flex; background: var(--card-bg); border: 0.5px solid var(--border-color);
++  border-radius: 12px; overflow: hidden;
++  transition: box-shadow .18s, transform .18s;
++}
++.tube-card2:hover { box-shadow: 0 6px 18px rgba(0,0,0,0.08); transform: translateY(-1px); }
++.tc-strip { width: 10px; flex-shrink: 0; background: var(--tube-color, #888); }
++.tc-body { flex: 1; min-width: 0; padding: 14px 16px; }
++.tc-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
++.tc-label { font-size: 14px; font-weight: 700; color: var(--text-primary); }
++.tc-required {
++  display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;
++  font-size: 10.5px; font-weight: 600; color: var(--lis-primary-deep, #085041);
++  background: var(--lis-primary-xlight, #E1F5EE); padding: 2px 8px; border-radius: 20px;
++}
++.tc-tests { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
++
++.tc-barcode-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; }
++.tc-barcode { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+ .bc-bars { display:flex; gap:1px; height:20px; align-items:stretch; }
+-.bc-bar  { border-radius:1px; background:var(--text-primary); }
++.bc-bars--lg { height: 27px; }
++.bc-bar  { border-radius:1px; background:var(--text-primary); transition: opacity .2s; }
++.tube-card2:hover .bc-bar { opacity: .85; }
+ .bc-num  { font-size:11px; font-family:monospace; color:var(--text-secondary); }
+ 
+-/* Collection form */
+-.cp-form { display: flex; flex-direction: column; gap: 8px; }
+-.collect-btn { width: 100%; justify-content: center; }
++.tc-actions { display: flex; gap: 6px; flex-shrink: 0; }
++.tc-icon-btn {
++  width: 40px; height: 40px; border-radius: 8px; border: 0.5px solid var(--border-color);
++  background: var(--body-bg); color: var(--text-secondary); font-size: 15px;
++  display: flex; align-items: center; justify-content: center; cursor: pointer;
++  transition: background .15s, color .15s, transform .1s;
++}
++.tc-icon-btn:hover { background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); }
++.tc-icon-btn:active { transform: scale(0.92); }
++
++/* Collection panel */
++.collect-panel { padding-bottom: 16px; }
++.cp-form { display: flex; flex-direction: column; gap: 10px; padding: 0 16px 4px; }
++.cp-form .lis-field input[readonly] {
++  background: var(--body-bg); border-color: var(--border-color); font-weight: 500;
++}
++.cp-form .lis-field input:focus-visible,
++.cp-form .lis-field textarea:focus-visible {
++  outline: 2px solid var(--lis-primary, #1D9E75); outline-offset: 1px;
++}
++
++.collect-btn { width: 100%; justify-content: center; position: relative; }
++.print-btn { transition: background .2s, transform .1s; }
++.print-btn:active { transform: scale(0.98); }
++.print-btn--flash { background: var(--lis-primary-xlight, #E1F5EE) !important; }
++
++.mark-collected-btn {
++  height: 52px; font-size: 14px; font-weight: 700;
++  box-shadow: 0 6px 16px rgba(29,158,117,0.28);
++  transition: transform .15s, box-shadow .15s, filter .15s;
++}
++.mark-collected-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(29,158,117,0.36); filter: brightness(1.06); }
++.mark-collected-btn:active { transform: translateY(0); box-shadow: 0 3px 10px rgba(29,158,117,0.28); }
++
++.kbd-hint {
++  margin-left: auto; font-size: 10px; font-family: var(--font-mono, monospace);
++  padding: 1px 6px; border-radius: 4px; opacity: .7;
++  background: var(--body-bg); color: var(--text-secondary); border: 0.5px solid var(--border-color);
++}
++.kbd-hint--on-primary { background: rgba(255,255,255,0.2); color: #fff; border-color: rgba(255,255,255,0.35); }
++
+ .collected-confirm {
+   display: flex; align-items: center; gap: 8px;
+   padding: 10px 12px; background: var(--lis-primary-xlight, #E1F5EE);
+   border: 0.5px solid var(--lis-primary-mid, #5DCAA5);
+-  border-radius: 9px; animation: fadeIn .3s ease;
++  border-radius: 9px; animation: popIn .35s cubic-bezier(.2,.9,.3,1.3);
+   i { font-size: 22px; color: var(--lis-primary, #1D9E75); }
+ }
+ .cc-title { font-size: 12px; font-weight: 600; color: var(--lis-primary-deep, #085041); }
+ .cc-time  { font-size: 11px; color: var(--text-secondary); }
+-.collected-badge { background: var(--lis-primary-xlight, #E1F5EE) !important; color: var(--lis-primary-deep, #085041) !important; border-color: var(--lis-primary-mid, #5DCAA5) !important; }
+ @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
++@keyframes popIn  { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: scale(1); } }
++
++/* ══════════════════════════════════════════════
++   Collection checklist — uses the empty space
++   ══════════════════════════════════════════════ */
++.checklist-card { padding-bottom: 16px; }
++.checklist-count {
++  margin-left: auto; font-size: 11px; font-weight: 600; color: var(--text-secondary);
++  background: var(--body-bg); padding: 3px 10px; border-radius: 20px; transition: color .2s, background .2s;
++}
++.checklist-count--done { background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); }
++
++.checklist-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; padding: 4px 16px 0; }
++.checklist-item {
++  display: flex; align-items: center; gap: 10px; min-height: 44px;
++  padding: 9px 12px; border: 0.5px solid var(--border-color); border-radius: 10px;
++  background: var(--card-bg); cursor: pointer; text-align: left;
++  font-family: var(--font-family); transition: background .15s, border-color .15s;
++}
++.checklist-item:hover { background: var(--body-bg); }
++.checklist-item:focus-visible { outline: 2px solid var(--lis-primary, #1D9E75); outline-offset: 1px; }
++.checklist-item--checked { background: var(--lis-primary-xlight, #E1F5EE); border-color: var(--lis-primary-mid, #5DCAA5); }
++.checklist-box {
++  width: 20px; height: 20px; border-radius: 6px; flex-shrink: 0;
++  border: 1.5px solid var(--border-color); display: flex; align-items: center; justify-content: center;
++  font-size: 12px; color: #fff; transition: background .15s, border-color .15s;
++}
++.checklist-item--checked .checklist-box { background: var(--lis-primary, #1D9E75); border-color: var(--lis-primary, #1D9E75); }
++.checklist-icon { font-size: 14px; color: var(--text-secondary); flex-shrink: 0; }
++.checklist-label { font-size: 12.5px; color: var(--text-primary); font-weight: 500; }
+ 
+-/* ── Empty state (no active patient) ─────────── */
++/* ══════════════════════════════════════════════
++   Empty state (no active patient)
++   ══════════════════════════════════════════════ */
+ .empty-state {
+   display: flex; flex-direction: column; align-items: center; text-align: center;
+   gap: 8px; padding: 48px 24px; color: var(--text-secondary);
+diff --git a/src/app/features/sample-collection/sample-collection.component.html b/src/app/features/sample-collection/sample-collection.component.html
+index b5fa4a2..0347bc8 100644
+--- a/src/app/features/sample-collection/sample-collection.component.html
++++ b/src/app/features/sample-collection/sample-collection.component.html
+@@ -14,90 +14,133 @@
+       </ol>
+     </nav>
+   </div>
+-  <div class="workflow-trail" aria-label="Workflow steps">
+-    <div class="wf-step wf-step--done"><i class="ti ti-check"></i> Registered</div>
+-    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
+-    <div class="wf-step wf-step--done"><i class="ti ti-check"></i> Tests Ordered</div>
+-    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
+-    <div class="wf-step wf-step--done"><i class="ti ti-check"></i> Billing Done</div>
+-    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
+-    <div class="wf-step wf-step--active"><i class="ti ti-droplet"></i> Sample</div>
+-  </div>
++</div>
++
++<!-- Process timeline — the full pipeline, not just the pre-collection steps,
++     so the technician always knows where this sample sits in the journey. -->
++<div class="proc-timeline" role="list" aria-label="Sample lifecycle progress">
++  @for (step of timelineSteps; track step.label; let i = $index; let last = $last) {
++    <div class="proc-step" role="listitem" [class.proc-step--done]="stepState(i) === 'done'"
++         [class.proc-step--active]="stepState(i) === 'active'">
++      <div class="proc-dot" [attr.aria-current]="stepState(i) === 'active' ? 'step' : null">
++        @if (stepState(i) === 'done') {
++          <i class="ti ti-check" aria-hidden="true"></i>
++        } @else {
++          <i class="ti {{ step.icon }}" aria-hidden="true"></i>
++        }
++      </div>
++      <div class="proc-label">{{ step.label }}</div>
++    </div>
++    @if (!last) { <div class="proc-line" [class.proc-line--done]="stepState(i) === 'done'" aria-hidden="true"></div> }
++  }
+ </div>
+ 
+ @if (patient && currentPatientTubes().length > 0) {
+-  <div class="current-patient-block lis-card" role="region" aria-label="Current patient sample collection">
+-    <div class="lis-card__header">
+-      <i class="ti ti-user-check lis-card-icon" aria-hidden="true"></i>
+-      <h2 class="lis-card__title">Current Patient — Collect Now</h2>
++  <!-- ════════════════════════════════════════════════
++       Patient summary — identity + status dominate
++       ════════════════════════════════════════════════ -->
++  <div class="patient-summary lis-card" role="region" aria-label="Current patient sample collection">
++    <div class="ps-head">
++      <div class="ps-av-wrap" [class.ps-av-wrap--done]="collected()">
++        <div class="ps-av" aria-hidden="true">{{ patientInitials }}</div>
++      </div>
++      <div class="ps-id-main">
++        <div class="ps-name">{{ patient.firstName }} {{ patient.lastName }}</div>
++        <div class="ps-sub">
++          <span class="ps-pid lis-mono">{{ patient.id }}</span>
++          <span class="ps-dot" aria-hidden="true">·</span>
++          {{ patientAge }} · {{ patient.gender }}
++        </div>
++      </div>
+       @if (!collected()) {
+-        <span class="lis-badge lis-badge--warn">Awaiting collection</span>
++        <span class="status-chip status-chip--warn">
++          <i class="ti ti-hourglass-low" aria-hidden="true"></i> Awaiting Collection
++        </span>
+       } @else {
+-        <span class="lis-badge collected-badge">
+-          <i class="ti ti-check" aria-hidden="true"></i> Collected ✓
++        <span class="status-chip status-chip--done">
++          <i class="ti ti-circle-check" aria-hidden="true"></i> Collected
+         </span>
+       }
+     </div>
+ 
+-    <!-- Patient identity band — same icon-prefixed field style as the Reports patient band -->
+-    <div class="cp-id-band">
+-      <div class="cp-id-head">
+-        <div class="cp-av" aria-hidden="true">{{ patientInitials }}</div>
+-        <div class="cp-id-main">
+-          <div class="cp-name">{{ patient.firstName }} {{ patient.lastName }}</div>
+-          <div class="cp-id-sub"><span class="lis-mono">{{ patient.id }}</span> · {{ patientAge }} · {{ patient.gender }}</div>
+-        </div>
+-        <div class="cp-priority" [class.cp-priority--stat]="flow.priority() === 'stat'">
+-          <i class="ti ti-bolt" aria-hidden="true"></i>
+-          {{ flow.priority() | titlecase }}
+-        </div>
+-      </div>
++    <div class="ps-divider" role="separator"></div>
+ 
+-      <div class="cp-fields">
+-        <div class="cp-field">
+-          <i class="ti ti-phone cp-field-icon" aria-hidden="true"></i>
+-          <div><div class="cp-field-label">Mobile</div><div class="cp-field-value">{{ patient.mobile }}</div></div>
+-        </div>
+-        <div class="cp-field">
+-          <i class="ti ti-stethoscope cp-field-icon" aria-hidden="true"></i>
+-          <div><div class="cp-field-label">Referred by</div><div class="cp-field-value">{{ patient.refDoctor }}</div></div>
+-        </div>
+-        <div class="cp-field">
+-          <i class="ti ti-droplet-half-2 cp-field-icon" aria-hidden="true"></i>
+-          <div><div class="cp-field-label">Fasting</div><div class="cp-field-value">{{ patient.fasting }}</div></div>
++    <div class="ps-fields">
++      <div class="ps-field">
++        <i class="ti ti-phone ps-field-icon" aria-hidden="true"></i>
++        <div><div class="ps-field-label">Mobile</div><div class="ps-field-value">{{ patient.mobile }}</div></div>
++      </div>
++      <div class="ps-field">
++        <i class="ti ti-stethoscope ps-field-icon" aria-hidden="true"></i>
++        <div><div class="ps-field-label">Referred by</div><div class="ps-field-value">{{ patient.refDoctor }}</div></div>
++      </div>
++      <div class="ps-field">
++        <i class="ti ti-droplet-half-2 ps-field-icon" aria-hidden="true"></i>
++        <div><div class="ps-field-label">Fasting</div><div class="ps-field-value">{{ patient.fasting }}</div></div>
++      </div>
++      <div class="ps-field">
++        <i class="ti {{ priorityStyle().icon }} ps-field-icon"
++           [style.color]="priorityStyle().color" [style.background]="priorityStyle().bg" aria-hidden="true"></i>
++        <div>
++          <div class="ps-field-label">Priority</div>
++          <span class="prio-badge" [style.color]="priorityStyle().color" [style.background]="priorityStyle().bg"
++                [style.border-color]="priorityStyle().color">
++            <i class="ti {{ priorityStyle().icon }}" aria-hidden="true"></i> {{ flow.priority() | titlecase }}
++          </span>
+         </div>
+       </div>
+     </div>
++  </div>
+ 
+-    <div class="cp-layout">
+-
+-      <!-- Tubes -->
+-      <div class="cp-tubes" role="list" aria-label="Sample tubes">
+-        @for (tube of currentPatientTubes(); track tube.id) {
+-          <div class="cp-tube" role="listitem">
+-            <div class="tube-body-wrap">
+-              <div class="tube-body-cap" [style.background]="tube.color" aria-hidden="true"></div>
+-              <div class="tube-body-body" aria-hidden="true"></div>
+-            </div>
+-            <div class="tube-detail">
+-              <div class="tube-label">{{ tube.label }}</div>
+-              <div class="tube-tests">{{ tube.tests.join(' · ') }}</div>
++  <!-- ════════════════════════════════════════════════
++       Sample cards + Collection panel
++       ════════════════════════════════════════════════ -->
++  <div class="cp-layout">
++    <!-- Sample cards -->
++    <div class="tube-cards" role="list" aria-label="Sample tubes">
++      @for (tube of currentPatientTubes(); track tube.id) {
++        <div class="tube-card2" role="listitem" [style.--tube-color]="tube.color">
++          <div class="tc-strip" aria-hidden="true"></div>
++          <div class="tc-body">
++            <div class="tc-head">
++              <div class="tc-label">{{ tube.label }}</div>
++              <span class="tc-required"><i class="ti ti-check" aria-hidden="true"></i> Required</span>
+             </div>
++            <div class="tc-tests">{{ tube.tests.join(' · ') }}</div>
+ 
+-            <!-- Barcode -->
+-            <div class="tube-barcode" [attr.aria-label]="'Barcode for ' + tube.id">
+-              <div class="bc-bars" aria-hidden="true">
+-                @for (w of barcodeWidths; track $index) {
+-                  <div class="bc-bar" [style.width.px]="w"></div>
+-                }
++            <div class="tc-barcode-row">
++              <div class="tc-barcode" [attr.aria-label]="'Barcode for ' + tube.id">
++                <div class="bc-bars bc-bars--lg" aria-hidden="true">
++                  @for (w of barcodeWidths; track $index) {
++                    <div class="bc-bar" [style.width.px]="w * 1.35"></div>
++                  }
++                </div>
++                <div class="bc-num lis-mono">{{ tube.id }}</div>
++              </div>
++              <div class="tc-actions">
++                <button type="button" class="tc-icon-btn" title="Print" aria-label="Print label" (click)="printLabels()">
++                  <i class="ti ti-printer" aria-hidden="true"></i>
++                </button>
++                <button type="button" class="tc-icon-btn" title="Preview" aria-label="Preview label">
++                  <i class="ti ti-eye" aria-hidden="true"></i>
++                </button>
++                <button type="button" class="tc-icon-btn" title="Reprint" aria-label="Reprint label">
++                  <i class="ti ti-refresh" aria-hidden="true"></i>
++                </button>
+               </div>
+-              <div class="bc-num lis-mono">{{ tube.id }}</div>
+             </div>
+           </div>
+-        }
++        </div>
++      }
++    </div>
++
++    <!-- Collection panel -->
++    <div class="collect-panel lis-card">
++      <div class="lis-card__header">
++        <i class="ti ti-clipboard-list lis-card-icon" aria-hidden="true"></i>
++        <h2 class="lis-card__title">Collection</h2>
+       </div>
+ 
+-      <!-- Collection form -->
+       <div class="cp-form">
+         <div class="lis-field">
+           <label>Collector</label>
+@@ -111,16 +154,24 @@
+           <label>Sample type</label>
+           <input value="Venous blood" readonly />
+         </div>
++        <div class="lis-field">
++          <label>Notes</label>
++          <textarea placeholder="e.g. difficult vein, hemolysis risk, special handling…"
++            [value]="notes()" (input)="notes.set($any($event.target).value)"></textarea>
++        </div>
+ 
+         @if (!collected()) {
+-          <button type="button" class="lis-btn lis-btn--primary collect-btn"
+-            (click)="markCollected()">
+-            <i class="ti ti-check" aria-hidden="true"></i>
+-            Mark as Collected ✓
+-          </button>
+-          <button type="button" class="lis-btn lis-btn--secondary collect-btn">
++          <button type="button" class="lis-btn lis-btn--secondary collect-btn print-btn"
++            [class.print-btn--flash]="printFlash()" (click)="printLabels()">
+             <i class="ti ti-printer" aria-hidden="true"></i>
+             Print Labels
++            <kbd class="kbd-hint">Ctrl+P</kbd>
++          </button>
++          <button type="button" class="lis-btn lis-btn--primary collect-btn mark-collected-btn"
++            (click)="markCollected()">
++            <i class="ti ti-check" aria-hidden="true"></i>
++            Mark as Collected
++            <kbd class="kbd-hint kbd-hint--on-primary">Enter</kbd>
+           </button>
+         } @else {
+           <div class="collected-confirm" role="status" aria-live="polite">
+@@ -134,7 +185,8 @@
+             <i class="ti ti-writing" aria-hidden="true"></i>
+             Proceed to Result Entry
+           </a>
+-          <button type="button" class="lis-btn lis-btn--secondary collect-btn">
++          <button type="button" class="lis-btn lis-btn--secondary collect-btn print-btn"
++            [class.print-btn--flash]="printFlash()" (click)="printLabels()">
+             <i class="ti ti-printer" aria-hidden="true"></i>
+             Reprint Labels
+           </button>
+@@ -142,14 +194,37 @@
+       </div>
+     </div>
+   </div>
++
++  <!-- ════════════════════════════════════════════════
++       Collection checklist — fills the space below,
++       doubles as a lightweight error-prevention step
++       ════════════════════════════════════════════════ -->
++  <div class="checklist-card lis-card">
++    <div class="lis-card__header">
++      <i class="ti ti-clipboard-check lis-card-icon" aria-hidden="true"></i>
++      <h2 class="lis-card__title">Collection Checklist</h2>
++      <span class="checklist-count" [class.checklist-count--done]="allChecked()">
++        {{ checkedCount() }}/{{ checklistItems.length }} completed
++      </span>
++    </div>
++    <div class="checklist-grid">
++      @for (item of checklistItems; track item.id) {
++        <button type="button" class="checklist-item" [class.checklist-item--checked]="isChecked(item.id)"
++          (click)="toggleChecklist(item.id)" [attr.aria-pressed]="isChecked(item.id)">
++          <span class="checklist-box" aria-hidden="true">
++            @if (isChecked(item.id)) { <i class="ti ti-check"></i> }
++          </span>
++          <i class="ti {{ item.icon }} checklist-icon" aria-hidden="true"></i>
++          <span class="checklist-label">{{ item.label }}</span>
++        </button>
++      }
++    </div>
++  </div>
+ } @else {
+   <div class="empty-state lis-card" role="region" aria-label="No sample pending collection">
+-    <i class="ti ti-droplet-off empty-icon" aria-hidden="true"></i>
+-    <h2 class="empty-title">No sample pending collection</h2>
+-    <p class="empty-copy">
+-      Complete a patient's registration, test order and billing to see their
+-      sample collection tasks here.
+-    </p>
++    <i class="ti ti-flask-off empty-icon" aria-hidden="true"></i>
++    <h2 class="empty-title">No Samples Pending</h2>
++    <p class="empty-copy">Collect a sample after completing billing.</p>
+     <a routerLink="/dashboard/registration" class="lis-btn lis-btn--primary">
+       <i class="ti ti-user-plus" aria-hidden="true"></i> Register a patient
+     </a>
+diff --git a/src/app/features/sample-collection/sample-collection.component.ts b/src/app/features/sample-collection/sample-collection.component.ts
+index ab79434..8b6c01d 100644
+--- a/src/app/features/sample-collection/sample-collection.component.ts
++++ b/src/app/features/sample-collection/sample-collection.component.ts
+@@ -3,13 +3,22 @@
+ //  Task screen for the phlebotomist: collect
+ //  tubes for the CURRENT patient right after
+ //  billing. One patient, one job, one screen.
++//  Redesigned per UX review (2026-07) to read as
++//  a high-frequency operational workstation
++//  rather than a dashboard card:
++//   - patient identity + status dominate
++//   - tubes shown as high-contrast cards
++//   - collection panel ordered as a workflow
++//   - collection checklist fills the empty space
++//   - full process timeline, not just 4 steps
+ //  (For the lab-wide operations view, see
+ //  Screen 4b — Sample Tracking.)
+ // ─────────────────────────────────────────────
+-import { Component, signal, computed, inject, ChangeDetectionStrategy } from '@angular/core';
++import { Component, signal, computed, inject, ChangeDetectionStrategy, HostListener } from '@angular/core';
+ import { RouterLink } from '@angular/router';
+ import { DatePipe, TitleCasePipe } from '@angular/common';
+ import { PatientFlowService } from '../../core/services/patient-flow.service';
++import { Priority } from '../../shared/models/lis.models';
+ 
+ const TUBE_COLORS: Record<string, string> = {
+   'Haematology':   '#2B8B3E',
+@@ -25,6 +34,45 @@ const TUBE_LABELS: Record<string, string> = {
+   '#C9A227': 'Yellow (Urine)',
+ };
+ 
++/** Priority → colour language, matched to the existing status-pill palette
++ *  (routine = process blue, urgent = pending amber, stat = critical red)
++ *  so a technician recognises urgency at a glance, consistent with the
++ *  rest of the app. */
++const PRIORITY_STYLE: Record<Priority, { icon: string; color: string; bg: string }> = {
++  routine: { icon: 'ti-circle-check', color: '#0C447C', bg: '#E6F1FB' },
++  urgent:  { icon: 'ti-clock-bolt',   color: '#633806', bg: '#FAEEDA' },
++  stat:    { icon: 'ti-bolt',         color: '#791F1F', bg: '#FCEBEB' },
++};
++
++export interface ChecklistItem {
++  id: string;
++  label: string;
++  icon: string;
++}
++
++const CHECKLIST_ITEMS: ChecklistItem[] = [
++  { id: 'identity', label: 'Patient identity verified', icon: 'ti-id-badge-2' },
++  { id: 'barcode',  label: 'Barcode attached',           icon: 'ti-barcode'    },
++  { id: 'mixed',    label: 'Tube mixed (gentle inversions)', icon: 'ti-arrows-shuffle' },
++  { id: 'sealed',   label: 'Sample sealed',               icon: 'ti-shield-lock' },
++  { id: 'consent',  label: 'Consent verified',            icon: 'ti-file-check' },
++];
++
++/** Full lab pipeline — Collection is one stage of a longer journey, and
++ *  showing the whole thing (not just the 4 pre-collection steps) tells the
++ *  technician exactly where this sample sits in the bigger picture. */
++type StepState = 'done' | 'active' | 'pending';
++interface TimelineStep { label: string; icon: string; }
++const TIMELINE_STEPS: TimelineStep[] = [
++  { label: 'Registered',   icon: 'ti-user-check'        },
++  { label: 'Billing',      icon: 'ti-receipt'           },
++  { label: 'Collection',   icon: 'ti-droplet'           },
++  { label: 'Lab Received', icon: 'ti-building-warehouse' },
++  { label: 'Testing',      icon: 'ti-flask'             },
++  { label: 'Verified',     icon: 'ti-shield-check'      },
++  { label: 'Report Ready', icon: 'ti-file-check'        },
++];
++
+ @Component({
+   selector: 'app-sample-collection',
+   standalone: true,
+@@ -37,9 +85,16 @@ export class SampleCollectionComponent {
+   protected readonly flow          = inject(PatientFlowService);
+   protected readonly barcodeWidths = [2,1,3,1,2,1,1,2,3,1,2,1,2,3,1];
+   protected readonly now           = new Date();
++  protected readonly checklistItems = CHECKLIST_ITEMS;
++  protected readonly timelineSteps  = TIMELINE_STEPS;
+ 
+   collected   = signal(false);
+   collectedAt = signal('');
++  notes       = signal('');
++
++  private _checked = signal<Set<string>>(new Set());
++  checkedCount = computed(() => this._checked().size);
++  allChecked   = computed(() => this._checked().size === CHECKLIST_ITEMS.length);
+ 
+   // Tubes required for the current patient, derived from their test order
+   currentPatientTubes = computed(() => {
+@@ -62,6 +117,29 @@ export class SampleCollectionComponent {
+     }));
+   });
+ 
++  // 2 = Collection is the 3rd step (index 2) of TIMELINE_STEPS
++  timelineActiveIndex = computed(() => (this.collected() ? 3 : 2));
++
++  stepState(index: number): StepState {
++    const active = this.timelineActiveIndex();
++    if (index < active) return 'done';
++    if (index === active) return 'active';
++    return 'pending';
++  }
++
++  isChecked(id: string): boolean { return this._checked().has(id); }
++  toggleChecklist(id: string): void {
++    this._checked.update(s => {
++      const next = new Set(s);
++      next.has(id) ? next.delete(id) : next.add(id);
++      return next;
++    });
++  }
++
++  priorityStyle() {
++    return PRIORITY_STYLE[this.flow.priority()];
++  }
++
+   markCollected(): void {
+     const now = new Date();
+     this.collectedAt.set(
+@@ -70,6 +148,33 @@ export class SampleCollectionComponent {
+     this.collected.set(true);
+   }
+ 
++  // ── Keyboard shortcuts ────────────────────────────────────────
++  // Enter → Mark as Collected · Ctrl/Cmd+P → Print Labels
++  printFlash = signal(false);
++
++  @HostListener('document:keydown', ['$event'])
++  onKeydown(e: KeyboardEvent): void {
++    const target = e.target as HTMLElement;
++    const typing = target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
++
++    if (e.key === 'Enter' && !typing && !this.collected() && this.currentPatientTubes().length > 0) {
++      e.preventDefault();
++      this.markCollected();
++    }
++    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p' && this.currentPatientTubes().length > 0) {
++      e.preventDefault();
++      this.printLabels();
++    }
++  }
++
++  printLabels(): void {
++    // No print backend is wired up yet in this prototype — flash the
++    // action for feedback (item 19: button press feedback) rather than
++    // opening the browser's print dialog on the whole app shell.
++    this.printFlash.set(true);
++    setTimeout(() => this.printFlash.set(false), 900);
++  }
++
+   get patient() { return this.flow.patient(); }
+   get patientInitials(): string {
+     const p = this.patient;
+-- 
+2.43.0
+

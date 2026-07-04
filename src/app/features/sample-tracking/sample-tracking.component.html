@@ -1,29 +1,20 @@
 <!-- ═══════════════════════════════════════════════════════════
-     Screen 4 — Sample Collection & Tracking
-     Shows current patient's collection at top (priority),
-     then the general lab queue below.
+     Screen 4b — Sample Tracking
+     Lab-wide operations dashboard over every sample
+     in the queue. (Single-patient collection lives on
+     its own screen — see Sample Collection.)
      ═══════════════════════════════════════════════════════════ -->
 
 <!-- Page header -->
 <div class="page-header">
   <div>
-    <h1 class="page-title">Sample Collection</h1>
+    <h1 class="page-title">Sample Tracking</h1>
     <nav aria-label="Breadcrumb">
       <ol class="breadcrumb">
         <li><a routerLink="/dashboard/home">Home</a></li>
-        <li><a routerLink="/dashboard/billing">Billing</a></li>
-        <li aria-current="page">Sample Collection</li>
+        <li aria-current="page">Sample Tracking</li>
       </ol>
     </nav>
-  </div>
-  <div class="workflow-trail" aria-label="Workflow steps">
-    <div class="wf-step wf-step--done"><i class="ti ti-check"></i> Registered</div>
-    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
-    <div class="wf-step wf-step--done"><i class="ti ti-check"></i> Tests Ordered</div>
-    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
-    <div class="wf-step wf-step--done"><i class="ti ti-check"></i> Billing Done</div>
-    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
-    <div class="wf-step wf-step--active"><i class="ti ti-droplet"></i> Sample</div>
   </div>
 
   <div class="header-actions">
@@ -34,124 +25,6 @@
       <i class="ti ti-plus" aria-hidden="true"></i> Add sample
     </button>
   </div>
-</div>
-
-<!-- ════════════════════════════════════════════════
-     Current patient collection block
-     (shown only when patient + tests exist)
-     ════════════════════════════════════════════════ -->
-@if (patient && currentPatientTubes().length > 0) {
-  <div class="current-patient-block lis-card" role="region" aria-label="Current patient sample collection">
-    <div class="lis-card__header">
-      <i class="ti ti-user-check lis-card-icon" aria-hidden="true"></i>
-      <h2 class="lis-card__title">Current Patient — Collect Now</h2>
-      @if (!collected()) {
-        <span class="lis-badge lis-badge--warn">Awaiting collection</span>
-      } @else {
-        <span class="lis-badge collected-badge">
-          <i class="ti ti-check" aria-hidden="true"></i> Collected ✓
-        </span>
-      }
-    </div>
-
-    <div class="cp-layout">
-      <!-- Patient info -->
-      <div class="cp-patient">
-        <div class="cp-av" aria-hidden="true">{{ patientInitials }}</div>
-        <div class="cp-info">
-          <div class="cp-name">{{ patient.firstName }} {{ patient.lastName }}</div>
-          <div class="cp-meta">
-            <span class="lis-mono">{{ patient.id }}</span> ·
-            {{ patientAge }} · {{ patient.gender }} · {{ patient.mobile }}
-          </div>
-          <div class="cp-meta">
-            {{ patient.refDoctor }} · {{ patient.fasting }}
-          </div>
-          <div class="cp-priority" [class.cp-priority--stat]="flow.priority() === 'stat'">
-            <i class="ti ti-bolt" aria-hidden="true"></i>
-            {{ flow.priority() | titlecase }}
-          </div>
-        </div>
-      </div>
-
-      <!-- Tubes -->
-      <div class="cp-tubes" role="list" aria-label="Sample tubes">
-        @for (tube of currentPatientTubes(); track tube.id) {
-          <div class="cp-tube" role="listitem">
-            <div class="tube-body-wrap">
-              <div class="tube-body-cap" [style.background]="tube.color" aria-hidden="true"></div>
-              <div class="tube-body-body" aria-hidden="true"></div>
-            </div>
-            <div class="tube-detail">
-              <div class="tube-label">{{ tube.label }}</div>
-              <div class="tube-tests">{{ tube.tests.join(' · ') }}</div>
-            </div>
-
-            <!-- Barcode -->
-            <div class="tube-barcode" [attr.aria-label]="'Barcode for ' + tube.id">
-              <div class="bc-bars" aria-hidden="true">
-                @for (w of barcodeWidths; track $index) {
-                  <div class="bc-bar" [style.width.px]="w"></div>
-                }
-              </div>
-              <div class="bc-num lis-mono">{{ tube.id }}</div>
-            </div>
-          </div>
-        }
-      </div>
-
-      <!-- Collection form -->
-      <div class="cp-form">
-        <div class="lis-field">
-          <label>Collector</label>
-          <input value="Lab Technician" readonly />
-        </div>
-        <div class="lis-field">
-          <label>Collection time</label>
-          <input [value]="collected() ? collectedAt() : (now | date:'hh:mm a')" readonly />
-        </div>
-        <div class="lis-field">
-          <label>Sample type</label>
-          <input value="Venous blood" readonly />
-        </div>
-
-        @if (!collected()) {
-          <button type="button" class="lis-btn lis-btn--primary collect-btn"
-            (click)="markCollected()">
-            <i class="ti ti-check" aria-hidden="true"></i>
-            Mark as Collected ✓
-          </button>
-          <button type="button" class="lis-btn lis-btn--secondary collect-btn">
-            <i class="ti ti-printer" aria-hidden="true"></i>
-            Print Labels
-          </button>
-        } @else {
-          <div class="collected-confirm" role="status" aria-live="polite">
-            <i class="ti ti-circle-check" aria-hidden="true"></i>
-            <div>
-              <div class="cc-title">Sample Collected</div>
-              <div class="cc-time">at {{ collectedAt() }}</div>
-            </div>
-          </div>
-          <a routerLink="/dashboard/results" class="lis-btn lis-btn--primary collect-btn">
-            <i class="ti ti-writing" aria-hidden="true"></i>
-            Proceed to Result Entry
-          </a>
-          <button type="button" class="lis-btn lis-btn--secondary collect-btn">
-            <i class="ti ti-printer" aria-hidden="true"></i>
-            Reprint Labels
-          </button>
-        }
-      </div>
-    </div>
-  </div>
-}
-
-<!-- ════════════════════════════════════════════════
-     General lab queue
-     ════════════════════════════════════════════════ -->
-<div class="queue-header">
-  <h3 class="queue-title">Lab Queue</h3>
 </div>
 
 <div class="tracking-toolbar">

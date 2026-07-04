@@ -1,0 +1,134 @@
+From f9178db1f8d16fce174f838cb3e34232de20a33b Mon Sep 17 00:00:00 2001
+From: Chandan <chandan@medpath.dev>
+Date: Sat, 4 Jul 2026 18:34:49 +0000
+Subject: [PATCH] Sample Collection: adopt Reports-style patient info band
+
+Replace the plain stacked-text patient block with the same
+icon-prefixed field pattern used for the patient details on the
+Reports preview (tinted band, small icon badge + uppercase label
++ value per field), so patient info reads consistently across the
+two screens. Avatar, name, ID and priority chip stay as a header
+row above the field grid. cp-layout drops from 3 columns to 2
+(tubes | form) now that patient identity lives in its own band.
+---
+ .../sample-collection.component.css           | 40 ++++++++++++++----
+ .../sample-collection.component.html          | 42 ++++++++++++-------
+ 2 files changed, 58 insertions(+), 24 deletions(-)
+
+diff --git a/src/app/features/sample-collection/sample-collection.component.css b/src/app/features/sample-collection/sample-collection.component.css
+index 765a175..03fd6bb 100644
+--- a/src/app/features/sample-collection/sample-collection.component.css
++++ b/src/app/features/sample-collection/sample-collection.component.css
+@@ -14,20 +14,42 @@
+ 
+ /* ── Current patient block ──────────────────── */
+ .current-patient-block { margin-bottom: 16px; }
++
++/* Patient identity band — mirrors the icon-prefixed field style
++   used for the patient band on the Reports preview, so patient
++   info reads consistently across the two screens. */
++.cp-id-band {
++  margin: 12px 16px 0;
++  padding: 16px 18px;
++  background: var(--rpt-tint-bg);
++  border-radius: 12px;
++}
++.cp-id-head { display: flex; align-items: center; gap: 12px; }
++.cp-av { width: 42px; height: 42px; border-radius: 50%; background: var(--lis-primary, #1D9E75); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; text-transform: uppercase; flex-shrink: 0; }
++.cp-id-main { flex: 1; min-width: 0; }
++.cp-name    { font-size: 14px; font-weight: 600; color: var(--text-primary); }
++.cp-id-sub  { font-size: 11px; color: var(--rpt-tint-label); margin-top: 2px; }
++.cp-priority { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); border: 0.5px solid var(--lis-primary-mid, #5DCAA5); text-transform: capitalize; }
++.cp-priority--stat { background: #FCEBEB; color: #791F1F; border-color: #E24B4A; }
++
++.cp-fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 16px; margin-top: 14px; }
++@media (max-width: 700px) { .cp-fields { grid-template-columns: 1fr; } }
++.cp-field { display: flex; align-items: flex-start; gap: 9px; min-width: 0; }
++.cp-field-icon {
++  width: 26px; height: 26px; border-radius: 7px; flex-shrink: 0; margin-top: 1px;
++  background: var(--lis-primary-xlight); color: var(--lis-primary-deep);
++  display: flex; align-items: center; justify-content: center; font-size: 13px;
++}
++.cp-field-label { font-size: 10.5px; color: var(--rpt-tint-label); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
++.cp-field-value { font-size: 12px; color: var(--text-primary); font-weight: 500; margin-top: 1px; }
++
+ .cp-layout {
+   display: grid;
+-  grid-template-columns: 220px 1fr 200px;
+-  gap: 16px; padding: 14px 16px;
++  grid-template-columns: 1fr 220px;
++  gap: 16px; padding: 16px;
+   align-items: start;
+ }
+ @media (max-width: 900px) { .cp-layout { grid-template-columns: 1fr; } }
+-.cp-patient { display: flex; flex-direction: column; gap: 8px; }
+-.cp-av { width: 42px; height: 42px; border-radius: 50%; background: var(--lis-primary, #1D9E75); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; text-transform: uppercase; flex-shrink: 0; }
+-.cp-info { }
+-.cp-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+-.cp-meta { font-size: 11px; color: var(--text-secondary); margin-top: 3px; }
+-.cp-priority { display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 20px; background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); border: 0.5px solid var(--lis-primary-mid, #5DCAA5); text-transform: capitalize; }
+-.cp-priority--stat { background: #FCEBEB; color: #791F1F; border-color: #E24B4A; }
+ 
+ /* Tubes */
+ .cp-tubes { display: flex; flex-direction: column; gap: 10px; }
+diff --git a/src/app/features/sample-collection/sample-collection.component.html b/src/app/features/sample-collection/sample-collection.component.html
+index b9c9436..b5fa4a2 100644
+--- a/src/app/features/sample-collection/sample-collection.component.html
++++ b/src/app/features/sample-collection/sample-collection.component.html
+@@ -39,26 +39,38 @@
+       }
+     </div>
+ 
+-    <div class="cp-layout">
+-      <!-- Patient info -->
+-      <div class="cp-patient">
++    <!-- Patient identity band — same icon-prefixed field style as the Reports patient band -->
++    <div class="cp-id-band">
++      <div class="cp-id-head">
+         <div class="cp-av" aria-hidden="true">{{ patientInitials }}</div>
+-        <div class="cp-info">
++        <div class="cp-id-main">
+           <div class="cp-name">{{ patient.firstName }} {{ patient.lastName }}</div>
+-          <div class="cp-meta">
+-            <span class="lis-mono">{{ patient.id }}</span> ·
+-            {{ patientAge }} · {{ patient.gender }} · {{ patient.mobile }}
+-          </div>
+-          <div class="cp-meta">
+-            {{ patient.refDoctor }} · {{ patient.fasting }}
+-          </div>
+-          <div class="cp-priority" [class.cp-priority--stat]="flow.priority() === 'stat'">
+-            <i class="ti ti-bolt" aria-hidden="true"></i>
+-            {{ flow.priority() | titlecase }}
+-          </div>
++          <div class="cp-id-sub"><span class="lis-mono">{{ patient.id }}</span> · {{ patientAge }} · {{ patient.gender }}</div>
++        </div>
++        <div class="cp-priority" [class.cp-priority--stat]="flow.priority() === 'stat'">
++          <i class="ti ti-bolt" aria-hidden="true"></i>
++          {{ flow.priority() | titlecase }}
+         </div>
+       </div>
+ 
++      <div class="cp-fields">
++        <div class="cp-field">
++          <i class="ti ti-phone cp-field-icon" aria-hidden="true"></i>
++          <div><div class="cp-field-label">Mobile</div><div class="cp-field-value">{{ patient.mobile }}</div></div>
++        </div>
++        <div class="cp-field">
++          <i class="ti ti-stethoscope cp-field-icon" aria-hidden="true"></i>
++          <div><div class="cp-field-label">Referred by</div><div class="cp-field-value">{{ patient.refDoctor }}</div></div>
++        </div>
++        <div class="cp-field">
++          <i class="ti ti-droplet-half-2 cp-field-icon" aria-hidden="true"></i>
++          <div><div class="cp-field-label">Fasting</div><div class="cp-field-value">{{ patient.fasting }}</div></div>
++        </div>
++      </div>
++    </div>
++
++    <div class="cp-layout">
++
+       <!-- Tubes -->
+       <div class="cp-tubes" role="list" aria-label="Sample tubes">
+         @for (tube of currentPatientTubes(); track tube.id) {
+-- 
+2.43.0
+

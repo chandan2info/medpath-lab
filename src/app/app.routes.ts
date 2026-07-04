@@ -54,8 +54,8 @@ export const routes: Routes = [
       {
         path: 'collection',
         loadComponent: () =>
-          import('./features/sample-tracking/sample-tracking.component')
-            .then(m => m.SampleTrackingComponent),
+          import('./features/sample-collection/sample-collection.component')
+            .then(m => m.SampleCollectionComponent),
         title: 'Sample Collection — MedPath LIS',
       },
       // ── Lab operations ────────────────────────────────────

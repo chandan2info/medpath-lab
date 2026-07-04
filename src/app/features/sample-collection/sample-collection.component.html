@@ -1,0 +1,235 @@
+<!-- ═══════════════════════════════════════════════════════════
+     Screen 4a — Sample Collection
+     Single-patient task screen, entered from Billing.
+     ═══════════════════════════════════════════════════════════ -->
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Sample Collection</h1>
+    <nav aria-label="Breadcrumb">
+      <ol class="breadcrumb">
+        <li><a routerLink="/dashboard/home">Home</a></li>
+        <li><a routerLink="/dashboard/billing">Billing</a></li>
+        <li aria-current="page">Sample Collection</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<!-- Process timeline — the full pipeline, not just the pre-collection steps,
+     so the technician always knows where this sample sits in the journey. -->
+<div class="proc-timeline" role="list" aria-label="Sample lifecycle progress">
+  @for (step of timelineSteps; track step.label; let i = $index; let last = $last) {
+    <div class="proc-step" role="listitem" [class.proc-step--done]="stepState(i) === 'done'"
+         [class.proc-step--active]="stepState(i) === 'active'">
+      <div class="proc-dot" [attr.aria-current]="stepState(i) === 'active' ? 'step' : null">
+        @if (stepState(i) === 'done') {
+          <i class="ti ti-check" aria-hidden="true"></i>
+        } @else {
+          <i class="ti {{ step.icon }}" aria-hidden="true"></i>
+        }
+      </div>
+      <div class="proc-label">{{ step.label }}</div>
+    </div>
+    @if (!last) { <div class="proc-line" [class.proc-line--done]="stepState(i) === 'done'" aria-hidden="true"></div> }
+  }
+</div>
+
+@if (patient && currentPatientTubes().length > 0) {
+  <!-- ════════════════════════════════════════════════
+       Patient summary — identity + status dominate
+       ════════════════════════════════════════════════ -->
+  <div class="patient-summary lis-card" role="region" aria-label="Current patient sample collection">
+    <div class="ps-head">
+      <div class="ps-av-wrap" [class.ps-av-wrap--done]="collected()">
+        <div class="ps-av" aria-hidden="true">{{ patientInitials }}</div>
+      </div>
+      <div class="ps-id-main">
+        <div class="ps-name">{{ patient.firstName }} {{ patient.lastName }}</div>
+        <div class="ps-sub">
+          <span class="ps-pid lis-mono">{{ patient.id }}</span>
+          <span class="ps-dot" aria-hidden="true">·</span>
+          {{ patientAge }} · {{ patient.gender }}
+        </div>
+      </div>
+      @if (!collected()) {
+        <span class="status-chip status-chip--warn">
+          <i class="ti ti-hourglass-low" aria-hidden="true"></i> Awaiting Collection
+        </span>
+      } @else {
+        <span class="status-chip status-chip--done">
+          <i class="ti ti-circle-check" aria-hidden="true"></i> Collected
+        </span>
+      }
+    </div>
+
+    <div class="ps-divider" role="separator"></div>
+
+    <div class="ps-fields">
+      <div class="ps-field">
+        <i class="ti ti-phone ps-field-icon" aria-hidden="true"></i>
+        <div><div class="ps-field-label">Mobile</div><div class="ps-field-value">{{ patient.mobile }}</div></div>
+      </div>
+      <div class="ps-field">
+        <i class="ti ti-stethoscope ps-field-icon" aria-hidden="true"></i>
+        <div><div class="ps-field-label">Referred by</div><div class="ps-field-value">{{ patient.refDoctor }}</div></div>
+      </div>
+      <div class="ps-field">
+        <i class="ti ti-droplet-half-2 ps-field-icon" aria-hidden="true"></i>
+        <div><div class="ps-field-label">Fasting</div><div class="ps-field-value">{{ patient.fasting }}</div></div>
+      </div>
+      <div class="ps-field">
+        <i class="ti {{ priorityStyle().icon }} ps-field-icon"
+           [style.color]="priorityStyle().color" [style.background]="priorityStyle().bg" aria-hidden="true"></i>
+        <div>
+          <div class="ps-field-label">Priority</div>
+          <span class="prio-badge" [style.color]="priorityStyle().color" [style.background]="priorityStyle().bg"
+                [style.border-color]="priorityStyle().color">
+            <i class="ti {{ priorityStyle().icon }}" aria-hidden="true"></i> {{ flow.priority() | titlecase }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════
+       Sample cards + Collection panel
+       ════════════════════════════════════════════════ -->
+  <div class="cp-layout">
+    <!-- Sample cards -->
+    <div class="tube-cards" role="list" aria-label="Sample tubes">
+      @for (tube of currentPatientTubes(); track tube.id) {
+        <div class="tube-card2" role="listitem" [style.--tube-color]="tube.color">
+          <div class="tc-strip" aria-hidden="true"></div>
+          <div class="tc-body">
+            <div class="tc-head">
+              <div class="tc-label">{{ tube.label }}</div>
+              <span class="tc-required"><i class="ti ti-check" aria-hidden="true"></i> Required</span>
+            </div>
+            <div class="tc-tests">{{ tube.tests.join(' · ') }}</div>
+
+            <div class="tc-barcode-row">
+              <div class="tc-barcode" [attr.aria-label]="'Barcode for ' + tube.id">
+                <div class="bc-bars bc-bars--lg" aria-hidden="true">
+                  @for (w of barcodeWidths; track $index) {
+                    <div class="bc-bar" [style.width.px]="w * 1.35"></div>
+                  }
+                </div>
+                <div class="bc-num lis-mono">{{ tube.id }}</div>
+              </div>
+              <div class="tc-actions">
+                <button type="button" class="tc-icon-btn" title="Print" aria-label="Print label" (click)="printLabels()">
+                  <i class="ti ti-printer" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="tc-icon-btn" title="Preview" aria-label="Preview label">
+                  <i class="ti ti-eye" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="tc-icon-btn" title="Reprint" aria-label="Reprint label">
+                  <i class="ti ti-refresh" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Collection panel -->
+    <div class="collect-panel lis-card">
+      <div class="lis-card__header">
+        <i class="ti ti-clipboard-list lis-card-icon" aria-hidden="true"></i>
+        <h2 class="lis-card__title">Collection</h2>
+      </div>
+
+      <div class="cp-form">
+        <div class="lis-field">
+          <label>Collector</label>
+          <input value="Lab Technician" readonly />
+        </div>
+        <div class="lis-field">
+          <label>Collection time</label>
+          <input [value]="collected() ? collectedAt() : (now | date:'hh:mm a')" readonly />
+        </div>
+        <div class="lis-field">
+          <label>Sample type</label>
+          <input value="Venous blood" readonly />
+        </div>
+        <div class="lis-field">
+          <label>Notes</label>
+          <textarea placeholder="e.g. difficult vein, hemolysis risk, special handling…"
+            [value]="notes()" (input)="notes.set($any($event.target).value)"></textarea>
+        </div>
+
+        @if (!collected()) {
+          <button type="button" class="lis-btn lis-btn--secondary collect-btn print-btn"
+            [class.print-btn--flash]="printFlash()" (click)="printLabels()">
+            <i class="ti ti-printer" aria-hidden="true"></i>
+            Print Labels
+            <kbd class="kbd-hint">Ctrl+P</kbd>
+          </button>
+          <button type="button" class="lis-btn lis-btn--primary collect-btn mark-collected-btn"
+            (click)="markCollected()">
+            <i class="ti ti-check" aria-hidden="true"></i>
+            Mark as Collected
+            <kbd class="kbd-hint kbd-hint--on-primary">Enter</kbd>
+          </button>
+        } @else {
+          <div class="collected-confirm" role="status" aria-live="polite">
+            <i class="ti ti-circle-check" aria-hidden="true"></i>
+            <div>
+              <div class="cc-title">Sample Collected</div>
+              <div class="cc-time">at {{ collectedAt() }}</div>
+            </div>
+          </div>
+          <a routerLink="/dashboard/results" class="lis-btn lis-btn--primary collect-btn">
+            <i class="ti ti-writing" aria-hidden="true"></i>
+            Proceed to Result Entry
+          </a>
+          <button type="button" class="lis-btn lis-btn--secondary collect-btn print-btn"
+            [class.print-btn--flash]="printFlash()" (click)="printLabels()">
+            <i class="ti ti-printer" aria-hidden="true"></i>
+            Reprint Labels
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════
+       Collection checklist — fills the space below,
+       doubles as a lightweight error-prevention step
+       ════════════════════════════════════════════════ -->
+  <div class="checklist-card lis-card">
+    <div class="lis-card__header">
+      <i class="ti ti-clipboard-check lis-card-icon" aria-hidden="true"></i>
+      <h2 class="lis-card__title">Collection Checklist</h2>
+      <span class="checklist-count" [class.checklist-count--done]="allChecked()">
+        {{ checkedCount() }}/{{ checklistItems.length }} completed
+      </span>
+    </div>
+    <div class="checklist-grid">
+      @for (item of checklistItems; track item.id) {
+        <button type="button" class="checklist-item" [class.checklist-item--checked]="isChecked(item.id)"
+          (click)="toggleChecklist(item.id)" [attr.aria-pressed]="isChecked(item.id)">
+          <span class="checklist-box" aria-hidden="true">
+            @if (isChecked(item.id)) { <i class="ti ti-check"></i> }
+          </span>
+          <i class="ti {{ item.icon }} checklist-icon" aria-hidden="true"></i>
+          <span class="checklist-label">{{ item.label }}</span>
+        </button>
+      }
+    </div>
+  </div>
+} @else {
+  <div class="empty-state lis-card" role="region" aria-label="No sample pending collection">
+    <i class="ti ti-flask-off empty-icon" aria-hidden="true"></i>
+    <h2 class="empty-title">No Samples Pending</h2>
+    <p class="empty-copy">Collect a sample after completing billing.</p>
+    <a routerLink="/dashboard/registration" class="lis-btn lis-btn--primary">
+      <i class="ti ti-user-plus" aria-hidden="true"></i> Register a patient
+    </a>
+    <a routerLink="/dashboard/tracking" class="lis-btn lis-btn--secondary">
+      <i class="ti ti-timeline" aria-hidden="true"></i> View full sample queue
+    </a>
+  </div>
+}

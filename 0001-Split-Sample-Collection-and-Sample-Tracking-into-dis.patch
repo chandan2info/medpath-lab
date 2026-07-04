@@ -1,0 +1,731 @@
+From ad5483cbf383318013bfd7bd92d612b48fc18e3f Mon Sep 17 00:00:00 2001
+From: Chandan <chandan@medpath.dev>
+Date: Sat, 4 Jul 2026 18:24:48 +0000
+Subject: [PATCH] Split Sample Collection and Sample Tracking into distinct
+ pages
+
+Both /dashboard/collection and /dashboard/tracking previously routed
+to the same SampleTrackingComponent, so the two sidebar entries
+rendered an identical page (same title, breadcrumb, workflow trail,
+and lab-wide queue table) regardless of which one was opened.
+
+- Add SampleCollectionComponent: a single-patient task screen for
+  the phlebotomist right after Billing (workflow trail, current
+  patient tubes, barcode labels, mark-collected flow, empty state
+  when no patient/tests are active).
+- Trim SampleTrackingComponent down to a pure lab-wide ops dashboard
+  (search, filter, sortable queue table, detail panel) with its own
+  header/breadcrumb and no leftover single-patient concerns.
+- Point the 'collection' route at the new component; 'tracking'
+  keeps the trimmed SampleTrackingComponent.
+---
+ src/app/app.routes.ts                         |   4 +-
+ .../sample-collection.component.css           |  73 +++++++++
+ .../sample-collection.component.html          | 148 ++++++++++++++++++
+ .../sample-collection.component.ts            |  84 ++++++++++
+ .../sample-tracking.component.css             |  58 -------
+ .../sample-tracking.component.html            | 139 +---------------
+ .../sample-tracking.component.ts              |  83 ++--------
+ 7 files changed, 322 insertions(+), 267 deletions(-)
+ create mode 100644 src/app/features/sample-collection/sample-collection.component.css
+ create mode 100644 src/app/features/sample-collection/sample-collection.component.html
+ create mode 100644 src/app/features/sample-collection/sample-collection.component.ts
+
+diff --git a/src/app/app.routes.ts b/src/app/app.routes.ts
+index 261b275..7f32b86 100644
+--- a/src/app/app.routes.ts
++++ b/src/app/app.routes.ts
+@@ -54,8 +54,8 @@ export const routes: Routes = [
+       {
+         path: 'collection',
+         loadComponent: () =>
+-          import('./features/sample-tracking/sample-tracking.component')
+-            .then(m => m.SampleTrackingComponent),
++          import('./features/sample-collection/sample-collection.component')
++            .then(m => m.SampleCollectionComponent),
+         title: 'Sample Collection — MedPath LIS',
+       },
+       // ── Lab operations ────────────────────────────────────
+diff --git a/src/app/features/sample-collection/sample-collection.component.css b/src/app/features/sample-collection/sample-collection.component.css
+new file mode 100644
+index 0000000..765a175
+--- /dev/null
++++ b/src/app/features/sample-collection/sample-collection.component.css
+@@ -0,0 +1,73 @@
++:host { display:block; }
++.page-header { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:18px; }
++.page-title  { font-size:22px; font-weight:500; color:var(--text-primary); margin:0 0 4px; }
++.breadcrumb  { display:flex; list-style:none; padding:0; margin:0; gap:6px; font-size:12px; color:var(--text-secondary); }
++.breadcrumb a { color:var(--text-secondary); text-decoration:none; &:hover{color:var(--lis-primary,#1D9E75);} }
++.breadcrumb li+li::before { content:'/'; margin-right:6px; }
++
++/* ── Workflow trail ──────────────────────────── */
++.workflow-trail { display: flex; align-items: center; gap: 6px; background: var(--body-bg); border: 0.5px solid var(--border-color); border-radius: 9px; padding: 6px 12px; }
++.wf-step { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-secondary); i { font-size: 13px; } }
++.wf-step--active { color: var(--lis-primary-deep, #085041); font-weight: 500; i { color: var(--lis-primary, #1D9E75); } }
++.wf-step--done   { color: var(--lis-primary, #1D9E75); font-weight: 500; i { color: var(--lis-primary, #1D9E75); } }
++.wf-arrow { font-size: 11px; color: var(--border-color); }
++
++/* ── Current patient block ──────────────────── */
++.current-patient-block { margin-bottom: 16px; }
++.cp-layout {
++  display: grid;
++  grid-template-columns: 220px 1fr 200px;
++  gap: 16px; padding: 14px 16px;
++  align-items: start;
++}
++@media (max-width: 900px) { .cp-layout { grid-template-columns: 1fr; } }
++.cp-patient { display: flex; flex-direction: column; gap: 8px; }
++.cp-av { width: 42px; height: 42px; border-radius: 50%; background: var(--lis-primary, #1D9E75); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; text-transform: uppercase; flex-shrink: 0; }
++.cp-info { }
++.cp-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
++.cp-meta { font-size: 11px; color: var(--text-secondary); margin-top: 3px; }
++.cp-priority { display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 20px; background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); border: 0.5px solid var(--lis-primary-mid, #5DCAA5); text-transform: capitalize; }
++.cp-priority--stat { background: #FCEBEB; color: #791F1F; border-color: #E24B4A; }
++
++/* Tubes */
++.cp-tubes { display: flex; flex-direction: column; gap: 10px; }
++.cp-tube  {
++  display: flex; align-items: center; gap: 10px;
++  padding: 10px 12px; border: 0.5px solid var(--border-color);
++  border-radius: 10px; background: var(--body-bg);
++}
++.tube-body-wrap { display: flex; flex-direction: column; align-items: center; gap: 0; flex-shrink: 0; }
++.tube-body-cap  { width: 14px; height: 10px; border-radius: 4px 4px 0 0; }
++.tube-body-body { width: 10px; height: 30px; border-radius: 0 0 5px 5px; background: rgba(0,0,0,.06); border: 1px solid var(--border-color); }
++.tube-detail { flex: 1; min-width: 0; }
++.tube-label  { font-size: 12px; font-weight: 500; color: var(--text-primary); }
++.tube-tests  { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
++.tube-barcode { display: flex; flex-direction: column; align-items: center; gap: 3px; }
++.bc-bars { display:flex; gap:1px; height:20px; align-items:stretch; }
++.bc-bar  { border-radius:1px; background:var(--text-primary); }
++.bc-num  { font-size:11px; font-family:monospace; color:var(--text-secondary); }
++
++/* Collection form */
++.cp-form { display: flex; flex-direction: column; gap: 8px; }
++.collect-btn { width: 100%; justify-content: center; }
++.collected-confirm {
++  display: flex; align-items: center; gap: 8px;
++  padding: 10px 12px; background: var(--lis-primary-xlight, #E1F5EE);
++  border: 0.5px solid var(--lis-primary-mid, #5DCAA5);
++  border-radius: 9px; animation: fadeIn .3s ease;
++  i { font-size: 22px; color: var(--lis-primary, #1D9E75); }
++}
++.cc-title { font-size: 12px; font-weight: 600; color: var(--lis-primary-deep, #085041); }
++.cc-time  { font-size: 11px; color: var(--text-secondary); }
++.collected-badge { background: var(--lis-primary-xlight, #E1F5EE) !important; color: var(--lis-primary-deep, #085041) !important; border-color: var(--lis-primary-mid, #5DCAA5) !important; }
++@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
++
++/* ── Empty state (no active patient) ─────────── */
++.empty-state {
++  display: flex; flex-direction: column; align-items: center; text-align: center;
++  gap: 8px; padding: 48px 24px; color: var(--text-secondary);
++}
++.empty-icon  { font-size: 34px; color: var(--text-secondary); opacity: .6; margin-bottom: 4px; }
++.empty-title { font-size: 15px; font-weight: 600; color: var(--text-primary); margin: 0; }
++.empty-copy  { font-size: 12px; max-width: 380px; margin: 0 0 8px; }
++.empty-state .lis-btn { margin-top: 4px; }
+diff --git a/src/app/features/sample-collection/sample-collection.component.html b/src/app/features/sample-collection/sample-collection.component.html
+new file mode 100644
+index 0000000..b9c9436
+--- /dev/null
++++ b/src/app/features/sample-collection/sample-collection.component.html
+@@ -0,0 +1,148 @@
++<!-- ═══════════════════════════════════════════════════════════
++     Screen 4a — Sample Collection
++     Single-patient task screen, entered from Billing.
++     ═══════════════════════════════════════════════════════════ -->
++
++<div class="page-header">
++  <div>
++    <h1 class="page-title">Sample Collection</h1>
++    <nav aria-label="Breadcrumb">
++      <ol class="breadcrumb">
++        <li><a routerLink="/dashboard/home">Home</a></li>
++        <li><a routerLink="/dashboard/billing">Billing</a></li>
++        <li aria-current="page">Sample Collection</li>
++      </ol>
++    </nav>
++  </div>
++  <div class="workflow-trail" aria-label="Workflow steps">
++    <div class="wf-step wf-step--done"><i class="ti ti-check"></i> Registered</div>
++    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
++    <div class="wf-step wf-step--done"><i class="ti ti-check"></i> Tests Ordered</div>
++    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
++    <div class="wf-step wf-step--done"><i class="ti ti-check"></i> Billing Done</div>
++    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
++    <div class="wf-step wf-step--active"><i class="ti ti-droplet"></i> Sample</div>
++  </div>
++</div>
++
++@if (patient && currentPatientTubes().length > 0) {
++  <div class="current-patient-block lis-card" role="region" aria-label="Current patient sample collection">
++    <div class="lis-card__header">
++      <i class="ti ti-user-check lis-card-icon" aria-hidden="true"></i>
++      <h2 class="lis-card__title">Current Patient — Collect Now</h2>
++      @if (!collected()) {
++        <span class="lis-badge lis-badge--warn">Awaiting collection</span>
++      } @else {
++        <span class="lis-badge collected-badge">
++          <i class="ti ti-check" aria-hidden="true"></i> Collected ✓
++        </span>
++      }
++    </div>
++
++    <div class="cp-layout">
++      <!-- Patient info -->
++      <div class="cp-patient">
++        <div class="cp-av" aria-hidden="true">{{ patientInitials }}</div>
++        <div class="cp-info">
++          <div class="cp-name">{{ patient.firstName }} {{ patient.lastName }}</div>
++          <div class="cp-meta">
++            <span class="lis-mono">{{ patient.id }}</span> ·
++            {{ patientAge }} · {{ patient.gender }} · {{ patient.mobile }}
++          </div>
++          <div class="cp-meta">
++            {{ patient.refDoctor }} · {{ patient.fasting }}
++          </div>
++          <div class="cp-priority" [class.cp-priority--stat]="flow.priority() === 'stat'">
++            <i class="ti ti-bolt" aria-hidden="true"></i>
++            {{ flow.priority() | titlecase }}
++          </div>
++        </div>
++      </div>
++
++      <!-- Tubes -->
++      <div class="cp-tubes" role="list" aria-label="Sample tubes">
++        @for (tube of currentPatientTubes(); track tube.id) {
++          <div class="cp-tube" role="listitem">
++            <div class="tube-body-wrap">
++              <div class="tube-body-cap" [style.background]="tube.color" aria-hidden="true"></div>
++              <div class="tube-body-body" aria-hidden="true"></div>
++            </div>
++            <div class="tube-detail">
++              <div class="tube-label">{{ tube.label }}</div>
++              <div class="tube-tests">{{ tube.tests.join(' · ') }}</div>
++            </div>
++
++            <!-- Barcode -->
++            <div class="tube-barcode" [attr.aria-label]="'Barcode for ' + tube.id">
++              <div class="bc-bars" aria-hidden="true">
++                @for (w of barcodeWidths; track $index) {
++                  <div class="bc-bar" [style.width.px]="w"></div>
++                }
++              </div>
++              <div class="bc-num lis-mono">{{ tube.id }}</div>
++            </div>
++          </div>
++        }
++      </div>
++
++      <!-- Collection form -->
++      <div class="cp-form">
++        <div class="lis-field">
++          <label>Collector</label>
++          <input value="Lab Technician" readonly />
++        </div>
++        <div class="lis-field">
++          <label>Collection time</label>
++          <input [value]="collected() ? collectedAt() : (now | date:'hh:mm a')" readonly />
++        </div>
++        <div class="lis-field">
++          <label>Sample type</label>
++          <input value="Venous blood" readonly />
++        </div>
++
++        @if (!collected()) {
++          <button type="button" class="lis-btn lis-btn--primary collect-btn"
++            (click)="markCollected()">
++            <i class="ti ti-check" aria-hidden="true"></i>
++            Mark as Collected ✓
++          </button>
++          <button type="button" class="lis-btn lis-btn--secondary collect-btn">
++            <i class="ti ti-printer" aria-hidden="true"></i>
++            Print Labels
++          </button>
++        } @else {
++          <div class="collected-confirm" role="status" aria-live="polite">
++            <i class="ti ti-circle-check" aria-hidden="true"></i>
++            <div>
++              <div class="cc-title">Sample Collected</div>
++              <div class="cc-time">at {{ collectedAt() }}</div>
++            </div>
++          </div>
++          <a routerLink="/dashboard/results" class="lis-btn lis-btn--primary collect-btn">
++            <i class="ti ti-writing" aria-hidden="true"></i>
++            Proceed to Result Entry
++          </a>
++          <button type="button" class="lis-btn lis-btn--secondary collect-btn">
++            <i class="ti ti-printer" aria-hidden="true"></i>
++            Reprint Labels
++          </button>
++        }
++      </div>
++    </div>
++  </div>
++} @else {
++  <div class="empty-state lis-card" role="region" aria-label="No sample pending collection">
++    <i class="ti ti-droplet-off empty-icon" aria-hidden="true"></i>
++    <h2 class="empty-title">No sample pending collection</h2>
++    <p class="empty-copy">
++      Complete a patient's registration, test order and billing to see their
++      sample collection tasks here.
++    </p>
++    <a routerLink="/dashboard/registration" class="lis-btn lis-btn--primary">
++      <i class="ti ti-user-plus" aria-hidden="true"></i> Register a patient
++    </a>
++    <a routerLink="/dashboard/tracking" class="lis-btn lis-btn--secondary">
++      <i class="ti ti-timeline" aria-hidden="true"></i> View full sample queue
++    </a>
++  </div>
++}
+diff --git a/src/app/features/sample-collection/sample-collection.component.ts b/src/app/features/sample-collection/sample-collection.component.ts
+new file mode 100644
+index 0000000..ab79434
+--- /dev/null
++++ b/src/app/features/sample-collection/sample-collection.component.ts
+@@ -0,0 +1,84 @@
++// ─────────────────────────────────────────────
++//  Screen 4a — Sample Collection
++//  Task screen for the phlebotomist: collect
++//  tubes for the CURRENT patient right after
++//  billing. One patient, one job, one screen.
++//  (For the lab-wide operations view, see
++//  Screen 4b — Sample Tracking.)
++// ─────────────────────────────────────────────
++import { Component, signal, computed, inject, ChangeDetectionStrategy } from '@angular/core';
++import { RouterLink } from '@angular/router';
++import { DatePipe, TitleCasePipe } from '@angular/common';
++import { PatientFlowService } from '../../core/services/patient-flow.service';
++
++const TUBE_COLORS: Record<string, string> = {
++  'Haematology':   '#2B8B3E',
++  'Biochemistry':  '#E24B4A',
++  'Endocrinology': '#9F4BA8',
++  'Urine':         '#C9A227',
++};
++
++const TUBE_LABELS: Record<string, string> = {
++  '#2B8B3E': 'Green top (EDTA)',
++  '#E24B4A': 'Red top (SST)',
++  '#9F4BA8': 'Purple (EDTA)',
++  '#C9A227': 'Yellow (Urine)',
++};
++
++@Component({
++  selector: 'app-sample-collection',
++  standalone: true,
++  imports: [RouterLink, DatePipe, TitleCasePipe],
++  changeDetection: ChangeDetectionStrategy.OnPush,
++  templateUrl: './sample-collection.component.html',
++  styleUrl: './sample-collection.component.css',
++})
++export class SampleCollectionComponent {
++  protected readonly flow          = inject(PatientFlowService);
++  protected readonly barcodeWidths = [2,1,3,1,2,1,1,2,3,1,2,1,2,3,1];
++  protected readonly now           = new Date();
++
++  collected   = signal(false);
++  collectedAt = signal('');
++
++  // Tubes required for the current patient, derived from their test order
++  currentPatientTubes = computed(() => {
++    const p = this.flow.patient();
++    const tests = this.flow.selectedTests();
++    if (!p || tests.length === 0) return [];
++
++    const groups: Record<string, string[]> = {};
++    for (const t of tests) {
++      const color = TUBE_COLORS[t.category] ?? '#888';
++      if (!groups[color]) groups[color] = [];
++      groups[color].push(t.name);
++    }
++
++    return Object.entries(groups).map(([color, testNames], i) => ({
++      id: `${p.id}-T${i + 1}`,
++      color,
++      label: TUBE_LABELS[color] ?? 'Plain tube',
++      tests: testNames,
++    }));
++  });
++
++  markCollected(): void {
++    const now = new Date();
++    this.collectedAt.set(
++      now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
++    );
++    this.collected.set(true);
++  }
++
++  get patient() { return this.flow.patient(); }
++  get patientInitials(): string {
++    const p = this.patient;
++    if (!p) return '?';
++    return (p.firstName[0] + p.lastName[0]).toUpperCase();
++  }
++  get patientAge(): string {
++    const p = this.patient;
++    if (!p) return '';
++    return this.flow.calcAge(p.dob) + ' yrs';
++  }
++}
+diff --git a/src/app/features/sample-tracking/sample-tracking.component.css b/src/app/features/sample-tracking/sample-tracking.component.css
+index a64c469..41644ef 100644
+--- a/src/app/features/sample-tracking/sample-tracking.component.css
++++ b/src/app/features/sample-tracking/sample-tracking.component.css
+@@ -67,64 +67,6 @@
+     .bc-bar  { border-radius:1px; background:var(--text-primary); }
+     .bc-num  { font-size:11px; font-family:monospace; color:var(--text-secondary); }
+     .det-actions { padding:12px 14px; display:flex; flex-direction:column; gap:7px; border-top:0.5px solid var(--border-color); }
+-/* ── Workflow trail ──────────────────────────── */
+-.workflow-trail { display: flex; align-items: center; gap: 6px; background: var(--body-bg); border: 0.5px solid var(--border-color); border-radius: 9px; padding: 6px 12px; }
+-.wf-step { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-secondary); i { font-size: 13px; } }
+-.wf-step--active { color: var(--lis-primary-deep, #085041); font-weight: 500; i { color: var(--lis-primary, #1D9E75); } }
+-.wf-step--done   { color: var(--lis-primary, #1D9E75); font-weight: 500; i { color: var(--lis-primary, #1D9E75); } }
+-.wf-arrow { font-size: 11px; color: var(--border-color); }
+-
+-/* ── Current patient block ──────────────────── */
+-.current-patient-block { margin-bottom: 16px; }
+-.cp-layout {
+-  display: grid;
+-  grid-template-columns: 220px 1fr 200px;
+-  gap: 16px; padding: 14px 16px;
+-  align-items: start;
+-}
+-@media (max-width: 900px) { .cp-layout { grid-template-columns: 1fr; } }
+-.cp-patient { display: flex; flex-direction: column; gap: 8px; }
+-.cp-av { width: 42px; height: 42px; border-radius: 50%; background: var(--lis-primary, #1D9E75); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; text-transform: uppercase; flex-shrink: 0; }
+-.cp-info { }
+-.cp-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+-.cp-meta { font-size: 11px; color: var(--text-secondary); margin-top: 3px; }
+-.cp-priority { display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 20px; background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); border: 0.5px solid var(--lis-primary-mid, #5DCAA5); text-transform: capitalize; }
+-.cp-priority--stat { background: #FCEBEB; color: #791F1F; border-color: #E24B4A; }
+-
+-/* Tubes */
+-.cp-tubes { display: flex; flex-direction: column; gap: 10px; }
+-.cp-tube  {
+-  display: flex; align-items: center; gap: 10px;
+-  padding: 10px 12px; border: 0.5px solid var(--border-color);
+-  border-radius: 10px; background: var(--body-bg);
+-}
+-.tube-body-wrap { display: flex; flex-direction: column; align-items: center; gap: 0; flex-shrink: 0; }
+-.tube-body-cap  { width: 14px; height: 10px; border-radius: 4px 4px 0 0; }
+-.tube-body-body { width: 10px; height: 30px; border-radius: 0 0 5px 5px; background: rgba(0,0,0,.06); border: 1px solid var(--border-color); }
+-.tube-detail { flex: 1; min-width: 0; }
+-.tube-label  { font-size: 12px; font-weight: 500; color: var(--text-primary); }
+-.tube-tests  { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+-.tube-barcode { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+-
+-/* Collection form */
+-.cp-form { display: flex; flex-direction: column; gap: 8px; }
+-.collect-btn { width: 100%; justify-content: center; }
+-.collected-confirm {
+-  display: flex; align-items: center; gap: 8px;
+-  padding: 10px 12px; background: var(--lis-primary-xlight, #E1F5EE);
+-  border: 0.5px solid var(--lis-primary-mid, #5DCAA5);
+-  border-radius: 9px; animation: fadeIn .3s ease;
+-  i { font-size: 22px; color: var(--lis-primary, #1D9E75); }
+-}
+-.cc-title { font-size: 12px; font-weight: 600; color: var(--lis-primary-deep, #085041); }
+-.cc-time  { font-size: 11px; color: var(--text-secondary); }
+-.collected-badge { background: var(--lis-primary-xlight, #E1F5EE) !important; color: var(--lis-primary-deep, #085041) !important; border-color: var(--lis-primary-mid, #5DCAA5) !important; }
+-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+-
+-/* ── Queue section ──────────────────────────── */
+-.queue-header { margin-bottom: 10px; }
+-.queue-title  { font-size: 14px; font-weight: 600; color: var(--text-primary); margin: 0; }
+-
+ /* Table tweaks */
+ .tbl-sub    { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+ .tbl-tests  { font-size: 11px; }
+diff --git a/src/app/features/sample-tracking/sample-tracking.component.html b/src/app/features/sample-tracking/sample-tracking.component.html
+index 4926a90..f965c19 100644
+--- a/src/app/features/sample-tracking/sample-tracking.component.html
++++ b/src/app/features/sample-tracking/sample-tracking.component.html
+@@ -1,30 +1,21 @@
+ <!-- ═══════════════════════════════════════════════════════════
+-     Screen 4 — Sample Collection & Tracking
+-     Shows current patient's collection at top (priority),
+-     then the general lab queue below.
++     Screen 4b — Sample Tracking
++     Lab-wide operations dashboard over every sample
++     in the queue. (Single-patient collection lives on
++     its own screen — see Sample Collection.)
+      ═══════════════════════════════════════════════════════════ -->
+ 
+ <!-- Page header -->
+ <div class="page-header">
+   <div>
+-    <h1 class="page-title">Sample Collection</h1>
++    <h1 class="page-title">Sample Tracking</h1>
+     <nav aria-label="Breadcrumb">
+       <ol class="breadcrumb">
+         <li><a routerLink="/dashboard/home">Home</a></li>
+-        <li><a routerLink="/dashboard/billing">Billing</a></li>
+-        <li aria-current="page">Sample Collection</li>
++        <li aria-current="page">Sample Tracking</li>
+       </ol>
+     </nav>
+   </div>
+-  <div class="workflow-trail" aria-label="Workflow steps">
+-    <div class="wf-step wf-step--done"><i class="ti ti-check"></i> Registered</div>
+-    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
+-    <div class="wf-step wf-step--done"><i class="ti ti-check"></i> Tests Ordered</div>
+-    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
+-    <div class="wf-step wf-step--done"><i class="ti ti-check"></i> Billing Done</div>
+-    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
+-    <div class="wf-step wf-step--active"><i class="ti ti-droplet"></i> Sample</div>
+-  </div>
+ 
+   <div class="header-actions">
+     <button class="lis-btn lis-btn--secondary lis-btn--sm">
+@@ -36,124 +27,6 @@
+   </div>
+ </div>
+ 
+-<!-- ════════════════════════════════════════════════
+-     Current patient collection block
+-     (shown only when patient + tests exist)
+-     ════════════════════════════════════════════════ -->
+-@if (patient && currentPatientTubes().length > 0) {
+-  <div class="current-patient-block lis-card" role="region" aria-label="Current patient sample collection">
+-    <div class="lis-card__header">
+-      <i class="ti ti-user-check lis-card-icon" aria-hidden="true"></i>
+-      <h2 class="lis-card__title">Current Patient — Collect Now</h2>
+-      @if (!collected()) {
+-        <span class="lis-badge lis-badge--warn">Awaiting collection</span>
+-      } @else {
+-        <span class="lis-badge collected-badge">
+-          <i class="ti ti-check" aria-hidden="true"></i> Collected ✓
+-        </span>
+-      }
+-    </div>
+-
+-    <div class="cp-layout">
+-      <!-- Patient info -->
+-      <div class="cp-patient">
+-        <div class="cp-av" aria-hidden="true">{{ patientInitials }}</div>
+-        <div class="cp-info">
+-          <div class="cp-name">{{ patient.firstName }} {{ patient.lastName }}</div>
+-          <div class="cp-meta">
+-            <span class="lis-mono">{{ patient.id }}</span> ·
+-            {{ patientAge }} · {{ patient.gender }} · {{ patient.mobile }}
+-          </div>
+-          <div class="cp-meta">
+-            {{ patient.refDoctor }} · {{ patient.fasting }}
+-          </div>
+-          <div class="cp-priority" [class.cp-priority--stat]="flow.priority() === 'stat'">
+-            <i class="ti ti-bolt" aria-hidden="true"></i>
+-            {{ flow.priority() | titlecase }}
+-          </div>
+-        </div>
+-      </div>
+-
+-      <!-- Tubes -->
+-      <div class="cp-tubes" role="list" aria-label="Sample tubes">
+-        @for (tube of currentPatientTubes(); track tube.id) {
+-          <div class="cp-tube" role="listitem">
+-            <div class="tube-body-wrap">
+-              <div class="tube-body-cap" [style.background]="tube.color" aria-hidden="true"></div>
+-              <div class="tube-body-body" aria-hidden="true"></div>
+-            </div>
+-            <div class="tube-detail">
+-              <div class="tube-label">{{ tube.label }}</div>
+-              <div class="tube-tests">{{ tube.tests.join(' · ') }}</div>
+-            </div>
+-
+-            <!-- Barcode -->
+-            <div class="tube-barcode" [attr.aria-label]="'Barcode for ' + tube.id">
+-              <div class="bc-bars" aria-hidden="true">
+-                @for (w of barcodeWidths; track $index) {
+-                  <div class="bc-bar" [style.width.px]="w"></div>
+-                }
+-              </div>
+-              <div class="bc-num lis-mono">{{ tube.id }}</div>
+-            </div>
+-          </div>
+-        }
+-      </div>
+-
+-      <!-- Collection form -->
+-      <div class="cp-form">
+-        <div class="lis-field">
+-          <label>Collector</label>
+-          <input value="Lab Technician" readonly />
+-        </div>
+-        <div class="lis-field">
+-          <label>Collection time</label>
+-          <input [value]="collected() ? collectedAt() : (now | date:'hh:mm a')" readonly />
+-        </div>
+-        <div class="lis-field">
+-          <label>Sample type</label>
+-          <input value="Venous blood" readonly />
+-        </div>
+-
+-        @if (!collected()) {
+-          <button type="button" class="lis-btn lis-btn--primary collect-btn"
+-            (click)="markCollected()">
+-            <i class="ti ti-check" aria-hidden="true"></i>
+-            Mark as Collected ✓
+-          </button>
+-          <button type="button" class="lis-btn lis-btn--secondary collect-btn">
+-            <i class="ti ti-printer" aria-hidden="true"></i>
+-            Print Labels
+-          </button>
+-        } @else {
+-          <div class="collected-confirm" role="status" aria-live="polite">
+-            <i class="ti ti-circle-check" aria-hidden="true"></i>
+-            <div>
+-              <div class="cc-title">Sample Collected</div>
+-              <div class="cc-time">at {{ collectedAt() }}</div>
+-            </div>
+-          </div>
+-          <a routerLink="/dashboard/results" class="lis-btn lis-btn--primary collect-btn">
+-            <i class="ti ti-writing" aria-hidden="true"></i>
+-            Proceed to Result Entry
+-          </a>
+-          <button type="button" class="lis-btn lis-btn--secondary collect-btn">
+-            <i class="ti ti-printer" aria-hidden="true"></i>
+-            Reprint Labels
+-          </button>
+-        }
+-      </div>
+-    </div>
+-  </div>
+-}
+-
+-<!-- ════════════════════════════════════════════════
+-     General lab queue
+-     ════════════════════════════════════════════════ -->
+-<div class="queue-header">
+-  <h3 class="queue-title">Lab Queue</h3>
+-</div>
+-
+ <div class="tracking-toolbar">
+   <div class="ts-search" role="search">
+     <i class="ti ti-search" aria-hidden="true"></i>
+diff --git a/src/app/features/sample-tracking/sample-tracking.component.ts b/src/app/features/sample-tracking/sample-tracking.component.ts
+index 566928a..bb6a84b 100644
+--- a/src/app/features/sample-tracking/sample-tracking.component.ts
++++ b/src/app/features/sample-tracking/sample-tracking.component.ts
+@@ -1,14 +1,15 @@
+ // ─────────────────────────────────────────────
+-//  Screen 4 — Sample Collection & Tracking
+-//  Shows current patient's samples at top for
+-//  immediate collection after billing.
++//  Screen 4b — Sample Tracking
++//  Lab-wide operations dashboard: search, filter,
++//  sort and drill into every sample in the queue.
++//  (For the single-patient collection task screen
++//  entered right after billing, see Screen 4a —
++//  Sample Collection.)
+ // ─────────────────────────────────────────────
+-import { Component, signal, computed, inject, ChangeDetectionStrategy, OnInit } from '@angular/core';
++import { Component, signal, computed, ChangeDetectionStrategy } from '@angular/core';
+ import { RouterLink } from '@angular/router';
+-import { NgClass, DatePipe, TitleCasePipe } from '@angular/common';
+ import { StatusPillComponent } from '../../shared/components/status-pill/status-pill.component';
+ import { Sample, SampleStatus } from '../../shared/models/lis.models';
+-import { PatientFlowService } from '../../core/services/patient-flow.service';
+ import { TableSort } from '../../shared/utils/table-sort';
+ 
+ /** Sortable projection of a Sample row — priority/status ranked so STAT/critical sort to the top. */
+@@ -37,58 +38,22 @@ const FILTER_OPTS: { label: string; value: SampleStatus | 'all' }[] = [
+   { label: 'Ready',      value: 'ready'      },
+ ];
+ 
+-const TUBE_COLORS: Record<string, string> = {
+-  'Haematology':   '#2B8B3E',
+-  'Biochemistry':  '#E24B4A',
+-  'Endocrinology': '#9F4BA8',
+-  'Urine':         '#C9A227',
+-};
+-
+ @Component({
+   selector: 'app-sample-tracking',
+   standalone: true,
+-  imports: [RouterLink, NgClass, StatusPillComponent, DatePipe, TitleCasePipe],
++  imports: [RouterLink, StatusPillComponent],
+   changeDetection: ChangeDetectionStrategy.OnPush,
+   templateUrl: './sample-tracking.component.html',
+   styleUrl: './sample-tracking.component.css',
+ })
+-export class SampleTrackingComponent implements OnInit {
+-  protected readonly flow        = inject(PatientFlowService);
++export class SampleTrackingComponent {
+   protected readonly filterOpts  = FILTER_OPTS;
+   protected readonly barcodeWidths = [2,1,3,1,2,1,1,2,3,1,2,1,2,3,1];
+-  protected readonly now          = new Date();
+ 
+   searchQ        = signal('');
+   activeFilter   = signal<SampleStatus | 'all'>('all');
+   selectedSample = signal<Sample | null>(SAMPLES[0]);
+ 
+-  // Current patient's tubes (derived from test order)
+-  currentPatientTubes = computed(() => {
+-    const p = this.flow.patient();
+-    const tests = this.flow.selectedTests();
+-    if (!p || tests.length === 0) return [];
+-
+-    // Group tests by tube colour category
+-    const groups: Record<string, string[]> = {};
+-    for (const t of tests) {
+-      const color = TUBE_COLORS[t.category] ?? '#888';
+-      if (!groups[color]) groups[color] = [];
+-      groups[color].push(t.name);
+-    }
+-
+-    return Object.entries(groups).map(([color, testNames], i) => ({
+-      id: `${p.id}-T${i+1}`,
+-      color,
+-      label: this.tubeLabel(color),
+-      tests: testNames,
+-    }));
+-  });
+-
+-  collected = signal(false);
+-  collectedAt = signal('');
+-
+-  ngOnInit(): void {}
+-
+   filteredSamples = computed(() => {
+     const f = this.activeFilter();
+     const q = this.searchQ().toLowerCase();
+@@ -115,34 +80,4 @@ export class SampleTrackingComponent implements OnInit {
+   initials(name: string): string {
+     return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+   }
+-
+-  markCollected(): void {
+-    const now = new Date();
+-    this.collectedAt.set(
+-      now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+-    );
+-    this.collected.set(true);
+-  }
+-
+-  private tubeLabel(color: string): string {
+-    const map: Record<string,string> = {
+-      '#2B8B3E': 'Green top (EDTA)',
+-      '#E24B4A': 'Red top (SST)',
+-      '#9F4BA8': 'Purple (EDTA)',
+-      '#C9A227': 'Yellow (Urine)',
+-    };
+-    return map[color] ?? 'Plain tube';
+-  }
+-
+-  get patient() { return this.flow.patient(); }
+-  get patientInitials(): string {
+-    const p = this.patient;
+-    if (!p) return '?';
+-    return (p.firstName[0] + p.lastName[0]).toUpperCase();
+-  }
+-  get patientAge(): string {
+-    const p = this.patient;
+-    if (!p) return '';
+-    return this.flow.calcAge(p.dob) + ' yrs';
+-  }
+ }
+-- 
+2.43.0
+
