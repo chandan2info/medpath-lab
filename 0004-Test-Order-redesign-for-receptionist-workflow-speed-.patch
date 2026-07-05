@@ -1,0 +1,1341 @@
+From fb6d63caec8ea86f9f0db1dde822a82b7ad9d567 Mon Sep 17 00:00:00 2001
+From: Chandan <chandan@medpath.dev>
+Date: Sun, 5 Jul 2026 09:22:39 +0000
+Subject: [PATCH] Test Order: redesign for receptionist workflow speed (UX
+ review)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Addresses the UX review point-by-point:
+
+- Patient summary promoted to the visual anchor: sticky, 56px avatar,
+  22px/700 name, accent patient ID, a real 'Registered' status chip,
+  a visit-type badge, and the same icon-prefixed field band used on
+  Reports/Sample Collection for cross-page consistency.
+- Search workspace: Recently Ordered chip row, segmented (38px,
+  icon-prefixed) category filter instead of bootstrap-style pills,
+  and a clearer search placeholder.
+- Popular Tests are now action cards (name/price/'Frequently
+  Ordered' badge, hover reveals an 'Add Test' cta) instead of tags.
+- New Frequently Ordered Packages section (Diabetes / Kidney /
+  Thyroid / Wellness) fills the dead space between Popular Tests
+  and the catalogue, one click adds every test in the bundle.
+- New 'Patients Also Order' smart suggestions, driven by a static
+  cross-sell map keyed off whatever is currently selected.
+- LabTest model extended with tubeType/sampleType/prep so every row
+  in the catalogue shows tube type, sample type, TAT and any prep
+  instructions (e.g. fasting) without a second screen.
+- Test rows: 72px height (was 60px), selection now reads as a green
+  left border + soft highlight + animated check, not just a tint.
+- Order summary panel split into four distinct cards (Selected
+  Tests / Priority / Summary / Actions) instead of one long card.
+- Selected-test rows show category and a trash icon.
+- Summary expands to Subtotal / Discount / Tax / Grand Total (was
+  Tests/TAT/Total), using the discount plumbing billing already has.
+- Priority is now three descriptive cards (Routine – Normal queue,
+  Urgent – Priority queue, STAT – Immediate) instead of toggle
+  buttons, with a stronger STAT state (border glow).
+- Save & Continue promoted to a 52px CTA with shadow/hover-lift/
+  ripple/arrow; Save Draft demoted to a plain text-style action so
+  it doesn't compete with the primary CTA. Draft click now has real
+  (mocked) saving/saved feedback instead of doing nothing.
+- Full keyboard workflow: Ctrl/Cmd+F focuses search, Up/Down
+  navigates the test list, Enter adds the highlighted/first-match
+  test, Delete removes the most recently added test, Ctrl/Cmd+S
+  saves a draft, Ctrl/Cmd+Enter continues to billing.
+- Micro-interactions: row hover lift + price brighten, animated
+  check pop on selection, Grand Total pulses on change, button
+  ripple on the primary CTA.
+
+Deliberately not done (needs product/data decisions, not just UI):
+- Drag-to-reorder selected tests — selection order today is fixed
+  by catalogue order, not insertion order; real reordering needs a
+  small state change in PatientFlowService shared by Billing and
+  Sample Collection, so it's safer as its own follow-up.
+- Sidebar workflow grouping/connector lines — shared layout
+  component used by every page, out of scope for a single-screen
+  patch.
+---
+ src/app/core/services/patient-flow.service.ts |  62 ++-
+ .../test-order/test-order.component.css       | 378 +++++++++++++-----
+ .../test-order/test-order.component.html      | 297 ++++++++++----
+ .../test-order/test-order.component.ts        | 182 ++++++++-
+ src/app/shared/models/lis.models.ts           |   9 +
+ 5 files changed, 718 insertions(+), 210 deletions(-)
+
+diff --git a/src/app/core/services/patient-flow.service.ts b/src/app/core/services/patient-flow.service.ts
+index c4c9987..1e601a2 100644
+--- a/src/app/core/services/patient-flow.service.ts
++++ b/src/app/core/services/patient-flow.service.ts
+@@ -5,7 +5,7 @@
+ //  Sample Collection workflow.
+ // ─────────────────────────────────────────────
+ import { Injectable, signal, computed } from '@angular/core';
+-import { LabTest, Priority, PaymentMode } from '../../shared/models/lis.models';
++import { LabTest, Priority, PaymentMode, TestPackage } from '../../shared/models/lis.models';
+ 
+ export interface RegisteredPatient {
+   id: string;           // PAT-2406-NNNN
+@@ -41,25 +41,48 @@ export interface BillingSummary {
+ }
+ 
+ const LAB_TESTS: LabTest[] = [
+-  { id:'CBC',  name:'CBC — Complete blood count',   category:'Haematology',   price:200, tatHours:4 },
+-  { id:'ESR',  name:'ESR',                           category:'Haematology',   price:80,  tatHours:2 },
+-  { id:'GLU',  name:'Blood glucose (fasting)',        category:'Biochemistry',  price:120, tatHours:2 },
+-  { id:'HBA',  name:'HbA1c',                         category:'Biochemistry',  price:400, tatHours:4 },
+-  { id:'LFT',  name:'Liver function test',            category:'Biochemistry',  price:550, tatHours:6 },
+-  { id:'KFT',  name:'Kidney function test',           category:'Biochemistry',  price:500, tatHours:6 },
+-  { id:'LIP',  name:'Lipid profile',                  category:'Biochemistry',  price:450, tatHours:6 },
+-  { id:'TSH',  name:'TSH',                            category:'Endocrinology', price:350, tatHours:6 },
+-  { id:'FT3',  name:'Free T3 / T4 / TSH panel',      category:'Endocrinology', price:700, tatHours:8 },
+-  { id:'VTD',  name:'Vitamin D (25-OH)',              category:'Endocrinology', price:900, tatHours:8 },
+-  { id:'URI',  name:'Urine routine & microscopy',     category:'Urine',         price:100, tatHours:2 },
+-  { id:'UCR',  name:'Urine creatinine',               category:'Urine',         price:150, tatHours:2 },
+-  { id:'CRP',  name:'C-Reactive Protein',             category:'Biochemistry',  price:320, tatHours:4 },
+-  { id:'FER',  name:'Serum Ferritin',                 category:'Biochemistry',  price:380, tatHours:6 },
+-  { id:'B12',  name:'Vitamin B12',                    category:'Biochemistry',  price:750, tatHours:6 },
++  { id:'CBC',  name:'CBC — Complete blood count',   category:'Haematology',   price:200, tatHours:4, tubeType:'EDTA (Purple top)',      sampleType:'Whole blood', prep:'None' },
++  { id:'ESR',  name:'ESR',                           category:'Haematology',   price:80,  tatHours:2, tubeType:'EDTA (Purple top)',      sampleType:'Whole blood', prep:'None' },
++  { id:'GLU',  name:'Blood glucose (fasting)',        category:'Biochemistry',  price:120, tatHours:2, tubeType:'Fluoride (Grey top)',    sampleType:'Plasma',      prep:'8–10h fasting required' },
++  { id:'HBA',  name:'HbA1c',                         category:'Biochemistry',  price:400, tatHours:4, tubeType:'EDTA (Purple top)',      sampleType:'Whole blood', prep:'None' },
++  { id:'LFT',  name:'Liver function test',            category:'Biochemistry',  price:550, tatHours:6, tubeType:'SST (Red/Gold top)',     sampleType:'Serum',       prep:'8h fasting recommended' },
++  { id:'KFT',  name:'Kidney function test',           category:'Biochemistry',  price:500, tatHours:6, tubeType:'SST (Red/Gold top)',     sampleType:'Serum',       prep:'None' },
++  { id:'LIP',  name:'Lipid profile',                  category:'Biochemistry',  price:450, tatHours:6, tubeType:'SST (Red/Gold top)',     sampleType:'Serum',       prep:'10–12h fasting required' },
++  { id:'TSH',  name:'TSH',                            category:'Endocrinology', price:350, tatHours:6, tubeType:'SST (Red/Gold top)',     sampleType:'Serum',       prep:'None' },
++  { id:'FT3',  name:'Free T3 / T4 / TSH panel',      category:'Endocrinology', price:700, tatHours:8, tubeType:'SST (Red/Gold top)',     sampleType:'Serum',       prep:'None' },
++  { id:'VTD',  name:'Vitamin D (25-OH)',              category:'Endocrinology', price:900, tatHours:8, tubeType:'SST (Red/Gold top)',     sampleType:'Serum',       prep:'None' },
++  { id:'URI',  name:'Urine routine & microscopy',     category:'Urine',         price:100, tatHours:2, tubeType:'Universal container',    sampleType:'Urine (midstream)', prep:'First morning sample preferred' },
++  { id:'UCR',  name:'Urine creatinine',               category:'Urine',         price:150, tatHours:2, tubeType:'Universal container',    sampleType:'Urine',       prep:'None' },
++  { id:'CRP',  name:'C-Reactive Protein',             category:'Biochemistry',  price:320, tatHours:4, tubeType:'SST (Red/Gold top)',     sampleType:'Serum',       prep:'None' },
++  { id:'FER',  name:'Serum Ferritin',                 category:'Biochemistry',  price:380, tatHours:6, tubeType:'SST (Red/Gold top)',     sampleType:'Serum',       prep:'None' },
++  { id:'B12',  name:'Vitamin B12',                    category:'Biochemistry',  price:750, tatHours:6, tubeType:'SST (Red/Gold top)',     sampleType:'Serum',       prep:'None' },
+ ];
+ 
+ const POPULAR_IDS = ['CBC','LFT','KFT','HBA','VTD','TSH','LIP'];
+ 
++/** Mocked recency signal for demo purposes — in production this would come
++ *  from the receptionist's actual order history. */
++const RECENT_IDS = ['CBC','HBA','KFT','VTD'];
++
++/** "Patients also order" — a lightweight, static cross-sell map. Keyed by a
++ *  selected test id, value is the ids commonly ordered alongside it. */
++const RELATED_TESTS: Record<string, string[]> = {
++  HBA: ['GLU','LIP','TSH'],
++  GLU: ['HBA','LIP'],
++  LIP: ['HBA','GLU'],
++  LFT: ['KFT','CRP'],
++  KFT: ['LFT','URI'],
++  TSH: ['FT3','VTD'],
++  CBC: ['ESR','CRP'],
++};
++
++const TEST_PACKAGES: TestPackage[] = [
++  { id:'PKG-DIA', name:'Diabetes Package',  testIds:['HBA','GLU','LIP'] },
++  { id:'PKG-KID', name:'Kidney Package',    testIds:['KFT','URI','UCR'] },
++  { id:'PKG-THY', name:'Thyroid Package',   testIds:['TSH','FT3'] },
++  { id:'PKG-WEL', name:'Wellness Package',  testIds:['CBC','LFT','KFT','LIP','TSH'] },
++];
++
+ const DOCTORS = [
+   'Dr. Pradeep Iyer (Cardiology)',
+   'Dr. Suresh Menon (Internal Medicine)',
+@@ -73,9 +96,16 @@ export class PatientFlowService {
+   // ── Master test catalogue ─────────────────
+   readonly allTests  = LAB_TESTS;
+   readonly popularTests = LAB_TESTS.filter(t => POPULAR_IDS.includes(t.id));
++  readonly recentTests  = LAB_TESTS.filter(t => RECENT_IDS.includes(t.id));
++  readonly testPackages: TestPackage[] = TEST_PACKAGES;
+   readonly doctors   = DOCTORS;
+   readonly categories = ['All','Haematology','Biochemistry','Endocrinology','Urine'];
+ 
++  /** Ids commonly ordered alongside a given test id ("patients also order"). */
++  relatedTo(testId: string): string[] {
++    return RELATED_TESTS[testId] ?? [];
++  }
++
+   // ── Registered patient ────────────────────
+   private _patient  = signal<RegisteredPatient | null>(null);
+   readonly patient  = this._patient.asReadonly();
+diff --git a/src/app/features/test-order/test-order.component.css b/src/app/features/test-order/test-order.component.css
+index 293cca2..0e737ae 100644
+--- a/src/app/features/test-order/test-order.component.css
++++ b/src/app/features/test-order/test-order.component.css
+@@ -4,66 +4,108 @@
+ .page-header {
+   display: flex; align-items: flex-start;
+   justify-content: space-between; flex-wrap: wrap;
+-  gap: 12px; margin-bottom: 18px;
++  gap: 12px; margin-bottom: 16px;
+ }
+ .page-title { font-size: 22px; font-weight: 500; color: var(--text-primary); margin: 0 0 4px; }
+ .breadcrumb { display: flex; list-style: none; padding: 0; margin: 0; gap: 6px; font-size: 12px; color: var(--text-secondary); }
+ .breadcrumb li+li::before { content: '/'; margin-right: 6px; }
+ .breadcrumb a { color: var(--text-secondary); text-decoration: none; &:hover { color: var(--lis-primary, #1D9E75); } }
+ 
+-/* ── Workflow trail ───────────────────────────── */
+-.workflow-trail {
+-  display: flex; align-items: center; gap: 6px;
+-  background: var(--body-bg); border: 0.5px solid var(--border-color);
+-  border-radius: 9px; padding: 6px 12px;
++/* ══════════════════════════════════════════════
++   Process timeline — real progression, dot + line
++   ══════════════════════════════════════════════ */
++.proc-timeline {
++  display: flex; align-items: flex-start; gap: 0;
++  background: var(--card-bg); border: 0.5px solid var(--border-color);
++  border-radius: 12px; padding: 16px 18px 14px;
++  margin-bottom: 16px; overflow-x: auto;
+ }
+-.wf-step { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-secondary); i { font-size: 13px; } }
+-.wf-step--active { color: var(--lis-primary-deep, #085041); font-weight: 500; i { color: var(--lis-primary, #1D9E75); } }
+-.wf-step--done   { color: var(--lis-primary, #1D9E75); font-weight: 500; }
+-.wf-arrow { font-size: 11px; color: var(--border-color); }
++.proc-step { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; width: 100px; }
++.proc-dot {
++  width: 30px; height: 30px; border-radius: 50%;
++  display: flex; align-items: center; justify-content: center;
++  font-size: 14px; color: var(--text-secondary);
++  background: var(--body-bg); border: 1.5px solid var(--border-color);
++  transition: background .2s, border-color .2s, color .2s, box-shadow .2s;
++}
++.proc-step--done .proc-dot {
++  background: var(--lis-primary, #1D9E75); border-color: var(--lis-primary, #1D9E75); color: #fff;
++}
++.proc-step--active .proc-dot {
++  background: var(--lis-primary-xlight, #E1F5EE); border-color: var(--lis-primary, #1D9E75);
++  color: var(--lis-primary-deep, #085041);
++  box-shadow: 0 0 0 4px var(--lis-primary-xlight, #E1F5EE);
++  animation: pulseDot 1.8s ease-in-out infinite;
++}
++@keyframes pulseDot {
++  0%, 100% { box-shadow: 0 0 0 4px var(--lis-primary-xlight, #E1F5EE); }
++  50%      { box-shadow: 0 0 0 7px var(--lis-primary-xlight, #E1F5EE); }
++}
++.proc-label { font-size: 10.5px; color: var(--text-secondary); text-align: center; white-space: nowrap; }
++.proc-step--done .proc-label, .proc-step--active .proc-label { color: var(--text-primary); font-weight: 500; }
++.proc-line { flex: 1; height: 1.5px; background: var(--border-color); margin: 15px -2px 0; min-width: 16px; transition: background .3s; }
++.proc-line--done { background: var(--lis-primary, #1D9E75); }
+ 
+-/* ── Patient banner ──────────────────────────── */
+-.patient-banner {
+-  display: flex; align-items: center; gap: 12px;
+-  background: var(--lis-primary-xlight, #E1F5EE);
+-  border: 0.5px solid var(--lis-primary-mid, #5DCAA5);
+-  border-radius: 10px; padding: 10px 14px; margin-bottom: 18px;
+-  flex-wrap: wrap;
++/* ══════════════════════════════════════════════
++   Patient summary — the visual anchor
++   ══════════════════════════════════════════════ */
++.patient-summary {
++  margin-bottom: 16px; padding: 16px 20px;
++  position: sticky; top: 8px; z-index: 5;
+ }
+-.pat-av {
+-  width: 38px; height: 38px; border-radius: 50%;
++.ps-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
++.ps-av {
++  width: 56px; height: 56px; border-radius: 50%; flex-shrink: 0;
+   background: var(--lis-primary, #1D9E75); color: #fff;
+   display: flex; align-items: center; justify-content: center;
+-  font-size: 13px; font-weight: 600; flex-shrink: 0; text-transform: uppercase;
++  font-size: 19px; font-weight: 700; text-transform: uppercase;
+ }
+-.pat-main { flex: 1; min-width: 0; }
+-.pat-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+-.pat-meta {
+-  display: flex; flex-wrap: wrap; align-items: center;
+-  gap: 5px; font-size: 11px; color: var(--text-secondary); margin-top: 3px;
++.ps-id-main { flex: 1; min-width: 160px; }
++.ps-name { font-size: 22px; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
++.ps-sub  { font-size: 12.5px; color: var(--text-secondary); margin-top: 3px; }
++.ps-pid  { color: var(--lis-primary-deep, #085041); font-weight: 600; }
++.ps-dot  { margin: 0 4px; }
++
++.status-chip {
++  display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;
++  font-size: 12px; font-weight: 600; padding: 7px 13px; border-radius: 20px;
+ }
+-.pid-tag { font-size: 11px; }
+-.meta-sep { color: var(--border-color); }
+-.visit-tag {
+-  background: var(--card-bg); border: 0.5px solid var(--border-color);
+-  border-radius: 20px; padding: 1px 7px; font-size: 10px;
++.status-chip--done { background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); }
++.visit-chip {
++  display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0;
++  font-size: 11.5px; font-weight: 600; padding: 6px 12px; border-radius: 20px;
++  background: #E6F1FB; color: #0C447C;
+ }
+ 
++.ps-divider { height: 1px; background: var(--border-color); margin: 14px 0; }
++
++.ps-fields { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px 16px; }
++@media (max-width: 900px) { .ps-fields { grid-template-columns: repeat(2, 1fr); } }
++@media (max-width: 480px) { .ps-fields { grid-template-columns: 1fr; } }
++.ps-field { display: flex; align-items: flex-start; gap: 9px; min-width: 0; }
++.ps-field-icon {
++  width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0; margin-top: 1px;
++  background: var(--lis-primary-xlight); color: var(--lis-primary-deep);
++  display: flex; align-items: center; justify-content: center; font-size: 14px;
++}
++.ps-field-label { font-size: 10.5px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
++.ps-field-value { font-size: 13px; color: var(--text-primary); font-weight: 600; margin-top: 2px; }
++
+ /* ── Two-column layout ───────────────────────── */
+ .order-layout {
+   display: grid;
+-  grid-template-columns: 1fr 280px;
+-  gap: 14px; align-items: start;
++  grid-template-columns: 1fr 300px;
++  gap: 16px; align-items: start;
+ }
+ @media (max-width: 900px) { .order-layout { grid-template-columns: 1fr; } }
+ 
+ /* ── Search column ───────────────────────────── */
+-.search-col { display: flex; flex-direction: column; gap: 12px; }
++.search-col { display: flex; flex-direction: column; gap: 14px; }
+ 
+-.search-card { overflow: hidden; }
++.search-card { overflow: hidden; background: var(--card-bg); }
+ .search-bar-wrap {
+   display: flex; align-items: center; gap: 8px;
+-  padding: 10px 14px; border-bottom: 0.5px solid var(--border-color);
++  padding: 12px 14px; border-bottom: 0.5px solid var(--border-color);
+ }
+ .search-ico { font-size: 16px; color: var(--text-secondary); flex-shrink: 0; }
+ .search-input {
+@@ -76,43 +118,105 @@
+   color: var(--text-secondary); font-size: 13px; padding: 2px;
+   &:hover { color: #E24B4A; }
+ }
+-.cat-pills { display: flex; gap: 5px; flex-wrap: wrap; padding: 8px 14px; }
+-.cat-pill {
+-  font-size: 11px; padding: 3px 10px; border-radius: 20px;
++.kbd-hint {
++  font-size: 10px; font-family: var(--font-mono, monospace);
++  padding: 1px 6px; border-radius: 4px; opacity: .7; flex-shrink: 0;
++  background: var(--body-bg); color: var(--text-secondary); border: 0.5px solid var(--border-color);
++}
++.kbd-hint--on-primary { background: rgba(255,255,255,0.2); color: #fff; border-color: rgba(255,255,255,0.35); margin-left: auto; }
++
++/* Segmented category filter */
++.cat-seg { display: flex; gap: 4px; flex-wrap: wrap; padding: 10px 14px; }
++.cat-seg-btn {
++  display: inline-flex; align-items: center; gap: 6px;
++  height: 38px; padding: 0 14px; border-radius: 9px;
+   border: 0.5px solid var(--border-color); cursor: pointer;
+-  color: var(--text-secondary); background: var(--card-bg);
++  font-size: 12px; font-weight: 500;
++  color: var(--text-secondary); background: var(--body-bg);
++  transition: background .15s, color .15s, border-color .15s;
++  i { font-size: 14px; }
+   &:hover { border-color: var(--lis-primary-mid, #5DCAA5); }
+ }
+-.cat-pill--active {
+-  background: var(--lis-primary-xlight, #E1F5EE);
+-  color: var(--lis-primary-deep, #085041);
+-  border-color: var(--lis-primary-mid, #5DCAA5);
++.cat-seg-btn--active {
++  background: var(--lis-primary, #1D9E75);
++  color: #fff; border-color: var(--lis-primary, #1D9E75);
+ }
+ 
+-/* ── Popular tests ───────────────────────────── */
+-.popular-card {}
+-.popular-grid {
+-  display: flex; flex-wrap: wrap; gap: 8px;
+-  padding: 10px 14px 14px;
++/* Recently ordered */
++.recent-row {
++  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
++  padding: 2px 2px 0;
+ }
+-.popular-pill {
+-  display: flex; align-items: center; gap: 6px;
+-  padding: 7px 12px; border-radius: 8px;
+-  border: 0.5px solid var(--border-color);
+-  background: var(--body-bg); cursor: pointer;
+-  position: relative;
+-  &:hover { border-color: var(--lis-primary-mid, #5DCAA5); background: var(--lis-primary-xlight, #E1F5EE); }
++.recent-label {
++  display: inline-flex; align-items: center; gap: 5px;
++  font-size: 11px; font-weight: 600; color: var(--text-secondary);
++  text-transform: uppercase; letter-spacing: .04em;
+ }
+-.popular-pill--sel {
+-  background: var(--lis-primary-xlight, #E1F5EE);
+-  border-color: var(--lis-primary, #1D9E75);
++.recent-chip {
++  display: inline-flex; align-items: center; gap: 5px;
++  font-size: 11.5px; font-weight: 600; padding: 5px 12px; border-radius: 20px;
++  border: 0.5px solid var(--border-color); background: var(--card-bg);
++  color: var(--text-primary); cursor: pointer;
++  transition: background .15s, border-color .15s;
++  &:hover { border-color: var(--lis-primary-mid, #5DCAA5); }
++}
++.recent-chip--sel { background: var(--lis-primary-xlight, #E1F5EE); border-color: var(--lis-primary, #1D9E75); color: var(--lis-primary-deep, #085041); }
++
++/* ── Popular tests as action cards ───────────── */
++.popular-card { background: var(--body-bg); }
++.popular-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 10px; padding: 10px 14px 14px; }
++.popular-card2 {
++  position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
++  padding: 12px 14px 30px; border-radius: 10px; text-align: left; overflow: hidden;
++  border: 0.5px solid var(--border-color); background: var(--card-bg); cursor: pointer;
++  transition: box-shadow .18s, transform .18s, border-color .18s;
++  &:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.08); transform: translateY(-2px); border-color: var(--lis-primary-mid, #5DCAA5); }
++}
++.popular-card2--sel { background: var(--lis-primary-xlight, #E1F5EE); border-color: var(--lis-primary, #1D9E75); }
++.pc2-top { display: flex; align-items: center; justify-content: space-between; width: 100%; }
++.pc2-name { font-size: 13px; font-weight: 700; color: var(--text-primary); }
++.pc2-price { font-size: 12px; color: var(--text-secondary); font-weight: 600; }
++.pc2-check { font-size: 13px; color: var(--lis-primary, #1D9E75); }
++.pc2-plus  { font-size: 13px; color: var(--text-secondary); }
++.pc2-badge {
++  display: inline-flex; align-items: center; gap: 4px;
++  font-size: 9.5px; font-weight: 600; color: #633806; background: #FAEEDA;
++  padding: 2px 7px; border-radius: 20px; margin-top: 2px;
++}
++.pc2-hover-cta {
++  position: absolute; left: 0; right: 0; bottom: 0; text-align: center;
++  font-size: 10.5px; font-weight: 700; color: #fff; background: var(--lis-primary, #1D9E75);
++  padding: 6px 0; transform: translateY(100%); transition: transform .18s;
++}
++.popular-card2:hover .pc2-hover-cta { transform: translateY(0); }
++
++/* ── Frequently ordered packages ─────────────── */
++.package-card { background: var(--card-bg); }
++.package-grid { display: flex; flex-direction: column; gap: 8px; padding: 8px 14px 14px; }
++.package-item {
++  display: flex; align-items: center; justify-content: space-between; gap: 12px;
++  padding: 10px 14px; border-radius: 10px; border: 0.5px dashed var(--border-color);
++  background: var(--body-bg);
++}
++.pkg-info { min-width: 0; }
++.pkg-name  { font-size: 13px; font-weight: 600; color: var(--text-primary); }
++.pkg-tests { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
++.pkg-side  { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
++.pkg-price { font-size: 12.5px; font-weight: 700; color: var(--lis-primary-deep, #085041); }
++
++/* ── Smart suggestions ────────────────────────── */
++.suggest-card { background: #FFFBEF; }
++.suggest-row { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 14px 14px; }
++.suggest-chip {
++  display: inline-flex; align-items: center; gap: 5px;
++  font-size: 11.5px; font-weight: 600; padding: 6px 12px; border-radius: 20px;
++  border: 0.5px solid #E8D9A8; background: #fff; color: #633806; cursor: pointer;
++  transition: background .15s;
++  &:hover { background: #FAEEDA; }
+ }
+-.pp-name { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+-.pp-price { font-size: 10px; color: var(--text-secondary); }
+-.pp-check { font-size: 11px; color: var(--lis-primary, #1D9E75); }
+ 
+ /* ── Test catalogue list ─────────────────────── */
+-.catalogue-card {}
++.catalogue-card { background: var(--card-bg); }
+ .test-list { display: flex; flex-direction: column; }
+ .empty-tests {
+   display: flex; align-items: center; gap: 6px;
+@@ -120,48 +224,69 @@
+   i { font-size: 18px; }
+ }
+ .test-row {
+-  display: flex; align-items: center; gap: 10px;
+-  padding: 10px 14px; cursor: pointer;
++  display: flex; align-items: center; gap: 12px;
++  min-height: 72px; padding: 10px 14px; cursor: pointer;
+   border-bottom: 0.5px solid var(--border-color);
+-  transition: background 0.12s;
++  border-left: 3px solid transparent;
++  transition: background 0.15s, border-color .15s, transform .1s;
+   &:last-child { border-bottom: none; }
+-  &:hover { background: var(--body-bg); }
++  &:hover { background: var(--body-bg); transform: translateX(1px); }
+ }
+-.test-row--selected { background: var(--lis-primary-xlight, #E1F5EE); }
++.test-row--selected {
++  background: var(--lis-primary-xlight, #E1F5EE);
++  border-left-color: var(--lis-primary, #1D9E75);
++  box-shadow: inset 0 0 0 1px var(--lis-primary-mid, #5DCAA5);
++}
++.test-row--highlighted { outline: 2px solid var(--lis-primary, #1D9E75); outline-offset: -2px; }
+ .test-tog {
+-  width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
++  width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+   border: 1.5px solid var(--border-color);
+   display: flex; align-items: center; justify-content: center;
+   font-size: 12px; color: var(--text-secondary);
++  transition: background .15s, border-color .15s, transform .15s;
+ }
+ .test-tog--on {
+   background: var(--lis-primary, #1D9E75);
+   border-color: var(--lis-primary, #1D9E75); color: #fff;
++  animation: popIn .25s cubic-bezier(.2,.9,.3,1.3);
+ }
++@keyframes popIn { from { transform: scale(.6); opacity: .4; } to { transform: scale(1); opacity: 1; } }
++.test-row:hover .test-tog:not(.test-tog--on) { border-color: var(--lis-primary, #1D9E75); color: var(--lis-primary, #1D9E75); }
+ .test-info { flex: 1; min-width: 0; }
+-.test-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+-.test-meta { font-size: 11px; color: var(--text-secondary); margin-top: 2px; display: flex; gap: 5px; }
+-.test-cat  {}
+-.test-dot  {}
+-.test-price { font-size: 12px; font-weight: 500; color: var(--lis-primary-deep, #085041); min-width: 50px; text-align: right; }
++.test-name { font-size: 13.5px; font-weight: 600; color: var(--text-primary); }
++.test-meta { font-size: 10.5px; color: var(--text-secondary); margin-top: 5px; display: flex; gap: 6px; flex-wrap: wrap; }
++.meta-chip {
++  display: inline-flex; align-items: center; gap: 3px;
++  background: var(--body-bg); border: 0.5px solid var(--border-color);
++  padding: 2px 7px; border-radius: 20px; i { font-size: 11px; }
++}
++.meta-chip--tat { color: var(--lis-primary-deep, #085041); }
++.meta-chip--prep { background: #FAEEDA; color: #633806; border-color: #E8D9A8; }
++.test-price {
++  font-size: 13px; font-weight: 700; color: var(--lis-primary-deep, #085041);
++  min-width: 56px; text-align: right; transition: color .15s;
++}
++.test-row:hover .test-price { color: var(--lis-primary, #1D9E75); }
+ 
+-/* ── Order panel (right) ─────────────────────── */
++/* ══════════════════════════════════════════════
++   Order panel — split into distinct sections
++   ══════════════════════════════════════════════ */
+ .order-panel {
+   position: sticky; top: 80px;
+-  display: flex; flex-direction: column;
++  display: flex; flex-direction: column; gap: 12px;
+ }
+-.op-section { padding: 12px 14px; }
++.op-card { padding: 14px 14px 16px; }
+ .op-hd {
+   display: flex; align-items: center; justify-content: space-between;
+-  font-size: 11px; font-weight: 600; text-transform: uppercase;
+-  letter-spacing: .05em; color: var(--text-secondary); margin-bottom: 8px;
++  font-size: 11.5px; font-weight: 700; color: var(--text-primary);
++  margin-bottom: 10px;
++  span:first-child { display: inline-flex; align-items: center; gap: 6px; text-transform: none; }
++  i { font-size: 14px; color: var(--lis-primary, #1D9E75); }
+ }
+ .op-label {
+-  font-size: 10px; font-weight: 600; text-transform: uppercase;
+-  letter-spacing: .06em; color: var(--text-secondary); margin-bottom: 7px;
++  font-size: 10px; font-weight: 700; text-transform: uppercase;
++  letter-spacing: .06em; color: var(--text-secondary); margin-bottom: 10px;
+ }
+-.op-divider { height: 0.5px; background: var(--border-color); margin: 0; }
+-.op-actions { padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+ 
+ /* Selected tests */
+ .selected-list { display: flex; flex-direction: column; gap: 4px; min-height: 40px; }
+@@ -172,46 +297,87 @@
+ }
+ .sel-item {
+   display: flex; align-items: center; gap: 6px;
+-  padding: 6px 8px; border-radius: 7px;
++  padding: 7px 9px; border-radius: 7px;
+   background: var(--body-bg); border: 0.5px solid var(--border-color);
+   animation: fadeIn 0.15s ease;
+ }
+ @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+ .sel-item-info { flex: 1; min-width: 0; }
+-.sel-name  { font-size: 11px; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
++.sel-name  { font-size: 11.5px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+ .sel-cat   { font-size: 10px; color: var(--text-secondary); }
+-.sel-price { font-size: 11px; font-weight: 500; color: var(--lis-primary-deep, #085041); min-width: 38px; text-align: right; }
+-.sel-del   { background: none; border: none; cursor: pointer; color: var(--text-secondary); font-size: 12px; padding: 2px; &:hover { color: #E24B4A; } }
+-
+-/* Priority */
+-.prio-row { display: flex; gap: 5px; }
+-.prio-btn {
+-  flex: 1; padding: 6px 4px; border: 0.5px solid var(--border-color);
+-  border-radius: 7px; cursor: pointer; font-size: 11px;
+-  color: var(--text-secondary); background: var(--card-bg); text-transform: capitalize;
+-}
+-.prio-btn--active { border-color: var(--lis-primary, #1D9E75); background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); font-weight: 500; }
+-.prio-btn--stat   { border-color: #E24B4A; background: #FCEBEB; color: #791F1F; }
++.sel-price { font-size: 11.5px; font-weight: 600; color: var(--lis-primary-deep, #085041); min-width: 38px; text-align: right; }
++.sel-del   { background: none; border: none; cursor: pointer; color: var(--text-secondary); font-size: 13px; padding: 4px; border-radius: 6px; transition: background .15s, color .15s; &:hover { color: #E24B4A; background: #FCEBEB; } }
++
++/* Priority cards */
++.prio-cards { display: flex; flex-direction: column; gap: 6px; }
++.prio-card {
++  display: flex; align-items: center; gap: 10px;
++  padding: 9px 12px; border: 0.5px solid var(--border-color);
++  border-radius: 9px; cursor: pointer; text-align: left;
++  color: var(--text-secondary); background: var(--card-bg);
++  transition: background .15s, border-color .15s, box-shadow .15s;
++  i { font-size: 16px; flex-shrink: 0; }
++}
++.prio-card-label { font-size: 12px; font-weight: 700; color: var(--text-primary); display: block; }
++.prio-card-desc  { font-size: 10.5px; color: var(--text-secondary); display: block; }
++.prio-card:hover { border-color: var(--lis-primary-mid, #5DCAA5); }
++.prio-card--active {
++  border-color: var(--lis-primary, #1D9E75); background: var(--lis-primary-xlight, #E1F5EE);
++  i { color: var(--lis-primary, #1D9E75); }
++}
++.prio-card--stat-active {
++  border-color: #E24B4A; background: #FCEBEB;
++  box-shadow: 0 0 0 3px rgba(226,75,74,0.15);
++  i { color: #E24B4A; }
++  .prio-card-label, .prio-card-desc { color: #791F1F; }
++}
+ .stat-warn {
+   display: flex; align-items: center; gap: 5px;
+-  font-size: 10px; color: #791F1F; margin-top: 6px;
+-  background: #FCEBEB; border-radius: 6px; padding: 5px 8px;
++  font-size: 10.5px; color: #791F1F; margin-top: 8px;
++  background: #FCEBEB; border-radius: 6px; padding: 6px 9px;
+ }
+ 
+-/* Totals */
++/* Summary */
+ .tot-row {
+   display: flex; justify-content: space-between;
+-  font-size: 11px; color: var(--text-secondary); padding: 3px 0;
++  font-size: 11.5px; color: var(--text-secondary); padding: 4px 0;
+ }
+ .tot-grand {
+-  font-size: 15px; font-weight: 600; color: var(--text-primary);
+-  padding-top: 8px; border-top: 0.5px solid var(--border-color); margin-top: 4px;
++  font-size: 16px; font-weight: 700; color: var(--text-primary);
++  padding-top: 10px; border-top: 0.5px solid var(--border-color); margin-top: 6px;
++  transition: color .2s;
++}
++.tot-grand--pulse { color: var(--lis-primary, #1D9E75); }
++
++/* Actions */
++.op-actions { display: flex; flex-direction: column; gap: 8px; }
++.proceed-btn {
++  font-size: 13px; height: 52px; font-weight: 700; position: relative; overflow: hidden;
++  box-shadow: 0 6px 16px rgba(29,158,117,0.28);
++  transition: transform .15s, box-shadow .15s, filter .15s;
++}
++.proceed-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(29,158,117,0.36); filter: brightness(1.06); }
++.proceed-btn:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
++.proceed-arrow { transition: transform .15s; }
++.proceed-btn:hover:not(:disabled) .proceed-arrow { transform: translateX(3px); }
++.proceed-btn.is-rippling::after {
++  content: ''; position: absolute; left: var(--ripple-x, 50%); top: var(--ripple-y, 50%);
++  width: 10px; height: 10px; background: rgba(255,255,255,0.5); border-radius: 50%;
++  transform: translate(-50%, -50%); animation: ripple .5s ease-out;
++  pointer-events: none;
+ }
++@keyframes ripple { to { width: 340px; height: 340px; opacity: 0; } }
+ 
+-/* Proceed button */
+-.proceed-btn { font-size: 12px; }
+-.proceed-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+-.no-tests-msg { font-size: 11px; color: var(--text-secondary); text-align: center; padding: 0 14px 12px; }
++.draft-btn {
++  width: 100%; justify-content: center; display: flex; align-items: center; gap: 6px;
++  background: none; border: none; color: var(--text-secondary);
++  font-size: 12.5px; font-weight: 500; font-family: var(--font-family);
++  padding: 9px 0; cursor: pointer; border-radius: 8px;
++  transition: background .15s, color .15s;
++  &:hover:not(:disabled) { background: var(--body-bg); color: var(--text-primary); }
++  &:disabled { opacity: 0.6; cursor: not-allowed; }
++}
++.no-tests-msg { font-size: 11px; color: var(--text-secondary); text-align: center; padding-top: 2px; }
+ 
+ /* Spinner */
+ @keyframes spin { to { transform: rotate(360deg); } }
+diff --git a/src/app/features/test-order/test-order.component.html b/src/app/features/test-order/test-order.component.html
+index f7cbb61..e9f649d 100644
+--- a/src/app/features/test-order/test-order.component.html
++++ b/src/app/features/test-order/test-order.component.html
+@@ -1,6 +1,6 @@
+ <!-- ═══════════════════════════════════════════════════════════
+      Screen 2 — Test Order
+-     Full-width: search panel left, order panel right.
++     Full-width: search workspace left, order summary right.
+      ═══════════════════════════════════════════════════════════ -->
+ 
+ <!-- Page header -->
+@@ -15,47 +15,89 @@
+       </ol>
+     </nav>
+   </div>
+-  <div class="workflow-trail" aria-label="Workflow steps">
+-    <div class="wf-step wf-step--done"><i class="ti ti-check"></i> Registered</div>
+-    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
+-    <div class="wf-step wf-step--active"><i class="ti ti-test-pipe"></i> Test Order</div>
+-    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
+-    <div class="wf-step"><i class="ti ti-file-invoice"></i> Billing</div>
+-    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
+-    <div class="wf-step"><i class="ti ti-droplet"></i> Sample</div>
++</div>
++
++<!-- Real process timeline, not a breadcrumb -->
++<div class="proc-timeline" role="list" aria-label="Order progress">
++  <div class="proc-step proc-step--done" role="listitem">
++    <div class="proc-dot"><i class="ti ti-check" aria-hidden="true"></i></div>
++    <div class="proc-label">Registered</div>
++  </div>
++  <div class="proc-line proc-line--done" aria-hidden="true"></div>
++  <div class="proc-step proc-step--active" role="listitem">
++    <div class="proc-dot"><i class="ti ti-test-pipe" aria-hidden="true"></i></div>
++    <div class="proc-label">Test Order</div>
++  </div>
++  <div class="proc-line" aria-hidden="true"></div>
++  <div class="proc-step" role="listitem">
++    <div class="proc-dot"><i class="ti ti-file-invoice" aria-hidden="true"></i></div>
++    <div class="proc-label">Billing</div>
++  </div>
++  <div class="proc-line" aria-hidden="true"></div>
++  <div class="proc-step" role="listitem">
++    <div class="proc-dot"><i class="ti ti-droplet" aria-hidden="true"></i></div>
++    <div class="proc-label">Collection</div>
++  </div>
++  <div class="proc-line" aria-hidden="true"></div>
++  <div class="proc-step" role="listitem">
++    <div class="proc-dot"><i class="ti ti-file-check" aria-hidden="true"></i></div>
++    <div class="proc-label">Reporting</div>
+   </div>
+ </div>
+ 
+-<!-- Patient banner -->
++<!-- ════════════════════════════════════════════════
++     Patient summary — the visual anchor of the page
++     ════════════════════════════════════════════════ -->
+ @if (patient) {
+-  <div class="patient-banner" role="region" aria-label="Patient information">
+-    <div class="pat-av" aria-hidden="true">{{ patientInitials }}</div>
+-    <div class="pat-main">
+-      <div class="pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
+-      <div class="pat-meta">
+-        <span class="lis-mono pid-tag">{{ patient.id }}</span>
+-        <span class="meta-sep" aria-hidden="true">·</span>
+-        <span>{{ patientAge }}</span>
+-        <span class="meta-sep" aria-hidden="true">·</span>
+-        <span>{{ patient.gender }}</span>
+-        <span class="meta-sep" aria-hidden="true">·</span>
+-        <span>{{ patient.mobile }}</span>
+-        <span class="meta-sep" aria-hidden="true">·</span>
+-        <span>{{ patient.refDoctor }}</span>
+-        <span class="meta-sep" aria-hidden="true">·</span>
+-        <span class="visit-tag">{{ patient.visitType }}</span>
++  <div class="patient-summary lis-card" role="region" aria-label="Patient information">
++    <div class="ps-head">
++      <div class="ps-av" aria-hidden="true">{{ patientInitials }}</div>
++      <div class="ps-id-main">
++        <div class="ps-name">{{ patient.firstName }} {{ patient.lastName }}</div>
++        <div class="ps-sub">
++          <span class="ps-pid lis-mono">{{ patient.id }}</span>
++          <span class="ps-dot" aria-hidden="true">·</span>
++          {{ patientAge }} · {{ patient.gender }}
++        </div>
++      </div>
++      <span class="status-chip status-chip--done">
++        <i class="ti ti-circle-check" aria-hidden="true"></i> Registered
++      </span>
++      <span class="visit-chip">
++        <i class="ti ti-calendar-event" aria-hidden="true"></i> {{ patient.visitType | titlecase }}
++      </span>
++      <a routerLink="/dashboard/registration" class="lis-btn lis-btn--secondary lis-btn--sm" aria-label="Edit patient details">
++        <i class="ti ti-edit" aria-hidden="true"></i> Edit Patient
++      </a>
++    </div>
++
++    <div class="ps-divider" role="separator"></div>
++
++    <div class="ps-fields">
++      <div class="ps-field">
++        <i class="ti ti-phone ps-field-icon" aria-hidden="true"></i>
++        <div><div class="ps-field-label">Mobile</div><div class="ps-field-value">{{ patient.mobile }}</div></div>
++      </div>
++      <div class="ps-field">
++        <i class="ti ti-stethoscope ps-field-icon" aria-hidden="true"></i>
++        <div><div class="ps-field-label">Referred by</div><div class="ps-field-value">{{ patient.refDoctor }}</div></div>
++      </div>
++      <div class="ps-field">
++        <i class="ti ti-droplet-half-2 ps-field-icon" aria-hidden="true"></i>
++        <div><div class="ps-field-label">Fasting</div><div class="ps-field-value">{{ patient.fasting }}</div></div>
++      </div>
++      <div class="ps-field">
++        <i class="ti ti-heartbeat ps-field-icon" aria-hidden="true"></i>
++        <div><div class="ps-field-label">Blood group</div><div class="ps-field-value">{{ patient.bloodGroup || '—' }}</div></div>
+       </div>
+     </div>
+-    <a routerLink="/dashboard/registration" class="lis-btn lis-btn--secondary lis-btn--sm" aria-label="Edit patient details">
+-      <i class="ti ti-edit" aria-hidden="true"></i> Edit patient
+-    </a>
+   </div>
+ }
+ 
+ <!-- Main layout: search left, order panel right -->
+ <div class="order-layout">
+ 
+-  <!-- ── Left: Test search catalogue ──────────── -->
++  <!-- ── Left: Test search workspace ──────────── -->
+   <div class="search-col">
+ 
+     <!-- Search bar -->
+@@ -63,11 +105,12 @@
+       <div class="search-bar-wrap">
+         <i class="ti ti-search search-ico" aria-hidden="true"></i>
+         <input
++          #searchInput
+           type="search"
+           class="search-input"
+-          placeholder="Search test by name or code…"
++          placeholder="Search by test name, code, or department…"
+           [value]="testQuery()"
+-          (input)="testQuery.set($any($event.target).value)"
++          (input)="testQuery.set($any($event.target).value); highlightedIndex.set(-1)"
+           aria-label="Search tests"
+           autofocus />
+         @if (testQuery()) {
+@@ -75,20 +118,39 @@
+             <i class="ti ti-x" aria-hidden="true"></i>
+           </button>
+         }
++        <kbd class="kbd-hint">Ctrl+F</kbd>
+       </div>
+ 
+-      <!-- Category pills -->
+-      <div class="cat-pills" role="group" aria-label="Test categories">
++      <!-- Category segmented control -->
++      <div class="cat-seg" role="group" aria-label="Test categories">
+         @for (cat of flow.categories; track cat) {
+-          <button type="button" class="cat-pill"
+-            [class.cat-pill--active]="activeCategory() === cat"
++          <button type="button" class="cat-seg-btn"
++            [class.cat-seg-btn--active]="activeCategory() === cat"
+             (click)="activeCategory.set(cat)"
+-            [attr.aria-pressed]="activeCategory() === cat">{{ cat }}</button>
++            [attr.aria-pressed]="activeCategory() === cat">
++            <i class="ti {{ categoryIcon[cat] }}" aria-hidden="true"></i> {{ cat }}
++          </button>
+         }
+       </div>
+     </div>
+ 
+-    <!-- Popular tests (shown when no query) -->
++    <!-- Recently ordered (shown when no query) -->
++    @if (!testQuery() && flow.recentTests.length > 0) {
++      <div class="recent-row" aria-label="Recently ordered tests">
++        <span class="recent-label"><i class="ti ti-history" aria-hidden="true"></i> Recently Ordered</span>
++        @for (t of flow.recentTests; track t.id) {
++          <button type="button" class="recent-chip"
++            [class.recent-chip--sel]="isSelected(t.id)"
++            (click)="toggle(t)"
++            [attr.aria-pressed]="isSelected(t.id)">
++            {{ t.id }}
++            @if (isSelected(t.id)) { <i class="ti ti-check" aria-hidden="true"></i> }
++          </button>
++        }
++      </div>
++    }
++
++    <!-- Popular tests as action cards -->
+     @if (!testQuery()) {
+       <div class="lis-card popular-card">
+         <div class="lis-card__header">
+@@ -98,17 +160,66 @@
+         </div>
+         <div class="popular-grid" role="list" aria-label="Popular tests">
+           @for (t of flow.popularTests; track t.id) {
+-            <button type="button" class="popular-pill"
+-              [class.popular-pill--sel]="isSelected(t.id)"
++            <button type="button" class="popular-card2"
++              [class.popular-card2--sel]="isSelected(t.id)"
+               (click)="toggle(t)"
+               role="listitem"
+               [attr.aria-pressed]="isSelected(t.id)"
+               [attr.aria-label]="t.name + ', ₹' + t.price">
+-              <span class="pp-name">{{ t.id }}</span>
+-              <span class="pp-price">₹{{ t.price }}</span>
+-              @if (isSelected(t.id)) {
+-                <i class="ti ti-check pp-check" aria-hidden="true"></i>
+-              }
++              <div class="pc2-top">
++                <span class="pc2-name">{{ t.id }}</span>
++                @if (isSelected(t.id)) {
++                  <i class="ti ti-check pc2-check" aria-hidden="true"></i>
++                } @else {
++                  <i class="ti ti-plus pc2-plus" aria-hidden="true"></i>
++                }
++              </div>
++              <span class="pc2-price">₹{{ t.price }}</span>
++              <span class="pc2-badge"><i class="ti ti-flame" aria-hidden="true"></i> Frequently Ordered</span>
++              <span class="pc2-hover-cta">Add Test</span>
++            </button>
++          }
++        </div>
++      </div>
++    }
++
++    <!-- Frequently ordered packages — fills the space between Popular and All Tests -->
++    @if (!testQuery()) {
++      <div class="lis-card package-card">
++        <div class="lis-card__header">
++          <i class="ti ti-package lis-card-icon" aria-hidden="true"></i>
++          <h2 class="lis-card__title">Frequently Ordered Packages</h2>
++        </div>
++        <div class="package-grid" role="list" aria-label="Test packages">
++          @for (pkg of flow.testPackages; track pkg.id) {
++            <div class="package-item" role="listitem">
++              <div class="pkg-info">
++                <div class="pkg-name">{{ pkg.name }}</div>
++                <div class="pkg-tests">{{ packageTestNames(pkg) }}</div>
++              </div>
++              <div class="pkg-side">
++                <span class="pkg-price">₹{{ packagePrice(pkg) }}</span>
++                <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="addPackage(pkg)">
++                  <i class="ti ti-plus" aria-hidden="true"></i> Add all
++                </button>
++              </div>
++            </div>
++          }
++        </div>
++      </div>
++    }
++
++    <!-- Smart suggestions — "patients also order" -->
++    @if (suggestions().length > 0) {
++      <div class="lis-card suggest-card">
++        <div class="lis-card__header">
++          <i class="ti ti-bulb lis-card-icon" aria-hidden="true"></i>
++          <h2 class="lis-card__title">Patients Also Order</h2>
++        </div>
++        <div class="suggest-row" role="list" aria-label="Suggested tests">
++          @for (t of suggestions(); track t.id) {
++            <button type="button" class="suggest-chip" (click)="toggle(t)">
++              <i class="ti ti-plus" aria-hidden="true"></i> {{ t.id }} · ₹{{ t.price }}
+             </button>
+           }
+         </div>
+@@ -132,10 +243,11 @@
+             No tests match "{{ testQuery() }}"
+           </div>
+         }
+-        @for (t of filteredTests(); track t.id) {
++        @for (t of filteredTests(); track t.id; let i = $index) {
+           <div class="test-row"
+             role="listitem"
+             [class.test-row--selected]="isSelected(t.id)"
++            [class.test-row--highlighted]="highlightedIndex() === i"
+             (click)="toggle(t)"
+             [attr.aria-pressed]="isSelected(t.id)"
+             [attr.aria-label]="t.name + ', ' + t.category + ', ₹' + t.price + (isSelected(t.id) ? ', selected' : '')">
+@@ -151,9 +263,13 @@
+             <div class="test-info">
+               <div class="test-name">{{ t.name }}</div>
+               <div class="test-meta">
+-                <span class="test-cat">{{ t.category }}</span>
+-                <span class="test-dot" aria-hidden="true">·</span>
+-                <span>{{ t.tatHours }}h TAT</span>
++                <span class="meta-chip">{{ t.category }}</span>
++                <span class="meta-chip"><i class="ti ti-flask-2" aria-hidden="true"></i> {{ t.tubeType }}</span>
++                <span class="meta-chip">{{ t.sampleType }}</span>
++                <span class="meta-chip meta-chip--tat"><i class="ti ti-clock" aria-hidden="true"></i> {{ t.tatHours }}h TAT</span>
++                @if (t.prep !== 'None') {
++                  <span class="meta-chip meta-chip--prep"><i class="ti ti-alert-circle" aria-hidden="true"></i> {{ t.prep }}</span>
++                }
+               </div>
+             </div>
+             <div class="test-price">₹{{ t.price }}</div>
+@@ -163,13 +279,13 @@
+     </div>
+   </div>
+ 
+-  <!-- ── Right: Order panel ────────────────── -->
+-  <aside class="order-panel lis-card" aria-label="Test order summary">
++  <!-- ── Right: Order summary, split into sections ─── -->
++  <aside class="order-panel" aria-label="Test order summary">
+ 
+     <!-- Selected tests -->
+-    <div class="op-section">
++    <div class="lis-card op-card">
+       <div class="op-hd">
+-        <span>Selected Tests</span>
++        <span><i class="ti ti-clipboard-list" aria-hidden="true"></i> Selected Tests</span>
+         <span class="lis-badge">{{ flow.selectedTests().length }}</span>
+       </div>
+ 
+@@ -190,26 +306,27 @@
+             <button type="button" class="sel-del"
+               (click)="toggle(t)"
+               [attr.aria-label]="'Remove ' + t.name">
+-              <i class="ti ti-x" aria-hidden="true"></i>
++              <i class="ti ti-trash" aria-hidden="true"></i>
+             </button>
+           </div>
+         }
+       </div>
+     </div>
+ 
+-    <div class="op-divider" aria-hidden="true"></div>
+-
+     <!-- Priority -->
+-    <div class="op-section">
++    <div class="lis-card op-card">
+       <div class="op-label">Priority</div>
+-      <div class="prio-row" role="group" aria-label="Order priority">
+-        @for (p of ['routine','urgent','stat']; track p) {
+-          <button type="button" class="prio-btn"
+-            [class.prio-btn--active]="flow.priority() === p"
+-            [class.prio-btn--stat]="p === 'stat' && flow.priority() === 'stat'"
++      <div class="prio-cards" role="group" aria-label="Order priority">
++        @for (p of priorities; track p) {
++          <button type="button" class="prio-card"
++            [class.prio-card--active]="flow.priority() === p"
++            [class.prio-card--stat]="p === 'stat'"
++            [class.prio-card--stat-active]="p === 'stat' && flow.priority() === 'stat'"
+             (click)="onPriorityClick(p)"
+             [attr.aria-pressed]="flow.priority() === p">
+-            {{ p | titlecase }}
++            <i class="ti {{ priorityInfo[p].icon }}" aria-hidden="true"></i>
++            <span class="prio-card-label">{{ priorityInfo[p].label }}</span>
++            <span class="prio-card-desc">{{ priorityInfo[p].desc }}</span>
+           </button>
+         }
+       </div>
+@@ -221,10 +338,9 @@
+       }
+     </div>
+ 
+-    <div class="op-divider" aria-hidden="true"></div>
+-
+-    <!-- Totals -->
+-    <div class="op-section">
++    <!-- Summary -->
++    <div class="lis-card op-card">
++      <div class="op-label">Summary</div>
+       <div class="tot-row">
+         <span>Tests</span>
+         <span>{{ flow.selectedTests().length }}</span>
+@@ -233,35 +349,54 @@
+         <span>Est. TAT</span>
+         <span>{{ flow.maxTat() }}h</span>
+       </div>
+-      <div class="tot-row tot-grand" aria-label="Total amount">
+-        <span>Total</span>
++      <div class="tot-row">
++        <span>Subtotal</span>
+         <span>₹{{ flow.orderTotal().toLocaleString('en-IN') }}</span>
+       </div>
++      <div class="tot-row">
++        <span>Discount</span>
++        <span>{{ flow.discountAmt() > 0 ? '-₹' + flow.discountAmt().toLocaleString('en-IN') : '₹0' }}</span>
++      </div>
++      <div class="tot-row">
++        <span>Tax</span>
++        <span>₹0</span>
++      </div>
++      <div class="tot-row tot-grand" [class.tot-grand--pulse]="totalPulse()" aria-label="Grand total">
++        <span>Grand Total</span>
++        <span>₹{{ flow.grandTotal().toLocaleString('en-IN') }}</span>
++      </div>
+     </div>
+ 
+-    <div class="op-divider" aria-hidden="true"></div>
+-
+     <!-- Actions -->
+-    <div class="op-actions">
++    <div class="lis-card op-card op-actions">
+       <button type="button" class="lis-btn lis-btn--primary lis-btn--full proceed-btn"
+-        (click)="proceedToBilling()"
++        (click)="proceedToBilling(); onCtaRipple($event)"
+         [disabled]="!hasTests || saving()">
+         @if (saving()) {
+           <i class="ti ti-loader-2 spin" aria-hidden="true"></i> Saving…
+         } @else {
+           <i class="ti ti-file-invoice" aria-hidden="true"></i>
+           Save &amp; Continue to Billing
++          <i class="ti ti-arrow-right proceed-arrow" aria-hidden="true"></i>
++          <kbd class="kbd-hint kbd-hint--on-primary">Ctrl+Enter</kbd>
+         }
+       </button>
+-      <button type="button" class="lis-btn lis-btn--secondary lis-btn--full">
+-        <i class="ti ti-device-floppy" aria-hidden="true"></i> Save as draft
++      <button type="button" class="draft-btn" (click)="saveDraft()" [disabled]="savingDraft()">
++        @if (savingDraft()) {
++          <i class="ti ti-loader-2 spin" aria-hidden="true"></i> Saving draft…
++        } @else if (draftSaved()) {
++          <i class="ti ti-circle-check" aria-hidden="true"></i> Draft saved
++        } @else {
++          <i class="ti ti-device-floppy" aria-hidden="true"></i> Save as draft
++          <kbd class="kbd-hint">Ctrl+S</kbd>
++        }
+       </button>
+-    </div>
+ 
+-    @if (!hasTests) {
+-      <div class="no-tests-msg" role="status">
+-        Add at least one test to continue
+-      </div>
+-    }
++      @if (!hasTests) {
++        <div class="no-tests-msg" role="status">
++          Add at least one test to continue
++        </div>
++      }
++    </div>
+   </aside>
+ </div>
+diff --git a/src/app/features/test-order/test-order.component.ts b/src/app/features/test-order/test-order.component.ts
+index 9e3bff9..907c071 100644
+--- a/src/app/features/test-order/test-order.component.ts
++++ b/src/app/features/test-order/test-order.component.ts
+@@ -2,20 +2,44 @@
+ //  Screen 2 — Test Order
+ //  Single purpose: search & order tests for the
+ //  registered patient. Full-width layout.
++//  Redesigned per UX review (2026-07):
++//   - patient summary as a strong sticky anchor
++//   - segmented category filter + Recently Ordered
++//   - Popular Tests as action cards
++//   - Frequently Ordered Packages (fills dead space)
++//   - Smart Suggestions ("patients also order")
++//   - richer test metadata (tube/sample/prep)
++//   - summary panel split into distinct sections
++//   - full keyboard workflow
+ // ─────────────────────────────────────────────
+ import {
+-  Component, ChangeDetectionStrategy, signal, computed, inject, OnInit
++  Component, ChangeDetectionStrategy, signal, computed, inject, effect,
++  OnInit, ElementRef, ViewChild, HostListener
+ } from '@angular/core';
+ import { Router, RouterLink } from '@angular/router';
+-import { NgClass, TitleCasePipe } from '@angular/common';
++import { TitleCasePipe } from '@angular/common';
+ import { FormsModule } from '@angular/forms';
+ import { PatientFlowService } from '../../core/services/patient-flow.service';
+-import { LabTest } from '../../shared/models/lis.models';
++import { LabTest, TestPackage } from '../../shared/models/lis.models';
++
++const CATEGORY_ICON: Record<string, string> = {
++  'All':            'ti-apps',
++  'Haematology':    'ti-droplet',
++  'Biochemistry':   'ti-flask',
++  'Endocrinology':  'ti-activity',
++  'Urine':          'ti-droplet-half-2',
++};
++
++const PRIORITY_INFO: Record<'routine' | 'urgent' | 'stat', { label: string; desc: string; icon: string }> = {
++  routine: { label: 'Routine', desc: 'Normal queue',   icon: 'ti-list-check' },
++  urgent:  { label: 'Urgent',  desc: 'Priority queue', icon: 'ti-clock-bolt' },
++  stat:    { label: 'STAT',    desc: 'Immediate',      icon: 'ti-bolt' },
++};
+ 
+ @Component({
+   selector: 'app-test-order',
+   standalone: true,
+-  imports: [RouterLink, NgClass, FormsModule, TitleCasePipe],
++  imports: [RouterLink, FormsModule, TitleCasePipe],
+   changeDetection: ChangeDetectionStrategy.OnPush,
+   templateUrl: './test-order.component.html',
+   styleUrl: './test-order.component.css',
+@@ -24,19 +48,55 @@ export class TestOrderComponent implements OnInit {
+   protected readonly flow   = inject(PatientFlowService);
+   private   readonly router = inject(Router);
+ 
++  @ViewChild('searchInput') searchInputRef?: ElementRef<HTMLInputElement>;
++
++  protected readonly categoryIcon  = CATEGORY_ICON;
++  protected readonly priorityInfo  = PRIORITY_INFO;
++  protected readonly priorities: ('routine' | 'urgent' | 'stat')[] = ['routine', 'urgent', 'stat'];
++
+   testQuery      = signal('');
+   activeCategory = signal('All');
+   saving         = signal(false);
++  savingDraft    = signal(false);
++  draftSaved     = signal(false);
++  highlightedIndex = signal(-1);
++  totalPulse     = signal(false);
+ 
+   filteredTests = computed(() => {
+     const q   = this.testQuery().toLowerCase();
+     const cat = this.activeCategory();
+     return this.flow.allTests.filter(t =>
+       (cat === 'All' || t.category === cat) &&
+-      (t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q))
++      (t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q) || t.category.toLowerCase().includes(q))
+     );
+   });
+ 
++  // "Patients also order" — union of related tests for everything selected,
++  // minus anything already selected, capped to keep the panel compact.
++  suggestions = computed<LabTest[]>(() => {
++    const selected = this.flow.selectedIds();
++    const seen = new Set<string>();
++    const out: LabTest[] = [];
++    for (const t of this.flow.selectedTests()) {
++      for (const relId of this.flow.relatedTo(t.id)) {
++        if (selected.has(relId) || seen.has(relId)) continue;
++        const relTest = this.flow.allTests.find(x => x.id === relId);
++        if (relTest) { seen.add(relId); out.push(relTest); }
++      }
++    }
++    return out.slice(0, 4);
++  });
++
++  constructor() {
++    // Micro-interaction: briefly pulse the Grand Total when it changes,
++    // instead of a silent, static number update.
++    effect(() => {
++      this.flow.grandTotal();
++      this.totalPulse.set(true);
++      setTimeout(() => this.totalPulse.set(false), 350);
++    });
++  }
++
+   get patient() { return this.flow.patient(); }
+ 
+   ngOnInit(): void {
+@@ -50,12 +110,35 @@ export class TestOrderComponent implements OnInit {
+   toggle(t: LabTest): void { this.flow.toggleTest(t.id); }
+   setPriority(p: 'routine' | 'urgent' | 'stat'): void { this.flow.setPriority(p); }
+   onPriorityClick(p: string): void { this.flow.setPriority(p as 'routine' | 'urgent' | 'stat'); }
+-  clearSearch(): void { this.testQuery.set(''); }
++
++  clearSearch(): void {
++    this.testQuery.set('');
++    this.highlightedIndex.set(-1);
++  }
++
++  addPackage(pkg: TestPackage): void {
++    for (const id of pkg.testIds) {
++      if (!this.flow.selectedIds().has(id)) this.flow.toggleTest(id);
++    }
++  }
++
++  packagePrice(pkg: TestPackage): number {
++    return pkg.testIds.reduce((sum, id) => {
++      const t = this.flow.allTests.find(x => x.id === id);
++      return sum + (t?.price ?? 0);
++    }, 0);
++  }
++
++  packageTestNames(pkg: TestPackage): string {
++    return pkg.testIds
++      .map(id => this.flow.allTests.find(x => x.id === id)?.id ?? id)
++      .join(' + ');
++  }
+ 
+   get hasTests(): boolean { return this.flow.selectedIds().size > 0; }
+ 
+   proceedToBilling(): void {
+-    if (!this.hasTests) return;
++    if (!this.hasTests || this.saving()) return;
+     this.saving.set(true);
+     setTimeout(() => {
+       this.saving.set(false);
+@@ -63,6 +146,91 @@ export class TestOrderComponent implements OnInit {
+     }, 400);
+   }
+ 
++  saveDraft(): void {
++    if (this.savingDraft()) return;
++    this.savingDraft.set(true);
++    this.draftSaved.set(false);
++    setTimeout(() => {
++      this.savingDraft.set(false);
++      this.draftSaved.set(true);
++      setTimeout(() => this.draftSaved.set(false), 1800);
++    }, 350);
++  }
++
++  // ── Ripple micro-interaction for the primary CTA ──────────────
++  onCtaRipple(e: MouseEvent): void {
++    const btn = e.currentTarget as HTMLElement;
++    const rect = btn.getBoundingClientRect();
++    btn.style.setProperty('--ripple-x', `${e.clientX - rect.left}px`);
++    btn.style.setProperty('--ripple-y', `${e.clientY - rect.top}px`);
++    btn.classList.remove('is-rippling');
++    // Force reflow so the animation restarts on rapid re-clicks
++    void btn.offsetWidth;
++    btn.classList.add('is-rippling');
++  }
++
++  // ── Keyboard workflow ──────────────────────────────────────────
++  // Ctrl/Cmd+F   focus test search
++  // ↑ / ↓        navigate the test list
++  // Enter        add the highlighted test
++  // Delete       remove the most recently added test
++  // Ctrl/Cmd+S   save as draft
++  // Ctrl/Cmd+Enter  continue to billing
++  @HostListener('document:keydown', ['$event'])
++  onKeydown(e: KeyboardEvent): void {
++    const target = e.target as HTMLElement;
++    const typing = target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
++    const mod = e.ctrlKey || e.metaKey;
++
++    if (mod && e.key.toLowerCase() === 'f') {
++      e.preventDefault();
++      this.searchInputRef?.nativeElement.focus();
++      return;
++    }
++    if (mod && e.key === 'Enter') {
++      e.preventDefault();
++      this.proceedToBilling();
++      return;
++    }
++    if (mod && e.key.toLowerCase() === 's') {
++      e.preventDefault();
++      this.saveDraft();
++      return;
++    }
++    if (e.key === 'ArrowDown') {
++      e.preventDefault();
++      const max = this.filteredTests().length - 1;
++      this.highlightedIndex.update(i => Math.min(i + 1, max));
++      return;
++    }
++    if (e.key === 'ArrowUp') {
++      e.preventDefault();
++      this.highlightedIndex.update(i => Math.max(i - 1, 0));
++      return;
++    }
++    if (e.key === 'Enter' && !typing) {
++      const list = this.filteredTests();
++      const i = this.highlightedIndex();
++      if (list[i]) { e.preventDefault(); this.toggle(list[i]); }
++      return;
++    }
++    if (e.key === 'Enter' && typing && this.testQuery()) {
++      // Enter from inside the search box quick-adds the first match
++      const first = this.filteredTests()[0];
++      if (first) { e.preventDefault(); this.toggle(first); }
++      return;
++    }
++    if (e.key === 'Escape' && typing) {
++      this.clearSearch();
++      (target as HTMLInputElement).blur();
++      return;
++    }
++    if (e.key === 'Delete' && !typing) {
++      const last = this.flow.selectedTests().at(-1);
++      if (last) { e.preventDefault(); this.toggle(last); }
++    }
++  }
++
+   get patientInitials(): string {
+     const p = this.patient;
+     if (!p) return '?';
+diff --git a/src/app/shared/models/lis.models.ts b/src/app/shared/models/lis.models.ts
+index aa055e4..378c272 100644
+--- a/src/app/shared/models/lis.models.ts
++++ b/src/app/shared/models/lis.models.ts
+@@ -31,6 +31,15 @@ export interface LabTest {
+   category: string;
+   price: number;
+   tatHours: number;
++  tubeType: string;
++  sampleType: string;
++  prep: string;
++}
++
++export interface TestPackage {
++  id: string;
++  name: string;
++  testIds: string[];
+ }
+ 
+ export interface TestOrder {
+-- 
+2.43.0
+

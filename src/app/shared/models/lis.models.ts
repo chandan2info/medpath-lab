@@ -31,6 +31,15 @@ export interface LabTest {
   category: string;
   price: number;
   tatHours: number;
+  tubeType: string;
+  sampleType: string;
+  prep: string;
+}
+
+export interface TestPackage {
+  id: string;
+  name: string;
+  testIds: string[];
 }
 
 export interface TestOrder {

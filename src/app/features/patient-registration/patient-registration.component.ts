@@ -34,6 +34,13 @@ export class PatientRegistrationComponent implements OnInit {
 
   currentStep   = signal(1);
   ageDisplay    = signal('');
+  ageParts      = signal<{ years: number; months: number; days: number } | null>(null);
+  dobFormatted  = signal('');
+  // Flips 0/1 on every DOB change so the Age card's CSS animation
+  // (bound via [class]) restarts each time — Angular doesn't replay
+  // a keyframe just because interpolated text changed, only when a
+  // class is actually added/removed.
+  ageTick       = signal(0);
   saving        = signal(false);
   showSuccess   = signal(false);
   savedPatient  = signal<RegisteredPatient | null>(null);
@@ -79,6 +86,8 @@ export class PatientRegistrationComponent implements OnInit {
 
   if (!dob) {
     this.ageDisplay.set('');
+    this.ageParts.set(null);
+    this.dobFormatted.set('');
     return;
   }
 
@@ -87,7 +96,19 @@ export class PatientRegistrationComponent implements OnInit {
   console.log('Age:', age);
 
   this.ageDisplay.set(`${age}`);
+  this.ageParts.set(this.flow.calcAgeParts(dob));
+  this.dobFormatted.set(this.formatDobDisplay(dob));
+  this.ageTick.update(v => v ^ 1);
 });
+  }
+
+  // "2008-07-04" → "04 Jul 2008", used in the Age card's helper
+  // text so the operator can see exactly which DOB the value was
+  // derived from, without reformatting logic living in the template.
+  private formatDobDisplay(dob: string): string {
+    const d = new Date(dob);
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
   }
 
  calcAge(dob: string): string {

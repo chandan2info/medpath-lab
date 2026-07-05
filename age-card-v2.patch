@@ -1,0 +1,411 @@
+diff --git a/src/app/core/services/patient-flow.service.ts b/src/app/core/services/patient-flow.service.ts
+index 5d8dec4..93db581 100644
+--- a/src/app/core/services/patient-flow.service.ts
++++ b/src/app/core/services/patient-flow.service.ts
+@@ -203,4 +203,32 @@ export class PatientFlowService {
+ 
+   return parts.join(' ');
+ }
++
++  // Same calculation as calcAge(), but returns the raw Y/M/D numbers
++  // instead of a formatted sentence — used by the stylish Age card
++  // on Patient Registration, which renders each unit as its own
++  // colour-coded segment rather than a single string.
++  calcAgeParts(dob: string): { years: number; months: number; days: number } | null {
++    if (!dob) return null;
++
++    const birth = new Date(dob);
++    const today = new Date();
++
++    let years = today.getFullYear() - birth.getFullYear();
++    let months = today.getMonth() - birth.getMonth();
++    let days = today.getDate() - birth.getDate();
++
++    if (days < 0) {
++      const previousMonth = new Date(today.getFullYear(), today.getMonth(), 0);
++      days += previousMonth.getDate();
++      months--;
++    }
++
++    if (months < 0) {
++      months += 12;
++      years--;
++    }
++
++    return { years, months, days };
++  }
+ }
+diff --git a/src/app/features/patient-registration/patient-registration.component.css b/src/app/features/patient-registration/patient-registration.component.css
+index 5d5c252..4b292a9 100644
+--- a/src/app/features/patient-registration/patient-registration.component.css
++++ b/src/app/features/patient-registration/patient-registration.component.css
+@@ -295,42 +295,181 @@
+   i { font-size: 9px; }
+ }
+ 
+-.auto-field-wrap {
+-  position: relative;
++/* ══════════════════════════════════════════════════════
++   AGE CARD — read-only "computed status widget" for the
++   auto-calculated Age field. Spans 2 grid columns so the
++   Years / Months / Days segments have room to breathe.
++   ══════════════════════════════════════════════════════ */
++.age-field { grid-column: span 2; }
++@media (max-width: 860px) { .age-field { grid-column: span 2; } }
++@media (max-width: 560px) { .age-field { grid-column: span 1; } }
++
++/* Header row — label + AUTO pill grouped together immediately
++   above the card (was floating disconnected before). */
++.age-header {
+   display: flex;
+   align-items: center;
++  justify-content: space-between;
++  gap: 8px;
+ }
+-
+-.auto-field {
+-  width: 100%;
+-  height: 38px;
+-  padding: 0 32px 0 11px;
+-  border: 1px dashed var(--border-color);
+-  border-radius: 8px;
+-  font-size: 13px;
++.age-header #age-label {
++  font-size: 12px;
++  color: var(--text-secondary);
+   font-weight: 500;
+-  color: var(--lis-primary-deep, #085041);
+-  background: var(--lis-primary-xlight, #E1F5EE) !important;
+-  font-family: var(--font-family);
+-  cursor: default;
+-  outline: none;
++}
+ 
+-  &::placeholder {
+-    color: var(--text-secondary);
+-    font-weight: 400;
+-    font-style: italic;
+-    font-size: 12px;
++.age-card {
++  display: flex;
++  align-items: center;
++  gap: 10px;
++  /* -8px vertical padding vs. the previous version for a denser,
++     more enterprise-density row; the bigger numbers below still
++     read as prominent because of the extra internal gap. */
++  padding: 8px 14px;
++  border: 1px solid var(--border-color);
++  border-radius: 10px;
++  /* Card should feel elevated over the form background rather
++     than blending into it — a touch brighter than --card-bg. */
++  background: var(--card-bg);
++}
++@supports (background: color-mix(in srgb, red, blue)) {
++  .age-card {
++    background: color-mix(in srgb, var(--card-bg) 97%, var(--text-primary) 3%);
+   }
+ }
+ 
+-.auto-field-lock {
+-  position: absolute;
+-  right: 10px;
+-  font-size: 13px;
+-  color: var(--lis-primary-mid, #5DCAA5);
+-  pointer-events: none;
++.age-card__icon {
++  flex-shrink: 0;
++  width: 28px;
++  height: 28px;
++  border-radius: 50%;
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  background: var(--lis-primary-xlight, #E1F5EE);
++  i { font-size: 13px; color: var(--lis-primary, #1D9E75); }
++}
++
++.age-card__body {
++  display: flex;
++  align-items: center;
++  gap: 10px;
++  flex: 1;
++}
++
++.age-card__segment {
++  display: flex;
++  flex-direction: column;
++  align-items: center;
++  /* More breathing room between the number and its label. */
++  gap: 8px;
++  min-width: 46px;
++}
++
++.age-card__value {
++  font-size: 32px;
++  font-weight: 700;
++  line-height: 1;
++  font-variant-numeric: tabular-nums;
++}
++/* Years stays the strongest / most saturated colour since it's
++   the primary read; months is a visibly softer purple so the
++   eye doesn't bounce equally between all three. */
++.age-card__value--years   { color: #4F9DFF; }
++.age-card__value--months  { color: #A78BFA; }
++.age-card__value--days    { color: #FBBF24; }
++.age-card__value--placeholder { color: var(--text-secondary); font-weight: 600; }
++
++.age-card__unit {
++  font-size: 12px;
++  font-weight: 500;
++  color: var(--text-primary);
++  opacity: 0.6;
++  letter-spacing: 0.02em;
++}
++
++/* Restart the recalculation animation every time DOB changes —
++   Angular only replays a CSS animation when a class is actually
++   toggled, so ageTick flips between these two identical classes. */
++.age-tick-a, .age-tick-b { animation: age-card-pulse 0.25s ease; }
++@keyframes age-card-pulse {
++  from { opacity: 0.45; }
++  to   { opacity: 1; }
++}
++
++.age-card__divider {
++  width: 1px;
++  align-self: stretch;
++  margin: 2px 0;
++  /* Was barely visible at ~10% contrast; bumped up so the eye
++     can actually use it to scan between segments. */
++  background: var(--border-strong, var(--border-color));
++  opacity: 0.55;
++  flex-shrink: 0;
++}
++[data-theme="dark"] .age-card__divider { background: rgba(255,255,255,0.18); opacity: 1; }
++
++.age-card__divider--lock { margin: 4px 0; }
++
++/* Dedicated right-hand section for the read-only lock, separated
++   from the value segments by its own divider instead of floating
++   in a corner. */
++.age-card__lock-section {
++  flex-shrink: 0;
++  display: flex;
++  flex-direction: column;
++  align-items: center;
++  gap: 4px;
++}
++
++.age-card__lock {
++  width: 26px;
++  height: 26px;
++  border-radius: 50%;
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  background: var(--body-bg);
++  border: 1px solid var(--border-color);
++  cursor: help;
++  i { font-size: 12px; color: var(--text-secondary); }
+ }
+ 
++.age-card__lock-label {
++  font-size: 9px;
++  font-weight: 500;
++  color: var(--text-secondary);
++  opacity: 0.75;
++  white-space: nowrap;
++}
++
++.age-card--empty {
++  background: var(--body-bg);
++  border-style: dashed;
++}
++
++.age-card__helper {
++  display: flex;
++  align-items: center;
++  gap: 5px;
++  i { font-size: 12px; color: var(--lis-primary, #1D9E75); }
++}
++
++/* Mobile — compact "19Y 11M 16D" rhythm; segments shrink and
++   dividers stay slim rather than wrapping the row. */
++@media (max-width: 560px) {
++  .age-card { padding: 6px 10px; gap: 8px; }
++  .age-card__body { gap: 6px; }
++  .age-card__segment { min-width: 36px; gap: 6px; }
++  .age-card__value { font-size: 24px; }
++  .age-card__unit { font-size: 10px; }
++  .age-card__icon { width: 24px; height: 24px; }
++  .age-card__icon i { font-size: 12px; }
++  .age-card__lock { width: 22px; height: 22px; }
++  .age-card__lock-label { display: none; }
++}
++
++
+ /* ══════════════════════════════════════════════════════
+    PHONE INPUT — +91 prefix
+    ══════════════════════════════════════════════════════ */
+diff --git a/src/app/features/patient-registration/patient-registration.component.html b/src/app/features/patient-registration/patient-registration.component.html
+index fbbfcf1..e607b84 100644
+--- a/src/app/features/patient-registration/patient-registration.component.html
++++ b/src/app/features/patient-registration/patient-registration.component.html
+@@ -178,21 +178,96 @@
+               }
+             </div>
+ 
+-            <!-- Age — auto-calculated readonly -->
+-            <div class="lis-field">
+-              <label for="ageDisplay">
+-                Age
++            <!-- Age — auto-calculated readonly, styled as an information card -->
++            <div class="lis-field age-field">
++              <div class="age-header">
++                <label id="age-label">Age</label>
+                 <span class="auto-chip">
+-                  <i class="ti ti-lock" aria-hidden="true"></i> Auto-calculated
++                  <i class="ti ti-lock" aria-hidden="true"></i> Auto
+                 </span>
+-              </label>
+-              <div class="auto-field-wrap">
+-                <input id="ageDisplay" [value]="ageDisplay()" readonly
+-                  placeholder="Calculated from DOB"
+-                  class="auto-field" tabindex="-1" />
+-                <i class="ti ti-lock auto-field-lock" aria-hidden="true"></i>
+               </div>
+-              <span class="helper-text">Automatically calculated from date of birth</span>
++
++              @if (ageParts(); as age) {
++                <div class="age-card" role="group" aria-labelledby="age-label"
++                  [class.age-tick-a]="ageTick() === 0" [class.age-tick-b]="ageTick() === 1"
++                  [attr.aria-label]="'Age, automatically calculated. ' + age.years + ' years, ' + age.months + ' months, ' + age.days + ' days. Read only.'">
++                  <div class="age-card__icon" aria-hidden="true">
++                    <i class="ti ti-calendar-user"></i>
++                  </div>
++
++                  <div class="age-card__body">
++                    <div class="age-card__segment">
++                      <span class="age-card__value age-card__value--years">{{ age.years }}</span>
++                      <span class="age-card__unit">Years</span>
++                    </div>
++                    <span class="age-card__divider" aria-hidden="true"></span>
++
++                    <div class="age-card__segment">
++                      <span class="age-card__value age-card__value--months">{{ age.months }}</span>
++                      <span class="age-card__unit">Months</span>
++                    </div>
++                    <span class="age-card__divider" aria-hidden="true"></span>
++
++                    <div class="age-card__segment">
++                      <span class="age-card__value age-card__value--days">{{ age.days }}</span>
++                      <span class="age-card__unit">Days</span>
++                    </div>
++                  </div>
++
++                  <span class="age-card__divider age-card__divider--lock" aria-hidden="true"></span>
++
++                  <div class="age-card__lock-section">
++                    <div class="age-card__lock"
++                      title="This field is automatically calculated from the Date of Birth and cannot be edited.">
++                      <i class="ti ti-lock" aria-hidden="true"></i>
++                    </div>
++                    <span class="age-card__lock-label">Read only</span>
++                  </div>
++                </div>
++
++                <span class="helper-text age-card__helper">
++                  <i class="ti ti-circle-check-filled" aria-hidden="true"></i>
++                  Auto calculated from Date of Birth &bull; {{ dobFormatted() }}
++                </span>
++              } @else {
++                <div class="age-card age-card--empty" role="group" aria-labelledby="age-label"
++                  aria-label="Age will be calculated after selecting date of birth">
++                  <div class="age-card__icon" aria-hidden="true">
++                    <i class="ti ti-calendar-user"></i>
++                  </div>
++
++                  <div class="age-card__body">
++                    <div class="age-card__segment">
++                      <span class="age-card__value age-card__value--placeholder">—</span>
++                      <span class="age-card__unit">Years</span>
++                    </div>
++                    <span class="age-card__divider" aria-hidden="true"></span>
++
++                    <div class="age-card__segment">
++                      <span class="age-card__value age-card__value--placeholder">—</span>
++                      <span class="age-card__unit">Months</span>
++                    </div>
++                    <span class="age-card__divider" aria-hidden="true"></span>
++
++                    <div class="age-card__segment">
++                      <span class="age-card__value age-card__value--placeholder">—</span>
++                      <span class="age-card__unit">Days</span>
++                    </div>
++                  </div>
++
++                  <span class="age-card__divider age-card__divider--lock" aria-hidden="true"></span>
++
++                  <div class="age-card__lock-section">
++                    <div class="age-card__lock"
++                      title="This field is automatically calculated from the Date of Birth and cannot be edited.">
++                      <i class="ti ti-lock" aria-hidden="true"></i>
++                    </div>
++                    <span class="age-card__lock-label">Read only</span>
++                  </div>
++                </div>
++
++                <span class="helper-text">Select Date of Birth to calculate age.</span>
++              }
+             </div>
+ 
+             <!-- Gender -->
+diff --git a/src/app/features/patient-registration/patient-registration.component.ts b/src/app/features/patient-registration/patient-registration.component.ts
+index 3bea8ae..b3b0890 100644
+--- a/src/app/features/patient-registration/patient-registration.component.ts
++++ b/src/app/features/patient-registration/patient-registration.component.ts
+@@ -34,6 +34,13 @@ export class PatientRegistrationComponent implements OnInit {
+ 
+   currentStep   = signal(1);
+   ageDisplay    = signal('');
++  ageParts      = signal<{ years: number; months: number; days: number } | null>(null);
++  dobFormatted  = signal('');
++  // Flips 0/1 on every DOB change so the Age card's CSS animation
++  // (bound via [class]) restarts each time — Angular doesn't replay
++  // a keyframe just because interpolated text changed, only when a
++  // class is actually added/removed.
++  ageTick       = signal(0);
+   saving        = signal(false);
+   showSuccess   = signal(false);
+   savedPatient  = signal<RegisteredPatient | null>(null);
+@@ -79,6 +86,8 @@ export class PatientRegistrationComponent implements OnInit {
+ 
+   if (!dob) {
+     this.ageDisplay.set('');
++    this.ageParts.set(null);
++    this.dobFormatted.set('');
+     return;
+   }
+ 
+@@ -87,9 +96,21 @@ export class PatientRegistrationComponent implements OnInit {
+   console.log('Age:', age);
+ 
+   this.ageDisplay.set(`${age}`);
++  this.ageParts.set(this.flow.calcAgeParts(dob));
++  this.dobFormatted.set(this.formatDobDisplay(dob));
++  this.ageTick.update(v => v ^ 1);
+ });
+   }
+ 
++  // "2008-07-04" → "04 Jul 2008", used in the Age card's helper
++  // text so the operator can see exactly which DOB the value was
++  // derived from, without reformatting logic living in the template.
++  private formatDobDisplay(dob: string): string {
++    const d = new Date(dob);
++    if (isNaN(d.getTime())) return '';
++    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
++  }
++
+  calcAge(dob: string): string {
+   if (!dob) return '';
+ 

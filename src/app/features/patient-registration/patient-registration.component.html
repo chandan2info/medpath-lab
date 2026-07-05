@@ -134,7 +134,7 @@
 
         <!-- Identity group -->
         <div class="field-group">
-          <div class="field-group__title"><i class="ti ti-id-badge2" aria-hidden="true"></i> Identity</div>
+          <div class="field-group__title"><i class="ti ti-user" aria-hidden="true"></i> Identity</div>
           <div class="form-grid">
             <!-- First name -->
             <div class="lis-field">
@@ -178,21 +178,94 @@
               }
             </div>
 
-            <!-- Age — auto-calculated readonly -->
-            <div class="lis-field">
-              <label for="ageDisplay">
-                Age
+            <!-- Age — auto-calculated readonly, styled as an information card -->
+            <div class="lis-field age-field">
+              <div class="age-header">
+                <label id="age-label">Age</label>
                 <span class="auto-chip">
-                  <i class="ti ti-lock" aria-hidden="true"></i> Auto-calculated
+                  <i class="ti ti-lock" aria-hidden="true"></i> Auto
                 </span>
-              </label>
-              <div class="auto-field-wrap">
-                <input id="ageDisplay" [value]="ageDisplay()" readonly
-                  placeholder="Calculated from DOB"
-                  class="auto-field" tabindex="-1" />
-                <i class="ti ti-lock auto-field-lock" aria-hidden="true"></i>
               </div>
-              <span class="helper-text">Automatically calculated from date of birth</span>
+
+              @if (ageParts(); as age) {
+                <div class="age-card" role="group" aria-labelledby="age-label"
+                  [class.age-tick-a]="ageTick() === 0" [class.age-tick-b]="ageTick() === 1"
+                  [attr.aria-label]="'Age, automatically calculated. ' + age.years + ' years, ' + age.months + ' months, ' + age.days + ' days. Read only.'">
+                  <div class="age-card__icon" aria-hidden="true">
+                    <i class="ti ti-calendar-user"></i>
+                  </div>
+
+                  <div class="age-card__body">
+                    <div class="age-card__segment">
+                      <span class="age-card__value age-card__value--years">{{ age.years }}</span>
+                      <span class="age-card__unit">Years</span>
+                    </div>
+                    <span class="age-card__divider" aria-hidden="true"></span>
+
+                    <div class="age-card__segment">
+                      <span class="age-card__value age-card__value--months">{{ age.months }}</span>
+                      <span class="age-card__unit">Months</span>
+                    </div>
+                    <span class="age-card__divider" aria-hidden="true"></span>
+
+                    <div class="age-card__segment">
+                      <span class="age-card__value age-card__value--days">{{ age.days }}</span>
+                      <span class="age-card__unit">Days</span>
+                    </div>
+                  </div>
+
+                  <span class="age-card__divider age-card__divider--lock" aria-hidden="true"></span>
+
+                  <div class="age-card__lock-section">
+                    <div class="age-card__lock"
+                      title="This field is automatically calculated from the Date of Birth and cannot be edited.">
+                      <i class="ti ti-lock" aria-hidden="true"></i>
+                    </div>
+                  </div>
+                </div>
+
+                <span class="helper-text age-card__helper">
+                  <i class="ti ti-circle-check-filled" aria-hidden="true"></i>
+                  Auto calculated from Date of Birth &bull; {{ dobFormatted() }}
+                </span>
+              } @else {
+                <div class="age-card age-card--empty" role="group" aria-labelledby="age-label"
+                  aria-label="Age will be calculated after selecting date of birth">
+                  <div class="age-card__icon" aria-hidden="true">
+                    <i class="ti ti-calendar-user"></i>
+                  </div>
+
+                  <div class="age-card__body">
+                    <div class="age-card__segment">
+                      <span class="age-card__value age-card__value--placeholder">—</span>
+                      <span class="age-card__unit">Years</span>
+                    </div>
+                    <span class="age-card__divider" aria-hidden="true"></span>
+
+                    <div class="age-card__segment">
+                      <span class="age-card__value age-card__value--placeholder">—</span>
+                      <span class="age-card__unit">Months</span>
+                    </div>
+                    <span class="age-card__divider" aria-hidden="true"></span>
+
+                    <div class="age-card__segment">
+                      <span class="age-card__value age-card__value--placeholder">—</span>
+                      <span class="age-card__unit">Days</span>
+                    </div>
+                  </div>
+
+                  <span class="age-card__divider age-card__divider--lock" aria-hidden="true"></span>
+
+                  <div class="age-card__lock-section">
+                    <div class="age-card__lock"
+                      title="This field is automatically calculated from the Date of Birth and cannot be edited.">
+                      <i class="ti ti-lock" aria-hidden="true"></i>
+                    </div>
+                  </div>
+                </div>
+
+                <span class="helper-text">Select Date of Birth to calculate age.</span>
+              }
             </div>
 
             <!-- Gender -->

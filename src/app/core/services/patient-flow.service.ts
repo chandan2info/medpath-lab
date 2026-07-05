@@ -5,7 +5,7 @@
 //  Sample Collection workflow.
 // ─────────────────────────────────────────────
 import { Injectable, signal, computed } from '@angular/core';
-import { LabTest, Priority, PaymentMode } from '../../shared/models/lis.models';
+import { LabTest, Priority, PaymentMode, TestPackage } from '../../shared/models/lis.models';
 
 export interface RegisteredPatient {
   id: string;           // PAT-2406-NNNN
@@ -41,24 +41,47 @@ export interface BillingSummary {
 }
 
 const LAB_TESTS: LabTest[] = [
-  { id:'CBC',  name:'CBC — Complete blood count',   category:'Haematology',   price:200, tatHours:4 },
-  { id:'ESR',  name:'ESR',                           category:'Haematology',   price:80,  tatHours:2 },
-  { id:'GLU',  name:'Blood glucose (fasting)',        category:'Biochemistry',  price:120, tatHours:2 },
-  { id:'HBA',  name:'HbA1c',                         category:'Biochemistry',  price:400, tatHours:4 },
-  { id:'LFT',  name:'Liver function test',            category:'Biochemistry',  price:550, tatHours:6 },
-  { id:'KFT',  name:'Kidney function test',           category:'Biochemistry',  price:500, tatHours:6 },
-  { id:'LIP',  name:'Lipid profile',                  category:'Biochemistry',  price:450, tatHours:6 },
-  { id:'TSH',  name:'TSH',                            category:'Endocrinology', price:350, tatHours:6 },
-  { id:'FT3',  name:'Free T3 / T4 / TSH panel',      category:'Endocrinology', price:700, tatHours:8 },
-  { id:'VTD',  name:'Vitamin D (25-OH)',              category:'Endocrinology', price:900, tatHours:8 },
-  { id:'URI',  name:'Urine routine & microscopy',     category:'Urine',         price:100, tatHours:2 },
-  { id:'UCR',  name:'Urine creatinine',               category:'Urine',         price:150, tatHours:2 },
-  { id:'CRP',  name:'C-Reactive Protein',             category:'Biochemistry',  price:320, tatHours:4 },
-  { id:'FER',  name:'Serum Ferritin',                 category:'Biochemistry',  price:380, tatHours:6 },
-  { id:'B12',  name:'Vitamin B12',                    category:'Biochemistry',  price:750, tatHours:6 },
+  { id:'CBC',  name:'CBC — Complete blood count',   category:'Haematology',   price:200, tatHours:4, tubeType:'EDTA (Purple top)',      sampleType:'Whole blood', prep:'None' },
+  { id:'ESR',  name:'ESR',                           category:'Haematology',   price:80,  tatHours:2, tubeType:'EDTA (Purple top)',      sampleType:'Whole blood', prep:'None' },
+  { id:'GLU',  name:'Blood glucose (fasting)',        category:'Biochemistry',  price:120, tatHours:2, tubeType:'Fluoride (Grey top)',    sampleType:'Plasma',      prep:'8–10h fasting required' },
+  { id:'HBA',  name:'HbA1c',                         category:'Biochemistry',  price:400, tatHours:4, tubeType:'EDTA (Purple top)',      sampleType:'Whole blood', prep:'None' },
+  { id:'LFT',  name:'Liver function test',            category:'Biochemistry',  price:550, tatHours:6, tubeType:'SST (Red/Gold top)',     sampleType:'Serum',       prep:'8h fasting recommended' },
+  { id:'KFT',  name:'Kidney function test',           category:'Biochemistry',  price:500, tatHours:6, tubeType:'SST (Red/Gold top)',     sampleType:'Serum',       prep:'None' },
+  { id:'LIP',  name:'Lipid profile',                  category:'Biochemistry',  price:450, tatHours:6, tubeType:'SST (Red/Gold top)',     sampleType:'Serum',       prep:'10–12h fasting required' },
+  { id:'TSH',  name:'TSH',                            category:'Endocrinology', price:350, tatHours:6, tubeType:'SST (Red/Gold top)',     sampleType:'Serum',       prep:'None' },
+  { id:'FT3',  name:'Free T3 / T4 / TSH panel',      category:'Endocrinology', price:700, tatHours:8, tubeType:'SST (Red/Gold top)',     sampleType:'Serum',       prep:'None' },
+  { id:'VTD',  name:'Vitamin D (25-OH)',              category:'Endocrinology', price:900, tatHours:8, tubeType:'SST (Red/Gold top)',     sampleType:'Serum',       prep:'None' },
+  { id:'URI',  name:'Urine routine & microscopy',     category:'Urine',         price:100, tatHours:2, tubeType:'Universal container',    sampleType:'Urine (midstream)', prep:'First morning sample preferred' },
+  { id:'UCR',  name:'Urine creatinine',               category:'Urine',         price:150, tatHours:2, tubeType:'Universal container',    sampleType:'Urine',       prep:'None' },
+  { id:'CRP',  name:'C-Reactive Protein',             category:'Biochemistry',  price:320, tatHours:4, tubeType:'SST (Red/Gold top)',     sampleType:'Serum',       prep:'None' },
+  { id:'FER',  name:'Serum Ferritin',                 category:'Biochemistry',  price:380, tatHours:6, tubeType:'SST (Red/Gold top)',     sampleType:'Serum',       prep:'None' },
+  { id:'B12',  name:'Vitamin B12',                    category:'Biochemistry',  price:750, tatHours:6, tubeType:'SST (Red/Gold top)',     sampleType:'Serum',       prep:'None' },
 ];
 
 const POPULAR_IDS = ['CBC','LFT','KFT','HBA','VTD','TSH','LIP'];
+
+/** Mocked recency signal for demo purposes — in production this would come
+ *  from the receptionist's actual order history. */
+const RECENT_IDS = ['CBC','HBA','KFT','VTD'];
+
+/** "Patients also order" — a lightweight, static cross-sell map. Keyed by a
+ *  selected test id, value is the ids commonly ordered alongside it. */
+const RELATED_TESTS: Record<string, string[]> = {
+  HBA: ['GLU','LIP','TSH'],
+  GLU: ['HBA','LIP'],
+  LIP: ['HBA','GLU'],
+  LFT: ['KFT','CRP'],
+  KFT: ['LFT','URI'],
+  TSH: ['FT3','VTD'],
+  CBC: ['ESR','CRP'],
+};
+
+const TEST_PACKAGES: TestPackage[] = [
+  { id:'PKG-DIA', name:'Diabetes Package',  testIds:['HBA','GLU','LIP'] },
+  { id:'PKG-KID', name:'Kidney Package',    testIds:['KFT','URI','UCR'] },
+  { id:'PKG-THY', name:'Thyroid Package',   testIds:['TSH','FT3'] },
+  { id:'PKG-WEL', name:'Wellness Package',  testIds:['CBC','LFT','KFT','LIP','TSH'] },
+];
 
 const DOCTORS = [
   'Dr. Pradeep Iyer (Cardiology)',
@@ -87,8 +110,15 @@ export class PatientFlowService {
   // ── Master test catalogue ─────────────────
   readonly allTests  = LAB_TESTS;
   readonly popularTests = LAB_TESTS.filter(t => POPULAR_IDS.includes(t.id));
+  readonly recentTests  = LAB_TESTS.filter(t => RECENT_IDS.includes(t.id));
+  readonly testPackages: TestPackage[] = TEST_PACKAGES;
   readonly doctors   = DOCTORS;
   readonly categories = ['All','Haematology','Biochemistry','Endocrinology','Urine'];
+
+  /** Ids commonly ordered alongside a given test id ("patients also order"). */
+  relatedTo(testId: string): string[] {
+    return RELATED_TESTS[testId] ?? [];
+  }
 
   // ── Registered patient ────────────────────
   private _patient  = signal<RegisteredPatient | null>(null);
@@ -203,4 +233,33 @@ export class PatientFlowService {
 
   return parts.join(' ');
 }
-}
+
+  // Same calculation as calcAge(), but returns the raw Y/M/D numbers
+  // instead of a formatted sentence — used by the stylish Age card
+  // on Patient Registration, which renders each unit as its own
+  // colour-coded segment rather than a single string.
+  calcAgeParts(dob: string): { years: number; months: number; days: number } {
+  if (!dob) {
+    return { years: 0, months: 0, days: 0 };
+  }
+
+  const birth = new Date(dob);
+  const today = new Date();
+
+  let years = today.getFullYear() - birth.getFullYear();
+  let months = today.getMonth() - birth.getMonth();
+  let days = today.getDate() - birth.getDate();
+
+  if (days < 0) {
+    const previousMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+    days += previousMonth.getDate();
+    months--;
+  }
+
+  if (months < 0) {
+    months += 12;
+    years--;
+  }
+
+  return { years, months, days };
+}}

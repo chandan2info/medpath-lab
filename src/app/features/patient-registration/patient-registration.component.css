@@ -295,41 +295,154 @@
   i { font-size: 9px; }
 }
 
-.auto-field-wrap {
-  position: relative;
+/* ══════════════════════════════════════════════════════
+   AGE CARD — read-only "computed status widget" for the
+   auto-calculated Age field. Spans 2 grid columns so the
+   Years / Months / Days segments have room to breathe.
+   ══════════════════════════════════════════════════════ */
+.age-field { grid-column: span 1; }
+
+/* Header row — label + AUTO pill grouped together immediately
+   above the card (was floating disconnected before). */
+.age-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.age-header #age-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.age-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* Fixed height to match .gender-card (58px) so Age lines up with
+     the other Personal Details controls in the row instead of
+     standing taller than everything around it. */
+  height: 58px;
+  padding: 0 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  /* Card should feel elevated over the form background rather
+     than blending into it — a touch brighter than --card-bg. */
+  background: var(--card-bg);
+}
+@supports (background: color-mix(in srgb, red, blue)) {
+  .age-card {
+    background: color-mix(in srgb, var(--card-bg) 97%, var(--text-primary) 3%);
+  }
+}
+
+.age-card__icon {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--lis-primary-xlight, #E1F5EE);
+  i { font-size: 12px; color: var(--lis-primary, #1D9E75); }
+}
+
+.age-card__body {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.age-card__segment {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 34px;
+}
+
+.age-card__value {
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+/* Years stays the strongest / most saturated colour since it's
+   the primary read; months is a visibly softer purple so the
+   eye doesn't bounce equally between all three. */
+.age-card__value--years   { color: #4F9DFF; }
+.age-card__value--months  { color: #A78BFA; }
+.age-card__value--days    { color: #FBBF24; }
+.age-card__value--placeholder { color: var(--text-secondary); font-weight: 600; }
+
+.age-card__unit {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  opacity: 0.6;
+  letter-spacing: 0.02em;
+}
+
+/* Restart the recalculation animation every time DOB changes —
+   Angular only replays a CSS animation when a class is actually
+   toggled, so ageTick flips between these two identical classes. */
+.age-tick-a, .age-tick-b { animation: age-card-pulse 0.25s ease; }
+@keyframes age-card-pulse {
+  from { opacity: 0.45; }
+  to   { opacity: 1; }
+}
+
+.age-card__divider {
+  width: 1px;
+  align-self: stretch;
+  margin: 8px 0;
+  /* Was barely visible at ~10% contrast; bumped up so the eye
+     can actually use it to scan between segments. */
+  background: var(--border-strong, var(--border-color));
+  opacity: 0.55;
+  flex-shrink: 0;
+}
+[data-theme="dark"] .age-card__divider { background: rgba(255,255,255,0.18); opacity: 1; }
+
+/* Dedicated right-hand section for the read-only lock, separated
+   from the value segments by its own divider instead of floating
+   in a corner. The "Read only" meaning is still conveyed via the
+   title tooltip and the card's aria-label — no caption text here
+   so the lock sits snugly next to Days instead of adding height. */
+.age-card__lock-section {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
 }
 
-.auto-field {
-  width: 100%;
-  height: 38px;
-  padding: 0 32px 0 11px;
-  border: 1px dashed var(--border-color);
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--lis-primary-deep, #085041);
-  background: var(--lis-primary-xlight, #E1F5EE) !important;
-  font-family: var(--font-family);
-  cursor: default;
-  outline: none;
-
-  &::placeholder {
-    color: var(--text-secondary);
-    font-weight: 400;
-    font-style: italic;
-    font-size: 12px;
-  }
+.age-card__lock {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--body-bg);
+  border: 1px solid var(--border-color);
+  cursor: help;
+  i { font-size: 11px; color: var(--text-secondary); }
 }
 
-.auto-field-lock {
-  position: absolute;
-  right: 10px;
-  font-size: 13px;
-  color: var(--lis-primary-mid, #5DCAA5);
-  pointer-events: none;
+.age-card--empty {
+  background: var(--body-bg);
+  border-style: dashed;
 }
+
+.age-card__helper {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  i { font-size: 12px; color: var(--lis-primary, #1D9E75); }
+}
+
+
 
 /* ══════════════════════════════════════════════════════
    PHONE INPUT — +91 prefix
@@ -380,7 +493,7 @@
   font-family: var(--font-family);
 
   &::placeholder { font-weight: 400; color: var(--text-secondary); letter-spacing: 0; }
-  &.input-error { background: #FFF0F0 !important; }
+  /* &.input-error { background: #e47b7b !important; } */
 }
 
 .phone-wrap--error { border-color: var(--lis-danger, #E24B4A); }
