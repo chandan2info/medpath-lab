@@ -12,7 +12,7 @@ export interface RegisteredPatient {
   firstName: string;
   lastName: string;
   dob: string;
-  ageYears: number;
+  ageYears: string;
   gender: string;
   bloodGroup: string;
   mobile: string;
@@ -161,12 +161,46 @@ export class PatientFlowService {
     return KNOWN_PATIENTS.find(p => p.mobile === mobile) ?? null;
   }
 
-  calcAge(dob: string): number {
-    if (!dob) return 0;
-    const today = new Date();
-    const birth = new Date(dob);
-    let age = today.getFullYear() - birth.getFullYear();
-    if (today < new Date(today.getFullYear(), birth.getMonth(), birth.getDate())) age--;
-    return age;
+  calcAge(dob: string): string {
+  if (!dob) return '';
+
+  const birth = new Date(dob);
+  const today = new Date();
+
+  let years = today.getFullYear() - birth.getFullYear();
+  let months = today.getMonth() - birth.getMonth();
+  let days = today.getDate() - birth.getDate();
+
+  if (days < 0) {
+    const previousMonth = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      0
+    );
+
+    days += previousMonth.getDate();
+    months--;
   }
+
+  if (months < 0) {
+    months += 12;
+    years--;
+  }
+
+  const parts: string[] = [];
+
+  if (years > 0) {
+    parts.push(`${years} ${years === 1 ? 'Year' : 'Years'}`);
+  }
+
+  if (months > 0) {
+    parts.push(`${months} ${months === 1 ? 'Month' : 'Months'}`);
+  }
+
+  if (days > 0 || parts.length === 0) {
+    parts.push(`${days} ${days === 1 ? 'Day' : 'Days'}`);
+  }
+
+  return parts.join(' ');
+}
 }

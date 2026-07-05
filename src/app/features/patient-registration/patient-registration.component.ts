@@ -12,6 +12,7 @@ import { NgClass } from '@angular/common';
 import { PatientFlowService, RegisteredPatient, KnownPatientRecord } from '../../core/services/patient-flow.service';
 import { DobDatePickerComponent } from '../../shared/components/dob-date-picker/dob-date-picker.component';
 
+
 @Component({
   selector: 'app-patient-registration',
   standalone: true,
@@ -73,15 +74,64 @@ export class PatientRegistrationComponent implements OnInit {
 
     // The custom date picker doesn't emit a native (change) event,
     // so recompute Age from the form control's value stream instead.
-    this.form.get('dob')?.valueChanges.subscribe(() => this.calcAge());
+    this.form.get('dob')?.valueChanges.subscribe((dob) => {
+  console.log('DOB changed:', dob);
+
+  if (!dob) {
+    this.ageDisplay.set('');
+    return;
   }
 
-  calcAge(): void {
-    const dob = this.form.value.dob;
-    if (!dob) { this.ageDisplay.set(''); return; }
-    const years = this.flow.calcAge(dob);
-    this.ageDisplay.set(years > 0 ? `${years} years` : '');
+ const age = this.flow.calcAge(dob);
+
+  console.log('Age:', age);
+
+  this.ageDisplay.set(`${age}`);
+});
   }
+
+ calcAge(dob: string): string {
+  if (!dob) return '';
+
+  const birth = new Date(dob);
+  const today = new Date();
+
+  let years = today.getFullYear() - birth.getFullYear();
+  let months = today.getMonth() - birth.getMonth();
+  let days = today.getDate() - birth.getDate();
+
+  if (days < 0) {
+    const previousMonth = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      0
+    );
+
+    days += previousMonth.getDate();
+    months--;
+  }
+
+  if (months < 0) {
+    months += 12;
+    years--;
+  }
+
+  const parts: string[] = [];
+
+  if (years > 0) {
+    parts.push(`${years} ${years === 1 ? 'Year' : 'Years'}`);
+  }
+
+  if (months > 0) {
+    parts.push(`${months} ${months === 1 ? 'Month' : 'Months'}`);
+  }
+
+  if (days > 0 || parts.length === 0) {
+    parts.push(`${days} ${days === 1 ? 'Day' : 'Days'}`);
+  }
+
+  return parts.join(' ');
+}
 
   // Grows a textarea to fit its content instead of showing a
   // tall, mostly-empty box (Address / Clinical notes / Medication).
