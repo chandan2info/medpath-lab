@@ -68,6 +68,20 @@ const DOCTORS = [
   'Self / Walk-in',
 ];
 
+// Mock "already registered" directory — used only to demo
+// duplicate-patient detection on the registration form.
+// Replace with a real lookup API call in production.
+export interface KnownPatientRecord {
+  name: string;
+  mobile: string;
+  registeredLabel: string;
+}
+
+const KNOWN_PATIENTS: KnownPatientRecord[] = [
+  { name: 'Chandan Kumar',  mobile: '9876543210', registeredLabel: 'Registered 3 months ago' },
+  { name: 'Priya Sharma',   mobile: '9845123456', registeredLabel: 'Registered 2 weeks ago' },
+];
+
 @Injectable({ providedIn: 'root' })
 export class PatientFlowService {
   // ── Master test catalogue ─────────────────
@@ -138,6 +152,13 @@ export class PatientFlowService {
     const mm  = String(new Date().getMonth() + 1).padStart(2, '0');
     const yy  = String(new Date().getFullYear()).slice(2);
     return `INV-${yy}${mm}-0${seq}`;
+  }
+
+  // Looks up an existing patient by mobile number so the
+  // registration form can warn about possible duplicates.
+  findByMobile(mobile: string): KnownPatientRecord | null {
+    if (!mobile || mobile.length !== 10) return null;
+    return KNOWN_PATIENTS.find(p => p.mobile === mobile) ?? null;
   }
 
   calcAge(dob: string): number {

@@ -1,0 +1,90 @@
+<div class="dob-picker">
+  <button type="button" class="dob-trigger"
+    [id]="inputId()"
+    [class.dob-trigger--error]="invalid()"
+    [class.dob-trigger--open]="open()"
+    [disabled]="disabled()"
+    [attr.aria-expanded]="open()"
+    aria-haspopup="dialog"
+    (click)="togglePanel()">
+    <i class="ti ti-calendar dob-trigger__icon" aria-hidden="true"></i>
+    <span class="dob-trigger__text" [class.dob-trigger__text--placeholder]="!selectedIso()">
+      {{ displayLabel() || 'Select date of birth' }}
+    </span>
+    <i class="ti ti-chevron-down dob-trigger__chevron" aria-hidden="true"></i>
+  </button>
+
+  @if (open()) {
+    <div class="dob-panel" role="dialog" aria-label="Choose date of birth">
+
+      @if (mode() === 'days') {
+        <div class="dob-panel__header">
+          <button type="button" class="dob-nav-btn" title="Jump back 10 years" (click)="shiftDecade(-1)">
+            <i class="ti ti-chevrons-left" aria-hidden="true"></i>
+          </button>
+          <button type="button" class="dob-nav-btn" title="Previous month" (click)="shiftMonth(-1)">
+            <i class="ti ti-chevron-left" aria-hidden="true"></i>
+          </button>
+          <button type="button" class="dob-month-label" (click)="openYearPicker()">
+            {{ monthYearLabel() }}
+          </button>
+          <button type="button" class="dob-nav-btn" title="Next month" (click)="shiftMonth(1)">
+            <i class="ti ti-chevron-right" aria-hidden="true"></i>
+          </button>
+          <button type="button" class="dob-nav-btn" title="Jump forward 10 years" (click)="shiftDecade(1)">
+            <i class="ti ti-chevrons-right" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <div class="dob-weekdays">
+          @for (w of weekdayLabels; track w) {
+            <span>{{ w }}</span>
+          }
+        </div>
+
+        <div class="dob-grid" role="grid">
+          @for (cell of days(); track trackByIso($index, cell)) {
+            <button type="button" class="dob-day"
+              role="gridcell"
+              [attr.data-day-iso]="cell.iso"
+              [tabindex]="cell.iso === focusedIso() ? 0 : -1"
+              [class.dob-day--out]="!cell.inMonth"
+              [class.dob-day--today]="cell.isToday"
+              [class.dob-day--selected]="cell.iso === selectedIso()"
+              [disabled]="cell.disabled"
+              [attr.aria-selected]="cell.iso === selectedIso()"
+              (click)="selectDay(cell)"
+              (keydown)="onGridKeydown($event, cell)">
+              {{ cell.date.getDate() }}
+            </button>
+          }
+        </div>
+
+        <div class="dob-panel__hint">↑↓←→ to move · Enter to select · Esc to close</div>
+      }
+
+      @if (mode() === 'years') {
+        <div class="dob-panel__header">
+          <button type="button" class="dob-nav-btn" title="Previous decade" (click)="shiftDecade(-1)">
+            <i class="ti ti-chevron-left" aria-hidden="true"></i>
+          </button>
+          <span class="dob-month-label dob-month-label--static">{{ decadeStart() }}s</span>
+          <button type="button" class="dob-nav-btn" title="Next decade" (click)="shiftDecade(1)">
+            <i class="ti ti-chevron-right" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <div class="dob-year-grid">
+          @for (y of decadeYears(); track y) {
+            <button type="button" class="dob-year"
+              [class.dob-year--active]="y === viewYear()"
+              [class.dob-year--out]="y < decadeStart() || y > decadeStart() + 9"
+              (click)="pickYear(y)">
+              {{ y }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

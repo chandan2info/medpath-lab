@@ -38,6 +38,14 @@
   </div>
 }
 
+<!-- Brief reassurance toast — Personal Details saved -->
+@if (step1Saved()) {
+  <div class="step-saved-toast" role="status" aria-live="polite">
+    <i class="ti ti-circle-check" aria-hidden="true"></i>
+    Personal details saved
+  </div>
+}
+
 <!-- ── Page header ─────────────────────────────────────────── -->
 <div class="page-header">
   <div class="page-header__left">
@@ -57,7 +65,11 @@
     </div>
   </div>
 
-  <!-- Workflow progress trail -->
+  <!-- Workflow progress trail — single top-level indicator.
+       The old "Demographics/Clinical info" pill-stepper that used
+       to render below this (duplicating it) has been removed;
+       that sub-progress now lives in the card header as
+       ".mini-steps" instead. -->
   <div class="workflow-trail" aria-label="Workflow steps">
     <div class="wf-step wf-step--active">
       <span class="wf-dot wf-dot--active">
@@ -83,29 +95,6 @@
   </div>
 </div>
 
-<!-- ── Stepper pills ─────────────────────────────────────── -->
-<div class="stepper" role="list" aria-label="Registration steps">
-  @for (step of steps; track step.n) {
-    <div class="step"
-      [class.step--done]="currentStep() > step.n"
-      [class.step--active]="currentStep() === step.n"
-      role="listitem">
-      <div class="step-num"
-        [attr.aria-label]="currentStep() > step.n ? step.label + ' complete' : step.label">
-        @if (currentStep() > step.n) {
-          <i class="ti ti-check" aria-hidden="true"></i>
-        } @else {
-          {{ step.n }}
-        }
-      </div>
-      <span class="step-label">{{ step.label }}</span>
-    </div>
-    @if (step.n < steps.length) {
-      <div class="step-line" [class.step-line--done]="currentStep() > step.n"></div>
-    }
-  }
-</div>
-
 <!-- ── Form ──────────────────────────────────────────────── -->
 <div class="reg-form-wrap">
   <form [formGroup]="form" novalidate>
@@ -116,142 +105,208 @@
         <div class="lis-card__header">
           <i class="ti ti-user lis-card-icon" aria-hidden="true"></i>
           <h2 class="lis-card__title">Personal Details</h2>
-          <span class="step-pill">Step 1 of 2</span>
+          <div class="mini-steps" aria-label="Form sub-steps">
+            <span class="mini-step mini-step--active">Personal</span>
+            <span class="mini-step">Clinical</span>
+          </div>
         </div>
 
-        <div class="form-grid">
-          <!-- First name -->
-          <div class="lis-field">
-            <label for="firstName">First Name <span class="req" aria-hidden="true">*</span></label>
-            <input id="firstName" formControlName="firstName"
-              [class.input-error]="isInvalid('firstName')"
-              autocomplete="given-name" placeholder="e.g. Ananya" />
-            @if (isInvalid('firstName')) {
-              <span class="err-msg" role="alert">
-                <i class="ti ti-alert-circle"></i> First name is required
-              </span>
-            }
-          </div>
-
-          <!-- Last name -->
-          <div class="lis-field">
-            <label for="lastName">Last Name <span class="req" aria-hidden="true">*</span></label>
-            <input id="lastName" formControlName="lastName"
-              [class.input-error]="isInvalid('lastName')"
-              autocomplete="family-name" placeholder="e.g. Krishnaswamy" />
-            @if (isInvalid('lastName')) {
-              <span class="err-msg" role="alert">
-                <i class="ti ti-alert-circle"></i> Last name is required
-              </span>
-            }
-          </div>
-
-          <!-- Date of Birth — custom date picker wrapper -->
-          <div class="lis-field">
-            <label for="dob">Date of Birth <span class="req" aria-hidden="true">*</span></label>
-            <div class="date-input-wrap">
-              <i class="ti ti-calendar date-icon" aria-hidden="true"></i>
-              <input id="dob" type="date" formControlName="dob"
-                class="date-input"
-                [class.input-error]="isInvalid('dob')"
-                [max]="todayISO"
-                (change)="calcAge()" />
+        <!-- Duplicate patient warning -->
+        @if (duplicateMatch() && !duplicateDismissed()) {
+          <div class="dup-banner" role="alert">
+            <i class="ti ti-alert-triangle dup-banner__icon" aria-hidden="true"></i>
+            <div class="dup-banner__body">
+              <div class="dup-banner__title">Possible existing patient</div>
+              <div class="dup-banner__meta">
+                {{ duplicateMatch()?.name }} · +91 {{ duplicateMatch()?.mobile }} · {{ duplicateMatch()?.registeredLabel }}
+              </div>
             </div>
-            @if (isInvalid('dob')) {
-              <span class="err-msg" role="alert">
-                <i class="ti ti-alert-circle"></i> Date of birth is required
-              </span>
-            }
-          </div>
-
-          <!-- Age — auto-calculated readonly -->
-          <div class="lis-field">
-            <label for="ageDisplay">
-              Age
-              <span class="auto-chip">
-                <i class="ti ti-cpu" aria-hidden="true"></i> Auto
-              </span>
-            </label>
-            <div class="auto-field-wrap">
-              <input id="ageDisplay" [value]="ageDisplay()" readonly
-                placeholder="Calculated from DOB"
-                class="auto-field" tabindex="-1" />
-              <i class="ti ti-lock auto-field-lock" aria-hidden="true"></i>
+            <div class="dup-banner__actions">
+              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm">
+                <i class="ti ti-search" aria-hidden="true"></i> View existing
+              </button>
+              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="dismissDuplicateWarning()">
+                Continue anyway
+              </button>
             </div>
           </div>
+        }
 
-          <!-- Gender -->
-          <div class="lis-field">
-            <label id="gender-label">Gender <span class="req" aria-hidden="true">*</span></label>
-            <div class="lis-seg" role="group" aria-labelledby="gender-label">
-              @for (g of ['Male','Female','Other']; track g) {
-                <button type="button" class="lis-seg__opt"
-                  [class.lis-seg__opt--active]="form.value.gender === g"
-                  (click)="form.patchValue({gender: g})"
-                  [attr.aria-pressed]="form.value.gender === g">{{ g }}</button>
+        <!-- Identity group -->
+        <div class="field-group">
+          <div class="field-group__title"><i class="ti ti-id-badge2" aria-hidden="true"></i> Identity</div>
+          <div class="form-grid">
+            <!-- First name -->
+            <div class="lis-field">
+              <label for="firstName">First Name <span class="req-dot" title="Required"><span class="sr-only">Required</span></span></label>
+              <input id="firstName" formControlName="firstName"
+                [class.input-error]="isInvalid('firstName')"
+                autocomplete="given-name" placeholder="e.g. Ananya" />
+              @if (isInvalid('firstName')) {
+                <span class="err-msg" role="alert">
+                  <i class="ti ti-alert-circle"></i> First name is required
+                </span>
               }
             </div>
-            @if (isInvalid('gender')) {
-              <span class="err-msg" role="alert">
-                <i class="ti ti-alert-circle"></i> Please select a gender
-              </span>
-            }
-          </div>
 
-          <!-- Blood Group -->
-          <div class="lis-field">
-            <label for="bloodGroup">Blood Group</label>
-            <select id="bloodGroup" formControlName="bloodGroup">
-              @for (bg of bloodGroups; track bg) {
-                <option [value]="bg">{{ bg }}</option>
+            <!-- Last name -->
+            <div class="lis-field">
+              <label for="lastName">Last Name <span class="req-dot" title="Required"><span class="sr-only">Required</span></span></label>
+              <input id="lastName" formControlName="lastName"
+                [class.input-error]="isInvalid('lastName')"
+                autocomplete="family-name" placeholder="e.g. Krishnaswamy" />
+              @if (isInvalid('lastName')) {
+                <span class="err-msg" role="alert">
+                  <i class="ti ti-alert-circle"></i> Last name is required
+                </span>
               }
-            </select>
-          </div>
-
-          <!-- Mobile Number — with +91 prefix -->
-          <div class="lis-field">
-            <label for="mobile">Mobile Number <span class="req" aria-hidden="true">*</span></label>
-            <div class="phone-wrap">
-              <span class="phone-prefix">
-                <span class="phone-flag">🇮🇳</span>
-                +91
-              </span>
-              <input id="mobile" formControlName="mobile" type="tel"
-                class="phone-input"
-                [class.input-error]="isInvalid('mobile')"
-                autocomplete="tel" placeholder="98765 43210"
-                maxlength="10" inputmode="numeric" />
             </div>
-            @if (isInvalid('mobile')) {
-              <span class="err-msg" role="alert">
-                <i class="ti ti-alert-circle"></i> Valid 10-digit number required
-              </span>
-            }
-          </div>
 
-          <!-- Email -->
-          <div class="lis-field">
-            <label for="email">Email <span class="opt-label">(Optional)</span></label>
-            <input id="email" formControlName="email" type="email"
-              autocomplete="email" placeholder="patient@email.com" />
-          </div>
+            <!-- Date of Birth — custom themed date picker (no native OS calendar) -->
+            <div class="lis-field">
+              <label for="dob">Date of Birth <span class="req-dot" title="Required"><span class="sr-only">Required</span></span></label>
+              <app-dob-date-picker
+                formControlName="dob"
+                inputId="dob"
+                [invalid]="isInvalid('dob')"
+                [max]="todayISO">
+              </app-dob-date-picker>
+              @if (isInvalid('dob')) {
+                <span class="err-msg" role="alert">
+                  <i class="ti ti-alert-circle"></i> Date of birth is required
+                </span>
+              }
+            </div>
 
-          <!-- Address — full width -->
-          <div class="lis-field form-full">
-            <label for="address">Address <span class="opt-label">(Optional)</span></label>
-            <textarea id="address" formControlName="address"
-              placeholder="Street, area, city…"></textarea>
+            <!-- Age — auto-calculated readonly -->
+            <div class="lis-field">
+              <label for="ageDisplay">
+                Age
+                <span class="auto-chip">
+                  <i class="ti ti-lock" aria-hidden="true"></i> Auto-calculated
+                </span>
+              </label>
+              <div class="auto-field-wrap">
+                <input id="ageDisplay" [value]="ageDisplay()" readonly
+                  placeholder="Calculated from DOB"
+                  class="auto-field" tabindex="-1" />
+                <i class="ti ti-lock auto-field-lock" aria-hidden="true"></i>
+              </div>
+              <span class="helper-text">Automatically calculated from date of birth</span>
+            </div>
+
+            <!-- Gender -->
+            <div class="lis-field">
+              <label id="gender-label">Gender <span class="req-dot" title="Required"><span class="sr-only">Required</span></span></label>
+              <div class="gender-cards" role="group" aria-labelledby="gender-label">
+                <button type="button" class="gender-card"
+                  [class.gender-card--active]="form.value.gender === 'Male'"
+                  (click)="form.patchValue({gender: 'Male'})"
+                  [attr.aria-pressed]="form.value.gender === 'Male'">
+                  <i class="ti ti-gender-male" aria-hidden="true"></i>
+                  <span>Male</span>
+                </button>
+                <button type="button" class="gender-card"
+                  [class.gender-card--active]="form.value.gender === 'Female'"
+                  (click)="form.patchValue({gender: 'Female'})"
+                  [attr.aria-pressed]="form.value.gender === 'Female'">
+                  <i class="ti ti-gender-female" aria-hidden="true"></i>
+                  <span>Female</span>
+                </button>
+                <button type="button" class="gender-card"
+                  [class.gender-card--active]="form.value.gender === 'Other'"
+                  (click)="form.patchValue({gender: 'Other'})"
+                  [attr.aria-pressed]="form.value.gender === 'Other'">
+                  <i class="ti ti-gender-genderless" aria-hidden="true"></i>
+                  <span>Other</span>
+                </button>
+              </div>
+              @if (isInvalid('gender')) {
+                <span class="err-msg" role="alert">
+                  <i class="ti ti-alert-circle"></i> Please select a gender
+                </span>
+              }
+            </div>
+
+            <!-- Blood Group -->
+            <div class="lis-field">
+              <label for="bloodGroup">Blood Group</label>
+              <select id="bloodGroup" formControlName="bloodGroup">
+                @for (bg of bloodGroups; track bg) {
+                  <option [value]="bg">{{ bg }}</option>
+                }
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact group -->
+        <div class="field-group">
+          <div class="field-group__title"><i class="ti ti-address-book" aria-hidden="true"></i> Contact</div>
+          <div class="form-grid">
+            <!-- Mobile Number — with +91 prefix -->
+            <div class="lis-field">
+              <label for="mobile">Mobile Number <span class="req-dot" title="Required"><span class="sr-only">Required</span></span></label>
+              <div class="phone-wrap" [class.phone-wrap--error]="isInvalid('mobile')">
+                <span class="phone-prefix">
+                  <span class="phone-flag">🇮🇳</span>
+                  +91
+                </span>
+                <input id="mobile" formControlName="mobile" type="tel"
+                  class="phone-input"
+                  [class.input-error]="isInvalid('mobile')"
+                  autocomplete="tel" placeholder="98765 43210"
+                  maxlength="10" inputmode="numeric"
+                  (input)="onMobileChange()" />
+                @if (isValidTouched('mobile')) {
+                  <i class="ti ti-circle-check phone-valid-icon" aria-hidden="true"></i>
+                }
+              </div>
+              @if (isInvalid('mobile')) {
+                <span class="err-msg" role="alert">
+                  <i class="ti ti-alert-circle"></i> Valid 10-digit number required
+                </span>
+              } @else if (isValidTouched('mobile')) {
+                <span class="ok-msg">
+                  <i class="ti ti-circle-check"></i> Mobile number looks valid
+                </span>
+              } @else {
+                <span class="helper-text">Used for SMS reports and appointment reminders</span>
+              }
+            </div>
+
+            <!-- Email -->
+            <div class="lis-field">
+              <label for="email">Email <span class="opt-label">(Optional)</span></label>
+              <input id="email" formControlName="email" type="email"
+                autocomplete="email" placeholder="patient@email.com" />
+              <span class="helper-text">Optional — used to email lab reports</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Address group -->
+        <div class="field-group">
+          <div class="field-group__title"><i class="ti ti-map-pin" aria-hidden="true"></i> Address</div>
+          <div class="form-grid">
+            <!-- Address — full width -->
+            <div class="lis-field form-full">
+              <label for="address">Address <span class="opt-label">(Optional)</span></label>
+              <textarea id="address" formControlName="address" rows="2"
+                class="auto-expand" (input)="autoResize($event)"
+                placeholder="e.g. 12, MG Road, Indiranagar, Bengaluru"></textarea>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Step 1 actions -->
-      <div class="form-actions">
-        <button type="button" class="lis-btn lis-btn--secondary" (click)="goBack()">
+      <!-- Step 1 actions — sticky so they stay reachable on smaller screens -->
+      <div class="form-actions form-actions--sticky">
+        <button type="button" class="lis-btn lis-btn--secondary" (click)="goBack()" title="Esc">
           <i class="ti ti-arrow-left" aria-hidden="true"></i> Cancel
         </button>
-        <button type="button" class="lis-btn lis-btn--primary" (click)="nextStep()">
-          Next: Clinical info <i class="ti ti-arrow-right" aria-hidden="true"></i>
+        <button type="button" class="lis-btn lis-btn--primary" (click)="nextStep()" title="Ctrl+Enter">
+          Continue to Clinical <i class="ti ti-arrow-right" aria-hidden="true"></i>
         </button>
       </div>
     }
@@ -262,7 +317,10 @@
         <div class="lis-card__header">
           <i class="ti ti-stethoscope lis-card-icon" aria-hidden="true"></i>
           <h2 class="lis-card__title">Clinical Information</h2>
-          <span class="step-pill">Step 2 of 2</span>
+          <div class="mini-steps" aria-label="Form sub-steps">
+            <span class="mini-step mini-step--done">Personal</span>
+            <span class="mini-step mini-step--active">Clinical</span>
+          </div>
         </div>
 
         <!-- Mini patient recap -->
@@ -282,86 +340,129 @@
           </button>
         </div>
 
-        <div class="form-grid">
-          <!-- Referring doctor -->
-          <div class="lis-field">
-            <label for="refDoctor">Referring doctor <span class="req" aria-hidden="true">*</span></label>
-            <select id="refDoctor" formControlName="refDoctor"
-              [class.input-error]="isInvalid('refDoctor')">
-              <option value="">— Select doctor —</option>
-              @for (d of flow.doctors; track d) {
-                <option [value]="d">{{ d }}</option>
-              }
-              <option value="new">+ Add new doctor</option>
-            </select>
-            @if (isInvalid('refDoctor')) {
-              <span class="err-msg" role="alert">Please select a referring doctor</span>
-            }
-          </div>
-
-          <!-- Visit type -->
-          <div class="lis-field">
-            <label id="visit-label">Visit type</label>
-            <div class="lis-seg" role="group" aria-labelledby="visit-label">
-              @for (v of ['Walk-in','Appointment','Home visit']; track v) {
-                <button type="button" class="lis-seg__opt"
-                  [class.lis-seg__opt--active]="form.value.visitType === v"
-                  (click)="form.patchValue({visitType: v})"
-                  [attr.aria-pressed]="form.value.visitType === v">{{ v }}</button>
+        <!-- Visit details group -->
+        <div class="field-group">
+          <div class="field-group__title"><i class="ti ti-stethoscope" aria-hidden="true"></i> Visit Details</div>
+          <div class="form-grid">
+            <!-- Referring doctor -->
+            <div class="lis-field">
+              <label for="refDoctor">Referring doctor <span class="req-dot" title="Required"><span class="sr-only">Required</span></span></label>
+              <select id="refDoctor" formControlName="refDoctor"
+                [class.input-error]="isInvalid('refDoctor')">
+                <option value="">— Select doctor —</option>
+                @for (d of flow.doctors; track d) {
+                  <option [value]="d">{{ d }}</option>
+                }
+                <option value="new">+ Add new doctor</option>
+              </select>
+              @if (isInvalid('refDoctor')) {
+                <span class="err-msg" role="alert">Please select a referring doctor</span>
               }
             </div>
-          </div>
 
-          <!-- Fasting status -->
-          <div class="lis-field">
-            <label id="fasting-label">Fasting status</label>
-            <div class="lis-seg" role="group" aria-labelledby="fasting-label">
-              @for (f of ['Fasting','Non-fasting','Unknown']; track f) {
+            <!-- Visit type -->
+            <div class="lis-field">
+              <label id="visit-label">Visit type</label>
+              <div class="lis-seg lis-seg--lg" role="group" aria-labelledby="visit-label">
                 <button type="button" class="lis-seg__opt"
-                  [class.lis-seg__opt--active]="form.value.fasting === f"
-                  (click)="form.patchValue({fasting: f})"
-                  [attr.aria-pressed]="form.value.fasting === f">{{ f }}</button>
-              }
+                  [class.lis-seg__opt--active]="form.value.visitType === 'Walk-in'"
+                  (click)="form.patchValue({visitType: 'Walk-in'})"
+                  [attr.aria-pressed]="form.value.visitType === 'Walk-in'">
+                  <i class="ti ti-building-hospital" aria-hidden="true"></i> Walk-in
+                </button>
+                <button type="button" class="lis-seg__opt"
+                  [class.lis-seg__opt--active]="form.value.visitType === 'Appointment'"
+                  (click)="form.patchValue({visitType: 'Appointment'})"
+                  [attr.aria-pressed]="form.value.visitType === 'Appointment'">
+                  <i class="ti ti-calendar-event" aria-hidden="true"></i> Appointment
+                </button>
+                <button type="button" class="lis-seg__opt"
+                  [class.lis-seg__opt--active]="form.value.visitType === 'Home visit'"
+                  (click)="form.patchValue({visitType: 'Home visit'})"
+                  [attr.aria-pressed]="form.value.visitType === 'Home visit'">
+                  <i class="ti ti-home" aria-hidden="true"></i> Home visit
+                </button>
+              </div>
+            </div>
+
+            <!-- Sample collection -->
+            <div class="lis-field">
+              <label for="collection">Sample collection</label>
+              <select id="collection" formControlName="collection">
+                <option>At lab counter</option>
+                <option>Home collection</option>
+              </select>
             </div>
           </div>
+        </div>
 
-          <!-- Sample collection -->
-          <div class="lis-field">
-            <label for="collection">Sample collection</label>
-            <select id="collection" formControlName="collection">
-              <option>At lab counter</option>
-              <option>Home collection</option>
-            </select>
+        <!-- Preparation group -->
+        <div class="field-group">
+          <div class="field-group__title"><i class="ti ti-clipboard-list" aria-hidden="true"></i> Preparation</div>
+          <div class="form-grid">
+            <!-- Fasting status -->
+            <div class="lis-field">
+              <label id="fasting-label">Fasting status</label>
+              <div class="lis-seg lis-seg--lg" role="group" aria-labelledby="fasting-label">
+                <button type="button" class="lis-seg__opt"
+                  [class.lis-seg__opt--active]="form.value.fasting === 'Fasting'"
+                  (click)="form.patchValue({fasting: 'Fasting'})"
+                  [attr.aria-pressed]="form.value.fasting === 'Fasting'">
+                  <i class="ti ti-tools-kitchen-2" aria-hidden="true"></i> Fasting
+                </button>
+                <button type="button" class="lis-seg__opt"
+                  [class.lis-seg__opt--active]="form.value.fasting === 'Non-fasting'"
+                  (click)="form.patchValue({fasting: 'Non-fasting'})"
+                  [attr.aria-pressed]="form.value.fasting === 'Non-fasting'">
+                  <i class="ti ti-coffee" aria-hidden="true"></i> Non-fasting
+                </button>
+                <button type="button" class="lis-seg__opt"
+                  [class.lis-seg__opt--active]="form.value.fasting === 'Unknown'"
+                  (click)="form.patchValue({fasting: 'Unknown'})"
+                  [attr.aria-pressed]="form.value.fasting === 'Unknown'">
+                  <i class="ti ti-help" aria-hidden="true"></i> Unknown
+                </button>
+              </div>
+            </div>
+
+            <!-- Clinical notes -->
+            <div class="lis-field form-full">
+              <label for="clinicalNotes">
+                Clinical notes / symptoms <span class="opt-label">(optional)</span>
+              </label>
+              <textarea id="clinicalNotes" formControlName="clinicalNotes" rows="2"
+                class="auto-expand" (input)="autoResize($event)"
+                placeholder="e.g. Fever since 3 days, weight loss, PCOS follow-up"></textarea>
+            </div>
           </div>
+        </div>
 
-          <!-- Clinical notes -->
-          <div class="lis-field form-full">
-            <label for="clinicalNotes">
-              Clinical notes / symptoms <span class="opt-label">(optional)</span>
-            </label>
-            <textarea id="clinicalNotes" formControlName="clinicalNotes"
-              placeholder="e.g. fatigue, weight gain, palpitations — 3 months…"></textarea>
-          </div>
-
-          <!-- Known conditions / medications -->
-          <div class="lis-field form-full">
-            <label for="medications">
-              Known conditions / medications <span class="opt-label">(optional)</span>
-            </label>
-            <textarea id="medications" formControlName="medications"
-              placeholder="e.g. Type 2 diabetes, on Metformin 500 mg…"></textarea>
+        <!-- Medication group -->
+        <div class="field-group">
+          <div class="field-group__title"><i class="ti ti-pill" aria-hidden="true"></i> Medication</div>
+          <div class="form-grid">
+            <!-- Known conditions / medications -->
+            <div class="lis-field form-full">
+              <label for="medications">
+                Known conditions / medications <span class="opt-label">(optional)</span>
+              </label>
+              <textarea id="medications" formControlName="medications" rows="2"
+                class="auto-expand" (input)="autoResize($event)"
+                placeholder="e.g. Type 2 diabetes, on Metformin 500 mg"></textarea>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Step 2 actions -->
-      <div class="form-actions">
-        <button type="button" class="lis-btn lis-btn--secondary" (click)="goBack()">
+      <!-- Step 2 actions — sticky so they stay reachable on smaller screens -->
+      <div class="form-actions form-actions--sticky">
+        <button type="button" class="lis-btn lis-btn--secondary" (click)="goBack()" title="Esc">
           <i class="ti ti-arrow-left" aria-hidden="true"></i> Back
         </button>
         <button type="button" class="lis-btn lis-btn--primary save-btn"
           (click)="saveAndContinue()"
-          [disabled]="saving()">
+          [disabled]="saving()"
+          title="Ctrl+Enter">
           @if (saving()) {
             <i class="ti ti-loader-2 spin" aria-hidden="true"></i> Saving…
           } @else {

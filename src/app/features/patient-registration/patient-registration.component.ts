@@ -4,17 +4,18 @@
 //  & clinical info, then navigate to Test Order.
 // ─────────────────────────────────────────────
 import {
-  Component, ChangeDetectionStrategy, signal, inject, OnInit
+  Component, ChangeDetectionStrategy, signal, inject, OnInit, HostListener
 } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { NgClass } from '@angular/common';
-import { PatientFlowService, RegisteredPatient } from '../../core/services/patient-flow.service';
+import { PatientFlowService, RegisteredPatient, KnownPatientRecord } from '../../core/services/patient-flow.service';
+import { DobDatePickerComponent } from '../../shared/components/dob-date-picker/dob-date-picker.component';
 
 @Component({
   selector: 'app-patient-registration',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, NgClass],
+  imports: [ReactiveFormsModule, RouterLink, NgClass, DobDatePickerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './patient-registration.component.html',
   styleUrl: './patient-registration.component.css',
@@ -24,11 +25,6 @@ export class PatientRegistrationComponent implements OnInit {
   private readonly router = inject(Router);
   protected readonly flow = inject(PatientFlowService);
 
-  // Two-step stepper (demographics → clinical)
-  protected readonly steps = [
-    { n: 1, label: 'Demographics' },
-    { n: 2, label: 'Clinical info' },
-  ];
   protected readonly bloodGroups = [
     'A+', 'A−', 'B+', 'B−', 'O+', 'O−', 'AB+', 'AB−', 'Unknown'
   ];
@@ -41,6 +37,15 @@ export class PatientRegistrationComponent implements OnInit {
   showSuccess   = signal(false);
   savedPatient  = signal<RegisteredPatient | null>(null);
   countdown     = signal(3);
+
+  // Duplicate-patient detection (Personal Details step)
+  duplicateMatch  = signal<KnownPatientRecord | null>(null);
+  duplicateDismissed = signal(false);
+
+  // Brief reassurance flash shown right before advancing to
+  // Clinical Info, so the operator sees confirmation instead
+  // of an abrupt step swap.
+  step1Saved = signal(false);
 
   form!: FormGroup;
 
@@ -65,6 +70,10 @@ export class PatientRegistrationComponent implements OnInit {
       clinicalNotes:[''],
       medications:  [''],
     });
+
+    // The custom date picker doesn't emit a native (change) event,
+    // so recompute Age from the form control's value stream instead.
+    this.form.get('dob')?.valueChanges.subscribe(() => this.calcAge());
   }
 
   calcAge(): void {
@@ -74,9 +83,39 @@ export class PatientRegistrationComponent implements OnInit {
     this.ageDisplay.set(years > 0 ? `${years} years` : '');
   }
 
+  // Grows a textarea to fit its content instead of showing a
+  // tall, mostly-empty box (Address / Clinical notes / Medication).
+  autoResize(evt: Event): void {
+    const el = evt.target as HTMLTextAreaElement;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  }
+
   isInvalid(field: string): boolean {
     const c = this.form.get(field);
     return !!(c?.invalid && (c.dirty || c.touched));
+  }
+
+  isValidTouched(field: string): boolean {
+    const c = this.form.get(field);
+    return !!(c?.valid && (c.dirty || c.touched));
+  }
+
+  // Checks the mobile number against known patients and
+  // surfaces a "possible duplicate" warning before the
+  // operator proceeds to Test Order.
+  onMobileChange(): void {
+    this.duplicateDismissed.set(false);
+    const mobile = this.form.value.mobile;
+    if (this.form.get('mobile')?.valid) {
+      this.duplicateMatch.set(this.flow.findByMobile(mobile));
+    } else {
+      this.duplicateMatch.set(null);
+    }
+  }
+
+  dismissDuplicateWarning(): void {
+    this.duplicateDismissed.set(true);
   }
 
   // Validate step 1 fields before advancing
@@ -84,12 +123,32 @@ export class PatientRegistrationComponent implements OnInit {
     const step1 = ['firstName', 'lastName', 'dob', 'gender', 'mobile'];
     step1.forEach(f => this.form.get(f)?.markAsTouched());
     const valid = step1.every(f => this.form.get(f)?.valid ?? true);
-    if (valid) this.currentStep.set(2);
+    if (!valid) return;
+
+    this.step1Saved.set(true);
+    setTimeout(() => {
+      this.step1Saved.set(false);
+      this.currentStep.set(2);
+    }, 550);
   }
 
   goBack(): void {
     if (this.currentStep() === 2) { this.currentStep.set(1); }
     else { this.router.navigate(['/dashboard/home']); }
+  }
+
+  // Keyboard-first navigation for high-volume receptionists:
+  // Ctrl/Cmd+Enter advances or saves, Esc goes back/cancels.
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardShortcut(evt: KeyboardEvent): void {
+    if (this.showSuccess()) return;
+    if ((evt.ctrlKey || evt.metaKey) && evt.key === 'Enter') {
+      evt.preventDefault();
+      this.currentStep() === 1 ? this.nextStep() : this.saveAndContinue();
+    } else if (evt.key === 'Escape') {
+      evt.preventDefault();
+      this.goBack();
+    }
   }
 
   saveAndContinue(): void {

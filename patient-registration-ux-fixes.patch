@@ -1,0 +1,985 @@
+diff --git a/src/app/core/services/patient-flow.service.ts b/src/app/core/services/patient-flow.service.ts
+index c4c9987..cbbd8e5 100644
+--- a/src/app/core/services/patient-flow.service.ts
++++ b/src/app/core/services/patient-flow.service.ts
+@@ -68,6 +68,20 @@ const DOCTORS = [
+   'Self / Walk-in',
+ ];
+ 
++// Mock "already registered" directory — used only to demo
++// duplicate-patient detection on the registration form.
++// Replace with a real lookup API call in production.
++export interface KnownPatientRecord {
++  name: string;
++  mobile: string;
++  registeredLabel: string;
++}
++
++const KNOWN_PATIENTS: KnownPatientRecord[] = [
++  { name: 'Chandan Kumar',  mobile: '9876543210', registeredLabel: 'Registered 3 months ago' },
++  { name: 'Priya Sharma',   mobile: '9845123456', registeredLabel: 'Registered 2 weeks ago' },
++];
++
+ @Injectable({ providedIn: 'root' })
+ export class PatientFlowService {
+   // ── Master test catalogue ─────────────────
+@@ -140,6 +154,13 @@ export class PatientFlowService {
+     return `INV-${yy}${mm}-0${seq}`;
+   }
+ 
++  // Looks up an existing patient by mobile number so the
++  // registration form can warn about possible duplicates.
++  findByMobile(mobile: string): KnownPatientRecord | null {
++    if (!mobile || mobile.length !== 10) return null;
++    return KNOWN_PATIENTS.find(p => p.mobile === mobile) ?? null;
++  }
++
+   calcAge(dob: string): number {
+     if (!dob) return 0;
+     const today = new Date();
+diff --git a/src/app/features/patient-registration/patient-registration.component.css b/src/app/features/patient-registration/patient-registration.component.css
+index 64a3679..877eead 100644
+--- a/src/app/features/patient-registration/patient-registration.component.css
++++ b/src/app/features/patient-registration/patient-registration.component.css
+@@ -9,8 +9,9 @@
+   justify-content: space-between;
+   flex-wrap: wrap;
+   gap: 16px;
+-  margin-bottom: 20px;
+-  padding: 16px 20px;
++  margin-bottom: 12px;
++  /* Reduced from 16px/20px so the form starts higher on screen. */
++  padding: 10px 16px;
+   background: var(--card-bg);
+   border: 0.5px solid var(--border-color);
+   border-radius: var(--lis-card-radius, 10px);
+@@ -25,22 +26,22 @@
+ }
+ 
+ .page-header__icon {
+-  width: 40px;
+-  height: 40px;
+-  border-radius: 10px;
++  width: 32px;
++  height: 32px;
++  border-radius: 8px;
+   background: var(--lis-primary-xlight, #E1F5EE);
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   flex-shrink: 0;
+-  i { font-size: 20px; color: var(--lis-primary, #1D9E75); }
++  i { font-size: 16px; color: var(--lis-primary, #1D9E75); }
+ }
+ 
+ .page-title {
+-  font-size: 18px;
++  font-size: 16px;
+   font-weight: 600;
+   color: var(--text-primary);
+-  margin: 0 0 2px;
++  margin: 0 0 1px;
+   line-height: 1.2;
+ }
+ 
+@@ -67,8 +68,8 @@
+   gap: 0;
+   background: var(--body-bg);
+   border: 0.5px solid var(--border-color);
+-  border-radius: 10px;
+-  padding: 8px 16px;
++  border-radius: 8px;
++  padding: 6px 12px;
+   gap: 4px;
+ }
+ 
+@@ -119,72 +120,21 @@
+ .wf-connector--done { background: var(--lis-primary-mid, #5DCAA5); }
+ 
+ /* ══════════════════════════════════════════════════════
+-   STEPPER
++   MINI-STEPS — sub-progress within the Register step only
++   (replaces the old duplicate top-level "stepper" so there
++   is exactly one progress indicator per level of the flow)
+    ══════════════════════════════════════════════════════ */
+-.stepper {
+-  display: flex;
+-  align-items: center;
+-  gap: 0;
+-  padding: 0 0 16px;
+-}
+-
+-.step {
+-  display: flex;
+-  align-items: center;
+-  gap: 7px;
+-  font-size: 12px;
+-  color: var(--text-secondary);
+-}
+-
+-.step--active { color: var(--lis-primary-deep, #085041); font-weight: 600; }
+-
+-.step-num {
+-  width: 24px;
+-  height: 24px;
+-  border-radius: 50%;
+-  border: 1.5px solid var(--border-color);
++.mini-steps {
+   display: flex;
+   align-items: center;
+-  justify-content: center;
+-  font-size: 10px;
+-  font-weight: 600;
+-  flex-shrink: 0;
+-}
+-
+-.step--active .step-num {
+-  background: var(--lis-primary, #1D9E75);
+-  border-color: var(--lis-primary, #1D9E75);
+-  color: #fff;
+-}
+-
+-.step--done .step-num {
+-  background: var(--lis-primary-xlight, #E1F5EE);
+-  border-color: var(--lis-primary, #1D9E75);
+-  color: var(--lis-primary-deep, #085041);
+-}
+-
+-.step-line {
+-  flex: 1;
+-  height: 1.5px;
+-  background: var(--border-color);
+-  margin: 0 10px;
+-  max-width: 60px;
+-}
+-
+-.step-line--done { background: var(--lis-primary-mid, #5DCAA5); }
+-
+-.step-pill {
+-  display: inline-flex;
+-  align-items: center;
+-  padding: 2px 9px;
+-  border-radius: 20px;
+-  font-size: 10px;
+-  font-weight: 500;
+-  background: #FAEEDA;
+-  color: #633806;
+-  border: 0.5px solid #E5C07B;
++  gap: 10px;
+   margin-left: auto;
++  font-size: 11px;
++  font-weight: 500;
++  color: var(--text-secondary);
+ }
++.mini-step--active { color: var(--lis-primary-deep, #085041); font-weight: 600; }
++.mini-step--done { color: var(--lis-primary, #1D9E75); }
+ 
+ /* ══════════════════════════════════════════════════════
+    FORM LAYOUT
+@@ -214,9 +164,54 @@
+   gap: 3px;
+   i { font-size: 11px; }
+ }
++.ok-msg {
++  font-size: 11px;
++  color: var(--lis-primary, #1D9E75);
++  margin-top: 3px;
++  display: flex;
++  align-items: center;
++  gap: 3px;
++  i { font-size: 11px; }
++}
+ .req { color: var(--lis-danger, #E24B4A); }
+ .opt-label { font-size: 10px; color: var(--text-secondary); font-weight: 400; }
+ 
++/* Required badge — more visible than a lone asterisk */
++.req-badge {
++  display: inline-flex;
++  align-items: center;
++  font-size: 9px;
++  font-weight: 600;
++  text-transform: uppercase;
++  letter-spacing: 0.03em;
++  padding: 1px 6px;
++  border-radius: 4px;
++  margin-left: 6px;
++  background: #FDEAEA;
++  color: var(--lis-danger, #E24B4A);
++  border: 0.5px solid #F3C6C6;
++  vertical-align: middle;
++}
++
++/* ══════════════════════════════════════════════════════
++   FIELD GROUPS — Identity / Contact / Address,
++   Visit Details / Preparation / Medication
++   ══════════════════════════════════════════════════════ */
++.field-group + .field-group { border-top: 0.5px solid var(--border-color); }
++.field-group__title {
++  display: flex;
++  align-items: center;
++  gap: 6px;
++  font-size: 11px;
++  font-weight: 600;
++  text-transform: uppercase;
++  letter-spacing: 0.04em;
++  color: var(--text-secondary);
++  padding: 14px 20px 0;
++  i { font-size: 13px; color: var(--lis-primary, #1D9E75); }
++}
++.field-group .form-grid { padding-top: 10px; }
++
+ /* ══════════════════════════════════════════════════════
+    CUSTOM DATE INPUT — styled wrapper
+    ══════════════════════════════════════════════════════ */
+@@ -323,12 +318,13 @@
+    PHONE INPUT — +91 prefix
+    ══════════════════════════════════════════════════════ */
+ .phone-wrap {
++  position: relative;
+   display: flex;
+   align-items: stretch;
+   border: 1px solid var(--border-color);
+   border-radius: 8px;
+   overflow: hidden;
+-  height: 38px;
++  height: 42px;
+   transition: border-color 0.15s;
+ 
+   &:focus-within { border-color: var(--lis-primary, #1D9E75); box-shadow: 0 0 0 3px var(--lis-primary-xlight, #E1F5EE); }
+@@ -358,18 +354,68 @@
+   border: none !important;
+   border-radius: 0 !important;
+   outline: none;
+-  padding: 0 11px;
+-  font-size: 13px;
+-  font-weight: 500;
++  padding: 0 30px 0 11px;
++  font-size: 15px;
++  font-weight: 600;
++  letter-spacing: 0.04em;
+   color: var(--text-primary);
+   background: var(--card-bg);
+   font-family: var(--font-family);
+-  letter-spacing: 0.03em;
+ 
+   &::placeholder { font-weight: 400; color: var(--text-secondary); letter-spacing: 0; }
+   &.input-error { background: #FFF0F0 !important; }
+ }
+ 
++.phone-wrap--error { border-color: var(--lis-danger, #E24B4A); }
++
++.phone-valid-icon {
++  position: absolute;
++  right: 10px;
++  font-size: 15px;
++  color: var(--lis-primary, #1D9E75);
++  pointer-events: none;
++}
++
++/* ══════════════════════════════════════════════════════
++   DUPLICATE PATIENT WARNING BANNER
++   ══════════════════════════════════════════════════════ */
++.dup-banner {
++  display: flex;
++  align-items: flex-start;
++  gap: 10px;
++  margin: 14px 20px 0;
++  padding: 12px 14px;
++  border-radius: 8px;
++  background: #FFF7E6;
++  border: 0.5px solid #F0C36D;
++}
++.dup-banner__icon { font-size: 18px; color: #A6710A; flex-shrink: 0; margin-top: 1px; }
++.dup-banner__body { flex: 1; min-width: 0; }
++.dup-banner__title { font-size: 12px; font-weight: 600; color: #6B4A05; }
++.dup-banner__meta { font-size: 11px; color: #7A5A10; margin-top: 2px; }
++.dup-banner__actions { display: flex; gap: 6px; flex-shrink: 0; }
++
++/* Larger segmented control for primary selections (Gender,
++   Visit type, Fasting status) — raises the 38px default hit
++   target to a roomier 48px and supports an inline icon. */
++.lis-seg--lg .lis-seg__opt {
++  height: 48px;
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  gap: 6px;
++  font-size: 13px;
++  i { font-size: 15px; }
++}
++
++/* Textareas that grow with content instead of leaving a tall
++   empty box; still resizable if the operator wants more room. */
++.auto-expand {
++  min-height: 44px !important;
++  height: auto;
++  overflow-y: hidden;
++}
++
+ /* ══════════════════════════════════════════════════════
+    PATIENT RECAP (step 2)
+    ══════════════════════════════════════════════════════ */
+@@ -419,6 +465,17 @@
+ .save-btn { min-width: 180px; justify-content: center; }
+ .save-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+ 
++/* Keep primary actions reachable on short/mobile viewports
++   instead of scrolling away below a long form. */
++@media (max-width: 720px) {
++  .form-actions--sticky {
++    position: sticky;
++    bottom: 0;
++    z-index: 5;
++    box-shadow: 0 -6px 16px rgba(0,0,0,0.06);
++  }
++}
++
+ /* ── Spinner ────────────────────────────────────────── */
+ @keyframes spin { to { transform: rotate(360deg); } }
+ .spin { display: inline-block; animation: spin 0.8s linear infinite; }
+diff --git a/src/app/features/patient-registration/patient-registration.component.html b/src/app/features/patient-registration/patient-registration.component.html
+index 868a262..5228c4b 100644
+--- a/src/app/features/patient-registration/patient-registration.component.html
++++ b/src/app/features/patient-registration/patient-registration.component.html
+@@ -57,7 +57,11 @@
+     </div>
+   </div>
+ 
+-  <!-- Workflow progress trail -->
++  <!-- Workflow progress trail — single top-level indicator.
++       The old "Demographics/Clinical info" pill-stepper that used
++       to render below this (duplicating it) has been removed;
++       that sub-progress now lives in the card header as
++       ".mini-steps" instead. -->
+   <div class="workflow-trail" aria-label="Workflow steps">
+     <div class="wf-step wf-step--active">
+       <span class="wf-dot wf-dot--active">
+@@ -83,29 +87,6 @@
+   </div>
+ </div>
+ 
+-<!-- ── Stepper pills ─────────────────────────────────────── -->
+-<div class="stepper" role="list" aria-label="Registration steps">
+-  @for (step of steps; track step.n) {
+-    <div class="step"
+-      [class.step--done]="currentStep() > step.n"
+-      [class.step--active]="currentStep() === step.n"
+-      role="listitem">
+-      <div class="step-num"
+-        [attr.aria-label]="currentStep() > step.n ? step.label + ' complete' : step.label">
+-        @if (currentStep() > step.n) {
+-          <i class="ti ti-check" aria-hidden="true"></i>
+-        } @else {
+-          {{ step.n }}
+-        }
+-      </div>
+-      <span class="step-label">{{ step.label }}</span>
+-    </div>
+-    @if (step.n < steps.length) {
+-      <div class="step-line" [class.step-line--done]="currentStep() > step.n"></div>
+-    }
+-  }
+-</div>
+-
+ <!-- ── Form ──────────────────────────────────────────────── -->
+ <div class="reg-form-wrap">
+   <form [formGroup]="form" novalidate>
+@@ -116,142 +97,191 @@
+         <div class="lis-card__header">
+           <i class="ti ti-user lis-card-icon" aria-hidden="true"></i>
+           <h2 class="lis-card__title">Personal Details</h2>
+-          <span class="step-pill">Step 1 of 2</span>
+-        </div>
+-
+-        <div class="form-grid">
+-          <!-- First name -->
+-          <div class="lis-field">
+-            <label for="firstName">First Name <span class="req" aria-hidden="true">*</span></label>
+-            <input id="firstName" formControlName="firstName"
+-              [class.input-error]="isInvalid('firstName')"
+-              autocomplete="given-name" placeholder="e.g. Ananya" />
+-            @if (isInvalid('firstName')) {
+-              <span class="err-msg" role="alert">
+-                <i class="ti ti-alert-circle"></i> First name is required
+-              </span>
+-            }
++          <div class="mini-steps" aria-label="Form sub-steps">
++            <span class="mini-step mini-step--active">① Personal</span>
++            <span class="mini-step">② Clinical</span>
+           </div>
++        </div>
+ 
+-          <!-- Last name -->
+-          <div class="lis-field">
+-            <label for="lastName">Last Name <span class="req" aria-hidden="true">*</span></label>
+-            <input id="lastName" formControlName="lastName"
+-              [class.input-error]="isInvalid('lastName')"
+-              autocomplete="family-name" placeholder="e.g. Krishnaswamy" />
+-            @if (isInvalid('lastName')) {
+-              <span class="err-msg" role="alert">
+-                <i class="ti ti-alert-circle"></i> Last name is required
+-              </span>
+-            }
++        <!-- Duplicate patient warning -->
++        @if (duplicateMatch() && !duplicateDismissed()) {
++          <div class="dup-banner" role="alert">
++            <i class="ti ti-alert-triangle dup-banner__icon" aria-hidden="true"></i>
++            <div class="dup-banner__body">
++              <div class="dup-banner__title">Possible existing patient</div>
++              <div class="dup-banner__meta">
++                {{ duplicateMatch()?.name }} · +91 {{ duplicateMatch()?.mobile }} · {{ duplicateMatch()?.registeredLabel }}
++              </div>
++            </div>
++            <div class="dup-banner__actions">
++              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm">
++                <i class="ti ti-search" aria-hidden="true"></i> View existing
++              </button>
++              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="dismissDuplicateWarning()">
++                Continue anyway
++              </button>
++            </div>
+           </div>
++        }
+ 
+-          <!-- Date of Birth — custom date picker wrapper -->
+-          <div class="lis-field">
+-            <label for="dob">Date of Birth <span class="req" aria-hidden="true">*</span></label>
+-            <div class="date-input-wrap">
+-              <i class="ti ti-calendar date-icon" aria-hidden="true"></i>
+-              <input id="dob" type="date" formControlName="dob"
+-                class="date-input"
+-                [class.input-error]="isInvalid('dob')"
+-                [max]="todayISO"
+-                (change)="calcAge()" />
++        <!-- Identity group -->
++        <div class="field-group">
++          <div class="field-group__title"><i class="ti ti-id-badge2" aria-hidden="true"></i> Identity</div>
++          <div class="form-grid">
++            <!-- First name -->
++            <div class="lis-field">
++              <label for="firstName">First Name <span class="req-badge" aria-hidden="true">Required</span></label>
++              <input id="firstName" formControlName="firstName"
++                [class.input-error]="isInvalid('firstName')"
++                autocomplete="given-name" placeholder="e.g. Ananya" />
++              @if (isInvalid('firstName')) {
++                <span class="err-msg" role="alert">
++                  <i class="ti ti-alert-circle"></i> First name is required
++                </span>
++              }
+             </div>
+-            @if (isInvalid('dob')) {
+-              <span class="err-msg" role="alert">
+-                <i class="ti ti-alert-circle"></i> Date of birth is required
+-              </span>
+-            }
+-          </div>
+ 
+-          <!-- Age — auto-calculated readonly -->
+-          <div class="lis-field">
+-            <label for="ageDisplay">
+-              Age
+-              <span class="auto-chip">
+-                <i class="ti ti-cpu" aria-hidden="true"></i> Auto
+-              </span>
+-            </label>
+-            <div class="auto-field-wrap">
+-              <input id="ageDisplay" [value]="ageDisplay()" readonly
+-                placeholder="Calculated from DOB"
+-                class="auto-field" tabindex="-1" />
+-              <i class="ti ti-lock auto-field-lock" aria-hidden="true"></i>
++            <!-- Last name -->
++            <div class="lis-field">
++              <label for="lastName">Last Name <span class="req-badge" aria-hidden="true">Required</span></label>
++              <input id="lastName" formControlName="lastName"
++                [class.input-error]="isInvalid('lastName')"
++                autocomplete="family-name" placeholder="e.g. Krishnaswamy" />
++              @if (isInvalid('lastName')) {
++                <span class="err-msg" role="alert">
++                  <i class="ti ti-alert-circle"></i> Last name is required
++                </span>
++              }
+             </div>
+-          </div>
+ 
+-          <!-- Gender -->
+-          <div class="lis-field">
+-            <label id="gender-label">Gender <span class="req" aria-hidden="true">*</span></label>
+-            <div class="lis-seg" role="group" aria-labelledby="gender-label">
+-              @for (g of ['Male','Female','Other']; track g) {
+-                <button type="button" class="lis-seg__opt"
+-                  [class.lis-seg__opt--active]="form.value.gender === g"
+-                  (click)="form.patchValue({gender: g})"
+-                  [attr.aria-pressed]="form.value.gender === g">{{ g }}</button>
++            <!-- Date of Birth — custom date picker wrapper -->
++            <div class="lis-field">
++              <label for="dob">Date of Birth <span class="req-badge" aria-hidden="true">Required</span></label>
++              <div class="date-input-wrap">
++                <i class="ti ti-calendar date-icon" aria-hidden="true"></i>
++                <input id="dob" type="date" formControlName="dob"
++                  class="date-input"
++                  [class.input-error]="isInvalid('dob')"
++                  [max]="todayISO"
++                  (change)="calcAge()" />
++              </div>
++              @if (isInvalid('dob')) {
++                <span class="err-msg" role="alert">
++                  <i class="ti ti-alert-circle"></i> Date of birth is required
++                </span>
+               }
+             </div>
+-            @if (isInvalid('gender')) {
+-              <span class="err-msg" role="alert">
+-                <i class="ti ti-alert-circle"></i> Please select a gender
+-              </span>
+-            }
+-          </div>
+ 
+-          <!-- Blood Group -->
+-          <div class="lis-field">
+-            <label for="bloodGroup">Blood Group</label>
+-            <select id="bloodGroup" formControlName="bloodGroup">
+-              @for (bg of bloodGroups; track bg) {
+-                <option [value]="bg">{{ bg }}</option>
++            <!-- Age — auto-calculated readonly -->
++            <div class="lis-field">
++              <label for="ageDisplay">
++                Age
++                <span class="auto-chip">
++                  <i class="ti ti-lock" aria-hidden="true"></i> Auto-calculated
++                </span>
++              </label>
++              <div class="auto-field-wrap">
++                <input id="ageDisplay" [value]="ageDisplay()" readonly
++                  placeholder="Calculated from DOB"
++                  class="auto-field" tabindex="-1" />
++                <i class="ti ti-lock auto-field-lock" aria-hidden="true"></i>
++              </div>
++            </div>
++
++            <!-- Gender -->
++            <div class="lis-field">
++              <label id="gender-label">Gender <span class="req-badge" aria-hidden="true">Required</span></label>
++              <div class="lis-seg lis-seg--lg" role="group" aria-labelledby="gender-label">
++                @for (g of ['Male','Female','Other']; track g) {
++                  <button type="button" class="lis-seg__opt"
++                    [class.lis-seg__opt--active]="form.value.gender === g"
++                    (click)="form.patchValue({gender: g})"
++                    [attr.aria-pressed]="form.value.gender === g">{{ g }}</button>
++                }
++              </div>
++              @if (isInvalid('gender')) {
++                <span class="err-msg" role="alert">
++                  <i class="ti ti-alert-circle"></i> Please select a gender
++                </span>
+               }
+-            </select>
+-          </div>
++            </div>
+ 
+-          <!-- Mobile Number — with +91 prefix -->
+-          <div class="lis-field">
+-            <label for="mobile">Mobile Number <span class="req" aria-hidden="true">*</span></label>
+-            <div class="phone-wrap">
+-              <span class="phone-prefix">
+-                <span class="phone-flag">🇮🇳</span>
+-                +91
+-              </span>
+-              <input id="mobile" formControlName="mobile" type="tel"
+-                class="phone-input"
+-                [class.input-error]="isInvalid('mobile')"
+-                autocomplete="tel" placeholder="98765 43210"
+-                maxlength="10" inputmode="numeric" />
++            <!-- Blood Group -->
++            <div class="lis-field">
++              <label for="bloodGroup">Blood Group</label>
++              <select id="bloodGroup" formControlName="bloodGroup">
++                @for (bg of bloodGroups; track bg) {
++                  <option [value]="bg">{{ bg }}</option>
++                }
++              </select>
+             </div>
+-            @if (isInvalid('mobile')) {
+-              <span class="err-msg" role="alert">
+-                <i class="ti ti-alert-circle"></i> Valid 10-digit number required
+-              </span>
+-            }
+           </div>
++        </div>
+ 
+-          <!-- Email -->
+-          <div class="lis-field">
+-            <label for="email">Email <span class="opt-label">(Optional)</span></label>
+-            <input id="email" formControlName="email" type="email"
+-              autocomplete="email" placeholder="patient@email.com" />
++        <!-- Contact group -->
++        <div class="field-group">
++          <div class="field-group__title"><i class="ti ti-address-book" aria-hidden="true"></i> Contact</div>
++          <div class="form-grid">
++            <!-- Mobile Number — with +91 prefix -->
++            <div class="lis-field">
++              <label for="mobile">Mobile Number <span class="req-badge" aria-hidden="true">Required</span></label>
++              <div class="phone-wrap" [class.phone-wrap--error]="isInvalid('mobile')">
++                <span class="phone-prefix">
++                  <span class="phone-flag">🇮🇳</span>
++                  +91
++                </span>
++                <input id="mobile" formControlName="mobile" type="tel"
++                  class="phone-input"
++                  [class.input-error]="isInvalid('mobile')"
++                  autocomplete="tel" placeholder="98765 43210"
++                  maxlength="10" inputmode="numeric"
++                  (input)="onMobileChange()" />
++                @if (isValidTouched('mobile')) {
++                  <i class="ti ti-circle-check phone-valid-icon" aria-hidden="true"></i>
++                }
++              </div>
++              @if (isInvalid('mobile')) {
++                <span class="err-msg" role="alert">
++                  <i class="ti ti-alert-circle"></i> Valid 10-digit number required
++                </span>
++              } @else if (isValidTouched('mobile')) {
++                <span class="ok-msg">
++                  <i class="ti ti-circle-check"></i> Mobile number looks valid
++                </span>
++              }
++            </div>
++
++            <!-- Email -->
++            <div class="lis-field">
++              <label for="email">Email <span class="opt-label">(Optional)</span></label>
++              <input id="email" formControlName="email" type="email"
++                autocomplete="email" placeholder="patient@email.com" />
++            </div>
+           </div>
++        </div>
+ 
+-          <!-- Address — full width -->
+-          <div class="lis-field form-full">
+-            <label for="address">Address <span class="opt-label">(Optional)</span></label>
+-            <textarea id="address" formControlName="address"
+-              placeholder="Street, area, city…"></textarea>
++        <!-- Address group -->
++        <div class="field-group">
++          <div class="field-group__title"><i class="ti ti-map-pin" aria-hidden="true"></i> Address</div>
++          <div class="form-grid">
++            <!-- Address — full width -->
++            <div class="lis-field form-full">
++              <label for="address">Address <span class="opt-label">(Optional)</span></label>
++              <textarea id="address" formControlName="address" rows="2"
++                class="auto-expand"
++                placeholder="e.g. 12, MG Road, Indiranagar, Bengaluru"></textarea>
++            </div>
+           </div>
+         </div>
+       </div>
+ 
+-      <!-- Step 1 actions -->
+-      <div class="form-actions">
+-        <button type="button" class="lis-btn lis-btn--secondary" (click)="goBack()">
++      <!-- Step 1 actions — sticky so they stay reachable on smaller screens -->
++      <div class="form-actions form-actions--sticky">
++        <button type="button" class="lis-btn lis-btn--secondary" (click)="goBack()" title="Esc">
+           <i class="ti ti-arrow-left" aria-hidden="true"></i> Cancel
+         </button>
+-        <button type="button" class="lis-btn lis-btn--primary" (click)="nextStep()">
+-          Next: Clinical info <i class="ti ti-arrow-right" aria-hidden="true"></i>
++        <button type="button" class="lis-btn lis-btn--primary" (click)="nextStep()" title="Ctrl+Enter">
++          Continue to Clinical <i class="ti ti-arrow-right" aria-hidden="true"></i>
+         </button>
+       </div>
+     }
+@@ -262,7 +292,10 @@
+         <div class="lis-card__header">
+           <i class="ti ti-stethoscope lis-card-icon" aria-hidden="true"></i>
+           <h2 class="lis-card__title">Clinical Information</h2>
+-          <span class="step-pill">Step 2 of 2</span>
++          <div class="mini-steps" aria-label="Form sub-steps">
++            <span class="mini-step mini-step--done">① Personal</span>
++            <span class="mini-step mini-step--active">② Clinical</span>
++          </div>
+         </div>
+ 
+         <!-- Mini patient recap -->
+@@ -282,86 +315,129 @@
+           </button>
+         </div>
+ 
+-        <div class="form-grid">
+-          <!-- Referring doctor -->
+-          <div class="lis-field">
+-            <label for="refDoctor">Referring doctor <span class="req" aria-hidden="true">*</span></label>
+-            <select id="refDoctor" formControlName="refDoctor"
+-              [class.input-error]="isInvalid('refDoctor')">
+-              <option value="">— Select doctor —</option>
+-              @for (d of flow.doctors; track d) {
+-                <option [value]="d">{{ d }}</option>
++        <!-- Visit details group -->
++        <div class="field-group">
++          <div class="field-group__title"><i class="ti ti-stethoscope" aria-hidden="true"></i> Visit Details</div>
++          <div class="form-grid">
++            <!-- Referring doctor -->
++            <div class="lis-field">
++              <label for="refDoctor">Referring doctor <span class="req-badge" aria-hidden="true">Required</span></label>
++              <select id="refDoctor" formControlName="refDoctor"
++                [class.input-error]="isInvalid('refDoctor')">
++                <option value="">— Select doctor —</option>
++                @for (d of flow.doctors; track d) {
++                  <option [value]="d">{{ d }}</option>
++                }
++                <option value="new">+ Add new doctor</option>
++              </select>
++              @if (isInvalid('refDoctor')) {
++                <span class="err-msg" role="alert">Please select a referring doctor</span>
+               }
+-              <option value="new">+ Add new doctor</option>
+-            </select>
+-            @if (isInvalid('refDoctor')) {
+-              <span class="err-msg" role="alert">Please select a referring doctor</span>
+-            }
+-          </div>
++            </div>
+ 
+-          <!-- Visit type -->
+-          <div class="lis-field">
+-            <label id="visit-label">Visit type</label>
+-            <div class="lis-seg" role="group" aria-labelledby="visit-label">
+-              @for (v of ['Walk-in','Appointment','Home visit']; track v) {
++            <!-- Visit type -->
++            <div class="lis-field">
++              <label id="visit-label">Visit type</label>
++              <div class="lis-seg lis-seg--lg" role="group" aria-labelledby="visit-label">
+                 <button type="button" class="lis-seg__opt"
+-                  [class.lis-seg__opt--active]="form.value.visitType === v"
+-                  (click)="form.patchValue({visitType: v})"
+-                  [attr.aria-pressed]="form.value.visitType === v">{{ v }}</button>
+-              }
++                  [class.lis-seg__opt--active]="form.value.visitType === 'Walk-in'"
++                  (click)="form.patchValue({visitType: 'Walk-in'})"
++                  [attr.aria-pressed]="form.value.visitType === 'Walk-in'">
++                  <i class="ti ti-building-hospital" aria-hidden="true"></i> Walk-in
++                </button>
++                <button type="button" class="lis-seg__opt"
++                  [class.lis-seg__opt--active]="form.value.visitType === 'Appointment'"
++                  (click)="form.patchValue({visitType: 'Appointment'})"
++                  [attr.aria-pressed]="form.value.visitType === 'Appointment'">
++                  <i class="ti ti-calendar-event" aria-hidden="true"></i> Appointment
++                </button>
++                <button type="button" class="lis-seg__opt"
++                  [class.lis-seg__opt--active]="form.value.visitType === 'Home visit'"
++                  (click)="form.patchValue({visitType: 'Home visit'})"
++                  [attr.aria-pressed]="form.value.visitType === 'Home visit'">
++                  <i class="ti ti-home" aria-hidden="true"></i> Home visit
++                </button>
++              </div>
+             </div>
+-          </div>
+ 
+-          <!-- Fasting status -->
+-          <div class="lis-field">
+-            <label id="fasting-label">Fasting status</label>
+-            <div class="lis-seg" role="group" aria-labelledby="fasting-label">
+-              @for (f of ['Fasting','Non-fasting','Unknown']; track f) {
+-                <button type="button" class="lis-seg__opt"
+-                  [class.lis-seg__opt--active]="form.value.fasting === f"
+-                  (click)="form.patchValue({fasting: f})"
+-                  [attr.aria-pressed]="form.value.fasting === f">{{ f }}</button>
+-              }
++            <!-- Sample collection -->
++            <div class="lis-field">
++              <label for="collection">Sample collection</label>
++              <select id="collection" formControlName="collection">
++                <option>At lab counter</option>
++                <option>Home collection</option>
++              </select>
+             </div>
+           </div>
++        </div>
+ 
+-          <!-- Sample collection -->
+-          <div class="lis-field">
+-            <label for="collection">Sample collection</label>
+-            <select id="collection" formControlName="collection">
+-              <option>At lab counter</option>
+-              <option>Home collection</option>
+-            </select>
+-          </div>
++        <!-- Preparation group -->
++        <div class="field-group">
++          <div class="field-group__title"><i class="ti ti-clipboard-list" aria-hidden="true"></i> Preparation</div>
++          <div class="form-grid">
++            <!-- Fasting status -->
++            <div class="lis-field">
++              <label id="fasting-label">Fasting status</label>
++              <div class="lis-seg lis-seg--lg" role="group" aria-labelledby="fasting-label">
++                <button type="button" class="lis-seg__opt"
++                  [class.lis-seg__opt--active]="form.value.fasting === 'Fasting'"
++                  (click)="form.patchValue({fasting: 'Fasting'})"
++                  [attr.aria-pressed]="form.value.fasting === 'Fasting'">
++                  <i class="ti ti-tools-kitchen-2" aria-hidden="true"></i> Fasting
++                </button>
++                <button type="button" class="lis-seg__opt"
++                  [class.lis-seg__opt--active]="form.value.fasting === 'Non-fasting'"
++                  (click)="form.patchValue({fasting: 'Non-fasting'})"
++                  [attr.aria-pressed]="form.value.fasting === 'Non-fasting'">
++                  <i class="ti ti-coffee" aria-hidden="true"></i> Non-fasting
++                </button>
++                <button type="button" class="lis-seg__opt"
++                  [class.lis-seg__opt--active]="form.value.fasting === 'Unknown'"
++                  (click)="form.patchValue({fasting: 'Unknown'})"
++                  [attr.aria-pressed]="form.value.fasting === 'Unknown'">
++                  <i class="ti ti-help" aria-hidden="true"></i> Unknown
++                </button>
++              </div>
++            </div>
+ 
+-          <!-- Clinical notes -->
+-          <div class="lis-field form-full">
+-            <label for="clinicalNotes">
+-              Clinical notes / symptoms <span class="opt-label">(optional)</span>
+-            </label>
+-            <textarea id="clinicalNotes" formControlName="clinicalNotes"
+-              placeholder="e.g. fatigue, weight gain, palpitations — 3 months…"></textarea>
++            <!-- Clinical notes -->
++            <div class="lis-field form-full">
++              <label for="clinicalNotes">
++                Clinical notes / symptoms <span class="opt-label">(optional)</span>
++              </label>
++              <textarea id="clinicalNotes" formControlName="clinicalNotes" rows="2"
++                class="auto-expand"
++                placeholder="e.g. Fever since 3 days, weight loss, PCOS follow-up"></textarea>
++            </div>
+           </div>
++        </div>
+ 
+-          <!-- Known conditions / medications -->
+-          <div class="lis-field form-full">
+-            <label for="medications">
+-              Known conditions / medications <span class="opt-label">(optional)</span>
+-            </label>
+-            <textarea id="medications" formControlName="medications"
+-              placeholder="e.g. Type 2 diabetes, on Metformin 500 mg…"></textarea>
++        <!-- Medication group -->
++        <div class="field-group">
++          <div class="field-group__title"><i class="ti ti-pill" aria-hidden="true"></i> Medication</div>
++          <div class="form-grid">
++            <!-- Known conditions / medications -->
++            <div class="lis-field form-full">
++              <label for="medications">
++                Known conditions / medications <span class="opt-label">(optional)</span>
++              </label>
++              <textarea id="medications" formControlName="medications" rows="2"
++                class="auto-expand"
++                placeholder="e.g. Type 2 diabetes, on Metformin 500 mg"></textarea>
++            </div>
+           </div>
+         </div>
+       </div>
+ 
+-      <!-- Step 2 actions -->
+-      <div class="form-actions">
+-        <button type="button" class="lis-btn lis-btn--secondary" (click)="goBack()">
++      <!-- Step 2 actions — sticky so they stay reachable on smaller screens -->
++      <div class="form-actions form-actions--sticky">
++        <button type="button" class="lis-btn lis-btn--secondary" (click)="goBack()" title="Esc">
+           <i class="ti ti-arrow-left" aria-hidden="true"></i> Back
+         </button>
+         <button type="button" class="lis-btn lis-btn--primary save-btn"
+           (click)="saveAndContinue()"
+-          [disabled]="saving()">
++          [disabled]="saving()"
++          title="Ctrl+Enter">
+           @if (saving()) {
+             <i class="ti ti-loader-2 spin" aria-hidden="true"></i> Saving…
+           } @else {
+diff --git a/src/app/features/patient-registration/patient-registration.component.ts b/src/app/features/patient-registration/patient-registration.component.ts
+index af63253..3556438 100644
+--- a/src/app/features/patient-registration/patient-registration.component.ts
++++ b/src/app/features/patient-registration/patient-registration.component.ts
+@@ -4,12 +4,12 @@
+ //  & clinical info, then navigate to Test Order.
+ // ─────────────────────────────────────────────
+ import {
+-  Component, ChangeDetectionStrategy, signal, inject, OnInit
++  Component, ChangeDetectionStrategy, signal, inject, OnInit, HostListener
+ } from '@angular/core';
+ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+ import { Router, RouterLink } from '@angular/router';
+ import { NgClass } from '@angular/common';
+-import { PatientFlowService, RegisteredPatient } from '../../core/services/patient-flow.service';
++import { PatientFlowService, RegisteredPatient, KnownPatientRecord } from '../../core/services/patient-flow.service';
+ 
+ @Component({
+   selector: 'app-patient-registration',
+@@ -24,11 +24,6 @@ export class PatientRegistrationComponent implements OnInit {
+   private readonly router = inject(Router);
+   protected readonly flow = inject(PatientFlowService);
+ 
+-  // Two-step stepper (demographics → clinical)
+-  protected readonly steps = [
+-    { n: 1, label: 'Demographics' },
+-    { n: 2, label: 'Clinical info' },
+-  ];
+   protected readonly bloodGroups = [
+     'A+', 'A−', 'B+', 'B−', 'O+', 'O−', 'AB+', 'AB−', 'Unknown'
+   ];
+@@ -42,6 +37,10 @@ export class PatientRegistrationComponent implements OnInit {
+   savedPatient  = signal<RegisteredPatient | null>(null);
+   countdown     = signal(3);
+ 
++  // Duplicate-patient detection (Personal Details step)
++  duplicateMatch  = signal<KnownPatientRecord | null>(null);
++  duplicateDismissed = signal(false);
++
+   form!: FormGroup;
+ 
+   private _timer?: ReturnType<typeof setInterval>;
+@@ -79,6 +78,28 @@ export class PatientRegistrationComponent implements OnInit {
+     return !!(c?.invalid && (c.dirty || c.touched));
+   }
+ 
++  isValidTouched(field: string): boolean {
++    const c = this.form.get(field);
++    return !!(c?.valid && (c.dirty || c.touched));
++  }
++
++  // Checks the mobile number against known patients and
++  // surfaces a "possible duplicate" warning before the
++  // operator proceeds to Test Order.
++  onMobileChange(): void {
++    this.duplicateDismissed.set(false);
++    const mobile = this.form.value.mobile;
++    if (this.form.get('mobile')?.valid) {
++      this.duplicateMatch.set(this.flow.findByMobile(mobile));
++    } else {
++      this.duplicateMatch.set(null);
++    }
++  }
++
++  dismissDuplicateWarning(): void {
++    this.duplicateDismissed.set(true);
++  }
++
+   // Validate step 1 fields before advancing
+   nextStep(): void {
+     const step1 = ['firstName', 'lastName', 'dob', 'gender', 'mobile'];
+@@ -92,6 +113,20 @@ export class PatientRegistrationComponent implements OnInit {
+     else { this.router.navigate(['/dashboard/home']); }
+   }
+ 
++  // Keyboard-first navigation for high-volume receptionists:
++  // Ctrl/Cmd+Enter advances or saves, Esc goes back/cancels.
++  @HostListener('document:keydown', ['$event'])
++  handleKeyboardShortcut(evt: KeyboardEvent): void {
++    if (this.showSuccess()) return;
++    if ((evt.ctrlKey || evt.metaKey) && evt.key === 'Enter') {
++      evt.preventDefault();
++      this.currentStep() === 1 ? this.nextStep() : this.saveAndContinue();
++    } else if (evt.key === 'Escape') {
++      evt.preventDefault();
++      this.goBack();
++    }
++  }
++
+   saveAndContinue(): void {
+     // Validate step 2 fields
+     const step2 = ['refDoctor'];
