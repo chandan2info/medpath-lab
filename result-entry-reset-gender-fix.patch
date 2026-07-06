@@ -1,0 +1,180 @@
+From c2a9d72de068028cf4f9564b2777530ee7ed3949 Mon Sep 17 00:00:00 2001
+From: Claude <dev@medpath.local>
+Date: Sun, 5 Jul 2026 16:06:30 +0000
+Subject: [PATCH] Result Entry: per-row + section reset, gender-specific icon,
+ age/gender separator
+
+---
+ .../result-entry/result-entry.component.css   | 32 ++++++++++++++
+ .../result-entry/result-entry.component.html  | 22 ++++++++--
+ .../result-entry/result-entry.component.ts    | 43 +++++++++++++++++++
+ 3 files changed, 93 insertions(+), 4 deletions(-)
+
+diff --git a/src/app/features/result-entry/result-entry.component.css b/src/app/features/result-entry/result-entry.component.css
+index adba02a..c9696ec 100644
+--- a/src/app/features/result-entry/result-entry.component.css
++++ b/src/app/features/result-entry/result-entry.component.css
+@@ -288,6 +288,24 @@
+ .range-bar__marker--low      { background: var(--lis-warning, #EF9F27); }
+ .range-bar__marker--critical { background: var(--lis-danger, #E24B4A); }
+ 
++.row-actions { display: flex; align-items: center; gap: 2px; }
++.reset-btn {
++  background: none;
++  border: none;
++  cursor: pointer;
++  color: var(--lis-warning, #EF9F27);
++  font-size: 14px;
++  width: 32px;
++  height: 32px;
++  border-radius: 50%;
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  transition: background 0.15s, color 0.15s;
++  flex-shrink: 0;
++}
++.reset-btn:hover { background: rgba(239,159,39,0.14); }
++
+ .note-btn {
+   background: none;
+   border: none;
+@@ -436,6 +454,20 @@
+ .side-actions .lis-btn--secondary:hover {
+   background: var(--body-bg);
+ }
++.lis-btn--ghost {
++  background: transparent;
++  color: var(--text-secondary);
++  border: 0.5px dashed var(--border-color);
++}
++.lis-btn--ghost:hover:not(:disabled) {
++  background: rgba(239,159,39,0.10);
++  color: var(--lis-warning, #EF9F27);
++  border-color: var(--lis-warning, #EF9F27);
++}
++.lis-btn--ghost:disabled {
++  opacity: 0.4;
++  cursor: not-allowed;
++}
+ 
+ .kbd-hint {
+   display: flex;
+diff --git a/src/app/features/result-entry/result-entry.component.html b/src/app/features/result-entry/result-entry.component.html
+index babf0dd..0540d87 100644
+--- a/src/app/features/result-entry/result-entry.component.html
++++ b/src/app/features/result-entry/result-entry.component.html
+@@ -21,7 +21,9 @@
+       <div class="pat-info">
+         <div class="pat-name">Arun Pillai</div>
+         <div class="pat-meta">
+-          <span class="pat-meta-item"><i class="ti ti-user" aria-hidden="true"></i> 61Y · Male</span>
++          <span class="pat-meta-item"><i class="ti ti-calendar" aria-hidden="true"></i> {{ patientAge() }}</span>
++          <span class="pat-sep" aria-hidden="true">|</span>
++          <span class="pat-meta-item"><i class="ti {{ genderIcon() }}" aria-hidden="true"></i> {{ patientGender() }}</span>
+           <span class="pat-sep" aria-hidden="true">|</span>
+           <span class="pat-meta-item"><i class="ti ti-id-badge-2" aria-hidden="true"></i> <span class="lis-mono">PAT-2406-0316</span></span>
+           <span class="pat-sep" aria-hidden="true">|</span>
+@@ -144,9 +146,17 @@
+                   </span>
+                 </td>
+                 <td>
+-                  <button type="button" class="note-btn" [attr.aria-label]="'Add note for ' + p.name">
+-                    <i class="ti ti-message-circle" aria-hidden="true"></i>
+-                  </button>
++                  <div class="row-actions">
++                    @if (isRowEdited(p)) {
++                      <button type="button" class="reset-btn" [attr.aria-label]="'Reset ' + p.name + ' to original value'"
++                              title="Reset to original value" (click)="resetRow(i)">
++                        <i class="ti ti-arrow-back-up" aria-hidden="true"></i>
++                      </button>
++                    }
++                    <button type="button" class="note-btn" [attr.aria-label]="'Add note for ' + p.name">
++                      <i class="ti ti-message-circle" aria-hidden="true"></i>
++                    </button>
++                  </div>
+                 </td>
+               </tr>
+             }
+@@ -232,6 +242,10 @@
+         <button type="button" class="lis-btn lis-btn--secondary lis-btn--full" (click)="saveDraft()" title="Ctrl+S">
+           <i class="ti ti-device-floppy" aria-hidden="true"></i> Save draft
+         </button>
++        <button type="button" class="lis-btn lis-btn--ghost lis-btn--full" (click)="resetAll()" [disabled]="!anyEdited()"
++                title="Reset all values on this tab to their original entries">
++          <i class="ti ti-refresh-alert" aria-hidden="true"></i> Reset this section
++        </button>
+         <div class="kbd-hint">
+           <span><kbd>Enter</kbd> next row</span>
+           <span><kbd>Ctrl</kbd>+<kbd>S</kbd> save</span>
+diff --git a/src/app/features/result-entry/result-entry.component.ts b/src/app/features/result-entry/result-entry.component.ts
+index 8e97d0c..a9bbc2c 100644
+--- a/src/app/features/result-entry/result-entry.component.ts
++++ b/src/app/features/result-entry/result-entry.component.ts
+@@ -77,6 +77,19 @@ export class ResultEntryComponent {
+ 
+   protected readonly tabs: TabDef[] = TABS;
+ 
++  /** Patient demographics — drives the gender-specific icon in the patient bar. */
++  patientAge = signal('61Y');
++  patientGender = signal<'Male' | 'Female' | 'Other'>('Male');
++  genderIcon = computed(() => ({
++    Male: 'ti-gender-male',
++    Female: 'ti-gender-female',
++    Other: 'ti-gender-transgender',
++  }[this.patientGender()]));
++
++  /** Pristine copy of every tab's data, used to power the reset controls. */
++  private readonly originalTabData: Record<string, ParamRow[]> =
++    Object.fromEntries(TABS.map(t => [t.key, t.params.map(p => ({ ...p }))]));
++
+   /** All tabs' data, keyed by tab key, so switching tabs never loses in-progress edits. */
+   private readonly tabData = signal<Record<string, ParamRow[]>>(
+     Object.fromEntries(TABS.map(t => [t.key, t.params.map(p => ({ ...p }))]))
+@@ -104,6 +117,13 @@ export class ResultEntryComponent {
+     return { style: 'ok', icon: 'ti-circle-check', text: 'All normal' };
+   });
+ 
++  /** True once at least one value on the active tab has been changed from its original entry. */
++  anyEdited = computed(() => this.params().some(p => p.editedBy === 'You'));
++
++  isRowEdited(p: ParamRow): boolean {
++    return p.editedBy === 'You';
++  }
++
+   selectTab(key: string): void {
+     this.activeTabKey.set(key);
+   }
+@@ -200,6 +220,29 @@ export class ResultEntryComponent {
+     this.evalFlag(i);
+   }
+ 
++  /** Restore a single row to its original, unedited value — undoes a typo without touching the rest. */
++  resetRow(i: number): void {
++    const key = this.activeTabKey();
++    const original = this.originalTabData[key][i];
++    this.tabData.update(all => {
++      const rows = [...all[key]];
++      rows[i] = { ...original };
++      return { ...all, [key]: rows };
++    });
++  }
++
++  /** Restore every row on the active tab back to its original values, after a confirmation. */
++  resetAll(): void {
++    if (!this.anyEdited()) return;
++    const confirmed = window.confirm('Reset all results in this section back to their original entries? This cannot be undone.');
++    if (!confirmed) return;
++    const key = this.activeTabKey();
++    this.tabData.update(all => ({
++      ...all,
++      [key]: this.originalTabData[key].map(p => ({ ...p })),
++    }));
++  }
++
+   flagLabel(f: ResultFlag): string {
+     return { normal:'Normal', high:'High', low:'Low', critical:'Critical' }[f] ?? f;
+   }
+-- 
+2.43.0
+

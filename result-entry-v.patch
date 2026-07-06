@@ -1,0 +1,1273 @@
+diff --git a/src/app/features/result-entry/result-entry.component.css b/src/app/features/result-entry/result-entry.component.css
+index d6e91da..8949405 100644
+--- a/src/app/features/result-entry/result-entry.component.css
++++ b/src/app/features/result-entry/result-entry.component.css
+@@ -7,30 +7,34 @@
+   justify-content: space-between;
+   flex-wrap: wrap;
+   gap: 12px;
+-  margin-bottom: 18px;
++  margin-bottom: 20px;
+ }
+-.page-title { font-size: 22px; font-weight: 500; color: var(--text-primary); margin: 0 0 4px; }
+-.breadcrumb { display: flex; list-style: none; padding: 0; margin: 0; gap: 6px; font-size: 12px; color: var(--text-secondary); }
++.page-header-main { display: flex; flex-direction: column-reverse; gap: 4px; }
++.page-title { font-size: 26px; font-weight: 700; color: var(--text-primary); margin: 0; letter-spacing: -0.01em; }
++.breadcrumb { display: flex; list-style: none; padding: 0; margin: 0; gap: 6px; font-size: 12px; color: var(--text-secondary); opacity: 0.75; }
+ .breadcrumb a { color: var(--text-secondary); text-decoration: none; }
++.breadcrumb a:hover { text-decoration: underline; }
+ .breadcrumb li + li::before { content: '/'; margin-right: 6px; }
+ 
+ .autosave-chip {
+   display: flex;
+   align-items: center;
+-  gap: 5px;
+-  padding: 5px 10px;
++  gap: 6px;
++  padding: 6px 12px;
+   border: 0.5px solid var(--border-color);
+-  border-radius: 7px;
++  border-radius: 20px;
+   font-size: 11px;
+-  color: var(--text-secondary);
+-  background: var(--card-bg);
++  font-weight: 500;
++  color: var(--lis-primary-deep, var(--text-primary));
++  background: var(--lis-primary-xlight);
++  margin-top: 4px;
+ }
+-.autosave-chip i { font-size: 13px; }
++.autosave-chip i { font-size: 14px; color: var(--lis-primary); }
+ 
+ /* ── Layout ──────────────────────────────────── */
+ .re-layout {
+   display: grid;
+-  grid-template-columns: 1fr 280px;
++  grid-template-columns: 1fr 300px;
+   gap: 16px;
+   align-items: start;
+ }
+@@ -49,119 +53,304 @@
+ .pat-bar {
+   display: flex;
+   align-items: center;
+-  gap: 10px;
+-  padding: 11px 14px;
++  gap: 12px;
++  padding: 14px 16px;
+   border-bottom: 0.5px solid var(--border-color);
++  flex-wrap: wrap;
+ }
+ .pat-av {
+-  width: 34px;
+-  height: 34px;
++  width: 44px;
++  height: 44px;
+   border-radius: 50%;
+   background: var(--lis-primary-xlight, #E1F5EE);
+   display: flex;
+   align-items: center;
+   justify-content: center;
+-  font-size: 11px;
+-  font-weight: 500;
++  font-size: 14px;
++  font-weight: 700;
+   color: var(--lis-primary-deep, #085041);
+   flex-shrink: 0;
++  border: 1.5px solid var(--lis-primary-mid);
+ }
+-.pat-info { flex: 1; }
+-.pat-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+-.pat-meta { font-size: 11px; color: var(--text-secondary); margin-top: 1px; }
++.pat-info { flex: 1; min-width: 180px; }
++.pat-name { font-size: 15px; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
++.pat-meta { font-size: 12px; color: var(--text-secondary); margin-top: 3px; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
++.pat-meta-item { display: inline-flex; align-items: center; gap: 4px; }
++.pat-meta-item i { font-size: 12px; opacity: 0.7; }
++.pat-sep { opacity: 0.35; font-size: 11px; }
++.pat-tests { font-size: 11px; color: var(--text-secondary); opacity: 0.85; margin-top: 3px; display: flex; align-items: center; gap: 5px; }
++.pat-tests i { font-size: 12px; opacity: 0.7; }
+ 
+-.stat-chip { background: #E24B4A; color: #fff; font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 10px; }
+-.stat-chip--sm { padding: 1px 6px; }
++.pat-doctor-badge {
++  display: flex;
++  align-items: center;
++  gap: 6px;
++  padding: 5px 10px;
++  border-radius: 20px;
++  background: var(--body-bg);
++  border: 0.5px solid var(--border-color);
++  font-size: 11px;
++  font-weight: 500;
++  color: var(--text-primary);
++  white-space: nowrap;
++}
++.pat-doctor-badge i { color: var(--lis-primary); font-size: 13px; }
++
++.stat-chip { background: var(--lis-danger,#E24B4A); color: #fff; font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 10px; letter-spacing: 0.03em; }
++.stat-chip--sm { padding: 1px 6px; font-weight: 500; }
+ 
+-/* ── Tab bar ─────────────────────────────────── */
++/* ── Tab bar (pill style) ──────────────────────── */
+ .tab-bar {
+   display: flex;
++  gap: 6px;
++  padding: 10px 14px;
+   border-bottom: 0.5px solid var(--border-color);
+-  padding: 0 14px;
++  background: var(--body-bg);
+ }
+ .tab {
+-  padding: 10px 14px;
++  padding: 8px 16px;
+   font-size: 13px;
+   color: var(--text-secondary);
+   cursor: pointer;
+-  border-bottom: 2px solid transparent;
+-  border-top: none;
+-  border-left: none;
+-  border-right: none;
+-  background: none;
++  border: none;
++  border-radius: 20px;
++  background: transparent;
+   font-family: var(--font-family);
++  font-weight: 500;
++  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
++}
++.tab:hover:not(.tab--active) { background: var(--card-bg); color: var(--text-primary); }
++.tab--active {
++  color: #fff;
++  background: var(--lis-primary, #1D9E75);
++  font-weight: 700;
++  box-shadow: 0 3px 10px -2px rgba(29,158,117,0.55);
+ }
+-.tab--active { color: var(--lis-primary, #1D9E75); border-bottom-color: var(--lis-primary, #1D9E75); font-weight: 500; }
+ 
+ /* ── Tabler icon size util (replaces inline style="font-size:11px") */
+ .ti-xs { font-size: 11px; }
+ 
+ /* ── Critical banner ─────────────────────────── */
+ .critical-banner {
+-  background: #FCEBEB;
++  background: var(--pill-critical-bg, #FCEBEB);
+   border: 0.5px solid #F09595;
+-  margin: 12px 14px 0;
++  border-left: 6px solid var(--lis-danger, #E24B4A);
++  margin: 14px 14px 0;
+   border-radius: 8px;
+-  padding: 9px 12px;
++  padding: 10px 12px;
+   display: flex;
+-  align-items: flex-start;
+-  gap: 8px;
++  align-items: center;
++  gap: 10px;
++}
++.critical-icon-wrap {
++  width: 30px;
++  height: 30px;
++  border-radius: 50%;
++  background: rgba(226,75,74,0.16);
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  flex-shrink: 0;
++  animation: critical-pulse 1.8s ease-in-out infinite;
+ }
+-.critical-banner i { color: #E24B4A; font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+-.critical-text { font-size: 11px; color: #791F1F; line-height: 1.5; }
++.critical-icon-wrap i { color: var(--lis-danger, #E24B4A); font-size: 16px; }
++@keyframes critical-pulse {
++  0%, 100% { box-shadow: 0 0 0 0 rgba(226,75,74,0.35); }
++  50%      { box-shadow: 0 0 0 6px rgba(226,75,74,0); }
++}
++@media (prefers-reduced-motion: reduce) {
++  .critical-icon-wrap { animation: none; }
++}
++.critical-text { flex: 1; min-width: 0; }
++.critical-headline { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
++.critical-badge {
++  background: var(--lis-danger, #E24B4A);
++  color: #fff;
++  font-size: 10px;
++  font-weight: 700;
++  letter-spacing: 0.04em;
++  padding: 2px 8px;
++  border-radius: 4px;
++  flex-shrink: 0;
++}
++.critical-param { font-size: 12px; font-weight: 600; color: var(--pill-critical-color, #791F1F); }
++.critical-sub { font-size: 11px; color: var(--pill-critical-color, #791F1F); opacity: 0.85; margin-top: 2px; }
++.critical-notify-btn {
++  display: flex;
++  align-items: center;
++  gap: 6px;
++  padding: 7px 14px;
++  border-radius: 7px;
++  border: none;
++  background: var(--lis-danger, #E24B4A);
++  color: #fff;
++  font-size: 12px;
++  font-weight: 600;
++  cursor: pointer;
++  flex-shrink: 0;
++  font-family: var(--font-family);
++  transition: filter 0.15s;
++}
++.critical-notify-btn:hover { filter: brightness(1.08); }
+ 
+ /* ── Result table ────────────────────────────── */
+-.result-card { border: none !important; border-radius: 0 !important; }
++.result-card { border: none !important; border-radius: 0 !important; margin-top: 14px; }
+ .overflow-x-auto { overflow-x: auto; }
+ 
+-.result-tbl { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 480px; }
++.result-tbl { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 560px; }
+ .result-tbl th {
+-  padding: 7px 14px;
++  padding: 8px 14px;
+   text-align: left;
+   font-size: 10px;
+   color: var(--text-secondary);
+-  font-weight: 500;
++  font-weight: 600;
+   border-bottom: 0.5px solid var(--border-color);
+   text-transform: uppercase;
+-  letter-spacing: 0.04em;
++  letter-spacing: 0.05em;
+   white-space: nowrap;
+ }
+ .result-tbl td {
+-  padding: 9px 14px;
++  padding: 7px 14px;
+   border-bottom: 0.5px solid var(--border-color);
+   color: var(--text-primary);
+   vertical-align: middle;
++  height: 48px;
+ }
+ .result-tbl tbody tr:last-child td { border-bottom: none; }
++.result-tbl tbody tr:nth-child(even) { background: var(--body-bg); }
++.result-tbl tbody tr:hover { background: var(--lis-primary-xlight); }
++
++.status-cell { width: 20px; padding-right: 0 !important; }
++.status-icon { font-size: 15px; }
++.status-icon--normal   { color: #0F6E56; }
++.status-icon--high,
++.status-icon--low       { color: var(--lis-warning, #EF9F27); }
++.status-icon--critical  { color: var(--lis-danger, #E24B4A); }
+ 
+-.param-name { font-size: 12px; }
+-.param-critical { font-weight: 500; color: #E24B4A; }
++.param-name { font-size: 12px; font-weight: 500; }
++.param-critical { font-weight: 700; color: var(--lis-danger, #E24B4A); }
++.param-edited { font-size: 10px; color: var(--text-secondary); opacity: 0.7; font-weight: 400; margin-top: 1px; }
+ 
+-.result-input-wrap { display: flex; align-items: center; gap: 5px; }
++.result-input-wrap { display: flex; align-items: center; gap: 6px; }
+ .result-input {
+-  width: 90px;
+-  height: 34px;
+-  border: 0.5px solid var(--border-color);
+-  border-radius: 6px;
+-  padding: 0 8px;
+-  font-size: 12px;
++  width: 92px;
++  height: 36px;
++  border: 1px solid var(--border-color);
++  border-radius: 7px;
++  padding: 0 10px;
++  font-size: 13px;
++  font-weight: 600;
+   text-align: right;
+   color: var(--text-primary);
+   background: var(--card-bg);
+   outline: none;
+   font-family: var(--font-family);
++  transition: box-shadow 0.15s, border-color 0.15s, transform 0.15s;
+ }
+-.result-input--normal   { border-color: var(--lis-primary, #1D9E75); color: #0F6E56; }
++.result-input--normal   { border-color: #4FBE99; color: #0F6E56; }
+ .result-input--high,
+-.result-input--low,
+-.result-input--critical { border-color: #E24B4A; color: #E24B4A; background: #FCEBEB; }
++.result-input--low       { border-color: var(--lis-warning, #EF9F27); color: #8A5A0A; background: rgba(239,159,39,0.08); }
++.result-input--critical  { border-color: var(--lis-danger, #E24B4A); color: var(--lis-danger, #E24B4A); background: var(--pill-critical-bg, #FCEBEB); font-weight: 700; }
++
++.result-input:focus {
++  transform: translateY(-1px);
++  box-shadow: 0 0 0 3px var(--lis-primary-xlight), 0 2px 8px rgba(0,0,0,0.12);
++  border-color: var(--lis-primary);
++}
++.result-input--critical:focus { box-shadow: 0 0 0 3px rgba(226,75,74,0.22), 0 2px 8px rgba(0,0,0,0.12); }
++
++.arrow-up { font-size: 16px; color: var(--lis-danger, #E24B4A); font-weight: 700; cursor: default; }
++.arrow-dn { font-size: 16px; color: #0C447C; font-weight: 700; cursor: default; }
++.unit-cell { font-size: 11px; color: var(--text-primary); opacity: 0.75; }
++
++.ref-cell { font-size: 10px; color: var(--text-secondary); min-width: 100px; }
++.ref-label { margin-bottom: 4px; white-space: nowrap; }
++.range-bar { position: relative; width: 84px; height: 4px; }
++.range-bar__track {
++  position: absolute;
++  inset: 0;
++  border-radius: 2px;
++  background: linear-gradient(90deg, var(--lis-warning,#EF9F27) 0%, #4FBE99 18%, #4FBE99 82%, var(--lis-warning,#EF9F27) 100%);
++  opacity: 0.55;
++}
++.range-bar__marker {
++  position: absolute;
++  top: 50%;
++  width: 9px;
++  height: 9px;
++  border-radius: 50%;
++  transform: translate(-50%, -50%);
++  border: 2px solid var(--card-bg);
++  box-shadow: 0 0 0 1px rgba(0,0,0,0.15);
++}
++.range-bar__marker--normal   { background: #0F6E56; }
++.range-bar__marker--high,
++.range-bar__marker--low      { background: var(--lis-warning, #EF9F27); }
++.range-bar__marker--critical { background: var(--lis-danger, #E24B4A); }
++
++.param-row-actions { display: flex; align-items: center; gap: 2px; opacity: 1; }
++.reset-btn {
++  background: none;
++  border: none;
++  cursor: pointer;
++  color: var(--lis-warning, #EF9F27);
++  font-size: 14px;
++  width: 32px;
++  height: 32px;
++  border-radius: 50%;
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  transition: background 0.15s, color 0.15s;
++  flex-shrink: 0;
++}
++.reset-btn:hover { background: rgba(239,159,39,0.14); }
++.reset-btn:disabled { color: var(--text-secondary); opacity: 0.35; cursor: not-allowed; }
++.reset-btn:disabled:hover { background: none; }
+ 
+-.arrow-up { font-size: 11px; color: #E24B4A; font-weight: 500; }
+-.arrow-dn { font-size: 11px; color: #0C447C; font-weight: 500; }
+-.unit-cell { font-size: 11px; color: var(--text-secondary); }
+-.ref-cell  { font-size: 10px; color: var(--text-secondary); }
+-.note-btn  { background: none; border: none; cursor: pointer; color: var(--text-secondary); font-size: 14px; }
+-.note-btn:hover { color: var(--lis-primary, #1D9E75); }
++.note-btn {
++  background: none;
++  border: none;
++  cursor: pointer;
++  color: var(--text-secondary);
++  font-size: 15px;
++  width: 32px;
++  height: 32px;
++  border-radius: 50%;
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  transition: background 0.15s, color 0.15s;
++}
++.note-btn:hover { color: var(--lis-primary, #1D9E75); background: var(--lis-primary-xlight); }
++
++/* ── Flag pills ──────────────────────────────── */
++.lis-flag {
++  display: inline-flex;
++  align-items: center;
++  gap: 5px;
++  padding: 3px 10px;
++  border-radius: 20px;
++  font-size: 11px;
++  font-weight: 600;
++  white-space: nowrap;
++}
++.lis-flag__dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
++.lis-flag--normal {
++  background: var(--pill-ready-bg);
++  color: var(--pill-ready-color, #0F6E56);
++}
++.lis-flag--normal .lis-flag__dot { background: #0F6E56; }
++.lis-flag--high, .lis-flag--low {
++  background: var(--pill-pending-bg);
++  color: var(--pill-pending-color, #633806);
++}
++.lis-flag--high .lis-flag__dot, .lis-flag--low .lis-flag__dot { background: var(--lis-warning, #EF9F27); }
++.lis-flag--critical {
++  background: var(--pill-critical-bg);
++  color: var(--pill-critical-color, #791F1F);
++}
++.lis-flag--critical .lis-flag__dot { background: var(--lis-danger, #E24B4A); }
+ 
+ /* ── Side panel ──────────────────────────────── */
+ .side-card { position: sticky; top: 80px; }
+@@ -169,61 +358,149 @@
+ .side-row {
+   display: flex;
+   justify-content: space-between;
+-  padding: 6px 14px;
++  padding: 7px 16px;
+   border-bottom: 0.5px solid var(--border-color);
+   font-size: 11px;
+   color: var(--text-secondary);
+ }
+ .side-row:last-child { border-bottom: none; }
+-.side-row span:last-child { font-weight: 500; color: var(--text-primary); }
++.side-row span:last-child { font-weight: 600; color: var(--text-primary); }
++
++.side-section {
++  padding: 10px 16px 4px;
++  font-size: 10px;
++  color: var(--text-secondary);
++  text-transform: uppercase;
++  letter-spacing: 0.06em;
++  font-weight: 700;
++  border-top: 0.5px solid var(--border-color);
++}
+ 
+ .progress-wrap {
+   display: flex;
+   justify-content: center;
+-  padding: 14px 14px 4px;
++  align-items: center;
++  padding: 6px 16px 12px;
+   position: relative;
+ }
+-.ring-label {
++.progress-ring { flex-shrink: 0; filter: drop-shadow(0 2px 6px rgba(61,201,168,0.25)); }
++.progress-ring-label {
+   position: absolute;
+   top: 50%;
+   left: 50%;
+   transform: translate(-50%, -50%);
+   text-align: center;
+   pointer-events: none;
++  width: 78px;
+ }
+-.ring-val { display: block; font-size: 18px; font-weight: 500; color: var(--text-primary); }
+-.ring-sub { display: block; font-size: 10px; color: var(--text-secondary); }
+-.progress-caption { text-align: center; font-size: 11px; color: var(--text-secondary); padding: 0 14px 10px; }
+-.side-section {
+-  padding: 8px 14px 3px;
+-  font-size: 10px;
+-  color: var(--text-secondary);
+-  text-transform: uppercase;
+-  letter-spacing: 0.05em;
+-  font-weight: 500;
+-  border-top: 0.5px solid var(--border-color);
+-}
++.progress-status { font-size: 9px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
++.progress-pct { font-size: 20px; font-weight: 800; color: var(--text-primary); line-height: 1.15; background: linear-gradient(90deg,#3DC9A8,#6366F1); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
++.progress-caption { font-size: 9px; color: var(--text-secondary); line-height: 1.2; }
+ 
+-/* Flag summary value colours — replaces inline styles */
+-.val-normal { color: #0F6E56; font-weight: 500; }
+-.val-danger { color: #E24B4A; font-weight: 500; }
++/* Flag stat cards */
++.flag-stat-grid {
++  display: grid;
++  grid-template-columns: repeat(3, 1fr);
++  gap: 8px;
++  padding: 4px 16px 12px;
++}
++.flag-stat {
++  display: flex;
++  flex-direction: column;
++  align-items: center;
++  gap: 2px;
++  padding: 10px 4px;
++  border-radius: 8px;
++  background: var(--body-bg);
++  border: 0.5px solid var(--border-color);
++}
++.flag-stat__dot { width: 8px; height: 8px; border-radius: 50%; margin-bottom: 2px; }
++.flag-stat__count { font-size: 16px; font-weight: 700; color: var(--text-primary); line-height: 1; }
++.flag-stat__label { font-size: 10px; color: var(--text-secondary); }
++.flag-stat--normal .flag-stat__dot { background: #0F6E56; }
++.flag-stat--high .flag-stat__dot { background: var(--lis-warning, #EF9F27); }
++.flag-stat--critical .flag-stat__dot { background: var(--lis-danger, #E24B4A); }
+ 
+ .notify-box {
+-  background: #FAEEDA;
+-  border-radius: 7px;
+-  padding: 9px 11px;
+-  margin: 10px 14px;
++  background: var(--pill-pending-bg, #FAEEDA);
++  border-radius: 8px;
++  padding: 10px 12px;
++  margin: 4px 16px 12px;
+   font-size: 11px;
+-  color: #633806;
++  color: var(--pill-pending-color, #633806);
+   display: flex;
+-  gap: 6px;
++  gap: 8px;
+   align-items: flex-start;
+ }
+-.notify-box i { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
++.notify-box i { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
++.notify-title { font-weight: 700; }
++.notify-sub { opacity: 0.85; margin-top: 1px; }
++
+ .side-actions {
+-  padding: 12px 14px;
++  padding: 14px 16px 16px;
+   display: flex;
+   flex-direction: column;
+-  gap: 7px;
++  gap: 8px;
+   border-top: 0.5px solid var(--border-color);
+ }
++
++/* Buttons — extra elevation on top of shared .lis-btn */
++.side-actions .lis-btn--primary {
++  transition: filter 0.15s, transform 0.15s, box-shadow 0.15s;
++  box-shadow: 0 2px 8px rgba(29,158,117,0.35);
++}
++.side-actions .lis-btn--primary:hover {
++  transform: translateY(-2px);
++  box-shadow: 0 6px 16px rgba(29,158,117,0.45);
++}
++.side-actions .lis-btn--secondary:hover {
++  background: var(--body-bg);
++}
++.lis-btn--ghost {
++  background: transparent;
++  color: var(--text-secondary);
++  border: 0.5px dashed var(--border-color);
++}
++.lis-btn--ghost:hover:not(:disabled) {
++  background: rgba(239,159,39,0.10);
++  color: var(--lis-warning, #EF9F27);
++  border-color: var(--lis-warning, #EF9F27);
++}
++.lis-btn--ghost:disabled {
++  opacity: 0.4;
++  cursor: not-allowed;
++}
++
++.kbd-hint {
++  display: flex;
++  flex-wrap: wrap;
++  gap: 8px;
++  justify-content: center;
++  margin-top: 4px;
++  font-size: 10px;
++  color: var(--text-secondary);
++  opacity: 0.75;
++}
++.kbd-hint kbd {
++  font-family: var(--lis-mono, var(--font-family));
++  background: var(--body-bg);
++  border: 0.5px solid var(--border-color);
++  border-radius: 4px;
++  padding: 1px 5px;
++  font-size: 10px;
++}
++
++/* ── Accessibility: larger click targets, visible focus ── */
++.note-btn:focus-visible,
++.tab:focus-visible,
++.critical-notify-btn:focus-visible {
++  outline: 2px solid var(--lis-primary);
++  outline-offset: 2px;
++}
++
++/* Card header badge — "all normal" state reuses the base teal badge look */
++.lis-badge--ok {
++  background: var(--pill-ready-bg, var(--lis-primary-xlight));
++  color: var(--pill-ready-color, var(--lis-primary-deep));
++  border-color: var(--lis-primary-mid);
++}
+diff --git a/src/app/features/result-entry/result-entry.component.html b/src/app/features/result-entry/result-entry.component.html
+index 0e0bcd3..b00c52d 100644
+--- a/src/app/features/result-entry/result-entry.component.html
++++ b/src/app/features/result-entry/result-entry.component.html
+@@ -1,171 +1,256 @@
+ <div class="page-header">
+-      <div>
+-        <h1 class="page-title">Result entry</h1>
+-        <nav aria-label="Breadcrumb"><ol class="breadcrumb">
+-          <li><a routerLink="/dashboard/home">Home</a></li>
+-          <li><a routerLink="/dashboard/tracking">Tracking</a></li>
+-          <li aria-current="page">Arun Pillai — SMP-2406-087</li>
+-        </ol></nav>
++  <div class="page-header-main">
++    <nav aria-label="Breadcrumb"><ol class="breadcrumb">
++      <li><a routerLink="/dashboard/home">Home</a></li>
++      <li><a routerLink="/dashboard/tracking">Tracking</a></li>
++      <li aria-current="page">Arun Pillai — SMP-2406-087</li>
++    </ol></nav>
++    <h1 class="page-title">Result Entry</h1>
++  </div>
++  <div class="autosave-chip" aria-live="polite">
++    <i class="ti ti-circle-check" aria-hidden="true"></i> Autosaved {{ lastSavedAt() }}
++  </div>
++</div>
++
++<div class="re-layout">
++  <!-- Left: entry area -->
++  <div class="re-main">
++    <!-- Patient card -->
++    <div class="pat-bar">
++      <div class="pat-av" aria-hidden="true">AP</div>
++      <div class="pat-info">
++        <div class="pat-name">Arun Pillai</div>
++        <div class="pat-meta">
++          <span class="pat-meta-item"><i class="ti ti-calendar" aria-hidden="true"></i> {{ patientAge() }}</span>
++          <span class="pat-sep" aria-hidden="true">|</span>
++          <span class="pat-meta-item"><i class="ti {{ genderIcon() }}" aria-hidden="true"></i> {{ patientGender() }}</span>
++          <span class="pat-sep" aria-hidden="true">|</span>
++          <span class="pat-meta-item"><i class="ti ti-id-badge-2" aria-hidden="true"></i> <span class="lis-mono">PAT-2406-0316</span></span>
++          <span class="pat-sep" aria-hidden="true">|</span>
++          <span class="pat-meta-item"><i class="ti ti-flask" aria-hidden="true"></i> <span class="lis-mono">SMP-2406-087</span></span>
++        </div>
++        <div class="pat-tests"><i class="ti ti-clipboard-list" aria-hidden="true"></i> KFT · Urine R/M</div>
+       </div>
+-      <div class="autosave-chip" aria-live="polite">
+-        <i class="ti ti-clock" aria-hidden="true"></i> Autosaved 10:44
++      <div class="pat-doctor-badge">
++        <i class="ti ti-stethoscope" aria-hidden="true"></i>
++        <span>Ref: Dr. Suresh Menon</span>
+       </div>
++      <span class="stat-chip" aria-label="STAT priority">STAT</span>
++    </div>
++
++    <!-- Tab bar -->
++    <div class="tab-bar" role="tablist" aria-label="Test tabs">
++      @for (tab of tabs; track tab.key; let i = $index) {
++        <button type="button" class="tab" role="tab"
++          [id]="'tab-' + tab.key"
++          [attr.data-tab-key]="tab.key"
++          [class.tab--active]="activeTabKey() === tab.key"
++          [attr.aria-selected]="activeTabKey() === tab.key"
++          [attr.aria-controls]="'panel-' + tab.key"
++          [attr.tabindex]="activeTabKey() === tab.key ? 0 : -1"
++          (click)="selectTab(tab.key)"
++          (keydown)="onTabKeydown($event, i)"
++        >{{ tab.label }}</button>
++      }
+     </div>
+ 
+-    <div class="re-layout">
+-      <!-- Left: entry area -->
+-      <div class="re-main">
+-        <!-- Patient bar -->
+-        <div class="pat-bar">
+-          <div class="pat-av" aria-hidden="true">AP</div>
+-          <div class="pat-info">
+-            <div class="pat-name">Arun Pillai</div>
+-            <div class="pat-meta">61 yrs · Male · PAT-2406-0316 · SMP-2406-087 · Ref: Dr. Suresh Menon</div>
++    <!-- Critical banner -->
++    @if (hasCritical()) {
++      <div class="critical-banner" role="alert" aria-live="assertive">
++        <span class="critical-icon-wrap">
++          <i class="ti ti-alert-octagon" aria-hidden="true"></i>
++        </span>
++        <div class="critical-text">
++          <div class="critical-headline">
++            <span class="critical-badge">CRITICAL VALUE</span>
++            <span class="critical-param">{{ criticalParam()?.name }} — {{ criticalParam()?.value }} {{ criticalParam()?.unit }}</span>
+           </div>
+-          <span class="stat-chip" aria-label="STAT priority">STAT</span>
++          <div class="critical-sub">Notify the referring physician before report dispatch.</div>
+         </div>
++        <button type="button" class="critical-notify-btn">
++          <i class="ti ti-phone" aria-hidden="true"></i> Notify
++        </button>
++      </div>
++    }
+ 
+-        <!-- Tab bar -->
+-        <div class="tab-bar" role="tablist" aria-label="Test tabs">
+-          @for (tab of tabs; track tab) {
+-            <button type="button" class="tab" role="tab"
+-              [class.tab--active]="activeTab() === tab"
+-              [attr.aria-selected]="activeTab() === tab"
+-              (click)="activeTab.set(tab)"
+-            >{{ tab }}</button>
+-          }
+-        </div>
++    <!-- Result table -->
++    <div class="result-card lis-card" role="tabpanel" [id]="'panel-' + activeTabKey()" [attr.aria-labelledby]="'tab-' + activeTabKey()">
++      <div class="lis-card__header">
++        <i class="ti {{ activeTab().cardIcon }} lis-card-icon" aria-hidden="true"></i>
++        <h2 class="lis-card__title">{{ activeTab().cardTitle }}</h2>
++        <span class="lis-badge" [class]="'lis-badge--' + cardBadge().style">
++          <i class="ti {{ cardBadge().icon }} ti-xs"></i> {{ cardBadge().text }}
++        </span>
++      </div>
++      <div class="overflow-x-auto">
++        <table class="result-tbl" role="table" [attr.aria-label]="activeTab().cardTitle + ' result entry'">
++          <thead>
++            <tr>
++              <th scope="col" class="sr-only">Status</th>
++              <th scope="col">Parameter</th>
++              <th scope="col">Result</th>
++              <th scope="col">Unit</th>
++              <th scope="col">Reference range</th>
++              <th scope="col">Flag</th>
++              <th scope="col" class="sr-only">Notes</th>
++            </tr>
++          </thead>
++          <tbody>
++            @for (p of params(); track p.id; let i = $index) {
++              <tr>
++                <td class="status-cell">
++                  <i class="ti {{ statusIcon(p.flag) }} status-icon status-icon--{{ p.flag }}"
++                     [attr.aria-label]="flagLabel(p.flag) + ' status'"></i>
++                </td>
++                <td class="param-name" [class.param-critical]="p.flag === 'critical'">
++                  {{ p.name }}
++                  @if (p.editedBy) {
++                    <div class="param-edited">Edited by {{ p.editedBy }} · {{ p.editedAt }}</div>
++                  }
++                </td>
++                <td>
++                  <div class="result-input-wrap">
++                    <input
++                      class="result-input"
++                      [class]="'result-input--' + p.flag"
++                      [attr.data-row-index]="i"
++                      type="number"
++                      [value]="p.value"
++                      (input)="updateValue(i, $any($event.target).value)"
++                      (keydown)="onResultKeydown($event, i)"
++                      [attr.aria-label]="p.name + ' result'"
++                    />
++                    @if (p.flag === 'high' || p.flag === 'critical') {
++                      <span class="arrow-up" [attr.title]="p.flag === 'critical' ? 'Critical — well above reference' : 'Above reference range'" aria-hidden="true">
++                        {{ p.flag === 'critical' ? '↑↑' : '↑' }}
++                      </span>
++                    }
++                    @if (p.flag === 'low') {
++                      <span class="arrow-dn" title="Below reference range" aria-hidden="true">↓</span>
++                    }
++                  </div>
++                </td>
++                <td class="unit-cell">{{ p.unit }}</td>
++                <td class="ref-cell">
++                  <div class="ref-label">{{ p.refLabel }}</div>
++                  <div class="range-bar" aria-hidden="true">
++                    <div class="range-bar__track"></div>
++                    <div class="range-bar__marker" [class]="'range-bar__marker--' + p.flag"
++                         [style.left.%]="rangePct(p)"></div>
++                  </div>
++                </td>
++                <td>
++                  <span class="lis-flag" [class]="'lis-flag--' + p.flag">
++                    <span class="lis-flag__dot" aria-hidden="true"></span>
++                    {{ flagLabel(p.flag) }}
++                  </span>
++                </td>
++                <td>
++                  <div class="param-row-actions">
++                    <button type="button" class="reset-btn" [disabled]="!isRowEdited(p)"
++                            [attr.aria-label]="'Reset ' + p.name + ' to original value'"
++                            title="Reset to original value" (click)="resetRow(i)">
++                      <i class="ti ti-arrow-back-up" aria-hidden="true"></i>
++                    </button>
++                    <button type="button" class="note-btn" [attr.aria-label]="'Add note for ' + p.name">
++                      <i class="ti ti-message-circle" aria-hidden="true"></i>
++                    </button>
++                  </div>
++                </td>
++              </tr>
++            }
++          </tbody>
++        </table>
++      </div>
++    </div>
++  </div>
+ 
+-        <!-- Critical banner -->
+-        @if (hasCritical()) {
+-          <div class="critical-banner" role="alert" aria-live="assertive">
+-            <i class="ti ti-alert-octagon" aria-hidden="true"></i>
+-            <div class="critical-text">
+-              <strong>Critical value detected</strong> — Serum Potassium (K⁺) is 6.8 mEq/L,
+-              significantly above the critical threshold of 6.0.
+-              Please notify the referring physician immediately before report dispatch.
+-            </div>
+-          </div>
+-        }
++  <!-- Right: summary -->
++  <aside class="re-side" aria-label="Entry summary">
++    <div class="lis-card side-card">
++      <div class="lis-card__header">
++        <h2 class="lis-card__title">Test summary</h2>
++      </div>
++      <div class="side-rows">
++        <div class="side-row"><span>Sample ID</span><span class="lis-mono">SMP-2406-087</span></div>
++        <div class="side-row"><span>Tests ordered</span><span>KFT · Urine R/M</span></div>
++        <div class="side-row"><span>Collected</span><span>9:20 AM</span></div>
++        <div class="side-row"><span>Priority</span><span class="stat-chip stat-chip--sm">STAT</span></div>
++      </div>
+ 
+-        <!-- Result table -->
+-        <div class="result-card lis-card">
+-          <div class="lis-card__header">
+-            <i class="ti ti-test-pipe lis-card-icon" aria-hidden="true"></i>
+-            <h2 class="lis-card__title">Kidney function test (KFT)</h2>
+-            <span class="lis-badge lis-badge--danger">
+-              <i class="ti ti-alert-triangle ti-xs"></i> 2 critical
+-            </span>
+-          </div>
+-          <div class="overflow-x-auto">
+-            <table class="result-tbl" role="table" aria-label="KFT result entry">
+-              <thead>
+-                <tr>
+-                  <th scope="col">Parameter</th>
+-                  <th scope="col">Result</th>
+-                  <th scope="col">Unit</th>
+-                  <th scope="col">Reference range</th>
+-                  <th scope="col">Flag</th>
+-                  <th scope="col" class="sr-only">Notes</th>
+-                </tr>
+-              </thead>
+-              <tbody>
+-                @for (p of params(); track p.id; let i = $index) {
+-                  <tr>
+-                    <td class="param-name" [class.param-critical]="p.flag === 'critical'">{{ p.name }}</td>
+-                    <td>
+-                      <div class="result-input-wrap">
+-                        <input
+-                          class="result-input"
+-                          [class]="'result-input--' + p.flag"
+-                          type="number"
+-                          [value]="p.value"
+-                          (input)="updateValue(i, $any($event.target).value)"
+-                          [attr.aria-label]="p.name + ' result'"
+-                        />
+-                        @if (p.flag === 'high' || p.flag === 'critical') {
+-                          <span class="arrow-up" aria-hidden="true">
+-                            {{ p.flag === 'critical' ? '↑↑' : '↑' }}
+-                          </span>
+-                        }
+-                        @if (p.flag === 'low') {
+-                          <span class="arrow-dn" aria-hidden="true">↓</span>
+-                        }
+-                      </div>
+-                    </td>
+-                    <td class="unit-cell">{{ p.unit }}</td>
+-                    <td class="ref-cell">{{ p.refLabel }}</td>
+-                    <td>
+-                      <span class="lis-flag" [class]="'lis-flag--' + p.flag">
+-                        {{ flagLabel(p.flag) }}
+-                      </span>
+-                    </td>
+-                    <td>
+-                      <button type="button" class="note-btn" [attr.aria-label]="'Add note for ' + p.name">
+-                        <i class="ti ti-message-circle" aria-hidden="true"></i>
+-                      </button>
+-                    </td>
+-                  </tr>
+-                }
+-              </tbody>
+-            </table>
+-          </div>
++      <!-- Progress ring -->
++      <div class="side-section">Progress</div>
++      <div class="progress-wrap">
++        <svg viewBox="0 0 80 80" width="112" height="112" class="progress-ring" [attr.aria-label]="enteredCount() + ' of ' + params().length + ' parameters entered'" role="img">
++          <defs>
++            <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
++              <stop offset="0%" stop-color="#3DC9A8"/>
++              <stop offset="55%" stop-color="#2FB4D9"/>
++              <stop offset="100%" stop-color="#6366F1"/>
++            </linearGradient>
++          </defs>
++          <circle cx="40" cy="40" r="34" fill="none" stroke="var(--body-bg)" stroke-width="8"/>
++          <circle cx="40" cy="40" r="34" fill="none"
++            stroke="url(#ringGrad)" stroke-width="8"
++            stroke-dasharray="213.6" [attr.stroke-dashoffset]="213.6 - (213.6 * pct() / 100)"
++            stroke-linecap="round" transform="rotate(-90 40 40)"/>
++        </svg>
++        <div class="progress-ring-label">
++          <div class="progress-status">Completed</div>
++          <div class="progress-pct">{{ pct() }}%</div>
++          <div class="progress-caption">{{ enteredCount() }} / {{ params().length }} parameters</div>
+         </div>
+       </div>
+ 
+-      <!-- Right: summary -->
+-      <aside class="re-side" aria-label="Entry summary">
+-        <div class="lis-card side-card">
+-          <div class="lis-card__header">
+-            <h2 class="lis-card__title">Test summary</h2>
+-          </div>
+-          <div class="side-rows">
+-            <div class="side-row"><span>Sample ID</span><span class="lis-mono">SMP-2406-087</span></div>
+-            <div class="side-row"><span>Tests ordered</span><span>KFT · Urine R/M</span></div>
+-            <div class="side-row"><span>Collected</span><span>9:20 AM</span></div>
+-            <div class="side-row"><span>Priority</span><span class="stat-chip stat-chip--sm">STAT</span></div>
+-          </div>
+-
+-          <!-- Progress ring -->
+-          <div class="progress-wrap">
+-            <svg viewBox="0 0 80 80" width="80" height="80" aria-label="6 of 8 parameters entered" role="img">
+-              <circle cx="40" cy="40" r="34" fill="none" stroke="var(--body-bg)" stroke-width="8"/>
+-              <circle cx="40" cy="40" r="34" fill="none"
+-                stroke="var(--lis-primary,#1D9E75)" stroke-width="8"
+-                stroke-dasharray="213.6" stroke-dashoffset="53"
+-                stroke-linecap="round" transform="rotate(-90 40 40)"/>
+-            </svg>
+-            <div class="ring-label" aria-hidden="true">
+-              <span class="ring-val">{{ pct() }}%</span>
+-              <span class="ring-sub">entered</span>
+-            </div>
+-          </div>
+-          <div class="progress-caption">{{ enteredCount() }} of {{ params().length }} parameters entered</div>
++      <!-- Flag summary -->
++      <div class="side-section">Flags</div>
++      <div class="flag-stat-grid">
++        <div class="flag-stat flag-stat--normal">
++          <span class="flag-stat__dot" aria-hidden="true"></span>
++          <span class="flag-stat__count">{{ normalCount() }}</span>
++          <span class="flag-stat__label">Normal</span>
++        </div>
++        <div class="flag-stat flag-stat--high">
++          <span class="flag-stat__dot" aria-hidden="true"></span>
++          <span class="flag-stat__count">{{ abnCount() }}</span>
++          <span class="flag-stat__label">Abnormal</span>
++        </div>
++        <div class="flag-stat flag-stat--critical">
++          <span class="flag-stat__dot" aria-hidden="true"></span>
++          <span class="flag-stat__count">{{ critCount() }}</span>
++          <span class="flag-stat__label">Critical</span>
++        </div>
++      </div>
+ 
+-          <!-- Flag summary -->
+-          <div class="side-section">Flags</div>
+-          <div class="side-rows">
+-            <div class="side-row"><span>Normal</span><span class="val-normal">{{ normalCount() }}</span></div>
+-            <div class="side-row"><span>Abnormal</span><span class="val-danger">{{ abnCount() }}</span></div>
+-            <div class="side-row"><span>Critical</span><span class="val-danger">{{ critCount() }}</span></div>
++      <!-- Notify box -->
++      @if (hasCritical()) {
++        <div class="side-section">Action needed</div>
++        <div class="notify-box" role="status">
++          <i class="ti ti-phone" aria-hidden="true"></i>
++          <div>
++            <div class="notify-title">Notify Dr. Suresh Menon</div>
++            <div class="notify-sub">Critical {{ criticalParam()?.name }} — required before dispatch</div>
+           </div>
++        </div>
++      }
+ 
+-          <!-- Notify box -->
+-          @if (hasCritical()) {
+-            <div class="notify-box" role="status">
+-              <i class="ti ti-phone" aria-hidden="true"></i>
+-              Notify Dr. Suresh Menon before report dispatch — critical K⁺ value.
+-            </div>
+-          }
+-
+-          <div class="side-actions">
+-            <button type="button" class="lis-btn lis-btn--primary lis-btn--full" (click)="navigateToPreview()">
+-              <i class="ti ti-file-text" aria-hidden="true"></i> Finalise &amp; generate report
+-            </button>
+-            <button type="button" class="lis-btn lis-btn--secondary lis-btn--full">
+-              <i class="ti ti-device-floppy" aria-hidden="true"></i> Save draft
+-            </button>
+-          </div>
++      <div class="side-actions">
++        <button type="button" class="lis-btn lis-btn--primary lis-btn--full" (click)="navigateToPreview()" title="Ctrl+Enter">
++          <i class="ti ti-file-text" aria-hidden="true"></i> Finalise &amp; generate report
++        </button>
++        <button type="button" class="lis-btn lis-btn--secondary lis-btn--full" (click)="saveDraft()" title="Ctrl+S">
++          <i class="ti ti-device-floppy" aria-hidden="true"></i> Save draft
++        </button>
++        <button type="button" class="lis-btn lis-btn--ghost lis-btn--full" (click)="resetAll()" [disabled]="!anyEdited()"
++                title="Reset all values on this tab to their original entries">
++          <i class="ti ti-refresh-alert" aria-hidden="true"></i> Reset this section
++        </button>
++        <div class="kbd-hint">
++          <span><kbd>Enter</kbd> next row</span>
++          <span><kbd>Ctrl</kbd>+<kbd>S</kbd> save</span>
++          <span><kbd>Ctrl</kbd>+<kbd>↵</kbd> report</span>
+         </div>
+-      </aside>
+-    </div>
+\ No newline at end of file
++      </div>
++    </div>
++  </aside>
++</div>
+diff --git a/src/app/features/result-entry/result-entry.component.ts b/src/app/features/result-entry/result-entry.component.ts
+index 05eecb5..a9bbc2c 100644
+--- a/src/app/features/result-entry/result-entry.component.ts
++++ b/src/app/features/result-entry/result-entry.component.ts
+@@ -1,4 +1,4 @@
+-import { Component, signal, computed, ChangeDetectionStrategy, inject } from '@angular/core';
++import { Component, signal, computed, ChangeDetectionStrategy, inject, HostListener, ElementRef } from '@angular/core';
+ import { Router, RouterLink } from '@angular/router';
+ import { NgClass, NgStyle } from '@angular/common';
+ import { ResultParameter, ResultFlag } from '../../shared/models/lis.models';
+@@ -6,15 +6,60 @@ import { ReportPreviewService } from '../../core/services/report-preview.service
+ 
+ interface ParamRow extends ResultParameter {
+   editing: boolean;
++  editedBy?: string;
++  editedAt?: string;
+ }
+ 
+-const KFT_PARAMS: ParamRow[] = [
+-  { id:'cr',  name:'Serum creatinine',      value:'2.4',  unit:'mg/dL',  refLow:0.7, refHigh:1.3,  refLabel:'0.7 – 1.3',  flag:'high',     editing:false },
+-  { id:'bun', name:'Blood urea nitrogen',   value:'48',   unit:'mg/dL',  refLow:7,   refHigh:20,   refLabel:'7 – 20',     flag:'high',     editing:false },
+-  { id:'k',   name:'Serum potassium (K⁺)',  value:'6.8',  unit:'mEq/L',  refLow:3.5, refHigh:5.0,  refLabel:'3.5 – 5.0',  flag:'critical', editing:false },
+-  { id:'na',  name:'Serum sodium (Na⁺)',    value:'138',  unit:'mEq/L',  refLow:136, refHigh:145,  refLabel:'136 – 145',  flag:'normal',   editing:false },
+-  { id:'ua',  name:'Serum uric acid',       value:'5.2',  unit:'mg/dL',  refLow:3.5, refHigh:7.2,  refLabel:'3.5 – 7.2',  flag:'normal',   editing:false },
+-  { id:'egfr',name:'eGFR (CKD-EPI)',        value:'32',   unit:'mL/min', refLow:60,  refHigh:null, refLabel:'≥ 60',       flag:'low',      editing:false },
++interface TabDef {
++  key: string;
++  label: string;
++  cardTitle: string;
++  cardIcon: string;
++  params: ParamRow[];
++}
++
++const TABS: TabDef[] = [
++  {
++    key: 'kft',
++    label: 'KFT (Kidney function)',
++    cardTitle: 'Kidney function test (KFT)',
++    cardIcon: 'ti-test-pipe',
++    params: [
++      { id:'cr',  name:'Serum creatinine',      value:'2.4',  unit:'mg/dL',  refLow:0.7, refHigh:1.3,  refLabel:'0.7 – 1.3',  flag:'high',     editing:false, editedBy:'Ravi Anand', editedAt:'10:41 AM' },
++      { id:'bun', name:'Blood urea nitrogen',   value:'48',   unit:'mg/dL',  refLow:7,   refHigh:20,   refLabel:'7 – 20',     flag:'high',     editing:false, editedBy:'Ravi Anand', editedAt:'10:42 AM' },
++      { id:'k',   name:'Serum potassium (K⁺)',  value:'6.8',  unit:'mEq/L',  refLow:3.5, refHigh:5.0,  refLabel:'3.5 – 5.0',  flag:'critical', editing:false, editedBy:'Ravi Anand', editedAt:'10:43 AM' },
++      { id:'na',  name:'Serum sodium (Na⁺)',    value:'138',  unit:'mEq/L',  refLow:136, refHigh:145,  refLabel:'136 – 145',  flag:'normal',   editing:false, editedBy:'Ravi Anand', editedAt:'10:43 AM' },
++      { id:'ua',  name:'Serum uric acid',       value:'5.2',  unit:'mg/dL',  refLow:3.5, refHigh:7.2,  refLabel:'3.5 – 7.2',  flag:'normal',   editing:false, editedBy:'Ravi Anand', editedAt:'10:43 AM' },
++      { id:'egfr',name:'eGFR (CKD-EPI)',        value:'32',   unit:'mL/min', refLow:60,  refHigh:null, refLabel:'≥ 60',       flag:'low',      editing:false, editedBy:'Ravi Anand', editedAt:'10:44 AM' },
++    ],
++  },
++  {
++    key: 'urine',
++    label: 'Urine R/M',
++    cardTitle: 'Urine routine & microscopy',
++    cardIcon: 'ti-droplet',
++    params: [
++      { id:'u-ph',   name:'pH',                value:'6.0',   unit:'',     refLow:4.5, refHigh:8.0, refLabel:'4.5 – 8.0',  flag:'normal', editing:false, editedBy:'Ravi Anand', editedAt:'9:32 AM' },
++      { id:'u-sg',   name:'Specific gravity',  value:'1.02',  unit:'',     refLow:1.005, refHigh:1.03, refLabel:'1.005 – 1.030', flag:'normal', editing:false, editedBy:'Ravi Anand', editedAt:'9:32 AM' },
++      { id:'u-prot', name:'Protein',           value:'0',     unit:'mg/dL',refLow:0,   refHigh:15,  refLabel:'Negative',   flag:'normal', editing:false, editedBy:'Ravi Anand', editedAt:'9:33 AM' },
++      { id:'u-gluc', name:'Glucose',           value:'0',     unit:'mg/dL',refLow:0,   refHigh:15,  refLabel:'Negative',   flag:'normal', editing:false, editedBy:'Ravi Anand', editedAt:'9:33 AM' },
++      { id:'u-pus',  name:'Pus cells',         value:'4',     unit:'/hpf', refLow:0,   refHigh:5,   refLabel:'0 – 5',      flag:'normal', editing:false, editedBy:'Ravi Anand', editedAt:'9:34 AM' },
++      { id:'u-rbc',  name:'RBC',               value:'1',     unit:'/hpf', refLow:0,   refHigh:2,   refLabel:'0 – 2',      flag:'normal', editing:false, editedBy:'Ravi Anand', editedAt:'9:34 AM' },
++    ],
++  },
++  {
++    key: 'haem',
++    label: 'Haematology',
++    cardTitle: 'Haematology profile',
++    cardIcon: 'ti-microscope',
++    params: [
++      { id:'h-hb',   name:'Haemoglobin',       value:'13.5',   unit:'g/dL',    refLow:13,    refHigh:17,    refLabel:'13 – 17',        flag:'normal', editing:false, editedBy:'Ravi Anand', editedAt:'9:50 AM' },
++      { id:'h-wbc',  name:'Total WBC count',   value:'7800',   unit:'/µL',     refLow:4000,  refHigh:11000, refLabel:'4000 – 11000',   flag:'normal', editing:false, editedBy:'Ravi Anand', editedAt:'9:50 AM' },
++      { id:'h-plt',  name:'Platelet count',    value:'210000', unit:'/µL',     refLow:150000,refHigh:410000,refLabel:'150000 – 410000',flag:'normal', editing:false, editedBy:'Ravi Anand', editedAt:'9:51 AM' },
++      { id:'h-esr',  name:'ESR',               value:'18',     unit:'mm/hr',   refLow:0,     refHigh:15,    refLabel:'0 – 15',         flag:'high',   editing:false, editedBy:'Ravi Anand', editedAt:'9:51 AM' },
++      { id:'h-rbc',  name:'RBC count',         value:'4.8',    unit:'mil/µL',  refLow:4.5,   refHigh:5.5,   refLabel:'4.5 – 5.5',      flag:'normal', editing:false, editedBy:'Ravi Anand', editedAt:'9:52 AM' },
++    ],
++  },
+ ];
+ 
+ @Component({
+@@ -28,42 +73,176 @@ const KFT_PARAMS: ParamRow[] = [
+ export class ResultEntryComponent {
+   private readonly router     = inject(Router);
+   private readonly previewSvc = inject(ReportPreviewService);
++  private readonly host       = inject(ElementRef<HTMLElement>);
++
++  protected readonly tabs: TabDef[] = TABS;
++
++  /** Patient demographics — drives the gender-specific icon in the patient bar. */
++  patientAge = signal('61Y');
++  patientGender = signal<'Male' | 'Female' | 'Other'>('Male');
++  genderIcon = computed(() => ({
++    Male: 'ti-gender-male',
++    Female: 'ti-gender-female',
++    Other: 'ti-gender-transgender',
++  }[this.patientGender()]));
++
++  /** Pristine copy of every tab's data, used to power the reset controls. */
++  private readonly originalTabData: Record<string, ParamRow[]> =
++    Object.fromEntries(TABS.map(t => [t.key, t.params.map(p => ({ ...p }))]));
+ 
+-  protected readonly tabs = ['KFT (Kidney function)', 'Urine R/M', 'Haematology'];
+-  activeTab = signal('KFT (Kidney function)');
+-  params = signal<ParamRow[]>([...KFT_PARAMS]);
++  /** All tabs' data, keyed by tab key, so switching tabs never loses in-progress edits. */
++  private readonly tabData = signal<Record<string, ParamRow[]>>(
++    Object.fromEntries(TABS.map(t => [t.key, t.params.map(p => ({ ...p }))]))
++  );
++
++  activeTabKey = signal<string>(TABS[0].key);
++  activeTab = computed(() => this.tabs.find(t => t.key === this.activeTabKey())!);
++  params = computed(() => this.tabData()[this.activeTabKey()]);
++
++  /** Last saved timestamp, kept in sync so the autosave chip reflects real edits. */
++  lastSavedAt = signal(this.now());
+ 
+   hasCritical = computed(() => this.params().some(p => p.flag === 'critical'));
++  criticalParam = computed(() => this.params().find(p => p.flag === 'critical') ?? null);
+   enteredCount = computed(() => this.params().filter(p => p.value !== '').length);
+   pct = computed(() => Math.round(this.enteredCount() / this.params().length * 100));
+   normalCount  = computed(() => this.params().filter(p => p.flag === 'normal').length);
+   abnCount     = computed(() => this.params().filter(p => p.flag === 'high' || p.flag === 'low').length);
+   critCount    = computed(() => this.params().filter(p => p.flag === 'critical').length);
+ 
++  /** Header badge for the result card: reflects the ACTIVE tab's real data, not a fixed count. */
++  cardBadge = computed(() => {
++    if (this.critCount() > 0) return { style: 'danger', icon: 'ti-alert-octagon', text: this.critCount() + ' critical' };
++    if (this.abnCount() > 0)  return { style: 'warn',   icon: 'ti-alert-triangle', text: this.abnCount() + ' abnormal' };
++    return { style: 'ok', icon: 'ti-circle-check', text: 'All normal' };
++  });
++
++  /** True once at least one value on the active tab has been changed from its original entry. */
++  anyEdited = computed(() => this.params().some(p => p.editedBy === 'You'));
++
++  isRowEdited(p: ParamRow): boolean {
++    return p.editedBy === 'You';
++  }
++
++  selectTab(key: string): void {
++    this.activeTabKey.set(key);
++  }
++
++  private now(): string {
++    return new Date().toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' });
++  }
++
++  /** Position (0-100 percent) of the current value along the reference range, for the mini range bar. */
++  rangePct(p: ParamRow): number {
++    const v = parseFloat(p.value);
++    if (isNaN(v)) return 50;
++    const lo = p.refLow ?? 0;
++    if (p.refHigh === null) {
++      return v >= lo ? 70 : Math.max(4, Math.min(96, (v / (lo || 1)) * 70));
++    }
++    const hi = p.refHigh;
++    const span = hi - lo || 1;
++    const pct = ((v - lo) / span) * 100;
++    return Math.max(4, Math.min(96, pct));
++  }
++
++  statusIcon(f: ResultFlag): string {
++    return { normal: 'ti-check', high: 'ti-alert-triangle', low: 'ti-alert-triangle', critical: 'ti-x' }[f] ?? 'ti-check';
++  }
++
++  /** Ctrl+S saves the draft, Ctrl+Enter generates the report, from anywhere on the page. */
++  @HostListener('document:keydown', ['$event'])
++  onKeydown(ev: KeyboardEvent): void {
++    if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 's') {
++      ev.preventDefault();
++      this.saveDraft();
++    } else if ((ev.ctrlKey || ev.metaKey) && ev.key === 'Enter') {
++      ev.preventDefault();
++      this.navigateToPreview();
++    }
++  }
++
++  /** Left/Right arrow keys move focus between tabs, per the WAI-ARIA tabs pattern. */
++  onTabKeydown(ev: KeyboardEvent, index: number): void {
++    let nextIndex: number | null = null;
++    if (ev.key === 'ArrowRight') nextIndex = (index + 1) % this.tabs.length;
++    else if (ev.key === 'ArrowLeft') nextIndex = (index - 1 + this.tabs.length) % this.tabs.length;
++    else if (ev.key === 'Home') nextIndex = 0;
++    else if (ev.key === 'End') nextIndex = this.tabs.length - 1;
++    if (nextIndex === null) return;
++
++    ev.preventDefault();
++    const nextKey = this.tabs[nextIndex].key;
++    this.selectTab(nextKey);
++    const btn = this.host.nativeElement.querySelector(
++      '[data-tab-key="' + nextKey + '"]'
++    ) as HTMLButtonElement | null;
++    btn?.focus();
++  }
++
++  /** Enter on a result field moves focus to the same field on the next row. */
++  onResultKeydown(ev: KeyboardEvent, i: number): void {
++    if (ev.key !== 'Enter') return;
++    ev.preventDefault();
++    const selector = 'input[data-row-index="' + (i + 1) + '"]';
++    const next = this.host.nativeElement.querySelector(selector) as HTMLInputElement | null;
++    next?.focus();
++    next?.select();
++  }
++
++  saveDraft(): void {
++    this.lastSavedAt.set(this.now());
++  }
++
+   evalFlag(i: number): void {
+-    this.params.update(rows => {
+-      const updated = [...rows];
+-      const p = { ...updated[i] };
++    const key = this.activeTabKey();
++    this.tabData.update(all => {
++      const rows = [...all[key]];
++      const p = { ...rows[i] };
+       const v = parseFloat(p.value);
+       if (isNaN(v)) { p.flag = 'normal'; }
+       else if (p.id === 'k' && v > 6.0) { p.flag = 'critical'; }
+       else if (p.refHigh !== null && v > p.refHigh) { p.flag = 'high'; }
+       else if (p.refLow !== null && v < p.refLow)   { p.flag = 'low';  }
+       else { p.flag = 'normal'; }
+-      updated[i] = p;
+-      return updated;
++      rows[i] = p;
++      return { ...all, [key]: rows };
+     });
+   }
+ 
+   updateValue(i: number, value: string): void {
+-    this.params.update(rows => {
+-      const updated = [...rows];
+-      updated[i] = { ...updated[i], value };
+-      return updated;
++    const key = this.activeTabKey();
++    this.tabData.update(all => {
++      const rows = [...all[key]];
++      rows[i] = { ...rows[i], value, editedBy: 'You', editedAt: this.now() };
++      return { ...all, [key]: rows };
+     });
+     this.evalFlag(i);
+   }
+ 
++  /** Restore a single row to its original, unedited value — undoes a typo without touching the rest. */
++  resetRow(i: number): void {
++    const key = this.activeTabKey();
++    const original = this.originalTabData[key][i];
++    this.tabData.update(all => {
++      const rows = [...all[key]];
++      rows[i] = { ...original };
++      return { ...all, [key]: rows };
++    });
++  }
++
++  /** Restore every row on the active tab back to its original values, after a confirmation. */
++  resetAll(): void {
++    if (!this.anyEdited()) return;
++    const confirmed = window.confirm('Reset all results in this section back to their original entries? This cannot be undone.');
++    if (!confirmed) return;
++    const key = this.activeTabKey();
++    this.tabData.update(all => ({
++      ...all,
++      [key]: this.originalTabData[key].map(p => ({ ...p })),
++    }));
++  }
++
+   flagLabel(f: ResultFlag): string {
+     return { normal:'Normal', high:'High', low:'Low', critical:'Critical' }[f] ?? f;
+   }
+@@ -73,4 +252,4 @@ export class ResultEntryComponent {
+     this.previewSvc.stage({ params: this.params() });
+     this.router.navigate(['/dashboard/report-preview']);
+   }
+-}
+\ No newline at end of file
++}
