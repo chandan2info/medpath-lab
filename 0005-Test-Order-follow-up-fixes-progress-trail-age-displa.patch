@@ -1,0 +1,413 @@
+From 0bafb2d90972985c0c31c00e528cbb7dd2757b87 Mon Sep 17 00:00:00 2001
+From: Chandan <chandan@medpath.dev>
+Date: Mon, 6 Jul 2026 10:43:47 +0000
+Subject: [PATCH] Test Order: follow-up fixes (progress trail, age display,
+ collapsible sections, CTA spacing)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Order progress now matches the Registration page's compact dot +
+  connector workflow-trail (in the page header) instead of the
+  standalone timeline card, for visual consistency across screens.
+- Patient age now shows a full breakdown — '19 Years - 11 Months -
+  16 Days' — instead of a single year count, via a new
+  PatientFlowService.calcAgeParts() helper. Gender is now prefixed
+  with a gender icon (male/female/other) instead of plain text.
+- Popular Tests and Frequently Ordered Packages are now collapsed by
+  default with a Show/Hide toggle in each card header, instead of
+  always rendering open.
+- Fixed 'Save & Continue to Billing' spacing: the Ctrl+Enter kbd
+  hint was using margin-left:auto inside a centered flex button,
+  which threw off the centering of the label itself. The label is
+  now its own centered group and the kbd hint is positioned as a
+  small corner badge, with proper left/right padding at the 52px
+  button height.
+---
+ src/app/core/services/patient-flow.service.ts |  22 +++
+ .../test-order/test-order.component.css       |  68 ++++----
+ .../test-order/test-order.component.html      | 156 ++++++++++--------
+ .../test-order/test-order.component.ts        |  14 +-
+ 4 files changed, 154 insertions(+), 106 deletions(-)
+
+diff --git a/src/app/core/services/patient-flow.service.ts b/src/app/core/services/patient-flow.service.ts
+index 1e601a2..bd9d938 100644
+--- a/src/app/core/services/patient-flow.service.ts
++++ b/src/app/core/services/patient-flow.service.ts
+@@ -178,4 +178,26 @@ export class PatientFlowService {
+     if (today < new Date(today.getFullYear(), birth.getMonth(), birth.getDate())) age--;
+     return age;
+   }
++
++  /** Full years/months/days breakdown — e.g. { years: 19, months: 11, days: 16 }. */
++  calcAgeParts(dob: string): { years: number; months: number; days: number } {
++    if (!dob) return { years: 0, months: 0, days: 0 };
++    const today = new Date();
++    const birth = new Date(dob);
++
++    let years  = today.getFullYear() - birth.getFullYear();
++    let months = today.getMonth() - birth.getMonth();
++    let days   = today.getDate() - birth.getDate();
++
++    if (days < 0) {
++      months--;
++      const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
++      days += prevMonth.getDate();
++    }
++    if (months < 0) {
++      years--;
++      months += 12;
++    }
++    return { years: Math.max(years, 0), months: Math.max(months, 0), days: Math.max(days, 0) };
++  }
+ }
+diff --git a/src/app/features/test-order/test-order.component.css b/src/app/features/test-order/test-order.component.css
+index 0e737ae..1ba329c 100644
+--- a/src/app/features/test-order/test-order.component.css
++++ b/src/app/features/test-order/test-order.component.css
+@@ -11,40 +11,23 @@
+ .breadcrumb li+li::before { content: '/'; margin-right: 6px; }
+ .breadcrumb a { color: var(--text-secondary); text-decoration: none; &:hover { color: var(--lis-primary, #1D9E75); } }
+ 
+-/* ══════════════════════════════════════════════
+-   Process timeline — real progression, dot + line
+-   ══════════════════════════════════════════════ */
+-.proc-timeline {
+-  display: flex; align-items: flex-start; gap: 0;
+-  background: var(--card-bg); border: 0.5px solid var(--border-color);
+-  border-radius: 12px; padding: 16px 18px 14px;
+-  margin-bottom: 16px; overflow-x: auto;
+-}
+-.proc-step { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; width: 100px; }
+-.proc-dot {
+-  width: 30px; height: 30px; border-radius: 50%;
++/* ── Workflow trail — same pattern as Registration ──────── */
++.workflow-trail {
++  display: flex; align-items: center; gap: 4px;
++  background: var(--body-bg); border: 0.5px solid var(--border-color);
++  border-radius: 10px; padding: 8px 16px;
++}
++.wf-step { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-secondary); font-weight: 400; padding: 0 4px; }
++.wf-dot {
++  width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--border-color);
+   display: flex; align-items: center; justify-content: center;
+-  font-size: 14px; color: var(--text-secondary);
+-  background: var(--body-bg); border: 1.5px solid var(--border-color);
+-  transition: background .2s, border-color .2s, color .2s, box-shadow .2s;
+-}
+-.proc-step--done .proc-dot {
+-  background: var(--lis-primary, #1D9E75); border-color: var(--lis-primary, #1D9E75); color: #fff;
+-}
+-.proc-step--active .proc-dot {
+-  background: var(--lis-primary-xlight, #E1F5EE); border-color: var(--lis-primary, #1D9E75);
+-  color: var(--lis-primary-deep, #085041);
+-  box-shadow: 0 0 0 4px var(--lis-primary-xlight, #E1F5EE);
+-  animation: pulseDot 1.8s ease-in-out infinite;
+-}
+-@keyframes pulseDot {
+-  0%, 100% { box-shadow: 0 0 0 4px var(--lis-primary-xlight, #E1F5EE); }
+-  50%      { box-shadow: 0 0 0 7px var(--lis-primary-xlight, #E1F5EE); }
+-}
+-.proc-label { font-size: 10.5px; color: var(--text-secondary); text-align: center; white-space: nowrap; }
+-.proc-step--done .proc-label, .proc-step--active .proc-label { color: var(--text-primary); font-weight: 500; }
+-.proc-line { flex: 1; height: 1.5px; background: var(--border-color); margin: 15px -2px 0; min-width: 16px; transition: background .3s; }
+-.proc-line--done { background: var(--lis-primary, #1D9E75); }
++  font-size: 10px; font-weight: 600; flex-shrink: 0;
++  color: var(--text-secondary); background: var(--card-bg);
++}
++.wf-dot--active { background: var(--lis-primary, #1D9E75); border-color: var(--lis-primary, #1D9E75); color: #fff; i { font-size: 11px; } }
++.wf-step--active { color: var(--lis-primary-deep, #085041); font-weight: 600; }
++.wf-connector { width: 28px; height: 1px; background: var(--border-color); flex-shrink: 0; }
++.wf-connector--done { background: var(--lis-primary-mid, #5DCAA5); }
+ 
+ /* ══════════════════════════════════════════════
+    Patient summary — the visual anchor
+@@ -65,6 +48,8 @@
+ .ps-sub  { font-size: 12.5px; color: var(--text-secondary); margin-top: 3px; }
+ .ps-pid  { color: var(--lis-primary-deep, #085041); font-weight: 600; }
+ .ps-dot  { margin: 0 4px; }
++.ps-age  { font-weight: 500; }
++.ps-gender-ico { font-size: 12px; vertical-align: -1px; margin-right: 1px; color: var(--text-secondary); }
+ 
+ .status-chip {
+   display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;
+@@ -162,6 +147,17 @@
+ }
+ .recent-chip--sel { background: var(--lis-primary-xlight, #E1F5EE); border-color: var(--lis-primary, #1D9E75); color: var(--lis-primary-deep, #085041); }
+ 
++/* ── Collapsible section toggle (Popular Tests / Packages) ──── */
++.section-toggle-btn {
++  margin-left: auto; display: inline-flex; align-items: center; gap: 5px;
++  font-size: 11.5px; font-weight: 600; color: var(--lis-primary-deep, #085041);
++  background: var(--lis-primary-xlight, #E1F5EE); border: 0.5px solid var(--lis-primary-mid, #5DCAA5);
++  padding: 5px 11px; border-radius: 20px; cursor: pointer;
++  font-family: var(--font-family); transition: background .15s;
++  i { font-size: 12px; }
++  &:hover { background: var(--lis-primary-mid, #5DCAA5); color: #fff; }
++}
++
+ /* ── Popular tests as action cards ───────────── */
+ .popular-card { background: var(--body-bg); }
+ .popular-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 10px; padding: 10px 14px 14px; }
+@@ -353,13 +349,17 @@
+ .op-actions { display: flex; flex-direction: column; gap: 8px; }
+ .proceed-btn {
+   font-size: 13px; height: 52px; font-weight: 700; position: relative; overflow: hidden;
+-  box-shadow: 0 6px 16px rgba(29,158,117,0.28);
++  padding: 0 44px 0 20px; box-shadow: 0 6px 16px rgba(29,158,117,0.28);
+   transition: transform .15s, box-shadow .15s, filter .15s;
+ }
++.proceed-btn-main { display: inline-flex; align-items: center; gap: 8px; justify-content: center; }
+ .proceed-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(29,158,117,0.36); filter: brightness(1.06); }
+ .proceed-btn:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
+ .proceed-arrow { transition: transform .15s; }
+ .proceed-btn:hover:not(:disabled) .proceed-arrow { transform: translateX(3px); }
++.proceed-btn .kbd-hint--on-primary {
++  position: absolute; right: 10px; top: 50%; transform: translateY(-50%); margin-left: 0;
++}
+ .proceed-btn.is-rippling::after {
+   content: ''; position: absolute; left: var(--ripple-x, 50%); top: var(--ripple-y, 50%);
+   width: 10px; height: 10px; background: rgba(255,255,255,0.5); border-radius: 50%;
+diff --git a/src/app/features/test-order/test-order.component.html b/src/app/features/test-order/test-order.component.html
+index e9f649d..100fde6 100644
+--- a/src/app/features/test-order/test-order.component.html
++++ b/src/app/features/test-order/test-order.component.html
+@@ -15,33 +15,28 @@
+       </ol>
+     </nav>
+   </div>
+-</div>
+ 
+-<!-- Real process timeline, not a breadcrumb -->
+-<div class="proc-timeline" role="list" aria-label="Order progress">
+-  <div class="proc-step proc-step--done" role="listitem">
+-    <div class="proc-dot"><i class="ti ti-check" aria-hidden="true"></i></div>
+-    <div class="proc-label">Registered</div>
+-  </div>
+-  <div class="proc-line proc-line--done" aria-hidden="true"></div>
+-  <div class="proc-step proc-step--active" role="listitem">
+-    <div class="proc-dot"><i class="ti ti-test-pipe" aria-hidden="true"></i></div>
+-    <div class="proc-label">Test Order</div>
+-  </div>
+-  <div class="proc-line" aria-hidden="true"></div>
+-  <div class="proc-step" role="listitem">
+-    <div class="proc-dot"><i class="ti ti-file-invoice" aria-hidden="true"></i></div>
+-    <div class="proc-label">Billing</div>
+-  </div>
+-  <div class="proc-line" aria-hidden="true"></div>
+-  <div class="proc-step" role="listitem">
+-    <div class="proc-dot"><i class="ti ti-droplet" aria-hidden="true"></i></div>
+-    <div class="proc-label">Collection</div>
+-  </div>
+-  <div class="proc-line" aria-hidden="true"></div>
+-  <div class="proc-step" role="listitem">
+-    <div class="proc-dot"><i class="ti ti-file-check" aria-hidden="true"></i></div>
+-    <div class="proc-label">Reporting</div>
++  <!-- Workflow progress trail — same pattern as Registration -->
++  <div class="workflow-trail" aria-label="Workflow steps">
++    <div class="wf-step">
++      <span class="wf-dot wf-dot--active"><i class="ti ti-check" aria-hidden="true"></i></span>
++      <span>Register</span>
++    </div>
++    <div class="wf-connector wf-connector--done"></div>
++    <div class="wf-step wf-step--active">
++      <span class="wf-dot wf-dot--active">2</span>
++      <span>Test Order</span>
++    </div>
++    <div class="wf-connector"></div>
++    <div class="wf-step">
++      <span class="wf-dot">3</span>
++      <span>Billing</span>
++    </div>
++    <div class="wf-connector"></div>
++    <div class="wf-step">
++      <span class="wf-dot">4</span>
++      <span>Sample</span>
++    </div>
+   </div>
+ </div>
+ 
+@@ -57,7 +52,9 @@
+         <div class="ps-sub">
+           <span class="ps-pid lis-mono">{{ patient.id }}</span>
+           <span class="ps-dot" aria-hidden="true">·</span>
+-          {{ patientAge }} · {{ patient.gender }}
++          <span class="ps-age">{{ patientAgeBreakdown() }}</span>
++          <span class="ps-dot" aria-hidden="true">|</span>
++          <i class="ti {{ genderIcon() }} ps-gender-ico" aria-hidden="true"></i> {{ patient.gender }}
+         </div>
+       </div>
+       <span class="status-chip status-chip--done">
+@@ -150,62 +147,79 @@
+       </div>
+     }
+ 
+-    <!-- Popular tests as action cards -->
++    <!-- Popular tests as action cards — collapsed by default -->
+     @if (!testQuery()) {
+       <div class="lis-card popular-card">
+         <div class="lis-card__header">
+           <i class="ti ti-star lis-card-icon" aria-hidden="true"></i>
+           <h2 class="lis-card__title">Popular Tests</h2>
+           <span class="lis-badge">Quick pick</span>
++          <button type="button" class="section-toggle-btn"
++            (click)="popularVisible.set(!popularVisible())"
++            [attr.aria-expanded]="popularVisible()">
++            {{ popularVisible() ? 'Hide' : 'Show' }}
++            <i class="ti" [class.ti-chevron-up]="popularVisible()" [class.ti-chevron-down]="!popularVisible()" aria-hidden="true"></i>
++          </button>
+         </div>
+-        <div class="popular-grid" role="list" aria-label="Popular tests">
+-          @for (t of flow.popularTests; track t.id) {
+-            <button type="button" class="popular-card2"
+-              [class.popular-card2--sel]="isSelected(t.id)"
+-              (click)="toggle(t)"
+-              role="listitem"
+-              [attr.aria-pressed]="isSelected(t.id)"
+-              [attr.aria-label]="t.name + ', ₹' + t.price">
+-              <div class="pc2-top">
+-                <span class="pc2-name">{{ t.id }}</span>
+-                @if (isSelected(t.id)) {
+-                  <i class="ti ti-check pc2-check" aria-hidden="true"></i>
+-                } @else {
+-                  <i class="ti ti-plus pc2-plus" aria-hidden="true"></i>
+-                }
+-              </div>
+-              <span class="pc2-price">₹{{ t.price }}</span>
+-              <span class="pc2-badge"><i class="ti ti-flame" aria-hidden="true"></i> Frequently Ordered</span>
+-              <span class="pc2-hover-cta">Add Test</span>
+-            </button>
+-          }
+-        </div>
++        @if (popularVisible()) {
++          <div class="popular-grid" role="list" aria-label="Popular tests">
++            @for (t of flow.popularTests; track t.id) {
++              <button type="button" class="popular-card2"
++                [class.popular-card2--sel]="isSelected(t.id)"
++                (click)="toggle(t)"
++                role="listitem"
++                [attr.aria-pressed]="isSelected(t.id)"
++                [attr.aria-label]="t.name + ', ₹' + t.price">
++                <div class="pc2-top">
++                  <span class="pc2-name">{{ t.id }}</span>
++                  @if (isSelected(t.id)) {
++                    <i class="ti ti-check pc2-check" aria-hidden="true"></i>
++                  } @else {
++                    <i class="ti ti-plus pc2-plus" aria-hidden="true"></i>
++                  }
++                </div>
++                <span class="pc2-price">₹{{ t.price }}</span>
++                <span class="pc2-badge"><i class="ti ti-flame" aria-hidden="true"></i> Frequently Ordered</span>
++                <span class="pc2-hover-cta">Add Test</span>
++              </button>
++            }
++          </div>
++        }
+       </div>
+     }
+ 
+-    <!-- Frequently ordered packages — fills the space between Popular and All Tests -->
++    <!-- Frequently ordered packages — collapsed by default, fills the space
++         between Popular and All Tests once opened -->
+     @if (!testQuery()) {
+       <div class="lis-card package-card">
+         <div class="lis-card__header">
+           <i class="ti ti-package lis-card-icon" aria-hidden="true"></i>
+           <h2 class="lis-card__title">Frequently Ordered Packages</h2>
++          <button type="button" class="section-toggle-btn"
++            (click)="packagesVisible.set(!packagesVisible())"
++            [attr.aria-expanded]="packagesVisible()">
++            {{ packagesVisible() ? 'Hide' : 'Show' }}
++            <i class="ti" [class.ti-chevron-up]="packagesVisible()" [class.ti-chevron-down]="!packagesVisible()" aria-hidden="true"></i>
++          </button>
+         </div>
+-        <div class="package-grid" role="list" aria-label="Test packages">
+-          @for (pkg of flow.testPackages; track pkg.id) {
+-            <div class="package-item" role="listitem">
+-              <div class="pkg-info">
+-                <div class="pkg-name">{{ pkg.name }}</div>
+-                <div class="pkg-tests">{{ packageTestNames(pkg) }}</div>
++        @if (packagesVisible()) {
++          <div class="package-grid" role="list" aria-label="Test packages">
++            @for (pkg of flow.testPackages; track pkg.id) {
++              <div class="package-item" role="listitem">
++                <div class="pkg-info">
++                  <div class="pkg-name">{{ pkg.name }}</div>
++                  <div class="pkg-tests">{{ packageTestNames(pkg) }}</div>
++                </div>
++                <div class="pkg-side">
++                  <span class="pkg-price">₹{{ packagePrice(pkg) }}</span>
++                  <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="addPackage(pkg)">
++                    <i class="ti ti-plus" aria-hidden="true"></i> Add all
++                  </button>
++                </div>
+               </div>
+-              <div class="pkg-side">
+-                <span class="pkg-price">₹{{ packagePrice(pkg) }}</span>
+-                <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="addPackage(pkg)">
+-                  <i class="ti ti-plus" aria-hidden="true"></i> Add all
+-                </button>
+-              </div>
+-            </div>
+-          }
+-        </div>
++            }
++          </div>
++        }
+       </div>
+     }
+ 
+@@ -373,11 +387,13 @@
+         (click)="proceedToBilling(); onCtaRipple($event)"
+         [disabled]="!hasTests || saving()">
+         @if (saving()) {
+-          <i class="ti ti-loader-2 spin" aria-hidden="true"></i> Saving…
++          <span class="proceed-btn-main"><i class="ti ti-loader-2 spin" aria-hidden="true"></i> Saving…</span>
+         } @else {
+-          <i class="ti ti-file-invoice" aria-hidden="true"></i>
+-          Save &amp; Continue to Billing
+-          <i class="ti ti-arrow-right proceed-arrow" aria-hidden="true"></i>
++          <span class="proceed-btn-main">
++            <i class="ti ti-file-invoice" aria-hidden="true"></i>
++            Save &amp; Continue to Billing
++            <i class="ti ti-arrow-right proceed-arrow" aria-hidden="true"></i>
++          </span>
+           <kbd class="kbd-hint kbd-hint--on-primary">Ctrl+Enter</kbd>
+         }
+       </button>
+diff --git a/src/app/features/test-order/test-order.component.ts b/src/app/features/test-order/test-order.component.ts
+index 907c071..6ce3438 100644
+--- a/src/app/features/test-order/test-order.component.ts
++++ b/src/app/features/test-order/test-order.component.ts
+@@ -56,6 +56,8 @@ export class TestOrderComponent implements OnInit {
+ 
+   testQuery      = signal('');
+   activeCategory = signal('All');
++  popularVisible  = signal(false);
++  packagesVisible = signal(false);
+   saving         = signal(false);
+   savingDraft    = signal(false);
+   draftSaved     = signal(false);
+@@ -237,9 +239,17 @@ export class TestOrderComponent implements OnInit {
+     return (p.firstName[0] + p.lastName[0]).toUpperCase();
+   }
+ 
+-  get patientAge(): string {
++  patientAgeBreakdown(): string {
+     const p = this.patient;
+     if (!p) return '';
+-    return this.flow.calcAge(p.dob) + ' yrs';
++    const { years, months, days } = this.flow.calcAgeParts(p.dob);
++    return `${years} Years - ${months} Months - ${days} Days`;
++  }
++
++  genderIcon(): string {
++    const g = (this.patient?.gender ?? '').toLowerCase();
++    if (g === 'male')   return 'ti-gender-male';
++    if (g === 'female') return 'ti-gender-female';
++    return 'ti-gender-genderless';
+   }
+ }
+-- 
+2.43.0
+

@@ -47,10 +47,18 @@
   </div>
 }
 
-<!-- Page header -->
+<!-- Page header (invoice info merged in — no separate banner strip) -->
 <div class="page-header">
-  <div>
-    <h1 class="page-title">Billing</h1>
+  <div class="page-header__left">
+    <div class="page-title-row">
+      <h1 class="page-title">Billing</h1>
+      <span class="inv-id-badge lis-mono">
+        <i class="ti ti-file-invoice" aria-hidden="true"></i>{{ invoiceId }}
+      </span>
+      <span class="prio-tag" [class.prio-tag--stat]="flow.priority() === 'stat'">
+        <i class="ti ti-flag-3" aria-hidden="true"></i>{{ flow.priority() | titlecase }}
+      </span>
+    </div>
     <nav aria-label="Breadcrumb">
       <ol class="breadcrumb">
         <li><a routerLink="/dashboard/home">Home</a></li>
@@ -59,23 +67,19 @@
       </ol>
     </nav>
   </div>
-  <div class="workflow-trail" aria-label="Workflow steps">
-    <div class="wf-step wf-step--done"><i class="ti ti-check"></i> Registered</div>
-    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
-    <div class="wf-step wf-step--done"><i class="ti ti-check"></i> Tests Ordered</div>
-    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
-    <div class="wf-step wf-step--active"><i class="ti ti-file-invoice"></i> Billing</div>
-    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
-    <div class="wf-step"><i class="ti ti-droplet"></i> Sample</div>
-  </div>
-</div>
 
-<!-- Invoice ID badge -->
-<div class="inv-banner">
-  <i class="ti ti-file-invoice" aria-hidden="true"></i>
-  <span>Invoice</span>
-  <span class="inv-id lis-mono">{{ invoiceId }}</span>
-  <span class="inv-date">{{ today | date:'dd MMM yyyy' }}</span>
+  <div class="page-header__right">
+    <div class="inv-date-top">{{ today | date:'dd MMM yyyy' }}</div>
+    <div class="workflow-trail" aria-label="Workflow steps">
+      <div class="wf-step wf-step--done"><i class="ti ti-circle-check-filled"></i> Registered</div>
+      <div class="wf-line wf-line--done" aria-hidden="true"></div>
+      <div class="wf-step wf-step--done"><i class="ti ti-circle-check-filled"></i> Tests Ordered</div>
+      <div class="wf-line wf-line--active" aria-hidden="true"></div>
+      <div class="wf-step wf-step--active"><span class="wf-num">3</span> Billing</div>
+      <div class="wf-line" aria-hidden="true"></div>
+      <div class="wf-step"><span class="wf-num">4</span> Sample</div>
+    </div>
+  </div>
 </div>
 
 <div class="bill-layout">
@@ -89,19 +93,36 @@
         <div class="lis-card__header">
           <i class="ti ti-user lis-card-icon" aria-hidden="true"></i>
           <h2 class="lis-card__title">Patient</h2>
-          <span class="lis-badge"><i class="ti ti-check"></i> Confirmed</span>
-          <a routerLink="/dashboard/test-order" class="lis-link" aria-label="Go back to test order">← Edit tests</a>
+          <span class="lis-badge lis-badge--success"><i class="ti ti-check"></i> Confirmed</span>
+          <a routerLink="/dashboard/test-order" class="lis-btn lis-btn--outline lis-btn--sm edit-tests-btn"
+            aria-label="Go back to test order">
+            <i class="ti ti-pencil" aria-hidden="true"></i> Edit Tests
+          </a>
         </div>
         <div class="pat-info-row">
           <div class="pat-av" aria-hidden="true">{{ patientInitials }}</div>
-          <div>
-            <div class="pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
-            <div class="pat-meta">
-              <span class="lis-mono">{{ patient.id }}</span> ·
-              {{ patientAge }} · {{ patient.gender }} ·
-              {{ patient.mobile }}
+          <div class="pat-id-main">
+            <div class="pat-name-row">
+              <div class="pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
+              <span class="pill pill--visit"><i class="ti {{ visitTypeIcon() }}" aria-hidden="true"></i>{{ patient.visitType | titlecase }}</span>
+              <span class="pill pill--routine" [class.pill--stat]="flow.priority() === 'stat'">
+                <i class="ti ti-flag-3" aria-hidden="true"></i>{{ flow.priority() | titlecase }}
+              </span>
             </div>
-            <div class="pat-meta">{{ patient.refDoctor }} · {{ patient.visitType }}</div>
+            <div class="pat-detail-row">
+              <span class="pat-detail-item"><i class="ti ti-cake pat-detail-icon" aria-hidden="true"></i>{{ patientAgeBreakdown() }}</span>
+              <span class="pat-detail-sep" aria-hidden="true">|</span>
+              <span class="pat-detail-item"><i class="ti {{ genderIcon() }} pat-detail-icon" aria-hidden="true"></i>{{ patient.gender | titlecase }}</span>
+              <span class="pat-detail-sep" aria-hidden="true">|</span>
+              <span class="pat-detail-item"><i class="ti {{ visitTypeIcon() }} pat-detail-icon" aria-hidden="true"></i>{{ patient.visitType | titlecase }}</span>
+              <span class="pat-detail-sep" aria-hidden="true">|</span>
+              <span class="pat-detail-item"><i class="ti ti-id-badge-2 pat-detail-icon" aria-hidden="true"></i><span class="lis-mono">{{ patient.id }}</span></span>
+              <span class="pat-detail-sep" aria-hidden="true">|</span>
+              <span class="pat-detail-item"><i class="ti ti-stethoscope pat-detail-icon" aria-hidden="true"></i>{{ patient.refDoctor }}</span>
+            </div>
+            <div class="pat-detail-row">
+              <span class="pat-detail-item"><i class="ti ti-phone pat-detail-icon" aria-hidden="true"></i>{{ patient.mobile }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -127,8 +148,9 @@
             <div class="bt-cat-dot" [attr.title]="t.category" aria-hidden="true"></div>
             <div class="bt-info">
               <div class="bt-name">{{ t.name }}</div>
-              <div class="bt-meta">{{ t.category }} · {{ t.tatHours }}h TAT</div>
+              <div class="bt-meta">{{ t.category }}</div>
             </div>
+            <span class="bt-tat-badge"><i class="ti ti-clock-hour-4" aria-hidden="true"></i>{{ t.tatHours }}h</span>
             <div class="bt-price">₹{{ t.price.toLocaleString('en-IN') }}</div>
           </div>
         }
@@ -141,32 +163,51 @@
         <i class="ti ti-tag lis-card-icon" aria-hidden="true"></i>
         <h2 class="lis-card__title">Discounts &amp; Adjustments</h2>
       </div>
-      <div class="form-grid">
-        <div class="lis-field">
-          <label for="discPct">Discount (%)</label>
-          <input id="discPct" type="number" min="0" max="100"
-            [value]="discountPct()"
-            (input)="applyDiscount(+$any($event.target).value)"
-            placeholder="0" />
+      <div class="disc-group">
+        <div class="disc-group__label">Discounts</div>
+        <div class="form-grid">
+          <div class="lis-field">
+            <label for="discPct">Discount %</label>
+            <div class="stepper-field">
+              <button type="button" class="stepper-btn" (click)="incrementDiscount(-1)" aria-label="Decrease discount">−</button>
+              <input id="discPct" type="number" min="0" max="100" class="stepper-input"
+                [value]="discountPct()"
+                (input)="applyDiscount(+$any($event.target).value)"
+                placeholder="0" />
+              <button type="button" class="stepper-btn" (click)="incrementDiscount(1)" aria-label="Increase discount">+</button>
+            </div>
+          </div>
+          <div class="lis-field">
+            <label for="coupon">Coupon code</label>
+            <div class="input-with-btn">
+              <input id="coupon" type="text" placeholder="Enter coupon"
+                [value]="couponCode()"
+                (input)="couponCode.set($any($event.target).value)" />
+              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="applyCoupon()">Apply</button>
+            </div>
+          </div>
+          <div class="lis-field">
+            <label for="referral">Referral code</label>
+            <input id="referral" type="text" placeholder="Referral code"
+              [value]="referralCode()"
+              (input)="referralCode.set($any($event.target).value)" />
+          </div>
         </div>
-        <div class="lis-field">
-          <label for="coupon">Coupon code</label>
-          <input id="coupon" type="text" placeholder="Enter coupon"
-            [value]="couponCode()"
-            (input)="couponCode.set($any($event.target).value)" />
-        </div>
-        <div class="lis-field">
-          <label for="referral">Referral code</label>
-          <input id="referral" type="text" placeholder="Referral code"
-            [value]="referralCode()"
-            (input)="referralCode.set($any($event.target).value)" />
-        </div>
-        <div class="lis-field">
-          <label for="advance">Advance received (₹)</label>
-          <input id="advance" type="number" min="0"
-            [value]="advance()"
-            (input)="advance.set(+$any($event.target).value)"
-            placeholder="0" />
+      </div>
+
+      <div class="disc-group disc-group--advance">
+        <div class="disc-group__label">Advance</div>
+        <div class="form-grid form-grid--single">
+          <div class="lis-field">
+            <label for="advance">Advance received</label>
+            <div class="currency-field">
+              <span class="currency-prefix">₹</span>
+              <input id="advance" type="number" min="0"
+                [value]="advance()"
+                (input)="advance.set(+$any($event.target).value)"
+                placeholder="Enter amount" />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -195,13 +236,51 @@
           Credit billing — collect payment before report dispatch.
         </div>
       }
+      @if (payMode() === 'cash') {
+        <div class="pay-adaptive">
+          <div class="lis-field">
+            <label for="cashReceived">Amount received</label>
+            <div class="currency-field">
+              <span class="currency-prefix">₹</span>
+              <input id="cashReceived" type="text" placeholder="0" />
+            </div>
+          </div>
+        </div>
+      }
+      @if (payMode() === 'upi') {
+        <div class="pay-adaptive">
+          <div class="lis-field">
+            <label for="upiTxn">Transaction ID</label>
+            <input id="upiTxn" type="text" placeholder="UPI reference / transaction ID" />
+          </div>
+        </div>
+      }
+      @if (payMode() === 'card') {
+        <div class="pay-adaptive">
+          <div class="lis-field">
+            <label for="cardRef">Reference number</label>
+            <input id="cardRef" type="text" placeholder="Last 4 digits / auth code" />
+          </div>
+        </div>
+      }
     </div>
   </div>
 
   <!-- ── Right: Invoice panel ─────────────────── -->
   <aside class="invoice-panel lis-card" aria-label="Invoice summary">
     <div class="inv-hd">
-      <div class="inv-title">Invoice Summary</div>
+      <div class="inv-hd-row">
+        <div class="inv-title">Invoice Summary</div>
+        <span class="pay-status-badge" [class.pay-status-badge--paid]="paymentStatus() === 'paid'"
+          [class.pay-status-badge--partial]="paymentStatus() === 'partial'">
+          <i class="ti ti-point-filled" aria-hidden="true"></i>
+          @switch (paymentStatus()) {
+            @case ('paid') { Paid }
+            @case ('partial') { Partially Paid }
+            @default { Pending }
+          }
+        </span>
+      </div>
       <div class="inv-meta lis-mono">{{ invoiceId }}</div>
     </div>
 
@@ -211,7 +290,7 @@
         <div>
           <div class="inv-pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
           <div class="inv-pat-meta">
-            {{ patientAge }} · {{ patient.gender }} · {{ patient.refDoctor }}
+            {{ patientAge }} | {{ patient.gender }} | {{ patient.refDoctor }}
           </div>
         </div>
       </div>
@@ -244,8 +323,8 @@
       }
       <div class="tot-row"><span>GST</span><span>Exempt</span></div>
       <div class="tot-row tot-grand">
-        <span>Total payable</span>
-        <span>₹{{ grandTotal().toLocaleString('en-IN') }}</span>
+        <span>Total Payable</span>
+        <span class="tot-grand-amt">₹{{ grandTotal().toLocaleString('en-IN') }}</span>
       </div>
       @if (advance() > 0) {
         <div class="tot-row tot-outstanding">
@@ -261,6 +340,9 @@
       <span class="prio-tag" [class.prio-tag--stat]="flow.priority() === 'stat'">
         {{ flow.priority() | titlecase }}
       </span>
+      <button type="button" class="lis-link receipt-preview-link" (click)="showReceipt.set(true)">
+        <i class="ti ti-eye" aria-hidden="true"></i> Preview Receipt
+      </button>
     </div>
 
     <!-- Actions -->

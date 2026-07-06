@@ -1,0 +1,534 @@
+From aa5fba31c6cc82eb7876e8c41f00545eac74d6b5 Mon Sep 17 00:00:00 2001
+From: Chandan <chandan@medpath.dev>
+Date: Mon, 6 Jul 2026 11:25:34 +0000
+Subject: [PATCH] Billing page: UX overhaul per design review
+
+- Merge invoice ID, date and priority into the page header (removes the
+  empty banner strip); enhance workflow stepper with taller steps,
+  numbered circles and a connecting progress line.
+- Redesign patient card: outlined 'Edit Tests' button, visit/priority
+  pills next to the name, and a detailed info row with icons and
+  separators for age (Y-M-Days), gender, visit type, patient ID and
+  referring doctor.
+- Tests Ordered: add a scannable TAT badge per row.
+- Discounts & Adjustments: split into 'Discounts' and 'Advance' groups,
+  add a +/- stepper for discount %, an Apply button for coupon code,
+  and currency-formatted advance input with a proper placeholder.
+- Payment modes: larger icons, lift/glow hover and active states, plus
+  adaptive fields per mode (cash amount, UPI transaction ID, card ref).
+- Invoice summary: payment status badge (Pending/Partial/Paid), bolder
+  Total Payable emphasis, and a Preview Receipt link.
+---
+ .../features/billing/billing.component.css    | 132 +++++++++---
+ .../features/billing/billing.component.html   | 196 +++++++++++++-----
+ src/app/features/billing/billing.component.ts |  37 ++++
+ 3 files changed, 277 insertions(+), 88 deletions(-)
+
+diff --git a/src/app/features/billing/billing.component.css b/src/app/features/billing/billing.component.css
+index ae035ed..a77de47 100644
+--- a/src/app/features/billing/billing.component.css
++++ b/src/app/features/billing/billing.component.css
+@@ -1,30 +1,38 @@
+ :host { display: block; }
+ 
+ /* ── Page header ─────────────────────────── */
+-.page-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
+-.page-title  { font-size: 22px; font-weight: 500; color: var(--text-primary); margin: 0 0 4px; }
++.page-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 18px; }
++.page-header__left  { display: flex; flex-direction: column; gap: 5px; }
++.page-header__right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
++.page-title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
++.page-title  { font-size: 22px; font-weight: 500; color: var(--text-primary); margin: 0; }
+ .breadcrumb  { display: flex; list-style: none; padding: 0; margin: 0; gap: 6px; font-size: 12px; color: var(--text-secondary); }
+ .breadcrumb li+li::before { content: '/'; margin-right: 6px; }
+ .breadcrumb a { color: var(--text-secondary); text-decoration: none; &:hover { color: var(--lis-primary, #1D9E75); } }
+-.lis-link { font-size: 11px; color: var(--lis-primary, #1D9E75); text-decoration: none; margin-left: auto; &:hover { text-decoration: underline; } }
++.lis-link { font-size: 11px; color: var(--lis-primary, #1D9E75); text-decoration: none; margin-left: auto; background: none; border: none; cursor: pointer; padding: 0; display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-family); &:hover { text-decoration: underline; } }
+ 
+-/* ── Workflow trail ──────────────────────── */
+-.workflow-trail { display: flex; align-items: center; gap: 6px; background: var(--body-bg); border: 0.5px solid var(--border-color); border-radius: 9px; padding: 6px 12px; }
+-.wf-step { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-secondary); i { font-size: 13px; } }
+-.wf-step--active { color: var(--lis-primary-deep, #085041); font-weight: 500; i { color: var(--lis-primary, #1D9E75); } }
+-.wf-step--done   { color: var(--lis-primary, #1D9E75); font-weight: 500; i { color: var(--lis-primary, #1D9E75); } }
+-.wf-arrow { font-size: 11px; color: var(--border-color); }
+-
+-/* ── Invoice banner ──────────────────────── */
+-.inv-banner {
+-  display: flex; align-items: center; gap: 8px;
++/* Invoice id badge + date, merged into the header */
++.inv-id-badge {
++  display: inline-flex; align-items: center; gap: 6px;
++  font-size: 12px; font-weight: 500; color: var(--text-primary);
+   background: var(--body-bg); border: 0.5px solid var(--border-color);
+-  border-radius: 8px; padding: 7px 12px; margin-bottom: 18px;
+-  font-size: 12px; color: var(--text-secondary);
+-  i { color: var(--lis-primary, #1D9E75); }
++  border-radius: 20px; padding: 4px 10px;
++  i { color: var(--lis-primary, #1D9E75); font-size: 13px; }
++}
++.inv-date-top { font-size: 11px; color: var(--text-secondary); }
++
++/* ── Workflow trail ──────────────────────── */
++.workflow-trail { display: flex; align-items: center; gap: 0; background: var(--body-bg); border: 0.5px solid var(--border-color); border-radius: 10px; padding: 8px 14px; }
++.wf-step { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: var(--text-secondary); height: 42px; white-space: nowrap; i { font-size: 16px; } }
++.wf-num {
++  display: inline-flex; align-items: center; justify-content: center;
++  width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: 700;
++  border: 1.5px solid var(--border-color); color: var(--text-secondary); flex-shrink: 0;
+ }
+-.inv-id   { font-size: 12px; font-weight: 500; color: var(--text-primary); }
+-.inv-date { margin-left: auto; font-size: 11px; }
++.wf-step--active { color: var(--lis-primary-deep, #085041); font-weight: 700; .wf-num { background: var(--lis-primary, #1D9E75); border-color: var(--lis-primary, #1D9E75); color: #fff; } }
++.wf-step--done   { color: var(--lis-primary, #1D9E75); font-weight: 600; i { color: var(--lis-primary, #1D9E75); font-size: 18px; } }
++.wf-line { width: 22px; height: 2px; background: var(--border-color); margin: 0 8px; border-radius: 2px; }
++.wf-line--done, .wf-line--active { background: var(--lis-primary, #1D9E75); }
+ 
+ /* ── Layout ──────────────────────────────── */
+ .bill-layout { display: grid; grid-template-columns: 1fr 300px; gap: 16px; align-items: start; }
+@@ -33,11 +41,33 @@
+ 
+ /* ── Patient card ────────────────────────── */
+ .pat-card {}
+-.pat-info-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; }
+-.pat-av { width: 38px; height: 38px; border-radius: 50%; background: var(--lis-primary, #1D9E75); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; text-transform: uppercase; }
+-.pat-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
++.lis-badge--success { background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); border-color: var(--lis-primary-mid, #5DCAA5); }
++.lis-btn--outline { background: transparent; border: 1px solid var(--lis-primary, #1D9E75); color: var(--lis-primary, #1D9E75); &:hover { background: var(--lis-primary-xlight, #E1F5EE); } }
++.edit-tests-btn { margin-left: auto; }
++
++.pat-info-row { display: flex; align-items: flex-start; gap: 14px; padding: 14px; }
++.pat-av { width: 44px; height: 44px; border-radius: 50%; background: var(--lis-primary, #1D9E75); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0; text-transform: uppercase; }
++.pat-id-main { flex: 1; min-width: 0; }
++.pat-name-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
++.pat-name { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+ .pat-meta { font-size: 11px; color: var(--text-secondary); margin-top: 3px; }
+ 
++/* Info pills next to the patient name */
++.pill {
++  display: inline-flex; align-items: center; gap: 4px;
++  font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
++  i { font-size: 11px; }
++}
++.pill--visit   { background: var(--body-bg); color: var(--text-secondary); border: 0.5px solid var(--border-color); }
++.pill--routine { background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); border: 0.5px solid var(--lis-primary-mid, #5DCAA5); }
++.pill--stat    { background: #FCEBEB; color: #791F1F; border: 0.5px solid #E24B4A; }
++
++/* Detailed info row: age | gender | visit | id | doctor */
++.pat-detail-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
++.pat-detail-item { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-primary); }
++.pat-detail-icon { font-size: 13px; color: var(--lis-primary, #1D9E75); }
++.pat-detail-sep  { color: var(--border-color); font-size: 12px; }
++
+ /* ── Ordered tests (read-only) ───────────── */
+ .empty-tests { padding: 12px 14px; font-size: 12px; color: var(--text-secondary); }
+ .tests-list  { display: flex; flex-direction: column; }
+@@ -50,30 +80,68 @@
+ .bt-info    { flex: 1; }
+ .bt-name    { font-size: 12px; font-weight: 500; color: var(--text-primary); }
+ .bt-meta    { font-size: 10px; color: var(--text-secondary); margin-top: 1px; }
+-.bt-price   { font-size: 12px; font-weight: 500; color: var(--lis-primary-deep, #085041); }
++.bt-tat-badge {
++  display: inline-flex; align-items: center; gap: 4px;
++  font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
++  background: var(--body-bg); color: var(--text-secondary); border: 0.5px solid var(--border-color);
++  i { font-size: 11px; }
++}
++.bt-price   { font-size: 12px; font-weight: 500; color: var(--lis-primary-deep, #085041); min-width: 56px; text-align: right; }
+ 
+ /* ── Discounts grid ──────────────────────── */
+-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 14px 16px 16px; }
++.disc-group { padding: 4px 16px 14px; &:not(:last-child) { border-bottom: 0.5px solid var(--border-color); padding-bottom: 16px; } }
++.disc-group__label { font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-secondary); margin: 10px 0 10px; }
++.disc-group--advance { padding-top: 2px; }
++.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
++.form-grid--single { grid-template-columns: 1fr; max-width: 280px; }
+ @media (max-width: 540px) { .form-grid { grid-template-columns: 1fr; } }
+ 
++/* Discount % stepper */
++.stepper-field { display: flex; align-items: stretch; border: 0.5px solid var(--border-color); border-radius: 8px; overflow: hidden; }
++.stepper-btn {
++  width: 32px; flex-shrink: 0; border: none; background: var(--body-bg); color: var(--text-primary);
++  font-size: 16px; font-weight: 600; cursor: pointer;
++  &:hover { background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); }
++}
++.stepper-input { flex: 1; min-width: 0; border: none; text-align: center; border-left: 0.5px solid var(--border-color); border-right: 0.5px solid var(--border-color); border-radius: 0; }
++
++/* Coupon input + Apply button */
++.input-with-btn { display: flex; gap: 6px; input { flex: 1; min-width: 0; } }
++
++/* Currency-formatted amount fields */
++.currency-field { display: flex; align-items: center; border: 0.5px solid var(--border-color); border-radius: 8px; overflow: hidden; }
++.currency-prefix { padding: 0 0 0 10px; font-size: 12px; color: var(--text-secondary); }
++.currency-field input { border: none; }
++
+ /* ── Payment modes ───────────────────────── */
+ .pay-modes  { display: flex; gap: 8px; padding: 12px 14px; }
+ .pay-mode-btn {
+-  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px;
+-  padding: 10px 4px; border: 0.5px solid var(--border-color); border-radius: 9px;
++  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;
++  padding: 12px 4px; border: 0.5px solid var(--border-color); border-radius: 9px;
+   cursor: pointer; font-size: 11px; color: var(--text-secondary); background: var(--card-bg);
+-  i { font-size: 18px; }
+-  &:hover { border-color: var(--lis-primary-mid, #5DCAA5); }
++  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
++  i { font-size: 24px; }
++  &:hover { border-color: var(--lis-primary-mid, #5DCAA5); transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+ }
+-.pay-mode-btn--active { border-color: var(--lis-primary, #1D9E75); background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); font-weight: 500; }
+-.pay-mode-btn--credit { border-color: #E24B4A; background: #FCEBEB; color: #791F1F; }
++.pay-mode-btn--active { border-color: var(--lis-primary, #1D9E75); background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); font-weight: 600; box-shadow: 0 0 0 3px var(--lis-primary-xlight, #E1F5EE); }
++.pay-mode-btn--credit { border-color: #E24B4A; background: #FCEBEB; color: #791F1F; box-shadow: 0 0 0 3px rgba(226,75,74,0.12); }
+ .credit-warn { display: flex; align-items: flex-start; gap: 7px; margin: 0 14px 12px; padding: 8px 10px; background: #FAEEDA; border-radius: 7px; font-size: 11px; color: #633806; i { font-size: 14px; flex-shrink: 0; } }
++.pay-adaptive { padding: 0 14px 14px; }
+ 
+ /* ── Invoice panel ───────────────────────── */
+ .invoice-panel { display: flex; flex-direction: column; position: sticky; top: 80px; }
+ .inv-hd    { padding: 12px 14px; border-bottom: 0.5px solid var(--border-color); }
++.inv-hd-row{ display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+ .inv-title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+ .inv-meta  { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
++.pay-status-badge {
++  display: inline-flex; align-items: center; gap: 3px;
++  font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
++  background: #FAEEDA; color: #633806; border: 0.5px solid #E5C07B;
++  i { font-size: 9px; }
++}
++.pay-status-badge--partial { background: #E6F1FB; color: #0C447C; border-color: #90C3EE; }
++.pay-status-badge--paid    { background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); border-color: var(--lis-primary-mid, #5DCAA5); }
+ .inv-pat   { display: flex; align-items: center; gap: 9px; padding: 10px 14px; border-bottom: 0.5px solid var(--border-color); }
+ .inv-av    { width: 30px; height: 30px; border-radius: 50%; background: var(--lis-primary-xlight, #E1F5EE); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; color: var(--lis-primary-deep, #085041); }
+ .inv-pat-name { font-size: 12px; font-weight: 500; color: var(--text-primary); }
+@@ -85,9 +153,11 @@
+ .inv-totals { padding: 10px 14px; background: var(--body-bg); }
+ .tot-row   { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-secondary); padding: 3px 0; }
+ .tot-disc  { color: var(--lis-primary, #1D9E75); }
+-.tot-grand { font-size: 15px; font-weight: 600; color: var(--text-primary); padding-top: 7px; border-top: 0.5px solid var(--border-color); margin-top: 4px; }
++.tot-grand { font-size: 15px; font-weight: 600; color: var(--text-primary); padding-top: 7px; border-top: 0.5px solid var(--border-color); margin-top: 4px; align-items: center; }
++.tot-grand-amt { font-size: 22px; font-weight: 700; color: var(--lis-primary-deep, #085041); }
+ .tot-outstanding { color: #E24B4A; font-weight: 500; }
+-.inv-priority { padding: 8px 14px; font-size: 11px; color: var(--text-secondary); border-top: 0.5px solid var(--border-color); }
++.inv-priority { display: flex; align-items: center; gap: 8px; padding: 8px 14px; font-size: 11px; color: var(--text-secondary); border-top: 0.5px solid var(--border-color); }
++.receipt-preview-link { margin-left: auto; }
+ .prio-tag { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 20px; background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); border: 0.5px solid var(--lis-primary-mid, #5DCAA5); }
+ .prio-tag--stat { background: #FCEBEB; color: #791F1F; border-color: #E24B4A; }
+ .inv-actions { padding: 10px 14px; display: flex; flex-direction: column; gap: 7px; }
+diff --git a/src/app/features/billing/billing.component.html b/src/app/features/billing/billing.component.html
+index efdaa3f..ae0d384 100644
+--- a/src/app/features/billing/billing.component.html
++++ b/src/app/features/billing/billing.component.html
+@@ -47,10 +47,18 @@
+   </div>
+ }
+ 
+-<!-- Page header -->
++<!-- Page header (invoice info merged in — no separate banner strip) -->
+ <div class="page-header">
+-  <div>
+-    <h1 class="page-title">Billing</h1>
++  <div class="page-header__left">
++    <div class="page-title-row">
++      <h1 class="page-title">Billing</h1>
++      <span class="inv-id-badge lis-mono">
++        <i class="ti ti-file-invoice" aria-hidden="true"></i>{{ invoiceId }}
++      </span>
++      <span class="prio-tag" [class.prio-tag--stat]="flow.priority() === 'stat'">
++        <i class="ti ti-flag-3" aria-hidden="true"></i>{{ flow.priority() | titlecase }}
++      </span>
++    </div>
+     <nav aria-label="Breadcrumb">
+       <ol class="breadcrumb">
+         <li><a routerLink="/dashboard/home">Home</a></li>
+@@ -59,23 +67,19 @@
+       </ol>
+     </nav>
+   </div>
+-  <div class="workflow-trail" aria-label="Workflow steps">
+-    <div class="wf-step wf-step--done"><i class="ti ti-check"></i> Registered</div>
+-    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
+-    <div class="wf-step wf-step--done"><i class="ti ti-check"></i> Tests Ordered</div>
+-    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
+-    <div class="wf-step wf-step--active"><i class="ti ti-file-invoice"></i> Billing</div>
+-    <i class="ti ti-chevron-right wf-arrow" aria-hidden="true"></i>
+-    <div class="wf-step"><i class="ti ti-droplet"></i> Sample</div>
+-  </div>
+-</div>
+ 
+-<!-- Invoice ID badge -->
+-<div class="inv-banner">
+-  <i class="ti ti-file-invoice" aria-hidden="true"></i>
+-  <span>Invoice</span>
+-  <span class="inv-id lis-mono">{{ invoiceId }}</span>
+-  <span class="inv-date">{{ today | date:'dd MMM yyyy' }}</span>
++  <div class="page-header__right">
++    <div class="inv-date-top">{{ today | date:'dd MMM yyyy' }}</div>
++    <div class="workflow-trail" aria-label="Workflow steps">
++      <div class="wf-step wf-step--done"><i class="ti ti-circle-check-filled"></i> Registered</div>
++      <div class="wf-line wf-line--done" aria-hidden="true"></div>
++      <div class="wf-step wf-step--done"><i class="ti ti-circle-check-filled"></i> Tests Ordered</div>
++      <div class="wf-line wf-line--active" aria-hidden="true"></div>
++      <div class="wf-step wf-step--active"><span class="wf-num">3</span> Billing</div>
++      <div class="wf-line" aria-hidden="true"></div>
++      <div class="wf-step"><span class="wf-num">4</span> Sample</div>
++    </div>
++  </div>
+ </div>
+ 
+ <div class="bill-layout">
+@@ -89,19 +93,36 @@
+         <div class="lis-card__header">
+           <i class="ti ti-user lis-card-icon" aria-hidden="true"></i>
+           <h2 class="lis-card__title">Patient</h2>
+-          <span class="lis-badge"><i class="ti ti-check"></i> Confirmed</span>
+-          <a routerLink="/dashboard/test-order" class="lis-link" aria-label="Go back to test order">← Edit tests</a>
++          <span class="lis-badge lis-badge--success"><i class="ti ti-check"></i> Confirmed</span>
++          <a routerLink="/dashboard/test-order" class="lis-btn lis-btn--outline lis-btn--sm edit-tests-btn"
++            aria-label="Go back to test order">
++            <i class="ti ti-pencil" aria-hidden="true"></i> Edit Tests
++          </a>
+         </div>
+         <div class="pat-info-row">
+           <div class="pat-av" aria-hidden="true">{{ patientInitials }}</div>
+-          <div>
+-            <div class="pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
+-            <div class="pat-meta">
+-              <span class="lis-mono">{{ patient.id }}</span> ·
+-              {{ patientAge }} · {{ patient.gender }} ·
+-              {{ patient.mobile }}
++          <div class="pat-id-main">
++            <div class="pat-name-row">
++              <div class="pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
++              <span class="pill pill--visit"><i class="ti {{ visitTypeIcon() }}" aria-hidden="true"></i>{{ patient.visitType | titlecase }}</span>
++              <span class="pill pill--routine" [class.pill--stat]="flow.priority() === 'stat'">
++                <i class="ti ti-flag-3" aria-hidden="true"></i>{{ flow.priority() | titlecase }}
++              </span>
++            </div>
++            <div class="pat-detail-row">
++              <span class="pat-detail-item"><i class="ti ti-cake pat-detail-icon" aria-hidden="true"></i>{{ patientAgeBreakdown() }}</span>
++              <span class="pat-detail-sep" aria-hidden="true">|</span>
++              <span class="pat-detail-item"><i class="ti {{ genderIcon() }} pat-detail-icon" aria-hidden="true"></i>{{ patient.gender | titlecase }}</span>
++              <span class="pat-detail-sep" aria-hidden="true">|</span>
++              <span class="pat-detail-item"><i class="ti {{ visitTypeIcon() }} pat-detail-icon" aria-hidden="true"></i>{{ patient.visitType | titlecase }}</span>
++              <span class="pat-detail-sep" aria-hidden="true">|</span>
++              <span class="pat-detail-item"><i class="ti ti-id-badge-2 pat-detail-icon" aria-hidden="true"></i><span class="lis-mono">{{ patient.id }}</span></span>
++              <span class="pat-detail-sep" aria-hidden="true">|</span>
++              <span class="pat-detail-item"><i class="ti ti-stethoscope pat-detail-icon" aria-hidden="true"></i>{{ patient.refDoctor }}</span>
++            </div>
++            <div class="pat-detail-row">
++              <span class="pat-detail-item"><i class="ti ti-phone pat-detail-icon" aria-hidden="true"></i>{{ patient.mobile }}</span>
+             </div>
+-            <div class="pat-meta">{{ patient.refDoctor }} · {{ patient.visitType }}</div>
+           </div>
+         </div>
+       </div>
+@@ -127,8 +148,9 @@
+             <div class="bt-cat-dot" [attr.title]="t.category" aria-hidden="true"></div>
+             <div class="bt-info">
+               <div class="bt-name">{{ t.name }}</div>
+-              <div class="bt-meta">{{ t.category }} · {{ t.tatHours }}h TAT</div>
++              <div class="bt-meta">{{ t.category }}</div>
+             </div>
++            <span class="bt-tat-badge"><i class="ti ti-clock-hour-4" aria-hidden="true"></i>{{ t.tatHours }}h</span>
+             <div class="bt-price">₹{{ t.price.toLocaleString('en-IN') }}</div>
+           </div>
+         }
+@@ -141,32 +163,51 @@
+         <i class="ti ti-tag lis-card-icon" aria-hidden="true"></i>
+         <h2 class="lis-card__title">Discounts &amp; Adjustments</h2>
+       </div>
+-      <div class="form-grid">
+-        <div class="lis-field">
+-          <label for="discPct">Discount (%)</label>
+-          <input id="discPct" type="number" min="0" max="100"
+-            [value]="discountPct()"
+-            (input)="applyDiscount(+$any($event.target).value)"
+-            placeholder="0" />
+-        </div>
+-        <div class="lis-field">
+-          <label for="coupon">Coupon code</label>
+-          <input id="coupon" type="text" placeholder="Enter coupon"
+-            [value]="couponCode()"
+-            (input)="couponCode.set($any($event.target).value)" />
+-        </div>
+-        <div class="lis-field">
+-          <label for="referral">Referral code</label>
+-          <input id="referral" type="text" placeholder="Referral code"
+-            [value]="referralCode()"
+-            (input)="referralCode.set($any($event.target).value)" />
++      <div class="disc-group">
++        <div class="disc-group__label">Discounts</div>
++        <div class="form-grid">
++          <div class="lis-field">
++            <label for="discPct">Discount %</label>
++            <div class="stepper-field">
++              <button type="button" class="stepper-btn" (click)="incrementDiscount(-1)" aria-label="Decrease discount">−</button>
++              <input id="discPct" type="number" min="0" max="100" class="stepper-input"
++                [value]="discountPct()"
++                (input)="applyDiscount(+$any($event.target).value)"
++                placeholder="0" />
++              <button type="button" class="stepper-btn" (click)="incrementDiscount(1)" aria-label="Increase discount">+</button>
++            </div>
++          </div>
++          <div class="lis-field">
++            <label for="coupon">Coupon code</label>
++            <div class="input-with-btn">
++              <input id="coupon" type="text" placeholder="Enter coupon"
++                [value]="couponCode()"
++                (input)="couponCode.set($any($event.target).value)" />
++              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="applyCoupon()">Apply</button>
++            </div>
++          </div>
++          <div class="lis-field">
++            <label for="referral">Referral code</label>
++            <input id="referral" type="text" placeholder="Referral code"
++              [value]="referralCode()"
++              (input)="referralCode.set($any($event.target).value)" />
++          </div>
+         </div>
+-        <div class="lis-field">
+-          <label for="advance">Advance received (₹)</label>
+-          <input id="advance" type="number" min="0"
+-            [value]="advance()"
+-            (input)="advance.set(+$any($event.target).value)"
+-            placeholder="0" />
++      </div>
++
++      <div class="disc-group disc-group--advance">
++        <div class="disc-group__label">Advance</div>
++        <div class="form-grid form-grid--single">
++          <div class="lis-field">
++            <label for="advance">Advance received</label>
++            <div class="currency-field">
++              <span class="currency-prefix">₹</span>
++              <input id="advance" type="number" min="0"
++                [value]="advance()"
++                (input)="advance.set(+$any($event.target).value)"
++                placeholder="Enter amount" />
++            </div>
++          </div>
+         </div>
+       </div>
+     </div>
+@@ -195,13 +236,51 @@
+           Credit billing — collect payment before report dispatch.
+         </div>
+       }
++      @if (payMode() === 'cash') {
++        <div class="pay-adaptive">
++          <div class="lis-field">
++            <label for="cashReceived">Amount received</label>
++            <div class="currency-field">
++              <span class="currency-prefix">₹</span>
++              <input id="cashReceived" type="number" min="0" placeholder="0" />
++            </div>
++          </div>
++        </div>
++      }
++      @if (payMode() === 'upi') {
++        <div class="pay-adaptive">
++          <div class="lis-field">
++            <label for="upiTxn">Transaction ID</label>
++            <input id="upiTxn" type="text" placeholder="UPI reference / transaction ID" />
++          </div>
++        </div>
++      }
++      @if (payMode() === 'card') {
++        <div class="pay-adaptive">
++          <div class="lis-field">
++            <label for="cardRef">Reference number</label>
++            <input id="cardRef" type="text" placeholder="Last 4 digits / auth code" />
++          </div>
++        </div>
++      }
+     </div>
+   </div>
+ 
+   <!-- ── Right: Invoice panel ─────────────────── -->
+   <aside class="invoice-panel lis-card" aria-label="Invoice summary">
+     <div class="inv-hd">
+-      <div class="inv-title">Invoice Summary</div>
++      <div class="inv-hd-row">
++        <div class="inv-title">Invoice Summary</div>
++        <span class="pay-status-badge" [class.pay-status-badge--paid]="paymentStatus() === 'paid'"
++          [class.pay-status-badge--partial]="paymentStatus() === 'partial'">
++          <i class="ti ti-point-filled" aria-hidden="true"></i>
++          @switch (paymentStatus()) {
++            @case ('paid') { Paid }
++            @case ('partial') { Partially Paid }
++            @default { Pending }
++          }
++        </span>
++      </div>
+       <div class="inv-meta lis-mono">{{ invoiceId }}</div>
+     </div>
+ 
+@@ -244,8 +323,8 @@
+       }
+       <div class="tot-row"><span>GST</span><span>Exempt</span></div>
+       <div class="tot-row tot-grand">
+-        <span>Total payable</span>
+-        <span>₹{{ grandTotal().toLocaleString('en-IN') }}</span>
++        <span>Total Payable</span>
++        <span class="tot-grand-amt">₹{{ grandTotal().toLocaleString('en-IN') }}</span>
+       </div>
+       @if (advance() > 0) {
+         <div class="tot-row tot-outstanding">
+@@ -261,6 +340,9 @@
+       <span class="prio-tag" [class.prio-tag--stat]="flow.priority() === 'stat'">
+         {{ flow.priority() | titlecase }}
+       </span>
++      <button type="button" class="lis-link receipt-preview-link" (click)="showReceipt.set(true)">
++        <i class="ti ti-eye" aria-hidden="true"></i> Preview Receipt
++      </button>
+     </div>
+ 
+     <!-- Actions -->
+diff --git a/src/app/features/billing/billing.component.ts b/src/app/features/billing/billing.component.ts
+index 8334bff..59d9e74 100644
+--- a/src/app/features/billing/billing.component.ts
++++ b/src/app/features/billing/billing.component.ts
+@@ -81,4 +81,41 @@ export class BillingComponent implements OnInit {
+     if (!p) return '';
+     return this.flow.calcAge(p.dob) + ' yrs';
+   }
++
++  /** Detailed breakdown used in the patient info row, e.g. "9Y-11M-02Days". */
++  patientAgeBreakdown(): string {
++    const p = this.patient;
++    if (!p) return '';
++    const { years, months, days } = this.flow.calcAgeParts(p.dob);
++    return `${years}Y-${months}M-${String(days).padStart(2, '0')}Days`;
++  }
++
++  genderIcon(): string {
++    const g = (this.patient?.gender ?? '').toLowerCase();
++    if (g === 'male')   return 'ti-gender-male';
++    if (g === 'female') return 'ti-gender-female';
++    return 'ti-gender-genderless';
++  }
++
++  visitTypeIcon(): string {
++    const v = (this.patient?.visitType ?? '').toLowerCase();
++    if (v.includes('appointment')) return 'ti-calendar-event';
++    if (v.includes('home'))        return 'ti-home';
++    return 'ti-walk';
++  }
++
++  /** Derived payment status for the invoice summary badge. */
++  readonly paymentStatus = computed<'pending' | 'partial' | 'paid'>(() => {
++    if (this.advance() <= 0) return 'pending';
++    return this.outstanding() <= 0 ? 'paid' : 'partial';
++  });
++
++  incrementDiscount(step: number): void {
++    this.applyDiscount(this.discountPct() + step);
++  }
++
++  applyCoupon(): void {
++    // Placeholder hook — coupon validation happens server-side.
++    // Kept as a no-op action target so the Apply button has a handler.
++  }
+ }
+-- 
+2.43.0
+

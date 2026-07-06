@@ -500,6 +500,7 @@
 
 .phone-valid-icon {
   position: absolute;
+  padding-top: 11px;
   right: 10px;
   font-size: 15px;
   color: var(--lis-primary, #1D9E75);

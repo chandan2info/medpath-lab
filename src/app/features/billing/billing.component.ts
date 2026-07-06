@@ -79,6 +79,43 @@ export class BillingComponent implements OnInit {
   get patientAge(): string {
     const p = this.patient;
     if (!p) return '';
-    return this.flow.calcAge(p.dob) + ' yrs';
+    return this.flow.calcAge(p.dob);
+  }
+
+  /** Detailed breakdown used in the patient info row, e.g. "9Y-11M-02Days". */
+  patientAgeBreakdown(): string {
+    const p = this.patient;
+    if (!p) return '';
+    const { years, months, days } = this.flow.calcAgeParts(p.dob);
+    return `${years}Y-${months}M-${String(days).padStart(2, '0')}Days`;
+  }
+
+  genderIcon(): string {
+    const g = (this.patient?.gender ?? '').toLowerCase();
+    if (g === 'male')   return 'ti-gender-male';
+    if (g === 'female') return 'ti-gender-female';
+    return 'ti-gender-genderless';
+  }
+
+  visitTypeIcon(): string {
+    const v = (this.patient?.visitType ?? '').toLowerCase();
+    if (v.includes('appointment')) return 'ti-calendar-event';
+    if (v.includes('home'))        return 'ti-home';
+    return 'ti-walk';
+  }
+
+  /** Derived payment status for the invoice summary badge. */
+  readonly paymentStatus = computed<'pending' | 'partial' | 'paid'>(() => {
+    if (this.advance() <= 0) return 'pending';
+    return this.outstanding() <= 0 ? 'paid' : 'partial';
+  });
+
+  incrementDiscount(step: number): void {
+    this.applyDiscount(this.discountPct() + step);
+  }
+
+  applyCoupon(): void {
+    // Placeholder hook — coupon validation happens server-side.
+    // Kept as a no-op action target so the Apply button has a handler.
   }
 }

@@ -1,0 +1,42 @@
+From d5411a41898b32f7992f9d8e1829145397ffd5a0 Mon Sep 17 00:00:00 2001
+From: Chandan <chandan@medpath.dev>
+Date: Mon, 6 Jul 2026 10:51:01 +0000
+Subject: [PATCH] Fix duplicated age text on Sample Collection and Billing
+
+calcAge() was changed to return the full formatted breakdown
+('19 Years 11 Months 16 Days') instead of a bare year count, but
+Sample Collection and Billing were still appending ' yrs' to the
+result, producing '19 Years 11 Months 16 Days yrs'. Both now use
+calcAge()'s return value as-is.
+---
+ src/app/features/billing/billing.component.ts                   | 2 +-
+ .../features/sample-collection/sample-collection.component.ts   | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/app/features/billing/billing.component.ts b/src/app/features/billing/billing.component.ts
+index 8334bff..32053a9 100644
+--- a/src/app/features/billing/billing.component.ts
++++ b/src/app/features/billing/billing.component.ts
+@@ -79,6 +79,6 @@ export class BillingComponent implements OnInit {
+   get patientAge(): string {
+     const p = this.patient;
+     if (!p) return '';
+-    return this.flow.calcAge(p.dob) + ' yrs';
++    return this.flow.calcAge(p.dob);
+   }
+ }
+diff --git a/src/app/features/sample-collection/sample-collection.component.ts b/src/app/features/sample-collection/sample-collection.component.ts
+index 8b6c01d..f3bd3c1 100644
+--- a/src/app/features/sample-collection/sample-collection.component.ts
++++ b/src/app/features/sample-collection/sample-collection.component.ts
+@@ -184,6 +184,6 @@ export class SampleCollectionComponent {
+   get patientAge(): string {
+     const p = this.patient;
+     if (!p) return '';
+-    return this.flow.calcAge(p.dob) + ' yrs';
++    return this.flow.calcAge(p.dob);
+   }
+ }
+-- 
+2.43.0
+

@@ -48,8 +48,8 @@
         <div class="ps-name">{{ patient.firstName }} {{ patient.lastName }}</div>
         <div class="ps-sub">
           <span class="ps-pid lis-mono">{{ patient.id }}</span>
-          <span class="ps-dot" aria-hidden="true">·</span>
-          {{ patientAge }} · {{ patient.gender }}
+          <span class="pat-detail-item"><i class="ti ti-cake pat-detail-icon" aria-hidden="true"></i>{{ patientAgeBreakdown() }}</span>
+              <span class="pat-detail-sep" aria-hidden="true">|</span>
         </div>
       </div>
       @if (!collected()) {

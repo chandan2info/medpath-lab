@@ -186,4 +186,13 @@ export class SampleCollectionComponent {
     if (!p) return '';
     return this.flow.calcAge(p.dob) + ' yrs';
   }
+   /** Detailed breakdown used in the patient info row, e.g. "9Y-11M-02Days". */
+  patientAgeBreakdown(): string {
+    const p = this.patient;
+    if (!p) return '';
+    const { years, months, days } = this.flow.calcAgeParts(p.dob);
+    return `${years}Y-${months}M-${String(days).padStart(2, '0')}Days`;
+  }
 }
+
+
