@@ -1,0 +1,45 @@
+:host { display: block; }
+
+/* ══════════════════════════════════════════════
+   Workflow stepper — dot + connector line.
+   Canonical design, ported from the Sample Collection
+   page's `.proc-timeline`, reused everywhere so every
+   module shows an identical stepper.
+   ══════════════════════════════════════════════ */
+.wfs-timeline {
+  display: flex; align-items: flex-start; gap: 0;
+  overflow-x: auto;
+}
+.wfs-step { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; width: 92px; }
+.wfs-dot {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: var(--text-secondary);
+  background: var(--body-bg); border: 1.5px solid var(--border-color);
+  transition: background .2s, border-color .2s, color .2s, box-shadow .2s;
+}
+.wfs-step--done .wfs-dot {
+  background: var(--lis-primary, #1D9E75); border-color: var(--lis-primary, #1D9E75); color: #fff;
+}
+.wfs-step--active .wfs-dot {
+  background: var(--lis-primary-xlight, #E1F5EE); border-color: var(--lis-primary, #1D9E75);
+  color: var(--lis-primary-deep, #085041);
+  box-shadow: 0 0 0 4px var(--lis-primary-xlight, #E1F5EE);
+  animation: wfsPulseDot 1.8s ease-in-out infinite;
+}
+@keyframes wfsPulseDot {
+  0%, 100% { box-shadow: 0 0 0 4px var(--lis-primary-xlight, #E1F5EE); }
+  50%      { box-shadow: 0 0 0 7px var(--lis-primary-xlight, #E1F5EE); }
+}
+.wfs-label { font-size: 10.5px; color: var(--text-secondary); text-align: center; white-space: nowrap; transition: color .2s; }
+.wfs-step--done .wfs-label, .wfs-step--active .wfs-label { color: var(--text-primary); font-weight: 500; }
+.wfs-line { flex: 1; height: 1.5px; background: var(--border-color); margin: 15px -2px 0; min-width: 16px; transition: background .3s; }
+.wfs-line--done { background: var(--lis-primary, #1D9E75); }
+
+/* Dense variant — for narrower slots such as the Billing page header,
+   where the stepper sits to the right of the title instead of on its
+   own full-width row. Same visual language, smaller footprint. */
+.wfs-timeline--dense .wfs-step { width: 68px; gap: 4px; }
+.wfs-timeline--dense .wfs-dot { width: 24px; height: 24px; font-size: 11px; }
+.wfs-timeline--dense .wfs-label { font-size: 9.5px; }
+.wfs-timeline--dense .wfs-line { margin: 12px -2px 0; min-width: 10px; }

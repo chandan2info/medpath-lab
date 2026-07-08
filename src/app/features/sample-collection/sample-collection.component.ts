@@ -190,8 +190,21 @@ export class SampleCollectionComponent {
   patientAgeBreakdown(): string {
     const p = this.patient;
     if (!p) return '';
-    const { years, months, days } = this.flow.calcAgeParts(p.dob);
-    return `${years}Y-${months}M-${String(days).padStart(2, '0')}Days`;
+    return this.flow.formatAgeBreakdown(p.dob);
+  }
+
+  /** Raw Y/M/D parts for the colorized inline age breakdown (see .age-inline* in styles.css). */
+  ageParts(): { years: number; months: number; days: number } {
+    const p = this.patient;
+    if (!p) return { years: 0, months: 0, days: 0 };
+    return this.flow.calcAgeParts(p.dob);
+  }
+
+  genderIcon(): string {
+    const g = (this.patient?.gender ?? '').toLowerCase();
+    if (g === 'male')   return 'ti-gender-male';
+    if (g === 'female') return 'ti-gender-female';
+    return 'ti-gender-genderless';
   }
 }
 

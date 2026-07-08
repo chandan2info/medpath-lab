@@ -11,12 +11,13 @@ import { Router, RouterLink } from '@angular/router';
 import { NgClass } from '@angular/common';
 import { PatientFlowService, RegisteredPatient, KnownPatientRecord } from '../../core/services/patient-flow.service';
 import { DobDatePickerComponent } from '../../shared/components/dob-date-picker/dob-date-picker.component';
+import { WorkflowStepperComponent, WorkflowStep } from '../../shared/components/workflow-stepper/workflow-stepper.component';
 
 
 @Component({
   selector: 'app-patient-registration',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, NgClass, DobDatePickerComponent],
+  imports: [ReactiveFormsModule, RouterLink, NgClass, DobDatePickerComponent, WorkflowStepperComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './patient-registration.component.html',
   styleUrl: './patient-registration.component.css',
@@ -29,6 +30,15 @@ export class PatientRegistrationComponent implements OnInit {
   protected readonly bloodGroups = [
     'A+', 'A−', 'B+', 'B−', 'O+', 'O−', 'AB+', 'AB−', 'Unknown'
   ];
+
+  /** Shared 4-step workflow stepper (Register → Test Order → Billing → Sample). */
+  protected readonly workflowSteps: WorkflowStep[] = [
+    { label: 'Register',   icon: 'ti-user-plus' },
+    { label: 'Test Order', icon: 'ti-test-pipe' },
+    { label: 'Billing',    icon: 'ti-receipt' },
+    { label: 'Sample',     icon: 'ti-droplet' },
+  ];
+  protected readonly workflowActiveIndex = 0;
 
   readonly todayISO = new Date().toISOString().split('T')[0];
 

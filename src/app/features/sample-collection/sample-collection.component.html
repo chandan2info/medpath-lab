@@ -40,56 +40,51 @@
        Patient summary — identity + status dominate
        ════════════════════════════════════════════════ -->
   <div class="patient-summary lis-card" role="region" aria-label="Current patient sample collection">
-    <div class="ps-head">
+    <div class="pat-info-row">
       <div class="ps-av-wrap" [class.ps-av-wrap--done]="collected()">
-        <div class="ps-av" aria-hidden="true">{{ patientInitials }}</div>
+        <div class="pat-av" aria-hidden="true">{{ patientInitials }}</div>
       </div>
-      <div class="ps-id-main">
-        <div class="ps-name">{{ patient.firstName }} {{ patient.lastName }}</div>
-        <div class="ps-sub">
-          <span class="ps-pid lis-mono">{{ patient.id }}</span>
-          <span class="pat-detail-item"><i class="ti ti-cake pat-detail-icon" aria-hidden="true"></i>{{ patientAgeBreakdown() }}</span>
-              <span class="pat-detail-sep" aria-hidden="true">|</span>
+      <div class="pat-id-main">
+        <div class="pat-name-row">
+          <div class="pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
+          @if (!collected()) {
+            <span class="status-chip status-chip--warn">
+              <i class="ti ti-hourglass-low" aria-hidden="true"></i> Awaiting Collection
+            </span>
+          } @else {
+            <span class="pill pill--routine">
+              <i class="ti ti-circle-check" aria-hidden="true"></i>Collected
+            </span>
+          }
         </div>
-      </div>
-      @if (!collected()) {
-        <span class="status-chip status-chip--warn">
-          <i class="ti ti-hourglass-low" aria-hidden="true"></i> Awaiting Collection
-        </span>
-      } @else {
-        <span class="status-chip status-chip--done">
-          <i class="ti ti-circle-check" aria-hidden="true"></i> Collected
-        </span>
-      }
-    </div>
-
-    <div class="ps-divider" role="separator"></div>
-
-    <div class="ps-fields">
-      <div class="ps-field">
-        <i class="ti ti-phone ps-field-icon" aria-hidden="true"></i>
-        <div><div class="ps-field-label">Mobile</div><div class="ps-field-value">{{ patient.mobile }}</div></div>
-      </div>
-      <div class="ps-field">
-        <i class="ti ti-stethoscope ps-field-icon" aria-hidden="true"></i>
-        <div><div class="ps-field-label">Referred by</div><div class="ps-field-value">{{ patient.refDoctor }}</div></div>
-      </div>
-      <div class="ps-field">
-        <i class="ti ti-droplet-half-2 ps-field-icon" aria-hidden="true"></i>
-        <div><div class="ps-field-label">Fasting</div><div class="ps-field-value">{{ patient.fasting }}</div></div>
-      </div>
-      <div class="ps-field">
-        <i class="ti {{ priorityStyle().icon }} ps-field-icon"
-           [style.color]="priorityStyle().color" [style.background]="priorityStyle().bg" aria-hidden="true"></i>
-        <div>
-          <div class="ps-field-label">Priority</div>
-          <span class="prio-badge" [style.color]="priorityStyle().color" [style.background]="priorityStyle().bg"
-                [style.border-color]="priorityStyle().color">
-            <i class="ti {{ priorityStyle().icon }}" aria-hidden="true"></i> {{ flow.priority() | titlecase }}
+        <div class="pat-detail-row">
+          <span class="pat-detail-item"><i class="ti ti-id-badge-2 pat-detail-icon" aria-hidden="true"></i><span class="lis-mono">{{ patient.id }}</span></span>
+          <span class="pat-detail-sep" aria-hidden="true">|</span>
+          <span class="pat-detail-item age-inline" [title]="patientAgeBreakdown()">
+            <i class="ti ti-cake pat-detail-icon" aria-hidden="true"></i><span class="age-inline__y">{{ ageParts().years }}y</span><span class="age-inline__sep"> · </span><span class="age-inline__m">{{ ageParts().months }}m</span><span class="age-inline__sep"> · </span><span class="age-inline__d">{{ ageParts().days }}d</span>
+          </span>
+          <span class="pat-detail-sep" aria-hidden="true">|</span>
+          <span class="pat-detail-item"><i class="ti ti-calendar-event pat-detail-icon" aria-hidden="true"></i>DOB {{ patient.dob | date:'dd MMM yyyy' }}</span>
+          <span class="pat-detail-sep" aria-hidden="true">|</span>
+          <span class="pat-detail-item"><i class="ti {{ genderIcon() }} pat-detail-icon" aria-hidden="true"></i>{{ patient.gender | titlecase }}</span>
+        </div>
+        <div class="pat-detail-row">
+          <span class="pat-detail-item"><i class="ti ti-phone pat-detail-icon" aria-hidden="true"></i>{{ patient.mobile }}</span>
+          <span class="pat-detail-sep" aria-hidden="true">|</span>
+          <span class="pat-detail-item"><i class="ti ti-stethoscope pat-detail-icon" aria-hidden="true"></i>{{ patient.refDoctor }}</span>
+          <span class="pat-detail-sep" aria-hidden="true">|</span>
+          <span class="pat-detail-item"><i class="ti ti-droplet-half-2 pat-detail-icon" aria-hidden="true"></i>{{ patient.fasting }}</span>
+          <span class="pat-detail-sep" aria-hidden="true">|</span>
+          <span class="pat-detail-item">
+            <span class="prio-badge" [style.color]="priorityStyle().color" [style.background]="priorityStyle().bg"
+                  [style.border-color]="priorityStyle().color">
+              <i class="ti {{ priorityStyle().icon }}" aria-hidden="true"></i> {{ flow.priority() | titlecase }}
+            </span>
           </span>
         </div>
       </div>
     </div>
+
   </div>
 
   <!-- ════════════════════════════════════════════════

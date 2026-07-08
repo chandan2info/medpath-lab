@@ -21,18 +21,8 @@
 }
 .inv-date-top { font-size: 11px; color: var(--text-secondary); }
 
-/* ── Workflow trail ──────────────────────── */
-.workflow-trail { display: flex; align-items: center; gap: 0; background: var(--body-bg); border: 0.5px solid var(--border-color); border-radius: 10px; padding: 8px 14px; }
-.wf-step { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: var(--text-secondary); height: 42px; white-space: nowrap; i { font-size: 16px; } }
-.wf-num {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: 700;
-  border: 1.5px solid var(--border-color); color: var(--text-secondary); flex-shrink: 0;
-}
-.wf-step--active { color: var(--lis-primary-deep, #085041); font-weight: 700; .wf-num { background: var(--lis-primary, #1D9E75); border-color: var(--lis-primary, #1D9E75); color: #fff; } }
-.wf-step--done   { color: var(--lis-primary, #1D9E75); font-weight: 600; i { color: var(--lis-primary, #1D9E75); font-size: 18px; } }
-.wf-line { width: 22px; height: 2px; background: var(--border-color); margin: 0 8px; border-radius: 2px; }
-.wf-line--done, .wf-line--active { background: var(--lis-primary, #1D9E75); }
+/* Workflow trail — now rendered by the shared <lis-workflow-stepper>
+   component (dense variant), see /shared/components/workflow-stepper. */
 
 /* ── Layout ──────────────────────────────── */
 .bill-layout { display: grid; grid-template-columns: 1fr 300px; gap: 16px; align-items: start; }
@@ -45,28 +35,9 @@
 .lis-btn--outline { background: transparent; border: 1px solid var(--lis-primary, #1D9E75); color: var(--lis-primary, #1D9E75); &:hover { background: var(--lis-primary-xlight, #E1F5EE); } }
 .edit-tests-btn { margin-left: auto; }
 
-.pat-info-row { display: flex; align-items: flex-start; gap: 14px; padding: 14px; }
-.pat-av { width: 44px; height: 44px; border-radius: 50%; background: var(--lis-primary, #1D9E75); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0; text-transform: uppercase; }
-.pat-id-main { flex: 1; min-width: 0; }
-.pat-name-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.pat-name { font-size: 15px; font-weight: 600; color: var(--text-primary); }
-.pat-meta { font-size: 11px; color: var(--text-secondary); margin-top: 3px; }
-
-/* Info pills next to the patient name */
-.pill {
-  display: inline-flex; align-items: center; gap: 4px;
-  font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
-  i { font-size: 11px; }
-}
-.pill--visit   { background: var(--body-bg); color: var(--text-secondary); border: 0.5px solid var(--border-color); }
-.pill--routine { background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); border: 0.5px solid var(--lis-primary-mid, #5DCAA5); }
-.pill--stat    { background: #FCEBEB; color: #791F1F; border: 0.5px solid #E24B4A; }
-
-/* Detailed info row: age | gender | visit | id | doctor */
-.pat-detail-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
-.pat-detail-item { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-primary); }
-.pat-detail-icon { font-size: 13px; color: var(--lis-primary, #1D9E75); }
-.pat-detail-sep  { color: var(--border-color); font-size: 12px; }
+/* Patient Info metadata (avatar, name, pills, detail row) —
+   now global, see src/styles.css "PATIENT INFO METADATA" block,
+   so this same look is shared across every page. */
 
 /* ── Ordered tests (read-only) ───────────── */
 .empty-tests { padding: 12px 14px; font-size: 12px; color: var(--text-secondary); }

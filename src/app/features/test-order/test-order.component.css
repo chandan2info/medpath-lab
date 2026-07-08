@@ -11,70 +11,19 @@
 .breadcrumb li+li::before { content: '/'; margin-right: 6px; }
 .breadcrumb a { color: var(--text-secondary); text-decoration: none; &:hover { color: var(--lis-primary, #1D9E75); } }
 
-/* ── Workflow trail — same pattern as Registration ──────── */
-.workflow-trail {
-  display: flex; align-items: center; gap: 4px;
-  background: var(--body-bg); border: 0.5px solid var(--border-color);
-  border-radius: 10px; padding: 8px 16px;
-}
-.wf-step { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-secondary); font-weight: 400; padding: 0 4px; }
-.wf-dot {
-  width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--border-color);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 10px; font-weight: 600; flex-shrink: 0;
-  color: var(--text-secondary); background: var(--card-bg);
-}
-.wf-dot--active { background: var(--lis-primary, #1D9E75); border-color: var(--lis-primary, #1D9E75); color: #fff; i { font-size: 11px; } }
-.wf-step--active { color: var(--lis-primary-deep, #085041); font-weight: 600; }
-.wf-connector { width: 28px; height: 1px; background: var(--border-color); flex-shrink: 0; }
-.wf-connector--done { background: var(--lis-primary-mid, #5DCAA5); }
+/* Workflow trail — now rendered by the shared <lis-workflow-stepper>
+   component (see /shared/components/workflow-stepper). */
 
 /* ══════════════════════════════════════════════
    Patient summary — the visual anchor
    ══════════════════════════════════════════════ */
 .patient-summary {
-  margin-bottom: 16px; padding: 16px 20px;
+  margin-bottom: 16px; padding: 0;
   position: sticky; top: 8px; z-index: 5;
 }
-.ps-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-.ps-av {
-  width: 56px; height: 56px; border-radius: 50%; flex-shrink: 0;
-  background: var(--lis-primary, #1D9E75); color: #fff;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 19px; font-weight: 700; text-transform: uppercase;
-}
-.ps-id-main { flex: 1; min-width: 160px; }
-.ps-name { font-size: 22px; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
-.ps-sub  { font-size: 12.5px; color: var(--text-secondary); margin-top: 3px; }
-.ps-pid  { color: var(--lis-primary-deep, #085041); font-weight: 600; }
-.ps-dot  { margin: 0 4px; }
-.ps-age  { font-weight: 500; }
-.ps-gender-ico { font-size: 12px; vertical-align: -1px; margin-right: 1px; color: var(--text-secondary); }
-
-.status-chip {
-  display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;
-  font-size: 12px; font-weight: 600; padding: 7px 13px; border-radius: 20px;
-}
-.status-chip--done { background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); }
-.visit-chip {
-  display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0;
-  font-size: 11.5px; font-weight: 600; padding: 6px 12px; border-radius: 20px;
-  background: #E6F1FB; color: #0C447C;
-}
-
-.ps-divider { height: 1px; background: var(--border-color); margin: 14px 0; }
-
-.ps-fields { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px 16px; }
-@media (max-width: 900px) { .ps-fields { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 480px) { .ps-fields { grid-template-columns: 1fr; } }
-.ps-field { display: flex; align-items: flex-start; gap: 9px; min-width: 0; }
-.ps-field-icon {
-  width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0; margin-top: 1px;
-  background: var(--lis-primary-xlight); color: var(--lis-primary-deep);
-  display: flex; align-items: center; justify-content: center; font-size: 14px;
-}
-.ps-field-label { font-size: 10.5px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
-.ps-field-value { font-size: 13px; color: var(--text-primary); font-weight: 600; margin-top: 2px; }
+/* Patient Info metadata (avatar, name, pills, detail rows) is now the
+   shared global style — see src/styles.css "PATIENT INFO METADATA".
+   No .ps-* rules needed here anymore. */
 
 /* ── Two-column layout ───────────────────────── */
 .order-layout {

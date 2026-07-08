@@ -65,34 +65,12 @@
     </div>
   </div>
 
-  <!-- Workflow progress trail — single top-level indicator.
-       The old "Demographics/Clinical info" pill-stepper that used
-       to render below this (duplicating it) has been removed;
-       that sub-progress now lives in the card header as
-       ".mini-steps" instead. -->
-  <div class="workflow-trail" aria-label="Workflow steps">
-    <div class="wf-step wf-step--active">
-      <span class="wf-dot wf-dot--active">
-        <i class="ti ti-check" aria-hidden="true"></i>
-      </span>
-      <span>Register</span>
-    </div>
-    <div class="wf-connector wf-connector--done"></div>
-    <div class="wf-step">
-      <span class="wf-dot">2</span>
-      <span>Test Order</span>
-    </div>
-    <div class="wf-connector"></div>
-    <div class="wf-step">
-      <span class="wf-dot">3</span>
-      <span>Billing</span>
-    </div>
-    <div class="wf-connector"></div>
-    <div class="wf-step">
-      <span class="wf-dot">4</span>
-      <span>Sample</span>
-    </div>
-  </div>
+  <!-- Workflow progress trail — single top-level indicator, standardized
+       to the shared stepper (same design used on Test Order, Billing and
+       Sample Collection). The old "Demographics/Clinical info" pill-stepper
+       that used to render below this (duplicating it) has been removed;
+       that sub-progress now lives in the card header as ".mini-steps" instead. -->
+  <lis-workflow-stepper [steps]="workflowSteps" [activeIndex]="workflowActiveIndex" />
 </div>
 
 <!-- ── Form ──────────────────────────────────────────────── -->
@@ -138,7 +116,7 @@
           <div class="form-grid">
             <!-- First name -->
             <div class="lis-field">
-              <label for="firstName">First Name <span class="req-dot" title="Required"><span class="sr-only">Required</span></span></label>
+              <label for="firstName">First Name <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
               <input id="firstName" formControlName="firstName"
                 [class.input-error]="isInvalid('firstName')"
                 autocomplete="given-name" placeholder="e.g. Ananya" />
@@ -151,7 +129,7 @@
 
             <!-- Last name -->
             <div class="lis-field">
-              <label for="lastName">Last Name <span class="req-dot" title="Required"><span class="sr-only">Required</span></span></label>
+              <label for="lastName">Last Name <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
               <input id="lastName" formControlName="lastName"
                 [class.input-error]="isInvalid('lastName')"
                 autocomplete="family-name" placeholder="e.g. Krishnaswamy" />
@@ -164,7 +142,7 @@
 
             <!-- Date of Birth — custom themed date picker (no native OS calendar) -->
             <div class="lis-field">
-              <label for="dob">Date of Birth <span class="req-dot" title="Required"><span class="sr-only">Required</span></span></label>
+              <label for="dob">Date of Birth <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
               <app-dob-date-picker
                 formControlName="dob"
                 inputId="dob"
@@ -270,7 +248,7 @@
 
             <!-- Gender -->
             <div class="lis-field">
-              <label id="gender-label">Gender <span class="req-dot" title="Required"><span class="sr-only">Required</span></span></label>
+              <label id="gender-label">Gender <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
               <div class="gender-cards" role="group" aria-labelledby="gender-label">
                 <button type="button" class="gender-card"
                   [class.gender-card--active]="form.value.gender === 'Male'"
@@ -319,7 +297,7 @@
           <div class="form-grid">
             <!-- Mobile Number — with +91 prefix -->
             <div class="lis-field">
-              <label for="mobile">Mobile Number <span class="req-dot" title="Required"><span class="sr-only">Required</span></span></label>
+              <label for="mobile">Mobile Number <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
               <div class="phone-wrap" [class.phone-wrap--error]="isInvalid('mobile')">
                 <span class="phone-prefix">
                   <span class="phone-flag">🇮🇳</span>
@@ -416,10 +394,10 @@
         <!-- Visit details group -->
         <div class="field-group">
           <div class="field-group__title"><i class="ti ti-stethoscope" aria-hidden="true"></i> Visit Details</div>
-          <div class="form-grid">
+          <div class="form-grid form-grid--visit">
             <!-- Referring doctor -->
             <div class="lis-field">
-              <label for="refDoctor">Referring doctor <span class="req-dot" title="Required"><span class="sr-only">Required</span></span></label>
+              <label for="refDoctor">Referring doctor <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
               <select id="refDoctor" formControlName="refDoctor"
                 [class.input-error]="isInvalid('refDoctor')">
                 <option value="">— Select doctor —</option>
@@ -434,9 +412,9 @@
             </div>
 
             <!-- Visit type -->
-            <div class="lis-field">
+            <div class="lis-field visit-type-field">
               <label id="visit-label">Visit type</label>
-              <div class="lis-seg lis-seg--lg" role="group" aria-labelledby="visit-label">
+              <div class="lis-seg lis-seg--lg lis-seg--spaced" role="group" aria-labelledby="visit-label">
                 <button type="button" class="lis-seg__opt"
                   [class.lis-seg__opt--active]="form.value.visitType === 'Walk-in'"
                   (click)="form.patchValue({visitType: 'Walk-in'})"
@@ -459,7 +437,7 @@
             </div>
 
             <!-- Sample collection -->
-            <div class="lis-field">
+            <div class="lis-field sample-collection-field">
               <label for="collection">Sample collection</label>
               <select id="collection" formControlName="collection">
                 <option>At lab counter</option>
@@ -472,11 +450,11 @@
         <!-- Preparation group -->
         <div class="field-group">
           <div class="field-group__title"><i class="ti ti-clipboard-list" aria-hidden="true"></i> Preparation</div>
-          <div class="form-grid">
+          <div class="form-grid form-grid--visit">
             <!-- Fasting status -->
-            <div class="lis-field">
+            <div class="lis-field fasting-field">
               <label id="fasting-label">Fasting status</label>
-              <div class="lis-seg lis-seg--lg" role="group" aria-labelledby="fasting-label">
+              <div class="lis-seg lis-seg--lg lis-seg--spaced" role="group" aria-labelledby="fasting-label">
                 <button type="button" class="lis-seg__opt"
                   [class.lis-seg__opt--active]="form.value.fasting === 'Fasting'"
                   (click)="form.patchValue({fasting: 'Fasting'})"

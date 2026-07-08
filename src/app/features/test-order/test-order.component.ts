@@ -17,10 +17,11 @@ import {
   OnInit, ElementRef, ViewChild, HostListener
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { TitleCasePipe } from '@angular/common';
+import { TitleCasePipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
 import { LabTest, TestPackage } from '../../shared/models/lis.models';
+import { WorkflowStepperComponent, WorkflowStep } from '../../shared/components/workflow-stepper/workflow-stepper.component';
 
 const CATEGORY_ICON: Record<string, string> = {
   'All':            'ti-apps',
@@ -39,7 +40,7 @@ const PRIORITY_INFO: Record<'routine' | 'urgent' | 'stat', { label: string; desc
 @Component({
   selector: 'app-test-order',
   standalone: true,
-  imports: [RouterLink, FormsModule, TitleCasePipe],
+  imports: [RouterLink, FormsModule, TitleCasePipe, DatePipe, WorkflowStepperComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './test-order.component.html',
   styleUrl: './test-order.component.css',
@@ -49,6 +50,15 @@ export class TestOrderComponent implements OnInit {
   private   readonly router = inject(Router);
 
   @ViewChild('searchInput') searchInputRef?: ElementRef<HTMLInputElement>;
+
+  /** Shared 4-step workflow stepper (Register → Test Order → Billing → Sample). */
+  protected readonly workflowSteps: WorkflowStep[] = [
+    { label: 'Register',   icon: 'ti-user-plus' },
+    { label: 'Test Order', icon: 'ti-test-pipe' },
+    { label: 'Billing',    icon: 'ti-receipt' },
+    { label: 'Sample',     icon: 'ti-droplet' },
+  ];
+  protected readonly workflowActiveIndex = 1;
 
   protected readonly categoryIcon  = CATEGORY_ICON;
   protected readonly priorityInfo  = PRIORITY_INFO;
@@ -242,8 +252,14 @@ export class TestOrderComponent implements OnInit {
   patientAgeBreakdown(): string {
     const p = this.patient;
     if (!p) return '';
-    const { years, months, days } = this.flow.calcAgeParts(p.dob);
-    return `${years} Years - ${months} Months - ${days} Days`;
+    return this.flow.formatAgeBreakdown(p.dob);
+  }
+
+  /** Raw Y/M/D parts for the colorized inline age breakdown (see .age-inline* in styles.css). */
+  ageParts(): { years: number; months: number; days: number } {
+    const p = this.patient;
+    if (!p) return { years: 0, months: 0, days: 0 };
+    return this.flow.calcAgeParts(p.dob);
   }
 
   genderIcon(): string {

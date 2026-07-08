@@ -262,4 +262,20 @@ export class PatientFlowService {
   }
 
   return { years, months, days };
-}}
+}
+
+  /**
+   * Human-readable "Y-M-D" age breakdown, e.g. "19y 11m 14d".
+   * Single source of truth for this format — previously each page
+   * (Billing, Test Order, Sample Collection) built its own string
+   * and each one used a different style ("19Y-11M-14Days" vs
+   * "19 Years - 11 Months - 14 Days"). Lowercase, single-letter,
+   * space-separated units read faster than mixing abbreviated and
+   * spelled-out units, and are compact enough for a dense
+   * pipe-separated metadata row.
+   */
+  formatAgeBreakdown(dob: string): string {
+    const { years, months, days } = this.calcAgeParts(dob);
+    return `${years}y ${months}m ${days}d`;
+  }
+}

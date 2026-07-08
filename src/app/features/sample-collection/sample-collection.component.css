@@ -42,25 +42,18 @@
 
 /* ══════════════════════════════════════════════
    Patient summary — identity + status dominate
+   Layout (avatar, name, pills, detail rows) is now the shared
+   global "pat-info-row" style — see src/styles.css. Only the
+   bits unique to this page (the gold/green collection-status
+   ring around the avatar, and the "Awaiting Collection" chip)
+   stay local.
    ══════════════════════════════════════════════ */
-.patient-summary { margin-bottom: 16px; padding: 18px 20px; }
-.ps-head { display: flex; align-items: center; gap: 14px; }
+.patient-summary { margin-bottom: 16px; padding: 0; }
 .ps-av-wrap {
   flex-shrink: 0; padding: 3px; border-radius: 50%;
   border: 2px solid #E8B84B; transition: border-color .25s;
 }
 .ps-av-wrap--done { border-color: var(--lis-primary, #1D9E75); }
-.ps-av {
-  width: 48px; height: 48px; border-radius: 50%;
-  background: var(--lis-primary, #1D9E75); color: #fff;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px; font-weight: 700; text-transform: uppercase;
-}
-.ps-id-main { flex: 1; min-width: 0; }
-.ps-name { font-size: 20px; font-weight: 700; color: var(--text-primary); line-height: 1.25; }
-.ps-sub  { font-size: 12.5px; color: var(--text-secondary); margin-top: 3px; }
-.ps-pid  { color: var(--lis-primary-deep, #085041); font-weight: 600; }
-.ps-dot  { margin: 0 4px; }
 
 .status-chip {
   display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;
@@ -68,21 +61,6 @@
   transition: background .2s, color .2s;
 }
 .status-chip--warn { background: #FAEEDA; color: #633806; }
-.status-chip--done { background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); animation: fadeIn .3s ease; }
-
-.ps-divider { height: 1px; background: var(--border-color); margin: 16px 0; }
-
-.ps-fields { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px 16px; }
-@media (max-width: 900px) { .ps-fields { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 480px) { .ps-fields { grid-template-columns: 1fr; } }
-.ps-field { display: flex; align-items: flex-start; gap: 9px; min-width: 0; }
-.ps-field-icon {
-  width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0; margin-top: 1px;
-  background: var(--lis-primary-xlight); color: var(--lis-primary-deep);
-  display: flex; align-items: center; justify-content: center; font-size: 14px;
-}
-.ps-field-label { font-size: 10.5px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
-.ps-field-value { font-size: 13px; color: var(--text-primary); font-weight: 600; margin-top: 2px; }
 
 .prio-badge {
   display: inline-flex; align-items: center; gap: 4px; margin-top: 2px;

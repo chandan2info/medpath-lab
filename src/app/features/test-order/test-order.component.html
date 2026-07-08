@@ -16,28 +16,9 @@
     </nav>
   </div>
 
-  <!-- Workflow progress trail — same pattern as Registration -->
-  <div class="workflow-trail" aria-label="Workflow steps">
-    <div class="wf-step">
-      <span class="wf-dot wf-dot--active"><i class="ti ti-check" aria-hidden="true"></i></span>
-      <span>Register</span>
-    </div>
-    <div class="wf-connector wf-connector--done"></div>
-    <div class="wf-step wf-step--active">
-      <span class="wf-dot wf-dot--active">2</span>
-      <span>Test Order</span>
-    </div>
-    <div class="wf-connector"></div>
-    <div class="wf-step">
-      <span class="wf-dot">3</span>
-      <span>Billing</span>
-    </div>
-    <div class="wf-connector"></div>
-    <div class="wf-step">
-      <span class="wf-dot">4</span>
-      <span>Sample</span>
-    </div>
-  </div>
+  <!-- Workflow progress trail — standardized via the shared stepper
+       component (same design used on Registration, Billing, Sample). -->
+  <lis-workflow-stepper [steps]="workflowSteps" [activeIndex]="workflowActiveIndex" />
 </div>
 
 <!-- ════════════════════════════════════════════════
@@ -45,49 +26,42 @@
      ════════════════════════════════════════════════ -->
 @if (patient) {
   <div class="patient-summary lis-card" role="region" aria-label="Patient information">
-    <div class="ps-head">
-      <div class="ps-av" aria-hidden="true">{{ patientInitials }}</div>
-      <div class="ps-id-main">
-        <div class="ps-name">{{ patient.firstName }} {{ patient.lastName }}</div>
-        <div class="ps-sub">
-          <span class="ps-pid lis-mono">{{ patient.id }}</span>
-          <span class="ps-dot" aria-hidden="true">·</span>
-          <span class="ps-dot" aria-hidden="true">|</span>
-          <span class="ps-age"><i class="ps-age ti ti-cake ps-gender-ico" aria-hidden="true"></i>{{ patientAgeBreakdown()}}</span>
-          <span class="ps-dot" aria-hidden="true">|</span>
-          <i class="ti {{ genderIcon() }} ps-gender-ico" aria-hidden="true"></i> {{ patient.gender }}
+    <div class="pat-info-row">
+      <div class="pat-av" aria-hidden="true">{{ patientInitials }}</div>
+      <div class="pat-id-main">
+        <div class="pat-name-row">
+          <div class="pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
+          <span class="pill pill--routine">
+            <i class="ti ti-circle-check" aria-hidden="true"></i>Registered
+          </span>
+          <span class="pill pill--visit">
+            <i class="ti ti-calendar-event" aria-hidden="true"></i>{{ patient.visitType | titlecase }}
+          </span>
+        </div>
+        <div class="pat-detail-row">
+          <span class="pat-detail-item"><i class="ti ti-id-badge-2 pat-detail-icon" aria-hidden="true"></i><span class="lis-mono">{{ patient.id }}</span></span>
+          <span class="pat-detail-sep" aria-hidden="true">|</span>
+          <span class="pat-detail-item age-inline" [title]="patientAgeBreakdown()">
+            <i class="ti ti-cake pat-detail-icon" aria-hidden="true"></i><span class="age-inline__y">{{ ageParts().years }}y</span><span class="age-inline__sep"> · </span><span class="age-inline__m">{{ ageParts().months }}m</span><span class="age-inline__sep"> · </span><span class="age-inline__d">{{ ageParts().days }}d</span>
+          </span>
+          <span class="pat-detail-sep" aria-hidden="true">|</span>
+          <span class="pat-detail-item"><i class="ti ti-calendar-event pat-detail-icon" aria-hidden="true"></i>DOB {{ patient.dob | date:'dd MMM yyyy' }}</span>
+          <span class="pat-detail-sep" aria-hidden="true">|</span>
+          <span class="pat-detail-item"><i class="ti {{ genderIcon() }} pat-detail-icon" aria-hidden="true"></i>{{ patient.gender | titlecase }}</span>
+        </div>
+        <div class="pat-detail-row">
+          <span class="pat-detail-item"><i class="ti ti-phone pat-detail-icon" aria-hidden="true"></i>{{ patient.mobile }}</span>
+          <span class="pat-detail-sep" aria-hidden="true">|</span>
+          <span class="pat-detail-item"><i class="ti ti-stethoscope pat-detail-icon" aria-hidden="true"></i>{{ patient.refDoctor }}</span>
+          <span class="pat-detail-sep" aria-hidden="true">|</span>
+          <span class="pat-detail-item"><i class="ti ti-droplet-half-2 pat-detail-icon" aria-hidden="true"></i>{{ patient.fasting }}</span>
+          <span class="pat-detail-sep" aria-hidden="true">|</span>
+          <span class="pat-detail-item"><i class="ti ti-heartbeat pat-detail-icon" aria-hidden="true"></i>{{ patient.bloodGroup || '—' }}</span>
         </div>
       </div>
-      <span class="status-chip status-chip--done">
-        <i class="ti ti-circle-check" aria-hidden="true"></i> Registered
-      </span>
-      <span class="visit-chip">
-        <i class="ti ti-calendar-event" aria-hidden="true"></i> {{ patient.visitType | titlecase }}
-      </span>
       <a routerLink="/dashboard/registration" class="lis-btn lis-btn--secondary lis-btn--sm" aria-label="Edit patient details">
         <i class="ti ti-edit" aria-hidden="true"></i> Edit Patient
       </a>
-    </div>
-
-    <div class="ps-divider" role="separator"></div>
-
-    <div class="ps-fields">
-      <div class="ps-field">
-        <i class="ti ti-phone ps-field-icon" aria-hidden="true"></i>
-        <div><div class="ps-field-label">Mobile</div><div class="ps-field-value">{{ patient.mobile }}</div></div>
-      </div>
-      <div class="ps-field">
-        <i class="ti ti-stethoscope ps-field-icon" aria-hidden="true"></i>
-        <div><div class="ps-field-label">Referred by</div><div class="ps-field-value">{{ patient.refDoctor }}</div></div>
-      </div>
-      <div class="ps-field">
-        <i class="ti ti-droplet-half-2 ps-field-icon" aria-hidden="true"></i>
-        <div><div class="ps-field-label">Fasting</div><div class="ps-field-value">{{ patient.fasting }}</div></div>
-      </div>
-      <div class="ps-field">
-        <i class="ti ti-heartbeat ps-field-icon" aria-hidden="true"></i>
-        <div><div class="ps-field-label">Blood group</div><div class="ps-field-value">{{ patient.bloodGroup || '—' }}</div></div>
-      </div>
     </div>
   </div>
 }

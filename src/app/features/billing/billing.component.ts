@@ -9,11 +9,12 @@ import { NgClass, DatePipe, TitleCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
 import { PaymentMode } from '../../shared/models/lis.models';
+import { WorkflowStepperComponent, WorkflowStep } from '../../shared/components/workflow-stepper/workflow-stepper.component';
 
 @Component({
   selector: 'app-billing',
   standalone: true,
-  imports: [RouterLink, NgClass, FormsModule, DatePipe, TitleCasePipe],
+  imports: [RouterLink, NgClass, FormsModule, DatePipe, TitleCasePipe, WorkflowStepperComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './billing.component.html',
   styleUrl: './billing.component.css',
@@ -28,6 +29,15 @@ export class BillingComponent implements OnInit {
     { id: 'card',   icon: 'credit-card', label: 'Card'   },
     { id: 'credit', icon: 'clock',       label: 'Credit' },
   ];
+
+  /** Shared 4-step workflow stepper (Register → Test Order → Billing → Sample). */
+  protected readonly workflowSteps: WorkflowStep[] = [
+    { label: 'Register',   icon: 'ti-user-plus' },
+    { label: 'Test Order', icon: 'ti-test-pipe' },
+    { label: 'Billing',    icon: 'ti-receipt' },
+    { label: 'Sample',     icon: 'ti-droplet' },
+  ];
+  protected readonly workflowActiveIndex = 2;
 
   readonly today  = new Date();
   discountPct     = signal(0);
@@ -57,6 +67,38 @@ export class BillingComponent implements OnInit {
   setPayMode(m: PaymentMode): void { this.flow.setPayMode(m); }
   applyDiscount(pct: number): void { this.discountPct.set(Math.min(100, Math.max(0, pct))); }
 
+  /**
+   * Blocks any non-numeric keystroke at the source, so the Discount % and
+   * Advance received fields — now `type="text"` (see task: numeric-only
+   * validation done in TS rather than relying on `type="number"`'s native,
+   * inconsistent-across-browsers spinner/validation behaviour) — never let
+   * a non-digit character land in the input in the first place.
+   * Navigation, editing and copy/paste shortcut keys are always allowed.
+   */
+  allowNumericKeysOnly(event: KeyboardEvent): void {
+    const allowedKeys = [
+      'Backspace', 'Delete', 'Tab', 'Escape', 'Enter',
+      'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End',
+    ];
+    if (allowedKeys.includes(event.key)) return;
+    if (event.ctrlKey || event.metaKey) return; // allow Ctrl/Cmd+A/C/V/X etc.
+    if (!/^[0-9]$/.test(event.key)) {
+      event.preventDefault();
+    }
+  }
+
+  /**
+   * Strips any non-digit characters that slip through (e.g. via paste) and
+   * returns a clamped numeric value, keeping the underlying signal a clean
+   * number even though the field itself is `type="text"`.
+   */
+  sanitizeNumericInput(event: Event): number {
+    const input = event.target as HTMLInputElement;
+    const digitsOnly = input.value.replace(/[^0-9]/g, '');
+    input.value = digitsOnly;
+    return digitsOnly === '' ? 0 : Number(digitsOnly);
+  }
+
   confirmPayment(): void {
     this.saving.set(true);
     setTimeout(() => {
@@ -82,12 +124,18 @@ export class BillingComponent implements OnInit {
     return this.flow.calcAge(p.dob);
   }
 
-  /** Detailed breakdown used in the patient info row, e.g. "9Y-11M-02Days". */
+  /** Detailed breakdown used in the patient info row, e.g. "9y 11m 2d". */
   patientAgeBreakdown(): string {
     const p = this.patient;
     if (!p) return '';
-    const { years, months, days } = this.flow.calcAgeParts(p.dob);
-    return `${years}Y-${months}M-${String(days).padStart(2, '0')}Days`;
+    return this.flow.formatAgeBreakdown(p.dob);
+  }
+
+  /** Raw Y/M/D parts for the colorized inline age breakdown (see .age-inline* in styles.css). */
+  ageParts(): { years: number; months: number; days: number } {
+    const p = this.patient;
+    if (!p) return { years: 0, months: 0, days: 0 };
+    return this.flow.calcAgeParts(p.dob);
   }
 
   genderIcon(): string {

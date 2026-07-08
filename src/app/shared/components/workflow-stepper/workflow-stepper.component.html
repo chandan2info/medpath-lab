@@ -1,0 +1,17 @@
+<div class="wfs-timeline" [class.wfs-timeline--dense]="dense()" role="list" aria-label="Workflow steps">
+  @for (step of steps(); track step.label; let i = $index; let last = $last) {
+    <div class="wfs-step" role="listitem"
+         [class.wfs-step--done]="stepState(i) === 'done'"
+         [class.wfs-step--active]="stepState(i) === 'active'">
+      <div class="wfs-dot" [attr.aria-current]="stepState(i) === 'active' ? 'step' : null">
+        @if (stepState(i) === 'done') {
+          <i class="ti ti-check" aria-hidden="true"></i>
+        } @else {
+          <i class="ti {{ step.icon }}" aria-hidden="true"></i>
+        }
+      </div>
+      <div class="wfs-label">{{ step.label }}</div>
+    </div>
+    @if (!last) { <div class="wfs-line" [class.wfs-line--done]="stepState(i) === 'done'" aria-hidden="true"></div> }
+  }
+</div>

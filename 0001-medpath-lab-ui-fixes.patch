@@ -1,0 +1,1100 @@
+From 4cb147451dc62b897fb5768d7b4f956b8aa5585e Mon Sep 17 00:00:00 2001
+From: Claude <dev@medpath.local>
+Date: Wed, 8 Jul 2026 04:46:36 +0000
+Subject: [PATCH] Fix registration/billing/stepper UI layout, coupon/discount
+ fields, patient meta consistency, req-dot to asterisk
+
+---
+ .../features/billing/billing.component.css    | 39 +-------
+ .../features/billing/billing.component.html   | 28 +++---
+ src/app/features/billing/billing.component.ts | 44 ++++++++-
+ .../patient-registration.component.css        | 99 +++++++------------
+ .../patient-registration.component.html       | 60 ++++-------
+ .../patient-registration.component.ts         | 12 ++-
+ .../sample-collection.component.css           | 34 ++-----
+ .../sample-collection.component.html          | 75 +++++++-------
+ .../sample-collection.component.ts            |  7 ++
+ .../test-order/test-order.component.css       | 63 ++----------
+ .../test-order/test-order.component.html      | 90 ++++++-----------
+ .../test-order/test-order.component.ts        | 12 ++-
+ .../workflow-stepper.component.css            | 45 +++++++++
+ .../workflow-stepper.component.html           | 17 ++++
+ .../workflow-stepper.component.ts             | 45 +++++++++
+ src/styles.css                                | 34 ++++++-
+ 16 files changed, 357 insertions(+), 347 deletions(-)
+
+diff --git a/src/app/features/billing/billing.component.css b/src/app/features/billing/billing.component.css
+index a77de47..a56b6bf 100644
+--- a/src/app/features/billing/billing.component.css
++++ b/src/app/features/billing/billing.component.css
+@@ -21,18 +21,8 @@
+ }
+ .inv-date-top { font-size: 11px; color: var(--text-secondary); }
+ 
+-/* ── Workflow trail ──────────────────────── */
+-.workflow-trail { display: flex; align-items: center; gap: 0; background: var(--body-bg); border: 0.5px solid var(--border-color); border-radius: 10px; padding: 8px 14px; }
+-.wf-step { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: var(--text-secondary); height: 42px; white-space: nowrap; i { font-size: 16px; } }
+-.wf-num {
+-  display: inline-flex; align-items: center; justify-content: center;
+-  width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: 700;
+-  border: 1.5px solid var(--border-color); color: var(--text-secondary); flex-shrink: 0;
+-}
+-.wf-step--active { color: var(--lis-primary-deep, #085041); font-weight: 700; .wf-num { background: var(--lis-primary, #1D9E75); border-color: var(--lis-primary, #1D9E75); color: #fff; } }
+-.wf-step--done   { color: var(--lis-primary, #1D9E75); font-weight: 600; i { color: var(--lis-primary, #1D9E75); font-size: 18px; } }
+-.wf-line { width: 22px; height: 2px; background: var(--border-color); margin: 0 8px; border-radius: 2px; }
+-.wf-line--done, .wf-line--active { background: var(--lis-primary, #1D9E75); }
++/* Workflow trail — now rendered by the shared <lis-workflow-stepper>
++   component (dense variant), see /shared/components/workflow-stepper. */
+ 
+ /* ── Layout ──────────────────────────────── */
+ .bill-layout { display: grid; grid-template-columns: 1fr 300px; gap: 16px; align-items: start; }
+@@ -45,28 +35,9 @@
+ .lis-btn--outline { background: transparent; border: 1px solid var(--lis-primary, #1D9E75); color: var(--lis-primary, #1D9E75); &:hover { background: var(--lis-primary-xlight, #E1F5EE); } }
+ .edit-tests-btn { margin-left: auto; }
+ 
+-.pat-info-row { display: flex; align-items: flex-start; gap: 14px; padding: 14px; }
+-.pat-av { width: 44px; height: 44px; border-radius: 50%; background: var(--lis-primary, #1D9E75); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0; text-transform: uppercase; }
+-.pat-id-main { flex: 1; min-width: 0; }
+-.pat-name-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+-.pat-name { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+-.pat-meta { font-size: 11px; color: var(--text-secondary); margin-top: 3px; }
+-
+-/* Info pills next to the patient name */
+-.pill {
+-  display: inline-flex; align-items: center; gap: 4px;
+-  font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
+-  i { font-size: 11px; }
+-}
+-.pill--visit   { background: var(--body-bg); color: var(--text-secondary); border: 0.5px solid var(--border-color); }
+-.pill--routine { background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); border: 0.5px solid var(--lis-primary-mid, #5DCAA5); }
+-.pill--stat    { background: #FCEBEB; color: #791F1F; border: 0.5px solid #E24B4A; }
+-
+-/* Detailed info row: age | gender | visit | id | doctor */
+-.pat-detail-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+-.pat-detail-item { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-primary); }
+-.pat-detail-icon { font-size: 13px; color: var(--lis-primary, #1D9E75); }
+-.pat-detail-sep  { color: var(--border-color); font-size: 12px; }
++/* Patient Info metadata (avatar, name, pills, detail row) —
++   now global, see src/styles.css "PATIENT INFO METADATA" block,
++   so this same look is shared across every page. */
+ 
+ /* ── Ordered tests (read-only) ───────────── */
+ .empty-tests { padding: 12px 14px; font-size: 12px; color: var(--text-secondary); }
+diff --git a/src/app/features/billing/billing.component.html b/src/app/features/billing/billing.component.html
+index a1c6482..61ba6b1 100644
+--- a/src/app/features/billing/billing.component.html
++++ b/src/app/features/billing/billing.component.html
+@@ -70,15 +70,9 @@
+ 
+   <div class="page-header__right">
+     <div class="inv-date-top">{{ today | date:'dd MMM yyyy' }}</div>
+-    <div class="workflow-trail" aria-label="Workflow steps">
+-      <div class="wf-step wf-step--done"><i class="ti ti-circle-check-filled"></i> Registered</div>
+-      <div class="wf-line wf-line--done" aria-hidden="true"></div>
+-      <div class="wf-step wf-step--done"><i class="ti ti-circle-check-filled"></i> Tests Ordered</div>
+-      <div class="wf-line wf-line--active" aria-hidden="true"></div>
+-      <div class="wf-step wf-step--active"><span class="wf-num">3</span> Billing</div>
+-      <div class="wf-line" aria-hidden="true"></div>
+-      <div class="wf-step"><span class="wf-num">4</span> Sample</div>
+-    </div>
++    <!-- Workflow progress trail — standardized via the shared stepper
++         component (same design used on Registration, Test Order, Sample). -->
++    <lis-workflow-stepper [steps]="workflowSteps" [activeIndex]="workflowActiveIndex" [dense]="true" />
+   </div>
+ </div>
+ 
+@@ -114,8 +108,6 @@
+               <span class="pat-detail-sep" aria-hidden="true">|</span>
+               <span class="pat-detail-item"><i class="ti {{ genderIcon() }} pat-detail-icon" aria-hidden="true"></i>{{ patient.gender | titlecase }}</span>
+               <span class="pat-detail-sep" aria-hidden="true">|</span>
+-              <span class="pat-detail-item"><i class="ti {{ visitTypeIcon() }} pat-detail-icon" aria-hidden="true"></i>{{ patient.visitType | titlecase }}</span>
+-              <span class="pat-detail-sep" aria-hidden="true">|</span>
+               <span class="pat-detail-item"><i class="ti ti-id-badge-2 pat-detail-icon" aria-hidden="true"></i><span class="lis-mono">{{ patient.id }}</span></span>
+               <span class="pat-detail-sep" aria-hidden="true">|</span>
+               <span class="pat-detail-item"><i class="ti ti-stethoscope pat-detail-icon" aria-hidden="true"></i>{{ patient.refDoctor }}</span>
+@@ -170,13 +162,17 @@
+             <label for="discPct">Discount %</label>
+             <div class="stepper-field">
+               <button type="button" class="stepper-btn" (click)="incrementDiscount(-1)" aria-label="Decrease discount">−</button>
+-              <input id="discPct" type="number" min="0" max="100" class="stepper-input"
++              <input id="discPct" type="text" inputmode="numeric" pattern="[0-9]*" min="0" max="100" class="stepper-input"
+                 [value]="discountPct()"
+-                (input)="applyDiscount(+$any($event.target).value)"
++                (keydown)="allowNumericKeysOnly($event)"
++                (input)="applyDiscount(sanitizeNumericInput($event))"
+                 placeholder="0" />
+               <button type="button" class="stepper-btn" (click)="incrementDiscount(1)" aria-label="Increase discount">+</button>
+             </div>
+           </div>
++          <!-- Coupon Code and Referral fields — disabled for now (no coupon/referral
++               program is live yet); kept in markup, commented out, so they can be
++               re-enabled quickly once that functionality ships.
+           <div class="lis-field">
+             <label for="coupon">Coupon code</label>
+             <div class="input-with-btn">
+@@ -192,6 +188,7 @@
+               [value]="referralCode()"
+               (input)="referralCode.set($any($event.target).value)" />
+           </div>
++          -->
+         </div>
+       </div>
+ 
+@@ -202,9 +199,10 @@
+             <label for="advance">Advance received</label>
+             <div class="currency-field">
+               <span class="currency-prefix">₹</span>
+-              <input id="advance" type="number" min="0"
++              <input id="advance" type="text" inputmode="numeric" pattern="[0-9]*"
+                 [value]="advance()"
+-                (input)="advance.set(+$any($event.target).value)"
++                (keydown)="allowNumericKeysOnly($event)"
++                (input)="advance.set(sanitizeNumericInput($event))"
+                 placeholder="Enter amount" />
+             </div>
+           </div>
+diff --git a/src/app/features/billing/billing.component.ts b/src/app/features/billing/billing.component.ts
+index a8d56bb..53dd6f0 100644
+--- a/src/app/features/billing/billing.component.ts
++++ b/src/app/features/billing/billing.component.ts
+@@ -9,11 +9,12 @@ import { NgClass, DatePipe, TitleCasePipe } from '@angular/common';
+ import { FormsModule } from '@angular/forms';
+ import { PatientFlowService } from '../../core/services/patient-flow.service';
+ import { PaymentMode } from '../../shared/models/lis.models';
++import { WorkflowStepperComponent, WorkflowStep } from '../../shared/components/workflow-stepper/workflow-stepper.component';
+ 
+ @Component({
+   selector: 'app-billing',
+   standalone: true,
+-  imports: [RouterLink, NgClass, FormsModule, DatePipe, TitleCasePipe],
++  imports: [RouterLink, NgClass, FormsModule, DatePipe, TitleCasePipe, WorkflowStepperComponent],
+   changeDetection: ChangeDetectionStrategy.OnPush,
+   templateUrl: './billing.component.html',
+   styleUrl: './billing.component.css',
+@@ -29,6 +30,15 @@ export class BillingComponent implements OnInit {
+     { id: 'credit', icon: 'clock',       label: 'Credit' },
+   ];
+ 
++  /** Shared 4-step workflow stepper (Register → Test Order → Billing → Sample). */
++  protected readonly workflowSteps: WorkflowStep[] = [
++    { label: 'Register',   icon: 'ti-user-plus' },
++    { label: 'Test Order', icon: 'ti-test-pipe' },
++    { label: 'Billing',    icon: 'ti-receipt' },
++    { label: 'Sample',     icon: 'ti-droplet' },
++  ];
++  protected readonly workflowActiveIndex = 2;
++
+   readonly today  = new Date();
+   discountPct     = signal(0);
+   couponCode      = signal('');
+@@ -57,6 +67,38 @@ export class BillingComponent implements OnInit {
+   setPayMode(m: PaymentMode): void { this.flow.setPayMode(m); }
+   applyDiscount(pct: number): void { this.discountPct.set(Math.min(100, Math.max(0, pct))); }
+ 
++  /**
++   * Blocks any non-numeric keystroke at the source, so the Discount % and
++   * Advance received fields — now `type="text"` (see task: numeric-only
++   * validation done in TS rather than relying on `type="number"`'s native,
++   * inconsistent-across-browsers spinner/validation behaviour) — never let
++   * a non-digit character land in the input in the first place.
++   * Navigation, editing and copy/paste shortcut keys are always allowed.
++   */
++  allowNumericKeysOnly(event: KeyboardEvent): void {
++    const allowedKeys = [
++      'Backspace', 'Delete', 'Tab', 'Escape', 'Enter',
++      'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End',
++    ];
++    if (allowedKeys.includes(event.key)) return;
++    if (event.ctrlKey || event.metaKey) return; // allow Ctrl/Cmd+A/C/V/X etc.
++    if (!/^[0-9]$/.test(event.key)) {
++      event.preventDefault();
++    }
++  }
++
++  /**
++   * Strips any non-digit characters that slip through (e.g. via paste) and
++   * returns a clamped numeric value, keeping the underlying signal a clean
++   * number even though the field itself is `type="text"`.
++   */
++  sanitizeNumericInput(event: Event): number {
++    const input = event.target as HTMLInputElement;
++    const digitsOnly = input.value.replace(/[^0-9]/g, '');
++    input.value = digitsOnly;
++    return digitsOnly === '' ? 0 : Number(digitsOnly);
++  }
++
+   confirmPayment(): void {
+     this.saving.set(true);
+     setTimeout(() => {
+diff --git a/src/app/features/patient-registration/patient-registration.component.css b/src/app/features/patient-registration/patient-registration.component.css
+index 3e35ab0..3d66899 100644
+--- a/src/app/features/patient-registration/patient-registration.component.css
++++ b/src/app/features/patient-registration/patient-registration.component.css
+@@ -61,62 +61,9 @@
+   &:hover { color: var(--lis-primary, #1D9E75); }
+ }
+ 
+-/* ── Workflow trail ─────────────────────────────────── */
+-.workflow-trail {
+-  display: flex;
+-  align-items: center;
+-  gap: 8px;
+-  background: var(--body-bg);
+-  border: 0.5px solid var(--border-color);
+-  border-radius: 8px;
+-  padding: 6px 14px;
+-}
+-
+-.wf-step {
+-  display: flex;
+-  align-items: center;
+-  gap: 7px;
+-  font-size: 12px;
+-  color: var(--text-secondary);
+-  font-weight: 400;
+-  padding: 0 6px;
+-}
+-
+-.wf-dot {
+-  width: 22px;
+-  height: 22px;
+-  border-radius: 50%;
+-  border: 1.5px solid var(--border-color);
+-  display: flex;
+-  align-items: center;
+-  justify-content: center;
+-  font-size: 10px;
+-  font-weight: 600;
+-  flex-shrink: 0;
+-  color: var(--text-secondary);
+-  background: var(--card-bg);
+-}
+-
+-.wf-dot--active {
+-  background: var(--lis-primary, #1D9E75);
+-  border-color: var(--lis-primary, #1D9E75);
+-  color: #fff;
+-  i { font-size: 11px; }
+-}
+-
+-.wf-step--active {
+-  color: var(--lis-primary-deep, #085041);
+-  font-weight: 600;
+-}
+-
+-.wf-connector {
+-  width: 34px;
+-  height: 1px;
+-  background: var(--border-color);
+-  flex-shrink: 0;
+-}
+-
+-.wf-connector--done { background: var(--lis-primary-mid, #5DCAA5); }
++/* Workflow trail — now rendered by the shared <lis-workflow-stepper>
++   component (see /shared/components/workflow-stepper), so no
++   .workflow-trail / .wf-* styling is needed here anymore. */
+ 
+ /* ══════════════════════════════════════════════════════
+    MINI-STEPS — sub-progress within the Register step only
+@@ -218,17 +165,14 @@
+   margin-top: 3px;
+ }
+ 
+-/* Required indicator — a quiet dot rather than a shouting
+-   badge; label text stays the primary visual weight. */
+-.req-dot {
++/* Required indicator — a plain asterisk instead of a red dot,
++   the conventional/expected way to mark a required field. */
++.req-ast {
+   display: inline-block;
+-  width: 5px;
+-  height: 5px;
+-  margin-left: 5px;
+-  margin-bottom: 4px;
+-  border-radius: 50%;
+-  background: var(--lis-danger, #E24B4A);
+-  vertical-align: middle;
++  margin-left: 3px;
++  font-weight: 600;
++  line-height: 1;
++  color: var(--lis-danger, #E24B4A);
+ }
+ .sr-only {
+   position: absolute;
+@@ -269,6 +213,29 @@
+    (Priority 20 — form density / visual rhythm). */
+ .field-group .form-grid { padding-top: 10px; padding-bottom: 4px; gap: 10px 18px; }
+ 
++/* ══════════════════════════════════════════════════════
++   VISIT DETAILS / PREPARATION — column widths
++   Visit type needs more room (3 segmented options can look
++   cramped/overlapping at an equal 1/3 share); Sample collection
++   is a single dropdown and doesn't need as much; Fasting status
++   (Preparation group) reuses the exact same column template so
++   it lines up under Visit Details above it, then spans the first
++   two columns so it gets a wider control instead of a cramped 1/3.
++   ══════════════════════════════════════════════════════ */
++.form-grid--visit { grid-template-columns: 1fr 1.4fr 0.85fr; }
++@media (max-width: 860px) { .form-grid--visit { grid-template-columns: 1fr 1fr; } }
++@media (max-width: 560px) { .form-grid--visit { grid-template-columns: 1fr; } }
++
++.visit-type-field { min-width: 0; }
++.sample-collection-field { min-width: 0; }
++.fasting-field { grid-column: span 2; min-width: 0; }
++@media (max-width: 860px) { .fasting-field { grid-column: 1 / -1; } }
++
++/* Extra breathing room between the segmented options themselves so the
++   active-state background never visually touches/overlaps its neighbour. */
++.lis-seg--spaced { gap: 10px; }
++.lis-seg--spaced .lis-seg__opt { padding: 0 10px; }
++
+ /* Date of Birth is now rendered by <app-dob-date-picker> (see
+    /shared/components/dob-date-picker) — its own stylesheet
+    handles the trigger + calendar panel, so no native date-input
+diff --git a/src/app/features/patient-registration/patient-registration.component.html b/src/app/features/patient-registration/patient-registration.component.html
+index 317d982..64fdd48 100644
+--- a/src/app/features/patient-registration/patient-registration.component.html
++++ b/src/app/features/patient-registration/patient-registration.component.html
+@@ -65,34 +65,12 @@
+     </div>
+   </div>
+ 
+-  <!-- Workflow progress trail — single top-level indicator.
+-       The old "Demographics/Clinical info" pill-stepper that used
+-       to render below this (duplicating it) has been removed;
+-       that sub-progress now lives in the card header as
+-       ".mini-steps" instead. -->
+-  <div class="workflow-trail" aria-label="Workflow steps">
+-    <div class="wf-step wf-step--active">
+-      <span class="wf-dot wf-dot--active">
+-        <i class="ti ti-check" aria-hidden="true"></i>
+-      </span>
+-      <span>Register</span>
+-    </div>
+-    <div class="wf-connector wf-connector--done"></div>
+-    <div class="wf-step">
+-      <span class="wf-dot">2</span>
+-      <span>Test Order</span>
+-    </div>
+-    <div class="wf-connector"></div>
+-    <div class="wf-step">
+-      <span class="wf-dot">3</span>
+-      <span>Billing</span>
+-    </div>
+-    <div class="wf-connector"></div>
+-    <div class="wf-step">
+-      <span class="wf-dot">4</span>
+-      <span>Sample</span>
+-    </div>
+-  </div>
++  <!-- Workflow progress trail — single top-level indicator, standardized
++       to the shared stepper (same design used on Test Order, Billing and
++       Sample Collection). The old "Demographics/Clinical info" pill-stepper
++       that used to render below this (duplicating it) has been removed;
++       that sub-progress now lives in the card header as ".mini-steps" instead. -->
++  <lis-workflow-stepper [steps]="workflowSteps" [activeIndex]="workflowActiveIndex" />
+ </div>
+ 
+ <!-- ── Form ──────────────────────────────────────────────── -->
+@@ -138,7 +116,7 @@
+           <div class="form-grid">
+             <!-- First name -->
+             <div class="lis-field">
+-              <label for="firstName">First Name <span class="req-dot" title="Required"><span class="sr-only">Required</span></span></label>
++              <label for="firstName">First Name <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
+               <input id="firstName" formControlName="firstName"
+                 [class.input-error]="isInvalid('firstName')"
+                 autocomplete="given-name" placeholder="e.g. Ananya" />
+@@ -151,7 +129,7 @@
+ 
+             <!-- Last name -->
+             <div class="lis-field">
+-              <label for="lastName">Last Name <span class="req-dot" title="Required"><span class="sr-only">Required</span></span></label>
++              <label for="lastName">Last Name <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
+               <input id="lastName" formControlName="lastName"
+                 [class.input-error]="isInvalid('lastName')"
+                 autocomplete="family-name" placeholder="e.g. Krishnaswamy" />
+@@ -164,7 +142,7 @@
+ 
+             <!-- Date of Birth — custom themed date picker (no native OS calendar) -->
+             <div class="lis-field">
+-              <label for="dob">Date of Birth <span class="req-dot" title="Required"><span class="sr-only">Required</span></span></label>
++              <label for="dob">Date of Birth <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
+               <app-dob-date-picker
+                 formControlName="dob"
+                 inputId="dob"
+@@ -270,7 +248,7 @@
+ 
+             <!-- Gender -->
+             <div class="lis-field">
+-              <label id="gender-label">Gender <span class="req-dot" title="Required"><span class="sr-only">Required</span></span></label>
++              <label id="gender-label">Gender <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
+               <div class="gender-cards" role="group" aria-labelledby="gender-label">
+                 <button type="button" class="gender-card"
+                   [class.gender-card--active]="form.value.gender === 'Male'"
+@@ -319,7 +297,7 @@
+           <div class="form-grid">
+             <!-- Mobile Number — with +91 prefix -->
+             <div class="lis-field">
+-              <label for="mobile">Mobile Number <span class="req-dot" title="Required"><span class="sr-only">Required</span></span></label>
++              <label for="mobile">Mobile Number <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
+               <div class="phone-wrap" [class.phone-wrap--error]="isInvalid('mobile')">
+                 <span class="phone-prefix">
+                   <span class="phone-flag">🇮🇳</span>
+@@ -416,10 +394,10 @@
+         <!-- Visit details group -->
+         <div class="field-group">
+           <div class="field-group__title"><i class="ti ti-stethoscope" aria-hidden="true"></i> Visit Details</div>
+-          <div class="form-grid">
++          <div class="form-grid form-grid--visit">
+             <!-- Referring doctor -->
+             <div class="lis-field">
+-              <label for="refDoctor">Referring doctor <span class="req-dot" title="Required"><span class="sr-only">Required</span></span></label>
++              <label for="refDoctor">Referring doctor <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
+               <select id="refDoctor" formControlName="refDoctor"
+                 [class.input-error]="isInvalid('refDoctor')">
+                 <option value="">— Select doctor —</option>
+@@ -434,9 +412,9 @@
+             </div>
+ 
+             <!-- Visit type -->
+-            <div class="lis-field">
++            <div class="lis-field visit-type-field">
+               <label id="visit-label">Visit type</label>
+-              <div class="lis-seg lis-seg--lg" role="group" aria-labelledby="visit-label">
++              <div class="lis-seg lis-seg--lg lis-seg--spaced" role="group" aria-labelledby="visit-label">
+                 <button type="button" class="lis-seg__opt"
+                   [class.lis-seg__opt--active]="form.value.visitType === 'Walk-in'"
+                   (click)="form.patchValue({visitType: 'Walk-in'})"
+@@ -459,7 +437,7 @@
+             </div>
+ 
+             <!-- Sample collection -->
+-            <div class="lis-field">
++            <div class="lis-field sample-collection-field">
+               <label for="collection">Sample collection</label>
+               <select id="collection" formControlName="collection">
+                 <option>At lab counter</option>
+@@ -472,11 +450,11 @@
+         <!-- Preparation group -->
+         <div class="field-group">
+           <div class="field-group__title"><i class="ti ti-clipboard-list" aria-hidden="true"></i> Preparation</div>
+-          <div class="form-grid">
++          <div class="form-grid form-grid--visit">
+             <!-- Fasting status -->
+-            <div class="lis-field">
++            <div class="lis-field fasting-field">
+               <label id="fasting-label">Fasting status</label>
+-              <div class="lis-seg lis-seg--lg" role="group" aria-labelledby="fasting-label">
++              <div class="lis-seg lis-seg--lg lis-seg--spaced" role="group" aria-labelledby="fasting-label">
+                 <button type="button" class="lis-seg__opt"
+                   [class.lis-seg__opt--active]="form.value.fasting === 'Fasting'"
+                   (click)="form.patchValue({fasting: 'Fasting'})"
+diff --git a/src/app/features/patient-registration/patient-registration.component.ts b/src/app/features/patient-registration/patient-registration.component.ts
+index b3b0890..a2af955 100644
+--- a/src/app/features/patient-registration/patient-registration.component.ts
++++ b/src/app/features/patient-registration/patient-registration.component.ts
+@@ -11,12 +11,13 @@ import { Router, RouterLink } from '@angular/router';
+ import { NgClass } from '@angular/common';
+ import { PatientFlowService, RegisteredPatient, KnownPatientRecord } from '../../core/services/patient-flow.service';
+ import { DobDatePickerComponent } from '../../shared/components/dob-date-picker/dob-date-picker.component';
++import { WorkflowStepperComponent, WorkflowStep } from '../../shared/components/workflow-stepper/workflow-stepper.component';
+ 
+ 
+ @Component({
+   selector: 'app-patient-registration',
+   standalone: true,
+-  imports: [ReactiveFormsModule, RouterLink, NgClass, DobDatePickerComponent],
++  imports: [ReactiveFormsModule, RouterLink, NgClass, DobDatePickerComponent, WorkflowStepperComponent],
+   changeDetection: ChangeDetectionStrategy.OnPush,
+   templateUrl: './patient-registration.component.html',
+   styleUrl: './patient-registration.component.css',
+@@ -30,6 +31,15 @@ export class PatientRegistrationComponent implements OnInit {
+     'A+', 'A−', 'B+', 'B−', 'O+', 'O−', 'AB+', 'AB−', 'Unknown'
+   ];
+ 
++  /** Shared 4-step workflow stepper (Register → Test Order → Billing → Sample). */
++  protected readonly workflowSteps: WorkflowStep[] = [
++    { label: 'Register',   icon: 'ti-user-plus' },
++    { label: 'Test Order', icon: 'ti-test-pipe' },
++    { label: 'Billing',    icon: 'ti-receipt' },
++    { label: 'Sample',     icon: 'ti-droplet' },
++  ];
++  protected readonly workflowActiveIndex = 0;
++
+   readonly todayISO = new Date().toISOString().split('T')[0];
+ 
+   currentStep   = signal(1);
+diff --git a/src/app/features/sample-collection/sample-collection.component.css b/src/app/features/sample-collection/sample-collection.component.css
+index 191f8c8..5f68a3c 100644
+--- a/src/app/features/sample-collection/sample-collection.component.css
++++ b/src/app/features/sample-collection/sample-collection.component.css
+@@ -42,25 +42,18 @@
+ 
+ /* ══════════════════════════════════════════════
+    Patient summary — identity + status dominate
++   Layout (avatar, name, pills, detail rows) is now the shared
++   global "pat-info-row" style — see src/styles.css. Only the
++   bits unique to this page (the gold/green collection-status
++   ring around the avatar, and the "Awaiting Collection" chip)
++   stay local.
+    ══════════════════════════════════════════════ */
+-.patient-summary { margin-bottom: 16px; padding: 18px 20px; }
+-.ps-head { display: flex; align-items: center; gap: 14px; }
++.patient-summary { margin-bottom: 16px; padding: 0; }
+ .ps-av-wrap {
+   flex-shrink: 0; padding: 3px; border-radius: 50%;
+   border: 2px solid #E8B84B; transition: border-color .25s;
+ }
+ .ps-av-wrap--done { border-color: var(--lis-primary, #1D9E75); }
+-.ps-av {
+-  width: 48px; height: 48px; border-radius: 50%;
+-  background: var(--lis-primary, #1D9E75); color: #fff;
+-  display: flex; align-items: center; justify-content: center;
+-  font-size: 16px; font-weight: 700; text-transform: uppercase;
+-}
+-.ps-id-main { flex: 1; min-width: 0; }
+-.ps-name { font-size: 20px; font-weight: 700; color: var(--text-primary); line-height: 1.25; }
+-.ps-sub  { font-size: 12.5px; color: var(--text-secondary); margin-top: 3px; }
+-.ps-pid  { color: var(--lis-primary-deep, #085041); font-weight: 600; }
+-.ps-dot  { margin: 0 4px; }
+ 
+ .status-chip {
+   display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;
+@@ -68,21 +61,6 @@
+   transition: background .2s, color .2s;
+ }
+ .status-chip--warn { background: #FAEEDA; color: #633806; }
+-.status-chip--done { background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); animation: fadeIn .3s ease; }
+-
+-.ps-divider { height: 1px; background: var(--border-color); margin: 16px 0; }
+-
+-.ps-fields { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px 16px; }
+-@media (max-width: 900px) { .ps-fields { grid-template-columns: repeat(2, 1fr); } }
+-@media (max-width: 480px) { .ps-fields { grid-template-columns: 1fr; } }
+-.ps-field { display: flex; align-items: flex-start; gap: 9px; min-width: 0; }
+-.ps-field-icon {
+-  width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0; margin-top: 1px;
+-  background: var(--lis-primary-xlight); color: var(--lis-primary-deep);
+-  display: flex; align-items: center; justify-content: center; font-size: 14px;
+-}
+-.ps-field-label { font-size: 10.5px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+-.ps-field-value { font-size: 13px; color: var(--text-primary); font-weight: 600; margin-top: 2px; }
+ 
+ .prio-badge {
+   display: inline-flex; align-items: center; gap: 4px; margin-top: 2px;
+diff --git a/src/app/features/sample-collection/sample-collection.component.html b/src/app/features/sample-collection/sample-collection.component.html
+index fbb7b1c..3de50ed 100644
+--- a/src/app/features/sample-collection/sample-collection.component.html
++++ b/src/app/features/sample-collection/sample-collection.component.html
+@@ -40,56 +40,47 @@
+        Patient summary — identity + status dominate
+        ════════════════════════════════════════════════ -->
+   <div class="patient-summary lis-card" role="region" aria-label="Current patient sample collection">
+-    <div class="ps-head">
++    <div class="pat-info-row">
+       <div class="ps-av-wrap" [class.ps-av-wrap--done]="collected()">
+-        <div class="ps-av" aria-hidden="true">{{ patientInitials }}</div>
++        <div class="pat-av" aria-hidden="true">{{ patientInitials }}</div>
+       </div>
+-      <div class="ps-id-main">
+-        <div class="ps-name">{{ patient.firstName }} {{ patient.lastName }}</div>
+-        <div class="ps-sub">
+-          <span class="ps-pid lis-mono">{{ patient.id }}</span>
++      <div class="pat-id-main">
++        <div class="pat-name-row">
++          <div class="pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
++          @if (!collected()) {
++            <span class="status-chip status-chip--warn">
++              <i class="ti ti-hourglass-low" aria-hidden="true"></i> Awaiting Collection
++            </span>
++          } @else {
++            <span class="pill pill--routine">
++              <i class="ti ti-circle-check" aria-hidden="true"></i>Collected
++            </span>
++          }
++        </div>
++        <div class="pat-detail-row">
++          <span class="pat-detail-item"><i class="ti ti-id-badge-2 pat-detail-icon" aria-hidden="true"></i><span class="lis-mono">{{ patient.id }}</span></span>
++          <span class="pat-detail-sep" aria-hidden="true">|</span>
+           <span class="pat-detail-item"><i class="ti ti-cake pat-detail-icon" aria-hidden="true"></i>{{ patientAgeBreakdown() }}</span>
+-              <span class="pat-detail-sep" aria-hidden="true">|</span>
++          <span class="pat-detail-sep" aria-hidden="true">|</span>
++          <span class="pat-detail-item"><i class="ti {{ genderIcon() }} pat-detail-icon" aria-hidden="true"></i>{{ patient.gender | titlecase }}</span>
+         </div>
+-      </div>
+-      @if (!collected()) {
+-        <span class="status-chip status-chip--warn">
+-          <i class="ti ti-hourglass-low" aria-hidden="true"></i> Awaiting Collection
+-        </span>
+-      } @else {
+-        <span class="status-chip status-chip--done">
+-          <i class="ti ti-circle-check" aria-hidden="true"></i> Collected
+-        </span>
+-      }
+-    </div>
+-
+-    <div class="ps-divider" role="separator"></div>
+-
+-    <div class="ps-fields">
+-      <div class="ps-field">
+-        <i class="ti ti-phone ps-field-icon" aria-hidden="true"></i>
+-        <div><div class="ps-field-label">Mobile</div><div class="ps-field-value">{{ patient.mobile }}</div></div>
+-      </div>
+-      <div class="ps-field">
+-        <i class="ti ti-stethoscope ps-field-icon" aria-hidden="true"></i>
+-        <div><div class="ps-field-label">Referred by</div><div class="ps-field-value">{{ patient.refDoctor }}</div></div>
+-      </div>
+-      <div class="ps-field">
+-        <i class="ti ti-droplet-half-2 ps-field-icon" aria-hidden="true"></i>
+-        <div><div class="ps-field-label">Fasting</div><div class="ps-field-value">{{ patient.fasting }}</div></div>
+-      </div>
+-      <div class="ps-field">
+-        <i class="ti {{ priorityStyle().icon }} ps-field-icon"
+-           [style.color]="priorityStyle().color" [style.background]="priorityStyle().bg" aria-hidden="true"></i>
+-        <div>
+-          <div class="ps-field-label">Priority</div>
+-          <span class="prio-badge" [style.color]="priorityStyle().color" [style.background]="priorityStyle().bg"
+-                [style.border-color]="priorityStyle().color">
+-            <i class="ti {{ priorityStyle().icon }}" aria-hidden="true"></i> {{ flow.priority() | titlecase }}
++        <div class="pat-detail-row">
++          <span class="pat-detail-item"><i class="ti ti-phone pat-detail-icon" aria-hidden="true"></i>{{ patient.mobile }}</span>
++          <span class="pat-detail-sep" aria-hidden="true">|</span>
++          <span class="pat-detail-item"><i class="ti ti-stethoscope pat-detail-icon" aria-hidden="true"></i>{{ patient.refDoctor }}</span>
++          <span class="pat-detail-sep" aria-hidden="true">|</span>
++          <span class="pat-detail-item"><i class="ti ti-droplet-half-2 pat-detail-icon" aria-hidden="true"></i>{{ patient.fasting }}</span>
++          <span class="pat-detail-sep" aria-hidden="true">|</span>
++          <span class="pat-detail-item">
++            <span class="prio-badge" [style.color]="priorityStyle().color" [style.background]="priorityStyle().bg"
++                  [style.border-color]="priorityStyle().color">
++              <i class="ti {{ priorityStyle().icon }}" aria-hidden="true"></i> {{ flow.priority() | titlecase }}
++            </span>
+           </span>
+         </div>
+       </div>
+     </div>
++
+   </div>
+ 
+   <!-- ════════════════════════════════════════════════
+diff --git a/src/app/features/sample-collection/sample-collection.component.ts b/src/app/features/sample-collection/sample-collection.component.ts
+index 88d00b4..e71d0e2 100644
+--- a/src/app/features/sample-collection/sample-collection.component.ts
++++ b/src/app/features/sample-collection/sample-collection.component.ts
+@@ -193,6 +193,13 @@ export class SampleCollectionComponent {
+     const { years, months, days } = this.flow.calcAgeParts(p.dob);
+     return `${years}Y-${months}M-${String(days).padStart(2, '0')}Days`;
+   }
++
++  genderIcon(): string {
++    const g = (this.patient?.gender ?? '').toLowerCase();
++    if (g === 'male')   return 'ti-gender-male';
++    if (g === 'female') return 'ti-gender-female';
++    return 'ti-gender-genderless';
++  }
+ }
+ 
+ 
+diff --git a/src/app/features/test-order/test-order.component.css b/src/app/features/test-order/test-order.component.css
+index 51d797d..b1ace66 100644
+--- a/src/app/features/test-order/test-order.component.css
++++ b/src/app/features/test-order/test-order.component.css
+@@ -11,70 +11,19 @@
+ .breadcrumb li+li::before { content: '/'; margin-right: 6px; }
+ .breadcrumb a { color: var(--text-secondary); text-decoration: none; &:hover { color: var(--lis-primary, #1D9E75); } }
+ 
+-/* ── Workflow trail — same pattern as Registration ──────── */
+-.workflow-trail {
+-  display: flex; align-items: center; gap: 4px;
+-  background: var(--body-bg); border: 0.5px solid var(--border-color);
+-  border-radius: 10px; padding: 8px 16px;
+-}
+-.wf-step { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-secondary); font-weight: 400; padding: 0 4px; }
+-.wf-dot {
+-  width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--border-color);
+-  display: flex; align-items: center; justify-content: center;
+-  font-size: 10px; font-weight: 600; flex-shrink: 0;
+-  color: var(--text-secondary); background: var(--card-bg);
+-}
+-.wf-dot--active { background: var(--lis-primary, #1D9E75); border-color: var(--lis-primary, #1D9E75); color: #fff; i { font-size: 11px; } }
+-.wf-step--active { color: var(--lis-primary-deep, #085041); font-weight: 600; }
+-.wf-connector { width: 28px; height: 1px; background: var(--border-color); flex-shrink: 0; }
+-.wf-connector--done { background: var(--lis-primary-mid, #5DCAA5); }
++/* Workflow trail — now rendered by the shared <lis-workflow-stepper>
++   component (see /shared/components/workflow-stepper). */
+ 
+ /* ══════════════════════════════════════════════
+    Patient summary — the visual anchor
+    ══════════════════════════════════════════════ */
+ .patient-summary {
+-  margin-bottom: 16px; padding: 16px 20px;
++  margin-bottom: 16px; padding: 0;
+   position: sticky; top: 8px; z-index: 5;
+ }
+-.ps-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+-.ps-av {
+-  width: 56px; height: 56px; border-radius: 50%; flex-shrink: 0;
+-  background: var(--lis-primary, #1D9E75); color: #fff;
+-  display: flex; align-items: center; justify-content: center;
+-  font-size: 19px; font-weight: 700; text-transform: uppercase;
+-}
+-.ps-id-main { flex: 1; min-width: 160px; }
+-.ps-name { font-size: 22px; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
+-.ps-sub  { font-size: 12.5px; color: var(--text-secondary); margin-top: 3px; }
+-.ps-pid  { color: var(--lis-primary-deep, #085041); font-weight: 600; }
+-.ps-dot  { margin: 0 4px; }
+-.ps-age  { font-weight: 500; }
+-.ps-gender-ico { font-size: 12px; vertical-align: -1px; margin-right: 1px; color: var(--text-secondary); }
+-
+-.status-chip {
+-  display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;
+-  font-size: 12px; font-weight: 600; padding: 7px 13px; border-radius: 20px;
+-}
+-.status-chip--done { background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); }
+-.visit-chip {
+-  display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0;
+-  font-size: 11.5px; font-weight: 600; padding: 6px 12px; border-radius: 20px;
+-  background: #E6F1FB; color: #0C447C;
+-}
+-
+-.ps-divider { height: 1px; background: var(--border-color); margin: 14px 0; }
+-
+-.ps-fields { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px 16px; }
+-@media (max-width: 900px) { .ps-fields { grid-template-columns: repeat(2, 1fr); } }
+-@media (max-width: 480px) { .ps-fields { grid-template-columns: 1fr; } }
+-.ps-field { display: flex; align-items: flex-start; gap: 9px; min-width: 0; }
+-.ps-field-icon {
+-  width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0; margin-top: 1px;
+-  background: var(--lis-primary-xlight); color: var(--lis-primary-deep);
+-  display: flex; align-items: center; justify-content: center; font-size: 14px;
+-}
+-.ps-field-label { font-size: 10.5px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+-.ps-field-value { font-size: 13px; color: var(--text-primary); font-weight: 600; margin-top: 2px; }
++/* Patient Info metadata (avatar, name, pills, detail rows) is now the
++   shared global style — see src/styles.css "PATIENT INFO METADATA".
++   No .ps-* rules needed here anymore. */
+ 
+ /* ── Two-column layout ───────────────────────── */
+ .order-layout {
+diff --git a/src/app/features/test-order/test-order.component.html b/src/app/features/test-order/test-order.component.html
+index 9048af1..7818478 100644
+--- a/src/app/features/test-order/test-order.component.html
++++ b/src/app/features/test-order/test-order.component.html
+@@ -16,28 +16,9 @@
+     </nav>
+   </div>
+ 
+-  <!-- Workflow progress trail — same pattern as Registration -->
+-  <div class="workflow-trail" aria-label="Workflow steps">
+-    <div class="wf-step">
+-      <span class="wf-dot wf-dot--active"><i class="ti ti-check" aria-hidden="true"></i></span>
+-      <span>Register</span>
+-    </div>
+-    <div class="wf-connector wf-connector--done"></div>
+-    <div class="wf-step wf-step--active">
+-      <span class="wf-dot wf-dot--active">2</span>
+-      <span>Test Order</span>
+-    </div>
+-    <div class="wf-connector"></div>
+-    <div class="wf-step">
+-      <span class="wf-dot">3</span>
+-      <span>Billing</span>
+-    </div>
+-    <div class="wf-connector"></div>
+-    <div class="wf-step">
+-      <span class="wf-dot">4</span>
+-      <span>Sample</span>
+-    </div>
+-  </div>
++  <!-- Workflow progress trail — standardized via the shared stepper
++       component (same design used on Registration, Billing, Sample). -->
++  <lis-workflow-stepper [steps]="workflowSteps" [activeIndex]="workflowActiveIndex" />
+ </div>
+ 
+ <!-- ════════════════════════════════════════════════
+@@ -45,50 +26,39 @@
+      ════════════════════════════════════════════════ -->
+ @if (patient) {
+   <div class="patient-summary lis-card" role="region" aria-label="Patient information">
+-    <div class="ps-head">
+-      <div class="ps-av" aria-hidden="true">{{ patientInitials }}</div>
+-      <div class="ps-id-main">
+-        <div class="ps-name">{{ patient.firstName }} {{ patient.lastName }}</div>
+-        <div class="ps-sub">
+-          <span class="ps-pid lis-mono">{{ patient.id }}</span>
+-          <span class="ps-dot" aria-hidden="true">·</span>
+-          <span class="ps-dot" aria-hidden="true">|</span>
+-          <span class="ps-age"><i class="ps-age ti ti-cake ps-gender-ico" aria-hidden="true"></i>{{ patientAgeBreakdown()}}</span>
+-          <span class="ps-dot" aria-hidden="true">|</span>
+-          <i class="ti {{ genderIcon() }} ps-gender-ico" aria-hidden="true"></i> {{ patient.gender }}
++    <div class="pat-info-row">
++      <div class="pat-av" aria-hidden="true">{{ patientInitials }}</div>
++      <div class="pat-id-main">
++        <div class="pat-name-row">
++          <div class="pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
++          <span class="pill pill--routine">
++            <i class="ti ti-circle-check" aria-hidden="true"></i>Registered
++          </span>
++          <span class="pill pill--visit">
++            <i class="ti ti-calendar-event" aria-hidden="true"></i>{{ patient.visitType | titlecase }}
++          </span>
++        </div>
++        <div class="pat-detail-row">
++          <span class="pat-detail-item"><i class="ti ti-id-badge-2 pat-detail-icon" aria-hidden="true"></i><span class="lis-mono">{{ patient.id }}</span></span>
++          <span class="pat-detail-sep" aria-hidden="true">|</span>
++          <span class="pat-detail-item"><i class="ti ti-cake pat-detail-icon" aria-hidden="true"></i>{{ patientAgeBreakdown() }}</span>
++          <span class="pat-detail-sep" aria-hidden="true">|</span>
++          <span class="pat-detail-item"><i class="ti {{ genderIcon() }} pat-detail-icon" aria-hidden="true"></i>{{ patient.gender | titlecase }}</span>
++        </div>
++        <div class="pat-detail-row">
++          <span class="pat-detail-item"><i class="ti ti-phone pat-detail-icon" aria-hidden="true"></i>{{ patient.mobile }}</span>
++          <span class="pat-detail-sep" aria-hidden="true">|</span>
++          <span class="pat-detail-item"><i class="ti ti-stethoscope pat-detail-icon" aria-hidden="true"></i>{{ patient.refDoctor }}</span>
++          <span class="pat-detail-sep" aria-hidden="true">|</span>
++          <span class="pat-detail-item"><i class="ti ti-droplet-half-2 pat-detail-icon" aria-hidden="true"></i>{{ patient.fasting }}</span>
++          <span class="pat-detail-sep" aria-hidden="true">|</span>
++          <span class="pat-detail-item"><i class="ti ti-heartbeat pat-detail-icon" aria-hidden="true"></i>{{ patient.bloodGroup || '—' }}</span>
+         </div>
+       </div>
+-      <span class="status-chip status-chip--done">
+-        <i class="ti ti-circle-check" aria-hidden="true"></i> Registered
+-      </span>
+-      <span class="visit-chip">
+-        <i class="ti ti-calendar-event" aria-hidden="true"></i> {{ patient.visitType | titlecase }}
+-      </span>
+       <a routerLink="/dashboard/registration" class="lis-btn lis-btn--secondary lis-btn--sm" aria-label="Edit patient details">
+         <i class="ti ti-edit" aria-hidden="true"></i> Edit Patient
+       </a>
+     </div>
+-
+-    <div class="ps-divider" role="separator"></div>
+-
+-    <div class="ps-fields">
+-      <div class="ps-field">
+-        <i class="ti ti-phone ps-field-icon" aria-hidden="true"></i>
+-        <div><div class="ps-field-label">Mobile</div><div class="ps-field-value">{{ patient.mobile }}</div></div>
+-      </div>
+-      <div class="ps-field">
+-        <i class="ti ti-stethoscope ps-field-icon" aria-hidden="true"></i>
+-        <div><div class="ps-field-label">Referred by</div><div class="ps-field-value">{{ patient.refDoctor }}</div></div>
+-      </div>
+-      <div class="ps-field">
+-        <i class="ti ti-droplet-half-2 ps-field-icon" aria-hidden="true"></i>
+-        <div><div class="ps-field-label">Fasting</div><div class="ps-field-value">{{ patient.fasting }}</div></div>
+-      </div>
+-      <div class="ps-field">
+-        <i class="ti ti-heartbeat ps-field-icon" aria-hidden="true"></i>
+-        <div><div class="ps-field-label">Blood group</div><div class="ps-field-value">{{ patient.bloodGroup || '—' }}</div></div>
+-      </div>
+-    </div>
+   </div>
+ }
+ 
+diff --git a/src/app/features/test-order/test-order.component.ts b/src/app/features/test-order/test-order.component.ts
+index 301c9e5..69bd68f 100644
+--- a/src/app/features/test-order/test-order.component.ts
++++ b/src/app/features/test-order/test-order.component.ts
+@@ -21,6 +21,7 @@ import { TitleCasePipe } from '@angular/common';
+ import { FormsModule } from '@angular/forms';
+ import { PatientFlowService } from '../../core/services/patient-flow.service';
+ import { LabTest, TestPackage } from '../../shared/models/lis.models';
++import { WorkflowStepperComponent, WorkflowStep } from '../../shared/components/workflow-stepper/workflow-stepper.component';
+ 
+ const CATEGORY_ICON: Record<string, string> = {
+   'All':            'ti-apps',
+@@ -39,7 +40,7 @@ const PRIORITY_INFO: Record<'routine' | 'urgent' | 'stat', { label: string; desc
+ @Component({
+   selector: 'app-test-order',
+   standalone: true,
+-  imports: [RouterLink, FormsModule, TitleCasePipe],
++  imports: [RouterLink, FormsModule, TitleCasePipe, WorkflowStepperComponent],
+   changeDetection: ChangeDetectionStrategy.OnPush,
+   templateUrl: './test-order.component.html',
+   styleUrl: './test-order.component.css',
+@@ -50,6 +51,15 @@ export class TestOrderComponent implements OnInit {
+ 
+   @ViewChild('searchInput') searchInputRef?: ElementRef<HTMLInputElement>;
+ 
++  /** Shared 4-step workflow stepper (Register → Test Order → Billing → Sample). */
++  protected readonly workflowSteps: WorkflowStep[] = [
++    { label: 'Register',   icon: 'ti-user-plus' },
++    { label: 'Test Order', icon: 'ti-test-pipe' },
++    { label: 'Billing',    icon: 'ti-receipt' },
++    { label: 'Sample',     icon: 'ti-droplet' },
++  ];
++  protected readonly workflowActiveIndex = 1;
++
+   protected readonly categoryIcon  = CATEGORY_ICON;
+   protected readonly priorityInfo  = PRIORITY_INFO;
+   protected readonly priorities: ('routine' | 'urgent' | 'stat')[] = ['routine', 'urgent', 'stat'];
+diff --git a/src/app/shared/components/workflow-stepper/workflow-stepper.component.css b/src/app/shared/components/workflow-stepper/workflow-stepper.component.css
+new file mode 100644
+index 0000000..efc2603
+--- /dev/null
++++ b/src/app/shared/components/workflow-stepper/workflow-stepper.component.css
+@@ -0,0 +1,45 @@
++:host { display: block; }
++
++/* ══════════════════════════════════════════════
++   Workflow stepper — dot + connector line.
++   Canonical design, ported from the Sample Collection
++   page's `.proc-timeline`, reused everywhere so every
++   module shows an identical stepper.
++   ══════════════════════════════════════════════ */
++.wfs-timeline {
++  display: flex; align-items: flex-start; gap: 0;
++  overflow-x: auto;
++}
++.wfs-step { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; width: 92px; }
++.wfs-dot {
++  width: 30px; height: 30px; border-radius: 50%;
++  display: flex; align-items: center; justify-content: center;
++  font-size: 14px; color: var(--text-secondary);
++  background: var(--body-bg); border: 1.5px solid var(--border-color);
++  transition: background .2s, border-color .2s, color .2s, box-shadow .2s;
++}
++.wfs-step--done .wfs-dot {
++  background: var(--lis-primary, #1D9E75); border-color: var(--lis-primary, #1D9E75); color: #fff;
++}
++.wfs-step--active .wfs-dot {
++  background: var(--lis-primary-xlight, #E1F5EE); border-color: var(--lis-primary, #1D9E75);
++  color: var(--lis-primary-deep, #085041);
++  box-shadow: 0 0 0 4px var(--lis-primary-xlight, #E1F5EE);
++  animation: wfsPulseDot 1.8s ease-in-out infinite;
++}
++@keyframes wfsPulseDot {
++  0%, 100% { box-shadow: 0 0 0 4px var(--lis-primary-xlight, #E1F5EE); }
++  50%      { box-shadow: 0 0 0 7px var(--lis-primary-xlight, #E1F5EE); }
++}
++.wfs-label { font-size: 10.5px; color: var(--text-secondary); text-align: center; white-space: nowrap; transition: color .2s; }
++.wfs-step--done .wfs-label, .wfs-step--active .wfs-label { color: var(--text-primary); font-weight: 500; }
++.wfs-line { flex: 1; height: 1.5px; background: var(--border-color); margin: 15px -2px 0; min-width: 16px; transition: background .3s; }
++.wfs-line--done { background: var(--lis-primary, #1D9E75); }
++
++/* Dense variant — for narrower slots such as the Billing page header,
++   where the stepper sits to the right of the title instead of on its
++   own full-width row. Same visual language, smaller footprint. */
++.wfs-timeline--dense .wfs-step { width: 68px; gap: 4px; }
++.wfs-timeline--dense .wfs-dot { width: 24px; height: 24px; font-size: 11px; }
++.wfs-timeline--dense .wfs-label { font-size: 9.5px; }
++.wfs-timeline--dense .wfs-line { margin: 12px -2px 0; min-width: 10px; }
+diff --git a/src/app/shared/components/workflow-stepper/workflow-stepper.component.html b/src/app/shared/components/workflow-stepper/workflow-stepper.component.html
+new file mode 100644
+index 0000000..c2231f2
+--- /dev/null
++++ b/src/app/shared/components/workflow-stepper/workflow-stepper.component.html
+@@ -0,0 +1,17 @@
++<div class="wfs-timeline" [class.wfs-timeline--dense]="dense()" role="list" aria-label="Workflow steps">
++  @for (step of steps(); track step.label; let i = $index; let last = $last) {
++    <div class="wfs-step" role="listitem"
++         [class.wfs-step--done]="stepState(i) === 'done'"
++         [class.wfs-step--active]="stepState(i) === 'active'">
++      <div class="wfs-dot" [attr.aria-current]="stepState(i) === 'active' ? 'step' : null">
++        @if (stepState(i) === 'done') {
++          <i class="ti ti-check" aria-hidden="true"></i>
++        } @else {
++          <i class="ti {{ step.icon }}" aria-hidden="true"></i>
++        }
++      </div>
++      <div class="wfs-label">{{ step.label }}</div>
++    </div>
++    @if (!last) { <div class="wfs-line" [class.wfs-line--done]="stepState(i) === 'done'" aria-hidden="true"></div> }
++  }
++</div>
+diff --git a/src/app/shared/components/workflow-stepper/workflow-stepper.component.ts b/src/app/shared/components/workflow-stepper/workflow-stepper.component.ts
+new file mode 100644
+index 0000000..c704049
+--- /dev/null
++++ b/src/app/shared/components/workflow-stepper/workflow-stepper.component.ts
+@@ -0,0 +1,45 @@
++import { Component, input, ChangeDetectionStrategy } from '@angular/core';
++
++export interface WorkflowStep {
++  label: string;
++  icon: string;
++}
++
++export type WorkflowStepState = 'done' | 'active' | 'pending';
++
++/**
++ * Shared workflow / progress stepper.
++ *
++ * Visual design is standardized on the dot + connector-line pattern used by
++ * the Sample Collection page (`.proc-timeline`), so Registration, Test
++ * Order and Billing all render the exact same stepper — same dot size,
++ * spacing, connector style and typography — instead of each page shipping
++ * its own bespoke markup/CSS (`.workflow-trail`, `.wf-step`, `.wf-line` …).
++ *
++ * Usage:
++ *   <lis-workflow-stepper [steps]="workflowSteps" [activeIndex]="1" />
++ */
++@Component({
++  selector: 'lis-workflow-stepper',
++  standalone: true,
++  changeDetection: ChangeDetectionStrategy.OnPush,
++  templateUrl: './workflow-stepper.component.html',
++  styleUrl: './workflow-stepper.component.css',
++})
++export class WorkflowStepperComponent {
++  /** Ordered list of steps to render. */
++  readonly steps = input.required<WorkflowStep[]>();
++
++  /** Index (0-based) of the step that is currently active/in-progress. */
++  readonly activeIndex = input<number>(0);
++
++  /** Compact sizing for tighter slots (e.g. the Billing page header). */
++  readonly dense = input(false);
++
++  stepState(index: number): WorkflowStepState {
++    const active = this.activeIndex();
++    if (index < active) return 'done';
++    if (index === active) return 'active';
++    return 'pending';
++  }
++}
+diff --git a/src/styles.css b/src/styles.css
+index c040a58..7769a9b 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -5315,4 +5315,36 @@
+ [data-theme="dark"] .rpt-sheet * {
+   --card-bg:      #ffffff;
+   --text-primary: #111827;
+-}
+\ No newline at end of file
++}
++/* ══════════════════════════════════════════════════════════
++   PATIENT INFO METADATA — canonical cross-page style
++   Standardized on the design originally used on the Billing
++   page: avatar + name + info pills, then a detail row of
++   icon-labelled facts (age | gender | visit type | id | doctor).
++   Registration, Test Order, Billing and Sample Collection all
++   render patient metadata with these same global classes so
++   the look is identical everywhere instead of each page
++   duplicating its own slightly-different version.
++   ══════════════════════════════════════════════════════════ */
++.pat-info-row { display: flex; align-items: flex-start; gap: 14px; padding: 14px; }
++.pat-av { width: 44px; height: 44px; border-radius: 50%; background: var(--lis-primary, #1D9E75); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0; text-transform: uppercase; }
++.pat-id-main { flex: 1; min-width: 0; }
++.pat-name-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
++.pat-name { font-size: 15px; font-weight: 600; color: var(--text-primary); }
++.pat-meta { font-size: 11px; color: var(--text-secondary); margin-top: 3px; }
++
++/* Info pills next to the patient name */
++.pill {
++  display: inline-flex; align-items: center; gap: 4px;
++  font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
++  i { font-size: 11px; }
++}
++.pill--visit   { background: var(--body-bg); color: var(--text-secondary); border: 0.5px solid var(--border-color); }
++.pill--routine { background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); border: 0.5px solid var(--lis-primary-mid, #5DCAA5); }
++.pill--stat    { background: #FCEBEB; color: #791F1F; border: 0.5px solid #E24B4A; }
++
++/* Detailed info row: age | gender | visit | id | doctor */
++.pat-detail-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
++.pat-detail-item { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-primary); }
++.pat-detail-icon { font-size: 13px; color: var(--lis-primary, #1D9E75); }
++.pat-detail-sep  { color: var(--border-color); font-size: 12px; }
+-- 
+2.43.0
+

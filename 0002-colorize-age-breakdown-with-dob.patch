@@ -1,0 +1,203 @@
+From b8b066109099a1c2c95c05cc5227d6a13c7d572d Mon Sep 17 00:00:00 2001
+From: Claude <dev@medpath.local>
+Date: Wed, 8 Jul 2026 04:56:40 +0000
+Subject: [PATCH] Colorize age breakdown (y/m/d) and add DOB next to it in
+ patient metadata rows
+
+---
+ src/app/core/services/patient-flow.service.ts  | 18 +++++++++++++++++-
+ .../features/billing/billing.component.html    |  6 +++++-
+ src/app/features/billing/billing.component.ts  | 12 +++++++++---
+ .../sample-collection.component.html           |  6 +++++-
+ .../sample-collection.component.ts             | 10 ++++++++--
+ .../test-order/test-order.component.html       |  6 +++++-
+ .../test-order/test-order.component.ts         | 14 ++++++++++----
+ src/styles.css                                 | 12 ++++++++++++
+ 8 files changed, 71 insertions(+), 13 deletions(-)
+
+diff --git a/src/app/core/services/patient-flow.service.ts b/src/app/core/services/patient-flow.service.ts
+index 9ba5f31..c805533 100644
+--- a/src/app/core/services/patient-flow.service.ts
++++ b/src/app/core/services/patient-flow.service.ts
+@@ -262,4 +262,20 @@ export class PatientFlowService {
+   }
+ 
+   return { years, months, days };
+-}}
++}
++
++  /**
++   * Human-readable "Y-M-D" age breakdown, e.g. "19y 11m 14d".
++   * Single source of truth for this format — previously each page
++   * (Billing, Test Order, Sample Collection) built its own string
++   * and each one used a different style ("19Y-11M-14Days" vs
++   * "19 Years - 11 Months - 14 Days"). Lowercase, single-letter,
++   * space-separated units read faster than mixing abbreviated and
++   * spelled-out units, and are compact enough for a dense
++   * pipe-separated metadata row.
++   */
++  formatAgeBreakdown(dob: string): string {
++    const { years, months, days } = this.calcAgeParts(dob);
++    return `${years}y ${months}m ${days}d`;
++  }
++}
+diff --git a/src/app/features/billing/billing.component.html b/src/app/features/billing/billing.component.html
+index 61ba6b1..aea1fb8 100644
+--- a/src/app/features/billing/billing.component.html
++++ b/src/app/features/billing/billing.component.html
+@@ -104,7 +104,11 @@
+               </span>
+             </div>
+             <div class="pat-detail-row">
+-              <span class="pat-detail-item"><i class="ti ti-cake pat-detail-icon" aria-hidden="true"></i>{{ patientAgeBreakdown() }}</span>
++              <span class="pat-detail-item age-inline" [title]="patientAgeBreakdown()">
++                <i class="ti ti-cake pat-detail-icon" aria-hidden="true"></i><span class="age-inline__y">{{ ageParts().years }}y</span><span class="age-inline__sep"> · </span><span class="age-inline__m">{{ ageParts().months }}m</span><span class="age-inline__sep"> · </span><span class="age-inline__d">{{ ageParts().days }}d</span>
++              </span>
++              <span class="pat-detail-sep" aria-hidden="true">|</span>
++              <span class="pat-detail-item"><i class="ti ti-calendar-event pat-detail-icon" aria-hidden="true"></i>DOB {{ patient.dob | date:'dd MMM yyyy' }}</span>
+               <span class="pat-detail-sep" aria-hidden="true">|</span>
+               <span class="pat-detail-item"><i class="ti {{ genderIcon() }} pat-detail-icon" aria-hidden="true"></i>{{ patient.gender | titlecase }}</span>
+               <span class="pat-detail-sep" aria-hidden="true">|</span>
+diff --git a/src/app/features/billing/billing.component.ts b/src/app/features/billing/billing.component.ts
+index 53dd6f0..99b4c49 100644
+--- a/src/app/features/billing/billing.component.ts
++++ b/src/app/features/billing/billing.component.ts
+@@ -124,12 +124,18 @@ export class BillingComponent implements OnInit {
+     return this.flow.calcAge(p.dob);
+   }
+ 
+-  /** Detailed breakdown used in the patient info row, e.g. "9Y-11M-02Days". */
++  /** Detailed breakdown used in the patient info row, e.g. "9y 11m 2d". */
+   patientAgeBreakdown(): string {
+     const p = this.patient;
+     if (!p) return '';
+-    const { years, months, days } = this.flow.calcAgeParts(p.dob);
+-    return `${years}Y-${months}M-${String(days).padStart(2, '0')}Days`;
++    return this.flow.formatAgeBreakdown(p.dob);
++  }
++
++  /** Raw Y/M/D parts for the colorized inline age breakdown (see .age-inline* in styles.css). */
++  ageParts(): { years: number; months: number; days: number } {
++    const p = this.patient;
++    if (!p) return { years: 0, months: 0, days: 0 };
++    return this.flow.calcAgeParts(p.dob);
+   }
+ 
+   genderIcon(): string {
+diff --git a/src/app/features/sample-collection/sample-collection.component.html b/src/app/features/sample-collection/sample-collection.component.html
+index 3de50ed..c36ad59 100644
+--- a/src/app/features/sample-collection/sample-collection.component.html
++++ b/src/app/features/sample-collection/sample-collection.component.html
+@@ -60,7 +60,11 @@
+         <div class="pat-detail-row">
+           <span class="pat-detail-item"><i class="ti ti-id-badge-2 pat-detail-icon" aria-hidden="true"></i><span class="lis-mono">{{ patient.id }}</span></span>
+           <span class="pat-detail-sep" aria-hidden="true">|</span>
+-          <span class="pat-detail-item"><i class="ti ti-cake pat-detail-icon" aria-hidden="true"></i>{{ patientAgeBreakdown() }}</span>
++          <span class="pat-detail-item age-inline" [title]="patientAgeBreakdown()">
++            <i class="ti ti-cake pat-detail-icon" aria-hidden="true"></i><span class="age-inline__y">{{ ageParts().years }}y</span><span class="age-inline__sep"> · </span><span class="age-inline__m">{{ ageParts().months }}m</span><span class="age-inline__sep"> · </span><span class="age-inline__d">{{ ageParts().days }}d</span>
++          </span>
++          <span class="pat-detail-sep" aria-hidden="true">|</span>
++          <span class="pat-detail-item"><i class="ti ti-calendar-event pat-detail-icon" aria-hidden="true"></i>DOB {{ patient.dob | date:'dd MMM yyyy' }}</span>
+           <span class="pat-detail-sep" aria-hidden="true">|</span>
+           <span class="pat-detail-item"><i class="ti {{ genderIcon() }} pat-detail-icon" aria-hidden="true"></i>{{ patient.gender | titlecase }}</span>
+         </div>
+diff --git a/src/app/features/sample-collection/sample-collection.component.ts b/src/app/features/sample-collection/sample-collection.component.ts
+index e71d0e2..882f537 100644
+--- a/src/app/features/sample-collection/sample-collection.component.ts
++++ b/src/app/features/sample-collection/sample-collection.component.ts
+@@ -190,8 +190,14 @@ export class SampleCollectionComponent {
+   patientAgeBreakdown(): string {
+     const p = this.patient;
+     if (!p) return '';
+-    const { years, months, days } = this.flow.calcAgeParts(p.dob);
+-    return `${years}Y-${months}M-${String(days).padStart(2, '0')}Days`;
++    return this.flow.formatAgeBreakdown(p.dob);
++  }
++
++  /** Raw Y/M/D parts for the colorized inline age breakdown (see .age-inline* in styles.css). */
++  ageParts(): { years: number; months: number; days: number } {
++    const p = this.patient;
++    if (!p) return { years: 0, months: 0, days: 0 };
++    return this.flow.calcAgeParts(p.dob);
+   }
+ 
+   genderIcon(): string {
+diff --git a/src/app/features/test-order/test-order.component.html b/src/app/features/test-order/test-order.component.html
+index 7818478..62a11f6 100644
+--- a/src/app/features/test-order/test-order.component.html
++++ b/src/app/features/test-order/test-order.component.html
+@@ -41,7 +41,11 @@
+         <div class="pat-detail-row">
+           <span class="pat-detail-item"><i class="ti ti-id-badge-2 pat-detail-icon" aria-hidden="true"></i><span class="lis-mono">{{ patient.id }}</span></span>
+           <span class="pat-detail-sep" aria-hidden="true">|</span>
+-          <span class="pat-detail-item"><i class="ti ti-cake pat-detail-icon" aria-hidden="true"></i>{{ patientAgeBreakdown() }}</span>
++          <span class="pat-detail-item age-inline" [title]="patientAgeBreakdown()">
++            <i class="ti ti-cake pat-detail-icon" aria-hidden="true"></i><span class="age-inline__y">{{ ageParts().years }}y</span><span class="age-inline__sep"> · </span><span class="age-inline__m">{{ ageParts().months }}m</span><span class="age-inline__sep"> · </span><span class="age-inline__d">{{ ageParts().days }}d</span>
++          </span>
++          <span class="pat-detail-sep" aria-hidden="true">|</span>
++          <span class="pat-detail-item"><i class="ti ti-calendar-event pat-detail-icon" aria-hidden="true"></i>DOB {{ patient.dob | date:'dd MMM yyyy' }}</span>
+           <span class="pat-detail-sep" aria-hidden="true">|</span>
+           <span class="pat-detail-item"><i class="ti {{ genderIcon() }} pat-detail-icon" aria-hidden="true"></i>{{ patient.gender | titlecase }}</span>
+         </div>
+diff --git a/src/app/features/test-order/test-order.component.ts b/src/app/features/test-order/test-order.component.ts
+index 69bd68f..9e370b6 100644
+--- a/src/app/features/test-order/test-order.component.ts
++++ b/src/app/features/test-order/test-order.component.ts
+@@ -17,7 +17,7 @@ import {
+   OnInit, ElementRef, ViewChild, HostListener
+ } from '@angular/core';
+ import { Router, RouterLink } from '@angular/router';
+-import { TitleCasePipe } from '@angular/common';
++import { TitleCasePipe, DatePipe } from '@angular/common';
+ import { FormsModule } from '@angular/forms';
+ import { PatientFlowService } from '../../core/services/patient-flow.service';
+ import { LabTest, TestPackage } from '../../shared/models/lis.models';
+@@ -40,7 +40,7 @@ const PRIORITY_INFO: Record<'routine' | 'urgent' | 'stat', { label: string; desc
+ @Component({
+   selector: 'app-test-order',
+   standalone: true,
+-  imports: [RouterLink, FormsModule, TitleCasePipe, WorkflowStepperComponent],
++  imports: [RouterLink, FormsModule, TitleCasePipe, DatePipe, WorkflowStepperComponent],
+   changeDetection: ChangeDetectionStrategy.OnPush,
+   templateUrl: './test-order.component.html',
+   styleUrl: './test-order.component.css',
+@@ -252,8 +252,14 @@ export class TestOrderComponent implements OnInit {
+   patientAgeBreakdown(): string {
+     const p = this.patient;
+     if (!p) return '';
+-    const { years, months, days } = this.flow.calcAgeParts(p.dob);
+-    return `${years} Years - ${months} Months - ${days} Days`;
++    return this.flow.formatAgeBreakdown(p.dob);
++  }
++
++  /** Raw Y/M/D parts for the colorized inline age breakdown (see .age-inline* in styles.css). */
++  ageParts(): { years: number; months: number; days: number } {
++    const p = this.patient;
++    if (!p) return { years: 0, months: 0, days: 0 };
++    return this.flow.calcAgeParts(p.dob);
+   }
+ 
+   genderIcon(): string {
+diff --git a/src/styles.css b/src/styles.css
+index 7769a9b..5093502 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -5348,3 +5348,15 @@
+ .pat-detail-item { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-primary); }
+ .pat-detail-icon { font-size: 13px; color: var(--lis-primary, #1D9E75); }
+ .pat-detail-sep  { color: var(--border-color); font-size: 12px; }
++
++/* ══════════════════════════════════════════════════════════
++   AGE BREAKDOWN — colorized inline segments
++   Same palette as the "Age card" on Patient Registration
++   (years/months/days each get their own color), reused wherever
++   the compact "19y · 11m · 14d" breakdown appears in a patient
++   metadata row, with a teal separator to match the app accent.
++   ══════════════════════════════════════════════════════════ */
++.age-inline__y   { color: #4F9DFF; font-weight: 500; }
++.age-inline__m   { color: #A78BFA; font-weight: 500; }
++.age-inline__d   { color: #FBBF24; font-weight: 500; }
++.age-inline__sep { color: var(--lis-primary-mid, #5DCAA5); padding: 0 1px; }
+-- 
+2.43.0
+

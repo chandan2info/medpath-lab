@@ -61,62 +61,9 @@
   &:hover { color: var(--lis-primary, #1D9E75); }
 }
 
-/* ── Workflow trail ─────────────────────────────────── */
-.workflow-trail {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--body-bg);
-  border: 0.5px solid var(--border-color);
-  border-radius: 8px;
-  padding: 6px 14px;
-}
-
-.wf-step {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 12px;
-  color: var(--text-secondary);
-  font-weight: 400;
-  padding: 0 6px;
-}
-
-.wf-dot {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 1.5px solid var(--border-color);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  font-weight: 600;
-  flex-shrink: 0;
-  color: var(--text-secondary);
-  background: var(--card-bg);
-}
-
-.wf-dot--active {
-  background: var(--lis-primary, #1D9E75);
-  border-color: var(--lis-primary, #1D9E75);
-  color: #fff;
-  i { font-size: 11px; }
-}
-
-.wf-step--active {
-  color: var(--lis-primary-deep, #085041);
-  font-weight: 600;
-}
-
-.wf-connector {
-  width: 34px;
-  height: 1px;
-  background: var(--border-color);
-  flex-shrink: 0;
-}
-
-.wf-connector--done { background: var(--lis-primary-mid, #5DCAA5); }
+/* Workflow trail — now rendered by the shared <lis-workflow-stepper>
+   component (see /shared/components/workflow-stepper), so no
+   .workflow-trail / .wf-* styling is needed here anymore. */
 
 /* ══════════════════════════════════════════════════════
    MINI-STEPS — sub-progress within the Register step only
@@ -218,17 +165,14 @@
   margin-top: 3px;
 }
 
-/* Required indicator — a quiet dot rather than a shouting
-   badge; label text stays the primary visual weight. */
-.req-dot {
+/* Required indicator — a plain asterisk instead of a red dot,
+   the conventional/expected way to mark a required field. */
+.req-ast {
   display: inline-block;
-  width: 5px;
-  height: 5px;
-  margin-left: 5px;
-  margin-bottom: 4px;
-  border-radius: 50%;
-  background: var(--lis-danger, #E24B4A);
-  vertical-align: middle;
+  margin-left: 3px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--lis-danger, #E24B4A);
 }
 .sr-only {
   position: absolute;
@@ -268,6 +212,29 @@
 /* Slightly tighter rows within a group, more air between groups
    (Priority 20 — form density / visual rhythm). */
 .field-group .form-grid { padding-top: 10px; padding-bottom: 4px; gap: 10px 18px; }
+
+/* ══════════════════════════════════════════════════════
+   VISIT DETAILS / PREPARATION — column widths
+   Visit type needs more room (3 segmented options can look
+   cramped/overlapping at an equal 1/3 share); Sample collection
+   is a single dropdown and doesn't need as much; Fasting status
+   (Preparation group) reuses the exact same column template so
+   it lines up under Visit Details above it, then spans the first
+   two columns so it gets a wider control instead of a cramped 1/3.
+   ══════════════════════════════════════════════════════ */
+.form-grid--visit { grid-template-columns: 1fr 1.4fr 0.85fr; }
+@media (max-width: 860px) { .form-grid--visit { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .form-grid--visit { grid-template-columns: 1fr; } }
+
+.visit-type-field { min-width: 0; }
+.sample-collection-field { min-width: 0; }
+.fasting-field { grid-column: span 2; min-width: 0; }
+@media (max-width: 860px) { .fasting-field { grid-column: 1 / -1; } }
+
+/* Extra breathing room between the segmented options themselves so the
+   active-state background never visually touches/overlaps its neighbour. */
+.lis-seg--spaced { gap: 10px; }
+.lis-seg--spaced .lis-seg__opt { padding: 0 10px; }
 
 /* Date of Birth is now rendered by <app-dob-date-picker> (see
    /shared/components/dob-date-picker) — its own stylesheet

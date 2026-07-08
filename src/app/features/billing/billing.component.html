@@ -70,15 +70,9 @@
 
   <div class="page-header__right">
     <div class="inv-date-top">{{ today | date:'dd MMM yyyy' }}</div>
-    <div class="workflow-trail" aria-label="Workflow steps">
-      <div class="wf-step wf-step--done"><i class="ti ti-circle-check-filled"></i> Registered</div>
-      <div class="wf-line wf-line--done" aria-hidden="true"></div>
-      <div class="wf-step wf-step--done"><i class="ti ti-circle-check-filled"></i> Tests Ordered</div>
-      <div class="wf-line wf-line--active" aria-hidden="true"></div>
-      <div class="wf-step wf-step--active"><span class="wf-num">3</span> Billing</div>
-      <div class="wf-line" aria-hidden="true"></div>
-      <div class="wf-step"><span class="wf-num">4</span> Sample</div>
-    </div>
+    <!-- Workflow progress trail — standardized via the shared stepper
+         component (same design used on Registration, Test Order, Sample). -->
+    <lis-workflow-stepper [steps]="workflowSteps" [activeIndex]="workflowActiveIndex" [dense]="true" />
   </div>
 </div>
 
@@ -110,11 +104,13 @@
               </span>
             </div>
             <div class="pat-detail-row">
-              <span class="pat-detail-item"><i class="ti ti-cake pat-detail-icon" aria-hidden="true"></i>{{ patientAgeBreakdown() }}</span>
+              <span class="pat-detail-item age-inline" [title]="patientAgeBreakdown()">
+                <i class="ti ti-cake pat-detail-icon" aria-hidden="true"></i><span class="age-inline__y">{{ ageParts().years }}y</span><span class="age-inline__sep"> · </span><span class="age-inline__m">{{ ageParts().months }}m</span><span class="age-inline__sep"> · </span><span class="age-inline__d">{{ ageParts().days }}d</span>
+              </span>
+              <span class="pat-detail-sep" aria-hidden="true">|</span>
+              <span class="pat-detail-item"><i class="ti ti-calendar-event pat-detail-icon" aria-hidden="true"></i>DOB {{ patient.dob | date:'dd MMM yyyy' }}</span>
               <span class="pat-detail-sep" aria-hidden="true">|</span>
               <span class="pat-detail-item"><i class="ti {{ genderIcon() }} pat-detail-icon" aria-hidden="true"></i>{{ patient.gender | titlecase }}</span>
-              <span class="pat-detail-sep" aria-hidden="true">|</span>
-              <span class="pat-detail-item"><i class="ti {{ visitTypeIcon() }} pat-detail-icon" aria-hidden="true"></i>{{ patient.visitType | titlecase }}</span>
               <span class="pat-detail-sep" aria-hidden="true">|</span>
               <span class="pat-detail-item"><i class="ti ti-id-badge-2 pat-detail-icon" aria-hidden="true"></i><span class="lis-mono">{{ patient.id }}</span></span>
               <span class="pat-detail-sep" aria-hidden="true">|</span>
@@ -170,13 +166,17 @@
             <label for="discPct">Discount %</label>
             <div class="stepper-field">
               <button type="button" class="stepper-btn" (click)="incrementDiscount(-1)" aria-label="Decrease discount">−</button>
-              <input id="discPct" type="number" min="0" max="100" class="stepper-input"
+              <input id="discPct" type="text" inputmode="numeric" pattern="[0-9]*" min="0" max="100" class="stepper-input"
                 [value]="discountPct()"
-                (input)="applyDiscount(+$any($event.target).value)"
+                (keydown)="allowNumericKeysOnly($event)"
+                (input)="applyDiscount(sanitizeNumericInput($event))"
                 placeholder="0" />
               <button type="button" class="stepper-btn" (click)="incrementDiscount(1)" aria-label="Increase discount">+</button>
             </div>
           </div>
+          <!-- Coupon Code and Referral fields — disabled for now (no coupon/referral
+               program is live yet); kept in markup, commented out, so they can be
+               re-enabled quickly once that functionality ships.
           <div class="lis-field">
             <label for="coupon">Coupon code</label>
             <div class="input-with-btn">
@@ -192,6 +192,7 @@
               [value]="referralCode()"
               (input)="referralCode.set($any($event.target).value)" />
           </div>
+          -->
         </div>
       </div>
 
@@ -202,9 +203,10 @@
             <label for="advance">Advance received</label>
             <div class="currency-field">
               <span class="currency-prefix">₹</span>
-              <input id="advance" type="number" min="0"
+              <input id="advance" type="text" inputmode="numeric" pattern="[0-9]*"
                 [value]="advance()"
-                (input)="advance.set(+$any($event.target).value)"
+                (keydown)="allowNumericKeysOnly($event)"
+                (input)="advance.set(sanitizeNumericInput($event))"
                 placeholder="Enter amount" />
             </div>
           </div>
