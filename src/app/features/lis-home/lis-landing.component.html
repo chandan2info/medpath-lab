@@ -142,8 +142,14 @@
               <label class="lp-check">
                 <input type="checkbox" [(ngModel)]="remember" name="remember" /> Remember me
               </label>
-              <a href="#" class="lp-forgot">Forgot password?</a>
+              <button type="button" class="lp-forgot" (click)="showForgotPasswordInfo.set(true)">Forgot password?</button>
             </div>
+            @if (showForgotPasswordInfo()) {
+              <div class="lp-forgot-info" role="status">
+                <i class="ti ti-info-circle" aria-hidden="true"></i>
+                Self-service reset isn't available yet — please contact your lab administrator to reset your password.
+              </div>
+            }
 
             <button type="submit" class="lp-signin-btn" [disabled]="loginLoading()" [class.lp-signin-btn--loading]="loginLoading()">
               <span class="lp-btn-label"><i class="ti ti-login-2" aria-hidden="true"></i> Sign in to dashboard</span>

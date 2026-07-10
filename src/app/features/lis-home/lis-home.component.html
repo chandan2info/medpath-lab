@@ -9,18 +9,18 @@
 <!-- Welcome band -->
 <div class="welcome-band" role="region" aria-label="Day summary">
   <div class="wb-left">
-    <div class="wb-greet">Good morning, {{ dash.worklist().length ? (dash.worklist()[0].patientName.split(' ')[0]) : 'Operator' }}.</div>
-    <div class="wb-sub">{{ dash.stats().samples }} samples in progress · {{ dash.kpis().at(2)?.value ?? '—' }} reports ready to dispatch · 1 STAT pending.</div>
+    <div class="wb-greet">Good morning, {{ session.operator()?.name?.split(' ')?.[0] ?? 'Operator' }}.</div>
+    <div class="wb-sub">{{ dash.stats().samples }} samples logged today · {{ dash.kpis().at(2)?.value ?? '—' }} reports ready to dispatch · {{ statPendingCount() }} STAT pending.</div>
     <div class="wb-pills" aria-hidden="true">
       <span class="wb-pill"><i class="ti ti-users"></i> {{ dash.kpis()[0].value }} patients today</span>
-      <span class="wb-pill"><i class="ti ti-bolt"></i> 1 STAT pending</span>
+      <span class="wb-pill"><i class="ti ti-bolt"></i> {{ statPendingCount() }} STAT pending</span>
       <span class="wb-pill"><i class="ti ti-certificate"></i> NABL Accredited</span>
     </div>
   </div>
   <div class="wb-stats" aria-label="Today's totals">
     <div class="wb-stat"><div class="wb-stat-val">{{ dash.stats().revenue }}</div><div class="wb-stat-lbl">Revenue today</div></div>
     <div class="wb-divider" aria-hidden="true"></div>
-    <div class="wb-stat"><div class="wb-stat-val">{{ dash.stats().samples }}</div><div class="wb-stat-lbl">Samples</div></div>
+    <div class="wb-stat"><div class="wb-stat-val">{{ dash.stats().samples }}</div><div class="wb-stat-lbl">Samples logged</div></div>
     <div class="wb-divider" aria-hidden="true"></div>
     <div class="wb-stat"><div class="wb-stat-val">{{ dash.stats().reportsDone }}</div><div class="wb-stat-lbl">Reports done</div></div>
   </div>

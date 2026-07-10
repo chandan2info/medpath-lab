@@ -110,6 +110,20 @@ export class PatientRegistrationComponent implements OnInit {
   this.dobFormatted.set(this.formatDobDisplay(dob));
   this.ageTick.update(v => v ^ 1);
 });
+
+    // Keep "Visit type" and "Sample collection" from silently contradicting
+    // each other (e.g. Walk-in + Home collection). We auto-derive a sane
+    // default rather than raising a validation error, since this form's
+    // whole pattern is fast, low-friction data entry — the operator can
+    // still override the derived value afterwards.
+    this.form.get('visitType')?.valueChanges.subscribe((visitType) => {
+      const collectionCtrl = this.form.get('collection');
+      if (visitType === 'Home visit') {
+        collectionCtrl?.setValue('Home collection', { emitEvent: false });
+      } else if (visitType === 'Walk-in' && collectionCtrl?.value === 'Home collection') {
+        collectionCtrl.setValue('At lab counter', { emitEvent: false });
+      }
+    });
   }
 
   // "2008-07-04" → "04 Jul 2008", used in the Age card's helper

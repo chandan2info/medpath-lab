@@ -1,4 +1,4 @@
-<div class="wfs-timeline" [class.wfs-timeline--dense]="dense()" role="list" aria-label="Workflow steps">
+<div class="wfs-timeline" [class.wfs-timeline--dense]="dense()" role="list" [attr.aria-label]="ariaLabel()">
   @for (step of steps(); track step.label; let i = $index; let last = $last) {
     <div class="wfs-step" role="listitem"
          [class.wfs-step--done]="stepState(i) === 'done'"

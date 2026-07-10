@@ -17,22 +17,12 @@
 </div>
 
 <!-- Process timeline — the full pipeline, not just the pre-collection steps,
-     so the technician always knows where this sample sits in the journey. -->
-<div class="proc-timeline" role="list" aria-label="Sample lifecycle progress">
-  @for (step of timelineSteps; track step.label; let i = $index; let last = $last) {
-    <div class="proc-step" role="listitem" [class.proc-step--done]="stepState(i) === 'done'"
-         [class.proc-step--active]="stepState(i) === 'active'">
-      <div class="proc-dot" [attr.aria-current]="stepState(i) === 'active' ? 'step' : null">
-        @if (stepState(i) === 'done') {
-          <i class="ti ti-check" aria-hidden="true"></i>
-        } @else {
-          <i class="ti {{ step.icon }}" aria-hidden="true"></i>
-        }
-      </div>
-      <div class="proc-label">{{ step.label }}</div>
-    </div>
-    @if (!last) { <div class="proc-line" [class.proc-line--done]="stepState(i) === 'done'" aria-hidden="true"></div> }
-  }
+     so the technician always knows where this sample sits in the journey.
+     Uses the shared stepper component (same design used on Registration,
+     Test Order and Billing) inside a card wrapper for the timeline's
+     distinct framed look. -->
+<div class="timeline-card">
+  <lis-workflow-stepper [steps]="timelineSteps" [activeIndex]="timelineActiveIndex()" [ariaLabel]="'Sample lifecycle progress'" />
 </div>
 
 @if (patient && currentPatientTubes().length > 0) {

@@ -30,6 +30,9 @@ export class LisLandingComponent {
   mobileMenuOpen = signal(false);
   activeSection = signal('hero');
 
+  /** No self-service reset flow exists yet — this drives an honest inline message instead of a dead link. */
+  showForgotPasswordInfo = signal(false);
+
   /** Drives the sun/moon icon and a11y labels on the theme toggle. */
   protected readonly isDark = computed(() => this.themeService.theme() === 'dark');
 
@@ -114,7 +117,7 @@ export class LisLandingComponent {
     // Small delay so the loading state on the submit button is perceptible —
     // the underlying session check itself is synchronous.
     setTimeout(() => {
-      if (this.session.login(this.username, this.password)) {
+      if (this.session.login(this.username, this.password, this.remember)) {
         if (this.remember) {
           localStorage.setItem(REMEMBERED_USERNAME_KEY, this.username);
         } else {

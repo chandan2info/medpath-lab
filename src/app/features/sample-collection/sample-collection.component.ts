@@ -19,6 +19,7 @@ import { RouterLink } from '@angular/router';
 import { DatePipe, TitleCasePipe } from '@angular/common';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
 import { Priority } from '../../shared/models/lis.models';
+import { WorkflowStepperComponent, WorkflowStep } from '../../shared/components/workflow-stepper/workflow-stepper.component';
 
 const TUBE_COLORS: Record<string, string> = {
   'Haematology':   '#2B8B3E',
@@ -60,10 +61,10 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
 
 /** Full lab pipeline — Collection is one stage of a longer journey, and
  *  showing the whole thing (not just the 4 pre-collection steps) tells the
- *  technician exactly where this sample sits in the bigger picture. */
-type StepState = 'done' | 'active' | 'pending';
-interface TimelineStep { label: string; icon: string; }
-const TIMELINE_STEPS: TimelineStep[] = [
+ *  technician exactly where this sample sits in the bigger picture.
+ *  Rendered via the shared <lis-workflow-stepper /> (same component used
+ *  on Registration, Test Order and Billing) instead of a bespoke timeline. */
+const TIMELINE_STEPS: WorkflowStep[] = [
   { label: 'Registered',   icon: 'ti-user-check'        },
   { label: 'Billing',      icon: 'ti-receipt'           },
   { label: 'Collection',   icon: 'ti-droplet'           },
@@ -76,7 +77,7 @@ const TIMELINE_STEPS: TimelineStep[] = [
 @Component({
   selector: 'app-sample-collection',
   standalone: true,
-  imports: [RouterLink, DatePipe, TitleCasePipe],
+  imports: [RouterLink, DatePipe, TitleCasePipe, WorkflowStepperComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './sample-collection.component.html',
   styleUrl: './sample-collection.component.css',
@@ -119,13 +120,6 @@ export class SampleCollectionComponent {
 
   // 2 = Collection is the 3rd step (index 2) of TIMELINE_STEPS
   timelineActiveIndex = computed(() => (this.collected() ? 3 : 2));
-
-  stepState(index: number): StepState {
-    const active = this.timelineActiveIndex();
-    if (index < active) return 'done';
-    if (index === active) return 'active';
-    return 'pending';
-  }
 
   isChecked(id: string): boolean { return this._checked().has(id); }
   toggleChecklist(id: string): void {

@@ -36,6 +36,9 @@ export class WorkflowStepperComponent {
   /** Compact sizing for tighter slots (e.g. the Billing page header). */
   readonly dense = input(false);
 
+  /** Override the default aria-label when a page needs a more specific description. */
+  readonly ariaLabel = input('Workflow steps');
+
   stepState(index: number): WorkflowStepState {
     const active = this.activeIndex();
     if (index < active) return 'done';

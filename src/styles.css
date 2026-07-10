@@ -5047,8 +5047,9 @@
 .lis-seg__opt--active {
   background: var(--lis-primary-xlight);
   color: var(--lis-primary-deep);
-  border-color: var(--lis-primary-mid);
-  font-weight: 500;
+  border: 1.5px solid var(--lis-primary);
+  box-shadow: inset 0 0 0 1px var(--lis-primary-mid);
+  font-weight: 600;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -5360,3 +5361,145 @@
 .age-inline__m   { color: #A78BFA; font-weight: 500; }
 .age-inline__d   { color: #FBBF24; font-weight: 500; }
 .age-inline__sep { color: var(--lis-primary-mid, #5DCAA5); padding: 0 1px; }
+
+/* ══════════════════════════════════════════════════════════
+   PRINT — hide persistent app chrome on every dashboard page
+   Sidebar/topbar are position:fixed siblings of routed content
+   (see main-layout.component.html), so a component-scoped
+   @media print block (e.g. report-preview.component.css) can
+   never reach them under ViewEncapsulation. This global,
+   unencapsulated rule is the only place that can hide them.
+   ══════════════════════════════════════════════════════════ */
+@media print {
+  .pc-sidebar,
+  .pc-topbar {
+    display: none !important;
+  }
+  .pc-container {
+    margin-left: 0 !important;
+    margin-top: 0 !important;
+  }
+
+  /* Clinically meaningful color coding (result flags, alerts,
+     worklist status) must survive print/PDF drivers that strip
+     background colors by default (notably Firefox). */
+  .lis-flag,
+  .status-icon,
+  .wl-dot,
+  .alert-dot,
+  .pill--stat,
+  .pill--routine,
+  [class*='flag-stat'] {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
+
+
+/******* common.css (shared across all LIS modules) *******/
+/* ══════════════════════════════════════════════════════
+   PAGE HEADER — Title + workflow trail
+   ══════════════════════════════════════════════════════ */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 12px;
+  /* Reduced from 16px/20px so the form starts higher on screen. */
+  padding: 10px 16px;
+  background: var(--card-bg);
+  border: 0.5px solid var(--border-color);
+  border-radius: var(--lis-card-radius, 10px);
+}
+
+.page-header__left { display: flex; flex-direction: column; gap: 2px; }
+
+.page-header__title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.page-header__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--lis-primary-xlight, #E1F5EE);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  i { font-size: 16px; color: var(--lis-primary, #1D9E75); }
+}
+
+.page-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 1px;
+  line-height: 1.2;
+}
+
+.breadcrumb {
+  display: flex;
+  list-style: none;
+  padding: 0; margin: 0;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.breadcrumb li+li::before { content: '/'; margin-right: 4px; color: var(--border-color); }
+.breadcrumb a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.15s;
+  &:hover { color: var(--lis-primary, #1D9E75); }
+}
+
+/* Workflow trail — now rendered by the shared <lis-workflow-stepper>
+   component (see /shared/components/workflow-stepper), so no
+   .workflow-trail / .wf-* styling is needed here anymore. */
+
+/* ══════════════════════════════════════════════════════
+   MINI-STEPS — sub-progress within the Register step only
+   (replaces the old duplicate top-level "stepper" so there
+   is exactly one progress indicator per level of the flow).
+   Styled like small workflow-trail dots so the relationship
+   to "Register" above reads as one connected hierarchy.
+   ══════════════════════════════════════════════════════ */
+.mini-steps {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+.mini-step {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px 3px 3px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+}
+.mini-step::before {
+  content: '';
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-color);
+  flex-shrink: 0;
+}
+.mini-step--active {
+  color: var(--lis-primary-deep, #085041);
+  font-weight: 600;
+  background: var(--lis-primary-xlight, #E1F5EE);
+  border-color: var(--lis-primary-mid, #5DCAA5);
+}
+.mini-step--active::before { background: var(--lis-primary, #1D9E75); border-color: var(--lis-primary, #1D9E75); }
+.mini-step--done { color: var(--lis-primary, #1D9E75); }
+.mini-step--done::before { background: var(--lis-primary-xlight, #E1F5EE); border-color: var(--lis-primary, #1D9E75); }

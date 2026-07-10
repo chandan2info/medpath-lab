@@ -1,0 +1,190 @@
+From e3b7dd31167e98cc9ef63b0a923c1c5b6e8546c7 Mon Sep 17 00:00:00 2001
+From: Claude <claude@anthropic.com>
+Date: Thu, 9 Jul 2026 18:24:37 +0000
+Subject: [PATCH] Migrate Sample Collection to the shared workflow stepper
+ component
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Registration, Test Order and Billing all already render their progress
+trail via <lis-workflow-stepper/>, but Sample Collection still shipped
+its own bespoke .proc-timeline markup/CSS/stepState() logic — despite
+the shared component's own doc comment saying it was ported FROM this
+page's design. This was the one page that never actually got migrated.
+
+- Added an optional ariaLabel input to WorkflowStepperComponent so
+  Sample Collection can keep its more specific 'Sample lifecycle
+  progress' label instead of the generic default.
+- Replaced Sample Collection's local TIMELINE_STEPS/StepState/
+  stepState() duplication with the shared WorkflowStep type and
+  <lis-workflow-stepper/>, wrapped in a lightweight .timeline-card
+  for the framed look (the dot+connector visuals themselves now
+  live in the shared component's CSS, not duplicated locally).
+- Removed the now-dead .proc-* CSS block.
+---
+ .../sample-collection.component.css           | 32 +++----------------
+ .../sample-collection.component.html          | 22 ++++---------
+ .../sample-collection.component.ts            | 18 ++++-------
+ .../workflow-stepper.component.html           |  2 +-
+ .../workflow-stepper.component.ts             |  3 ++
+ 5 files changed, 20 insertions(+), 57 deletions(-)
+
+diff --git a/src/app/features/sample-collection/sample-collection.component.css b/src/app/features/sample-collection/sample-collection.component.css
+index 5f68a3c..b8b639c 100644
+--- a/src/app/features/sample-collection/sample-collection.component.css
++++ b/src/app/features/sample-collection/sample-collection.component.css
+@@ -6,39 +6,15 @@
+ .breadcrumb li+li::before { content:'/'; margin-right:6px; }
+ 
+ /* ══════════════════════════════════════════════
+-   Process timeline — full pipeline, dot + line
++   Process timeline — card wrapper around the shared
++   <lis-workflow-stepper /> (dot + connector-line visuals
++   live in that component's own CSS now).
+    ══════════════════════════════════════════════ */
+-.proc-timeline {
+-  display: flex; align-items: flex-start; gap: 0;
++.timeline-card {
+   background: var(--card-bg); border: 0.5px solid var(--border-color);
+   border-radius: 12px; padding: 16px 18px 14px;
+   margin-bottom: 18px; overflow-x: auto;
+ }
+-.proc-step { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; width: 92px; }
+-.proc-dot {
+-  width: 30px; height: 30px; border-radius: 50%;
+-  display: flex; align-items: center; justify-content: center;
+-  font-size: 14px; color: var(--text-secondary);
+-  background: var(--body-bg); border: 1.5px solid var(--border-color);
+-  transition: background .2s, border-color .2s, color .2s, box-shadow .2s;
+-}
+-.proc-step--done .proc-dot {
+-  background: var(--lis-primary, #1D9E75); border-color: var(--lis-primary, #1D9E75); color: #fff;
+-}
+-.proc-step--active .proc-dot {
+-  background: var(--lis-primary-xlight, #E1F5EE); border-color: var(--lis-primary, #1D9E75);
+-  color: var(--lis-primary-deep, #085041);
+-  box-shadow: 0 0 0 4px var(--lis-primary-xlight, #E1F5EE);
+-  animation: pulseDot 1.8s ease-in-out infinite;
+-}
+-@keyframes pulseDot {
+-  0%, 100% { box-shadow: 0 0 0 4px var(--lis-primary-xlight, #E1F5EE); }
+-  50%      { box-shadow: 0 0 0 7px var(--lis-primary-xlight, #E1F5EE); }
+-}
+-.proc-label { font-size: 10.5px; color: var(--text-secondary); text-align: center; white-space: nowrap; transition: color .2s; }
+-.proc-step--done .proc-label, .proc-step--active .proc-label { color: var(--text-primary); font-weight: 500; }
+-.proc-line { flex: 1; height: 1.5px; background: var(--border-color); margin: 15px -2px 0; min-width: 16px; transition: background .3s; }
+-.proc-line--done { background: var(--lis-primary, #1D9E75); }
+ 
+ /* ══════════════════════════════════════════════
+    Patient summary — identity + status dominate
+diff --git a/src/app/features/sample-collection/sample-collection.component.html b/src/app/features/sample-collection/sample-collection.component.html
+index c36ad59..d59d8bc 100644
+--- a/src/app/features/sample-collection/sample-collection.component.html
++++ b/src/app/features/sample-collection/sample-collection.component.html
+@@ -17,22 +17,12 @@
+ </div>
+ 
+ <!-- Process timeline — the full pipeline, not just the pre-collection steps,
+-     so the technician always knows where this sample sits in the journey. -->
+-<div class="proc-timeline" role="list" aria-label="Sample lifecycle progress">
+-  @for (step of timelineSteps; track step.label; let i = $index; let last = $last) {
+-    <div class="proc-step" role="listitem" [class.proc-step--done]="stepState(i) === 'done'"
+-         [class.proc-step--active]="stepState(i) === 'active'">
+-      <div class="proc-dot" [attr.aria-current]="stepState(i) === 'active' ? 'step' : null">
+-        @if (stepState(i) === 'done') {
+-          <i class="ti ti-check" aria-hidden="true"></i>
+-        } @else {
+-          <i class="ti {{ step.icon }}" aria-hidden="true"></i>
+-        }
+-      </div>
+-      <div class="proc-label">{{ step.label }}</div>
+-    </div>
+-    @if (!last) { <div class="proc-line" [class.proc-line--done]="stepState(i) === 'done'" aria-hidden="true"></div> }
+-  }
++     so the technician always knows where this sample sits in the journey.
++     Uses the shared stepper component (same design used on Registration,
++     Test Order and Billing) inside a card wrapper for the timeline's
++     distinct framed look. -->
++<div class="timeline-card">
++  <lis-workflow-stepper [steps]="timelineSteps" [activeIndex]="timelineActiveIndex()" [ariaLabel]="'Sample lifecycle progress'" />
+ </div>
+ 
+ @if (patient && currentPatientTubes().length > 0) {
+diff --git a/src/app/features/sample-collection/sample-collection.component.ts b/src/app/features/sample-collection/sample-collection.component.ts
+index 882f537..bfedbc0 100644
+--- a/src/app/features/sample-collection/sample-collection.component.ts
++++ b/src/app/features/sample-collection/sample-collection.component.ts
+@@ -19,6 +19,7 @@ import { RouterLink } from '@angular/router';
+ import { DatePipe, TitleCasePipe } from '@angular/common';
+ import { PatientFlowService } from '../../core/services/patient-flow.service';
+ import { Priority } from '../../shared/models/lis.models';
++import { WorkflowStepperComponent, WorkflowStep } from '../../shared/components/workflow-stepper/workflow-stepper.component';
+ 
+ const TUBE_COLORS: Record<string, string> = {
+   'Haematology':   '#2B8B3E',
+@@ -60,10 +61,10 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
+ 
+ /** Full lab pipeline — Collection is one stage of a longer journey, and
+  *  showing the whole thing (not just the 4 pre-collection steps) tells the
+- *  technician exactly where this sample sits in the bigger picture. */
+-type StepState = 'done' | 'active' | 'pending';
+-interface TimelineStep { label: string; icon: string; }
+-const TIMELINE_STEPS: TimelineStep[] = [
++ *  technician exactly where this sample sits in the bigger picture.
++ *  Rendered via the shared <lis-workflow-stepper /> (same component used
++ *  on Registration, Test Order and Billing) instead of a bespoke timeline. */
++const TIMELINE_STEPS: WorkflowStep[] = [
+   { label: 'Registered',   icon: 'ti-user-check'        },
+   { label: 'Billing',      icon: 'ti-receipt'           },
+   { label: 'Collection',   icon: 'ti-droplet'           },
+@@ -76,7 +77,7 @@ const TIMELINE_STEPS: TimelineStep[] = [
+ @Component({
+   selector: 'app-sample-collection',
+   standalone: true,
+-  imports: [RouterLink, DatePipe, TitleCasePipe],
++  imports: [RouterLink, DatePipe, TitleCasePipe, WorkflowStepperComponent],
+   changeDetection: ChangeDetectionStrategy.OnPush,
+   templateUrl: './sample-collection.component.html',
+   styleUrl: './sample-collection.component.css',
+@@ -120,13 +121,6 @@ export class SampleCollectionComponent {
+   // 2 = Collection is the 3rd step (index 2) of TIMELINE_STEPS
+   timelineActiveIndex = computed(() => (this.collected() ? 3 : 2));
+ 
+-  stepState(index: number): StepState {
+-    const active = this.timelineActiveIndex();
+-    if (index < active) return 'done';
+-    if (index === active) return 'active';
+-    return 'pending';
+-  }
+-
+   isChecked(id: string): boolean { return this._checked().has(id); }
+   toggleChecklist(id: string): void {
+     this._checked.update(s => {
+diff --git a/src/app/shared/components/workflow-stepper/workflow-stepper.component.html b/src/app/shared/components/workflow-stepper/workflow-stepper.component.html
+index c2231f2..58426ce 100644
+--- a/src/app/shared/components/workflow-stepper/workflow-stepper.component.html
++++ b/src/app/shared/components/workflow-stepper/workflow-stepper.component.html
+@@ -1,4 +1,4 @@
+-<div class="wfs-timeline" [class.wfs-timeline--dense]="dense()" role="list" aria-label="Workflow steps">
++<div class="wfs-timeline" [class.wfs-timeline--dense]="dense()" role="list" [attr.aria-label]="ariaLabel()">
+   @for (step of steps(); track step.label; let i = $index; let last = $last) {
+     <div class="wfs-step" role="listitem"
+          [class.wfs-step--done]="stepState(i) === 'done'"
+diff --git a/src/app/shared/components/workflow-stepper/workflow-stepper.component.ts b/src/app/shared/components/workflow-stepper/workflow-stepper.component.ts
+index c704049..c92d5ed 100644
+--- a/src/app/shared/components/workflow-stepper/workflow-stepper.component.ts
++++ b/src/app/shared/components/workflow-stepper/workflow-stepper.component.ts
+@@ -36,6 +36,9 @@ export class WorkflowStepperComponent {
+   /** Compact sizing for tighter slots (e.g. the Billing page header). */
+   readonly dense = input(false);
+ 
++  /** Override the default aria-label when a page needs a more specific description. */
++  readonly ariaLabel = input('Workflow steps');
++
+   stepState(index: number): WorkflowStepState {
+     const active = this.activeIndex();
+     if (index < active) return 'done';
+-- 
+2.43.0
+

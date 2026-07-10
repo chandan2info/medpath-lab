@@ -1,0 +1,361 @@
+From 6e3d349db489046e38b15dc6ce2aef87558cf951 Mon Sep 17 00:00:00 2001
+From: Claude <claude@anthropic.com>
+Date: Thu, 9 Jul 2026 18:11:51 +0000
+Subject: [PATCH] Fix high-priority UX audit findings (dashboard greeting,
+ print CSS, remember-me, visit/collection linkage, selected-state contrast,
+ login page)
+
+- Dashboard greeting now binds to the logged-in operator instead of the
+  first urgent-worklist patient's name (confirmed live bug).
+- Hardcoded '1 STAT pending' text now derives from the live worklist.
+- Disambiguated the two 'samples' figures on the dashboard welcome band.
+- Added a global @media print rule in styles.css to hide the fixed
+  sidebar/topbar chrome on every dashboard page (report-preview's
+  component-scoped print styles couldn't reach them under
+  ViewEncapsulation), plus print-color-adjust on flag/status colors.
+- 'Remember me' now persists the actual session, not just the username,
+  so a page refresh no longer bounces a remembered operator to login.
+- Visit type and Sample collection on Patient Registration no longer
+  silently contradict each other; Home visit auto-derives Home
+  collection, with manual override still allowed.
+- Selected segmented-control state (Appointment/Non-fasting etc.) now
+  differs from unselected by two visual channels (fill + heavier
+  border) instead of a faint tint alone, fixing weak light-mode
+  contrast.
+- Fixed production build config: angular.json had no fileReplacements,
+  so environment.production stayed false in production builds,
+  meaning the demo-credential login hint would ship to real users.
+- Replaced the dead 'Forgot password?' link with a button that
+  honestly surfaces that self-service reset isn't available yet,
+  instead of going nowhere.
+- Strengthened the login field focus indicator (was outline:none +
+  a 1px color-only border shift) to a two-channel border + visible
+  focus ring.
+---
+ angular.json                                  |  8 +++-
+ src/app/core/services/user-session.service.ts | 40 +++++++++++++++++--
+ .../features/lis-home/lis-home.component.html |  8 ++--
+ .../features/lis-home/lis-home.component.ts   |  9 ++++-
+ .../lis-home/lis-landing.component.css        | 17 ++++++--
+ .../lis-home/lis-landing.component.html       |  8 +++-
+ .../lis-home/lis-landing.component.ts         |  5 ++-
+ .../patient-registration.component.ts         | 14 +++++++
+ src/styles.css                                | 38 +++++++++++++++++-
+ 9 files changed, 130 insertions(+), 17 deletions(-)
+
+diff --git a/angular.json b/angular.json
+index dfb4251..564710b 100644
+--- a/angular.json
++++ b/angular.json
+@@ -62,7 +62,13 @@
+                   "maximumError": "4kB"
+                 }
+               ],
+-              "outputHashing": "all"
++              "outputHashing": "all",
++              "fileReplacements": [
++                {
++                  "replace": "src/environments/environment.ts",
++                  "with": "src/environments/environment.prod.ts"
++                }
++              ]
+             },
+             "development": {
+               "optimization": false,
+diff --git a/src/app/core/services/user-session.service.ts b/src/app/core/services/user-session.service.ts
+index 1b768fb..7c3ec8b 100644
+--- a/src/app/core/services/user-session.service.ts
++++ b/src/app/core/services/user-session.service.ts
+@@ -7,6 +7,15 @@ export interface Operator {
+   labName: string;
+ }
+ 
++/**
++ * Demo-app session persistence only. There is no real backend/token here,
++ * so a plain localStorage blob is an acceptable stand-in for now — but this
++ * is NOT how session persistence should work once real authentication
++ * (JWT/session cookie, as already used in the Publixo project) is wired up.
++ * Treat this as scaffolding to be replaced, not a pattern to copy forward.
++ */
++const SESSION_KEY = 'medpath.lis.session';
++
+ @Injectable({ providedIn: 'root' })
+ export class UserSessionService {
+   private readonly _operator = signal<Operator | null>(null);
+@@ -15,24 +24,46 @@ export class UserSessionService {
+   readonly operator = this._operator.asReadonly();
+   readonly isLoggedIn = this._loggedIn.asReadonly();
+ 
++  constructor() {
++    // Restore a "remembered" session on app start (e.g. after a page refresh).
++    const saved = localStorage.getItem(SESSION_KEY);
++    if (saved) {
++      try {
++        this._operator.set(JSON.parse(saved) as Operator);
++        this._loggedIn.set(true);
++      } catch {
++        localStorage.removeItem(SESSION_KEY);
++      }
++    }
++  }
++
+   /** Called after login */
+   setOperator(op: Operator): void {
+     this._operator.set(op);
+     this._loggedIn.set(true);
+   }
+ 
+-  /** Real auth: checks username AND password (demo credentials: ravi.anand / MedPath@2024) */
+-  login(username: string, password: string): boolean {
++  /**
++   * Real auth: checks username AND password (demo credentials: ravi.anand / MedPath@2024).
++   * @param remember When true, the session survives a page refresh (see SESSION_KEY above).
++   */
++  login(username: string, password: string, remember = false): boolean {
+     const validUsername = 'ravi.anand';
+     const validPassword = 'MedPath@2024';
+     if (username.trim() === validUsername && password === validPassword) {
+-      this._operator.set({
++      const operator: Operator = {
+         name:     'Ravi Anand',
+         initials: 'RA',
+         role:     'Lab Operator',
+         labName:  'MedPath Diagnostics',
+-      });
++      };
++      this._operator.set(operator);
+       this._loggedIn.set(true);
++      if (remember) {
++        localStorage.setItem(SESSION_KEY, JSON.stringify(operator));
++      } else {
++        localStorage.removeItem(SESSION_KEY);
++      }
+       return true;
+     }
+     return false;
+@@ -41,5 +72,6 @@ export class UserSessionService {
+   logout(): void {
+     this._operator.set(null);
+     this._loggedIn.set(false);
++    localStorage.removeItem(SESSION_KEY);
+   }
+ }
+diff --git a/src/app/features/lis-home/lis-home.component.html b/src/app/features/lis-home/lis-home.component.html
+index b679222..37bbdb7 100644
+--- a/src/app/features/lis-home/lis-home.component.html
++++ b/src/app/features/lis-home/lis-home.component.html
+@@ -9,18 +9,18 @@
+ <!-- Welcome band -->
+ <div class="welcome-band" role="region" aria-label="Day summary">
+   <div class="wb-left">
+-    <div class="wb-greet">Good morning, {{ dash.worklist().length ? (dash.worklist()[0].patientName.split(' ')[0]) : 'Operator' }}.</div>
+-    <div class="wb-sub">{{ dash.stats().samples }} samples in progress · {{ dash.kpis().at(2)?.value ?? '—' }} reports ready to dispatch · 1 STAT pending.</div>
++    <div class="wb-greet">Good morning, {{ session.operator()?.name?.split(' ')?.[0] ?? 'Operator' }}.</div>
++    <div class="wb-sub">{{ dash.stats().samples }} samples logged today · {{ dash.kpis().at(2)?.value ?? '—' }} reports ready to dispatch · {{ statPendingCount() }} STAT pending.</div>
+     <div class="wb-pills" aria-hidden="true">
+       <span class="wb-pill"><i class="ti ti-users"></i> {{ dash.kpis()[0].value }} patients today</span>
+-      <span class="wb-pill"><i class="ti ti-bolt"></i> 1 STAT pending</span>
++      <span class="wb-pill"><i class="ti ti-bolt"></i> {{ statPendingCount() }} STAT pending</span>
+       <span class="wb-pill"><i class="ti ti-certificate"></i> NABL Accredited</span>
+     </div>
+   </div>
+   <div class="wb-stats" aria-label="Today's totals">
+     <div class="wb-stat"><div class="wb-stat-val">{{ dash.stats().revenue }}</div><div class="wb-stat-lbl">Revenue today</div></div>
+     <div class="wb-divider" aria-hidden="true"></div>
+-    <div class="wb-stat"><div class="wb-stat-val">{{ dash.stats().samples }}</div><div class="wb-stat-lbl">Samples</div></div>
++    <div class="wb-stat"><div class="wb-stat-val">{{ dash.stats().samples }}</div><div class="wb-stat-lbl">Samples logged</div></div>
+     <div class="wb-divider" aria-hidden="true"></div>
+     <div class="wb-stat"><div class="wb-stat-val">{{ dash.stats().reportsDone }}</div><div class="wb-stat-lbl">Reports done</div></div>
+   </div>
+diff --git a/src/app/features/lis-home/lis-home.component.ts b/src/app/features/lis-home/lis-home.component.ts
+index 8c3a955..f5b47dd 100644
+--- a/src/app/features/lis-home/lis-home.component.ts
++++ b/src/app/features/lis-home/lis-home.component.ts
+@@ -1,8 +1,9 @@
+-import { Component, inject, ChangeDetectionStrategy, signal } from '@angular/core';
++import { Component, inject, ChangeDetectionStrategy, signal, computed } from '@angular/core';
+ import { RouterLink } from '@angular/router';
+ import { KpiCardComponent } from '../../shared/components/kpi-card/kpi-card.component';
+ import { StatusPillComponent } from '../../shared/components/status-pill/status-pill.component';
+ import { DashboardDataService } from '../../core/services/dashboard-data.service';
++import { UserSessionService } from '../../core/services/user-session.service';
+ 
+ @Component({
+   selector: 'app-lis-home',
+@@ -14,11 +15,17 @@ import { DashboardDataService } from '../../core/services/dashboard-data.service
+ })
+ export class LisHomeComponent {
+   protected readonly dash = inject(DashboardDataService);
++  protected readonly session = inject(UserSessionService);
+ 
+   protected today = signal(
+     new Date().toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric' })
+   );
+ 
++  /** Derived from the live worklist instead of a hardcoded template string. */
++  protected readonly statPendingCount = computed(
++    () => this.dash.worklist().filter((s) => s.priority === 'stat').length
++  );
++
+   alertDotClass(level: 'red' | 'amber' | 'teal'): string {
+     return `alert-dot alert-dot--${level}`;
+   }
+diff --git a/src/app/features/lis-home/lis-landing.component.css b/src/app/features/lis-home/lis-landing.component.css
+index dfc346c..4cdb1ec 100644
+--- a/src/app/features/lis-home/lis-landing.component.css
++++ b/src/app/features/lis-home/lis-landing.component.css
+@@ -185,8 +185,8 @@
+         width:100%; height:52px; border:1px solid var(--hero-border); border-radius:12px;
+         padding:20px 42px 6px 16px; font-size:14px; color:var(--hero-heading);
+         background:var(--card-bg); outline:none; font-family:inherit;
+-        transition:border-color 0.15s;
+-        &:focus { border-color:#1D9E75; }
++        transition:border-color 0.15s, box-shadow 0.15s;
++        &:focus-visible { border-color:#1D9E75; box-shadow:0 0 0 3px rgba(29,158,117,0.35); }
+       }
+       label {
+         position:absolute; left:16px; top:16px; font-size:14px; color:var(--hero-body);
+@@ -206,7 +206,18 @@
+ 
+     .lp-remember-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+     .lp-check { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--hero-body); cursor:pointer; input { width:auto; height:auto; margin:0; } }
+-    .lp-forgot { font-size:13px; color:#1D9E75; text-decoration:none; }
++    .lp-forgot {
++      font-size:13px; color:#1D9E75; text-decoration:none;
++      background:none; border:none; padding:2px; cursor:pointer; font-family:inherit;
++    }
++    .lp-forgot:hover { text-decoration:underline; }
++    .lp-forgot:focus-visible { outline:2px solid #1D9E75; outline-offset:2px; border-radius:4px; }
++    .lp-forgot-info {
++      display:flex; align-items:flex-start; gap:6px; font-size:12px; color:var(--hero-body);
++      background:var(--card-bg); border:1px solid var(--hero-border); border-radius:8px;
++      padding:10px 12px; margin:-8px 0 14px;
++    }
++    .lp-forgot-info i { font-size:14px; flex-shrink:0; color:#1D9E75; margin-top:1px; }
+ 
+     .lp-signin-btn {
+       width:100%; height:52px; background:linear-gradient(135deg,#1D9E75,#3DC9A8); color:#fff; border:none;
+diff --git a/src/app/features/lis-home/lis-landing.component.html b/src/app/features/lis-home/lis-landing.component.html
+index 8fb4494..5746d75 100644
+--- a/src/app/features/lis-home/lis-landing.component.html
++++ b/src/app/features/lis-home/lis-landing.component.html
+@@ -142,8 +142,14 @@
+               <label class="lp-check">
+                 <input type="checkbox" [(ngModel)]="remember" name="remember" /> Remember me
+               </label>
+-              <a href="#" class="lp-forgot">Forgot password?</a>
++              <button type="button" class="lp-forgot" (click)="showForgotPasswordInfo.set(true)">Forgot password?</button>
+             </div>
++            @if (showForgotPasswordInfo()) {
++              <div class="lp-forgot-info" role="status">
++                <i class="ti ti-info-circle" aria-hidden="true"></i>
++                Self-service reset isn't available yet — please contact your lab administrator to reset your password.
++              </div>
++            }
+ 
+             <button type="submit" class="lp-signin-btn" [disabled]="loginLoading()" [class.lp-signin-btn--loading]="loginLoading()">
+               <span class="lp-btn-label"><i class="ti ti-login-2" aria-hidden="true"></i> Sign in to dashboard</span>
+diff --git a/src/app/features/lis-home/lis-landing.component.ts b/src/app/features/lis-home/lis-landing.component.ts
+index 57ccbc7..0bf959c 100644
+--- a/src/app/features/lis-home/lis-landing.component.ts
++++ b/src/app/features/lis-home/lis-landing.component.ts
+@@ -30,6 +30,9 @@ export class LisLandingComponent {
+   mobileMenuOpen = signal(false);
+   activeSection = signal('hero');
+ 
++  /** No self-service reset flow exists yet — this drives an honest inline message instead of a dead link. */
++  showForgotPasswordInfo = signal(false);
++
+   /** Drives the sun/moon icon and a11y labels on the theme toggle. */
+   protected readonly isDark = computed(() => this.themeService.theme() === 'dark');
+ 
+@@ -114,7 +117,7 @@ export class LisLandingComponent {
+     // Small delay so the loading state on the submit button is perceptible —
+     // the underlying session check itself is synchronous.
+     setTimeout(() => {
+-      if (this.session.login(this.username, this.password)) {
++      if (this.session.login(this.username, this.password, this.remember)) {
+         if (this.remember) {
+           localStorage.setItem(REMEMBERED_USERNAME_KEY, this.username);
+         } else {
+diff --git a/src/app/features/patient-registration/patient-registration.component.ts b/src/app/features/patient-registration/patient-registration.component.ts
+index a2af955..ac7e4bd 100644
+--- a/src/app/features/patient-registration/patient-registration.component.ts
++++ b/src/app/features/patient-registration/patient-registration.component.ts
+@@ -110,6 +110,20 @@ export class PatientRegistrationComponent implements OnInit {
+   this.dobFormatted.set(this.formatDobDisplay(dob));
+   this.ageTick.update(v => v ^ 1);
+ });
++
++    // Keep "Visit type" and "Sample collection" from silently contradicting
++    // each other (e.g. Walk-in + Home collection). We auto-derive a sane
++    // default rather than raising a validation error, since this form's
++    // whole pattern is fast, low-friction data entry — the operator can
++    // still override the derived value afterwards.
++    this.form.get('visitType')?.valueChanges.subscribe((visitType) => {
++      const collectionCtrl = this.form.get('collection');
++      if (visitType === 'Home visit') {
++        collectionCtrl?.setValue('Home collection', { emitEvent: false });
++      } else if (visitType === 'Walk-in' && collectionCtrl?.value === 'Home collection') {
++        collectionCtrl.setValue('At lab counter', { emitEvent: false });
++      }
++    });
+   }
+ 
+   // "2008-07-04" → "04 Jul 2008", used in the Age card's helper
+diff --git a/src/styles.css b/src/styles.css
+index 5093502..bf6cb67 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -5047,8 +5047,9 @@
+ .lis-seg__opt--active {
+   background: var(--lis-primary-xlight);
+   color: var(--lis-primary-deep);
+-  border-color: var(--lis-primary-mid);
+-  font-weight: 500;
++  border: 1.5px solid var(--lis-primary);
++  box-shadow: inset 0 0 0 1px var(--lis-primary-mid);
++  font-weight: 600;
+ }
+ 
+ /* ═══════════════════════════════════════════════════════════
+@@ -5360,3 +5361,36 @@
+ .age-inline__m   { color: #A78BFA; font-weight: 500; }
+ .age-inline__d   { color: #FBBF24; font-weight: 500; }
+ .age-inline__sep { color: var(--lis-primary-mid, #5DCAA5); padding: 0 1px; }
++
++/* ══════════════════════════════════════════════════════════
++   PRINT — hide persistent app chrome on every dashboard page
++   Sidebar/topbar are position:fixed siblings of routed content
++   (see main-layout.component.html), so a component-scoped
++   @media print block (e.g. report-preview.component.css) can
++   never reach them under ViewEncapsulation. This global,
++   unencapsulated rule is the only place that can hide them.
++   ══════════════════════════════════════════════════════════ */
++@media print {
++  .pc-sidebar,
++  .pc-topbar {
++    display: none !important;
++  }
++  .pc-container {
++    margin-left: 0 !important;
++    margin-top: 0 !important;
++  }
++
++  /* Clinically meaningful color coding (result flags, alerts,
++     worklist status) must survive print/PDF drivers that strip
++     background colors by default (notably Firefox). */
++  .lis-flag,
++  .status-icon,
++  .wl-dot,
++  .alert-dot,
++  .pill--stat,
++  .pill--routine,
++  [class*='flag-stat'] {
++    print-color-adjust: exact;
++    -webkit-print-color-adjust: exact;
++  }
++}
+-- 
+2.43.0
+
