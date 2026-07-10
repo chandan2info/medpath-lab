@@ -1,0 +1,237 @@
+From 4d97b78a76cbe7b35ad8bcfdf95fed6ec1da5b9a Mon Sep 17 00:00:00 2001
+From: Chandan <chandan@medpath-lab.dev>
+Date: Fri, 10 Jul 2026 19:49:33 +0000
+Subject: [PATCH] Patient Registration: progress summary, address counter,
+ cleanup
+
+UX audit fixes for the Personal Details step:
+- Add a live 'N of M required fields complete' progress bar
+  under the Personal Details card header (Priority 22).
+- Add a character counter (0/250) under the Address textarea,
+  with maxlength enforcement and a near-limit warning color
+  (Priority 10).
+- Clearer Email placeholder ('name@email.com' instead of a
+  filled-looking 'patient@email.com') so it doesn't read as
+  a real pre-filled value (Priority 9).
+- Removed leftover debug console.log statements from the DOB
+  valueChanges subscription.
+
+Note: header height, border density, gender/blood-group layout,
+age-card design, and stepper coloring from the same audit were
+already addressed in prior commits on this branch.
+---
+ .../patient-registration.component.css        | 52 +++++++++++++++
+ .../patient-registration.component.html       | 18 ++++-
+ .../patient-registration.component.ts         | 65 ++++++++++++++-----
+ 3 files changed, 117 insertions(+), 18 deletions(-)
+
+diff --git a/src/app/features/patient-registration/patient-registration.component.css b/src/app/features/patient-registration/patient-registration.component.css
+index 587aebb..2eb62b9 100644
+--- a/src/app/features/patient-registration/patient-registration.component.css
++++ b/src/app/features/patient-registration/patient-registration.component.css
+@@ -79,6 +79,58 @@
+   border: 0;
+ }
+ 
++/* ══════════════════════════════════════════════════════
++   REGISTRATION PROGRESS SUMMARY (Priority 22)
++   Slim bar + label under the Personal Details card header,
++   so the operator sees how much of the required data is
++   left without a heavier sticky sidebar.
++   ══════════════════════════════════════════════════════ */
++.reg-progress {
++  display: flex;
++  align-items: center;
++  gap: 10px;
++  padding: 10px 20px 0;
++}
++.reg-progress__bar {
++  flex: 1;
++  height: 5px;
++  border-radius: 3px;
++  background: var(--body-bg);
++  border: 0.5px solid var(--border-color);
++  overflow: hidden;
++}
++.reg-progress__fill {
++  height: 100%;
++  border-radius: 3px;
++  background: var(--lis-primary, #1D9E75);
++  transition: width 0.25s ease;
++}
++.reg-progress__label {
++  flex-shrink: 0;
++  display: flex;
++  align-items: center;
++  gap: 5px;
++  font-size: 11px;
++  font-weight: 500;
++  color: var(--text-secondary);
++  white-space: nowrap;
++  i { font-size: 13px; }
++}
++.reg-progress__label--done { color: var(--lis-primary, #1D9E75); }
++
++/* ══════════════════════════════════════════════════════
++   CHARACTER COUNTER (Priority 10 — Address field)
++   ══════════════════════════════════════════════════════ */
++.char-counter {
++  display: block;
++  align-self: flex-end;
++  font-size: 10.5px;
++  color: var(--text-secondary);
++  margin-top: 3px;
++  font-variant-numeric: tabular-nums;
++}
++.char-counter--near-limit { color: var(--lis-danger, #E24B4A); font-weight: 500; }
++
+ /* ══════════════════════════════════════════════════════
+    FIELD GROUPS — Identity / Contact / Address,
+    Visit Details / Preparation / Medication
+diff --git a/src/app/features/patient-registration/patient-registration.component.html b/src/app/features/patient-registration/patient-registration.component.html
+index 64fdd48..7af6343 100644
+--- a/src/app/features/patient-registration/patient-registration.component.html
++++ b/src/app/features/patient-registration/patient-registration.component.html
+@@ -89,6 +89,17 @@
+           </div>
+         </div>
+ 
++        <!-- Registration progress summary — required-fields readout -->
++        <div class="reg-progress" aria-live="polite">
++          <div class="reg-progress__bar">
++            <div class="reg-progress__fill" [style.width.%]="step1ProgressPct()"></div>
++          </div>
++          <span class="reg-progress__label" [class.reg-progress__label--done]="step1FilledCount() === step1Total">
++            <i class="ti" [class.ti-circle-check]="step1FilledCount() === step1Total" [class.ti-list-check]="step1FilledCount() !== step1Total" aria-hidden="true"></i>
++            {{ step1FilledCount() }} of {{ step1Total }} required fields complete
++          </span>
++        </div>
++
+         <!-- Duplicate patient warning -->
+         @if (duplicateMatch() && !duplicateDismissed()) {
+           <div class="dup-banner" role="alert">
+@@ -330,7 +341,7 @@
+             <div class="lis-field">
+               <label for="email">Email <span class="opt-label">(Optional)</span></label>
+               <input id="email" formControlName="email" type="email"
+-                autocomplete="email" placeholder="patient@email.com" />
++                autocomplete="email" placeholder="name@email.com" />
+               <span class="helper-text">Optional — used to email lab reports</span>
+             </div>
+           </div>
+@@ -344,8 +355,11 @@
+             <div class="lis-field form-full">
+               <label for="address">Address <span class="opt-label">(Optional)</span></label>
+               <textarea id="address" formControlName="address" rows="2"
+-                class="auto-expand" (input)="autoResize($event)"
++                class="auto-expand" [maxlength]="addressMaxLen" (input)="autoResize($event)"
+                 placeholder="e.g. 12, MG Road, Indiranagar, Bengaluru"></textarea>
++              <span class="char-counter" [class.char-counter--near-limit]="addressLength() >= addressMaxLen - 20">
++                {{ addressLength() }} / {{ addressMaxLen }} characters
++              </span>
+             </div>
+           </div>
+         </div>
+diff --git a/src/app/features/patient-registration/patient-registration.component.ts b/src/app/features/patient-registration/patient-registration.component.ts
+index ac7e4bd..186d3ab 100644
+--- a/src/app/features/patient-registration/patient-registration.component.ts
++++ b/src/app/features/patient-registration/patient-registration.component.ts
+@@ -4,7 +4,7 @@
+ //  & clinical info, then navigate to Test Order.
+ // ─────────────────────────────────────────────
+ import {
+-  Component, ChangeDetectionStrategy, signal, inject, OnInit, HostListener
++  Component, ChangeDetectionStrategy, signal, computed, inject, OnInit, HostListener
+ } from '@angular/core';
+ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+ import { Router, RouterLink } from '@angular/router';
+@@ -65,6 +65,21 @@ export class PatientRegistrationComponent implements OnInit {
+   // of an abrupt step swap.
+   step1Saved = signal(false);
+ 
++  // ── Registration progress summary (Priority 22) ──────────
++  // Lightweight "N of M required fields complete" readout for
++  // the Personal Details step, so the operator knows what's
++  // left without scanning the whole form.
++  private readonly step1RequiredFields = ['firstName', 'lastName', 'dob', 'gender', 'mobile'];
++  readonly step1Total = this.step1RequiredFields.length;
++  step1FilledCount = signal(0);
++  step1ProgressPct = computed(() =>
++    Math.round((this.step1FilledCount() / this.step1Total) * 100)
++  );
++
++  // ── Address character counter (Priority 10) ──────────────
++  readonly addressMaxLen = 250;
++  addressLength = signal(0);
++
+   form!: FormGroup;
+ 
+   private _timer?: ReturnType<typeof setInterval>;
+@@ -92,24 +107,32 @@ export class PatientRegistrationComponent implements OnInit {
+     // The custom date picker doesn't emit a native (change) event,
+     // so recompute Age from the form control's value stream instead.
+     this.form.get('dob')?.valueChanges.subscribe((dob) => {
+-  console.log('DOB changed:', dob);
+-
+-  if (!dob) {
+-    this.ageDisplay.set('');
+-    this.ageParts.set(null);
+-    this.dobFormatted.set('');
+-    return;
+-  }
++      if (!dob) {
++        this.ageDisplay.set('');
++        this.ageParts.set(null);
++        this.dobFormatted.set('');
++        return;
++      }
+ 
+- const age = this.flow.calcAge(dob);
++      const age = this.flow.calcAge(dob);
++      this.ageDisplay.set(`${age}`);
++      this.ageParts.set(this.flow.calcAgeParts(dob));
++      this.dobFormatted.set(this.formatDobDisplay(dob));
++      this.ageTick.update(v => v ^ 1);
++    });
+ 
+-  console.log('Age:', age);
++    // Live character count for the Address textarea (Priority 10) —
++    // keeps the operator aware of the remaining budget on a field
++    // that's otherwise just a plain, unbounded-looking textarea.
++    this.form.get('address')?.valueChanges.subscribe((val: string) => {
++      this.addressLength.set((val || '').length);
++    });
+ 
+-  this.ageDisplay.set(`${age}`);
+-  this.ageParts.set(this.flow.calcAgeParts(dob));
+-  this.dobFormatted.set(this.formatDobDisplay(dob));
+-  this.ageTick.update(v => v ^ 1);
+-});
++    // Registration progress summary — recompute whenever any Step 1
++    // field changes, so the "N of M required fields complete" chip
++    // stays live as the operator fills the form (Priority 22).
++    this.updateStep1Progress();
++    this.form.valueChanges.subscribe(() => this.updateStep1Progress());
+ 
+     // Keep "Visit type" and "Sample collection" from silently contradicting
+     // each other (e.g. Walk-in + Home collection). We auto-derive a sane
+@@ -186,6 +209,16 @@ export class PatientRegistrationComponent implements OnInit {
+     el.style.height = `${el.scrollHeight}px`;
+   }
+ 
++  // Counts how many of the Step 1 required fields currently hold a
++  // non-empty value, powering the progress chip in the card header.
++  private updateStep1Progress(): void {
++    const filled = this.step1RequiredFields.filter(f => {
++      const v = this.form.get(f)?.value;
++      return v !== null && v !== undefined && String(v).trim() !== '';
++    }).length;
++    this.step1FilledCount.set(filled);
++  }
++
+   isInvalid(field: string): boolean {
+     const c = this.form.get(field);
+     return !!(c?.invalid && (c.dirty || c.touched));
+-- 
+2.43.0
+

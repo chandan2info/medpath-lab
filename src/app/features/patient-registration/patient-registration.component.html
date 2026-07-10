@@ -89,6 +89,17 @@
           </div>
         </div>
 
+        <!-- Registration progress summary — required-fields readout -->
+        <div class="reg-progress" aria-live="polite">
+          <div class="reg-progress__bar">
+            <div class="reg-progress__fill" [style.width.%]="step1ProgressPct()"></div>
+          </div>
+          <span class="reg-progress__label" [class.reg-progress__label--done]="step1FilledCount() === step1Total">
+            <i class="ti" [class.ti-circle-check]="step1FilledCount() === step1Total" [class.ti-list-check]="step1FilledCount() !== step1Total" aria-hidden="true"></i>
+            {{ step1FilledCount() }} of {{ step1Total }} required fields complete
+          </span>
+        </div>
+
         <!-- Duplicate patient warning -->
         @if (duplicateMatch() && !duplicateDismissed()) {
           <div class="dup-banner" role="alert">
@@ -330,7 +341,7 @@
             <div class="lis-field">
               <label for="email">Email <span class="opt-label">(Optional)</span></label>
               <input id="email" formControlName="email" type="email"
-                autocomplete="email" placeholder="patient@email.com" />
+                autocomplete="email" placeholder="name@email.com" />
               <span class="helper-text">Optional — used to email lab reports</span>
             </div>
           </div>
@@ -344,8 +355,11 @@
             <div class="lis-field form-full">
               <label for="address">Address <span class="opt-label">(Optional)</span></label>
               <textarea id="address" formControlName="address" rows="2"
-                class="auto-expand" (input)="autoResize($event)"
+                class="auto-expand" [maxlength]="addressMaxLen" (input)="autoResize($event)"
                 placeholder="e.g. 12, MG Road, Indiranagar, Bengaluru"></textarea>
+              <span class="char-counter" [class.char-counter--near-limit]="addressLength() >= addressMaxLen - 20">
+                {{ addressLength() }} / {{ addressMaxLen }} characters
+              </span>
             </div>
           </div>
         </div>

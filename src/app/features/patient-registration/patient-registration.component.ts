@@ -4,7 +4,7 @@
 //  & clinical info, then navigate to Test Order.
 // ─────────────────────────────────────────────
 import {
-  Component, ChangeDetectionStrategy, signal, inject, OnInit, HostListener
+  Component, ChangeDetectionStrategy, signal, computed, inject, OnInit, HostListener
 } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -65,6 +65,21 @@ export class PatientRegistrationComponent implements OnInit {
   // of an abrupt step swap.
   step1Saved = signal(false);
 
+  // ── Registration progress summary (Priority 22) ──────────
+  // Lightweight "N of M required fields complete" readout for
+  // the Personal Details step, so the operator knows what's
+  // left without scanning the whole form.
+  private readonly step1RequiredFields = ['firstName', 'lastName', 'dob', 'gender', 'mobile'];
+  readonly step1Total = this.step1RequiredFields.length;
+  step1FilledCount = signal(0);
+  step1ProgressPct = computed(() =>
+    Math.round((this.step1FilledCount() / this.step1Total) * 100)
+  );
+
+  // ── Address character counter (Priority 10) ──────────────
+  readonly addressMaxLen = 250;
+  addressLength = signal(0);
+
   form!: FormGroup;
 
   private _timer?: ReturnType<typeof setInterval>;
@@ -92,24 +107,32 @@ export class PatientRegistrationComponent implements OnInit {
     // The custom date picker doesn't emit a native (change) event,
     // so recompute Age from the form control's value stream instead.
     this.form.get('dob')?.valueChanges.subscribe((dob) => {
-  console.log('DOB changed:', dob);
+      if (!dob) {
+        this.ageDisplay.set('');
+        this.ageParts.set(null);
+        this.dobFormatted.set('');
+        return;
+      }
 
-  if (!dob) {
-    this.ageDisplay.set('');
-    this.ageParts.set(null);
-    this.dobFormatted.set('');
-    return;
-  }
+      const age = this.flow.calcAge(dob);
+      this.ageDisplay.set(`${age}`);
+      this.ageParts.set(this.flow.calcAgeParts(dob));
+      this.dobFormatted.set(this.formatDobDisplay(dob));
+      this.ageTick.update(v => v ^ 1);
+    });
 
- const age = this.flow.calcAge(dob);
+    // Live character count for the Address textarea (Priority 10) —
+    // keeps the operator aware of the remaining budget on a field
+    // that's otherwise just a plain, unbounded-looking textarea.
+    this.form.get('address')?.valueChanges.subscribe((val: string) => {
+      this.addressLength.set((val || '').length);
+    });
 
-  console.log('Age:', age);
-
-  this.ageDisplay.set(`${age}`);
-  this.ageParts.set(this.flow.calcAgeParts(dob));
-  this.dobFormatted.set(this.formatDobDisplay(dob));
-  this.ageTick.update(v => v ^ 1);
-});
+    // Registration progress summary — recompute whenever any Step 1
+    // field changes, so the "N of M required fields complete" chip
+    // stays live as the operator fills the form (Priority 22).
+    this.updateStep1Progress();
+    this.form.valueChanges.subscribe(() => this.updateStep1Progress());
 
     // Keep "Visit type" and "Sample collection" from silently contradicting
     // each other (e.g. Walk-in + Home collection). We auto-derive a sane
@@ -184,6 +207,16 @@ export class PatientRegistrationComponent implements OnInit {
     const el = evt.target as HTMLTextAreaElement;
     el.style.height = 'auto';
     el.style.height = `${el.scrollHeight}px`;
+  }
+
+  // Counts how many of the Step 1 required fields currently hold a
+  // non-empty value, powering the progress chip in the card header.
+  private updateStep1Progress(): void {
+    const filled = this.step1RequiredFields.filter(f => {
+      const v = this.form.get(f)?.value;
+      return v !== null && v !== undefined && String(v).trim() !== '';
+    }).length;
+    this.step1FilledCount.set(filled);
   }
 
   isInvalid(field: string): boolean {
