@@ -1,0 +1,209 @@
+From b1417dbf2e4fc9dd3817eadcef278dd33bf1b02a Mon Sep 17 00:00:00 2001
+From: Chandan <chandan@medpathlab.dev>
+Date: Sat, 11 Jul 2026 14:39:25 +0000
+Subject: [PATCH] fix(workflow-stepper): connect the trail with one continuous
+ multi-color track
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The connector between steps was rendered as separate line elements
+placed in the flex gaps between step columns. Because each .wfs-step
+column is wider than its dot (extra width reserved for the label),
+the line only spanned the narrow gap between columns and never
+reached under the dots themselves — leaving a visible break at every
+dot and making the trail look disconnected.
+
+Replaced the per-gap lines with a single absolutely-positioned track
+that spans dot-center to dot-center across the whole stepper, so the
+connector is always one unbroken line regardless of label width or
+step count.
+
+Also gave each step its own accent color (teal / indigo / violet /
+amber / pink / cyan, cycled by index) via a --wfs-c custom property,
+with the track itself rendered as a full multi-color gradient that
+progressively reveals through a sliding neutral mask as steps are
+completed — replacing the old flat single-teal connector with a more
+vivid, distinctly-colored progression.
+---
+ .../workflow-stepper.component.css            | 58 ++++++++++++++-----
+ .../workflow-stepper.component.html           | 14 ++++-
+ .../workflow-stepper.component.ts             | 34 +++++++++++
+ 3 files changed, 89 insertions(+), 17 deletions(-)
+
+diff --git a/src/app/shared/components/workflow-stepper/workflow-stepper.component.css b/src/app/shared/components/workflow-stepper/workflow-stepper.component.css
+index efc2603..44b6429 100644
+--- a/src/app/shared/components/workflow-stepper/workflow-stepper.component.css
++++ b/src/app/shared/components/workflow-stepper/workflow-stepper.component.css
+@@ -1,16 +1,45 @@
+ :host { display: block; }
+ 
+ /* ══════════════════════════════════════════════
+-   Workflow stepper — dot + connector line.
+-   Canonical design, ported from the Sample Collection
+-   page's `.proc-timeline`, reused everywhere so every
+-   module shows an identical stepper.
++   Workflow stepper — dot + continuous connector track.
++   Canonical design, reused everywhere so every module
++   shows an identical stepper — same dot size, spacing,
++   connector style and typography.
++
++   The connector is a single absolutely-positioned track
++   spanning dot-center to dot-center (not a chain of
++   per-gap line elements), so it can never visually
++   "break" between steps regardless of label width or
++   step count — it always reads as one connected path.
++   A multi-color gradient runs the full track; a neutral
++   mask covers the part still ahead and slides open as
++   the operator progresses.
+    ══════════════════════════════════════════════ */
+ .wfs-timeline {
++  position: relative;
+   display: flex; align-items: flex-start; gap: 0;
+   overflow-x: auto;
+ }
+-.wfs-step { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; width: 92px; }
++.wfs-step { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; width: 92px; position: relative; z-index: 1; }
++
++.wfs-track {
++  position: absolute;
++  top: 13.5px;
++  left: 46px;
++  right: 46px;
++  height: 3px;
++  border-radius: 2px;
++  overflow: hidden;
++  background: var(--border-color);
++  z-index: 0;
++}
++.wfs-track-gradient { position: absolute; inset: 0; }
++.wfs-track-mask {
++  position: absolute; top: 0; right: 0; bottom: 0; left: 0%;
++  background: var(--border-color);
++  transition: left .35s ease;
++}
++
+ .wfs-dot {
+   width: 30px; height: 30px; border-radius: 50%;
+   display: flex; align-items: center; justify-content: center;
+@@ -19,22 +48,23 @@
+   transition: background .2s, border-color .2s, color .2s, box-shadow .2s;
+ }
+ .wfs-step--done .wfs-dot {
+-  background: var(--lis-primary, #1D9E75); border-color: var(--lis-primary, #1D9E75); color: #fff;
++  background: var(--wfs-c, var(--lis-primary, #1D9E75));
++  border-color: var(--wfs-c, var(--lis-primary, #1D9E75));
++  color: #fff;
+ }
+ .wfs-step--active .wfs-dot {
+-  background: var(--lis-primary-xlight, #E1F5EE); border-color: var(--lis-primary, #1D9E75);
+-  color: var(--lis-primary-deep, #085041);
+-  box-shadow: 0 0 0 4px var(--lis-primary-xlight, #E1F5EE);
++  background: color-mix(in srgb, var(--wfs-c, var(--lis-primary, #1D9E75)) 16%, var(--body-bg));
++  border-color: var(--wfs-c, var(--lis-primary, #1D9E75));
++  color: var(--wfs-c, var(--lis-primary-deep, #085041));
++  box-shadow: 0 0 0 4px color-mix(in srgb, var(--wfs-c, var(--lis-primary, #1D9E75)) 20%, transparent);
+   animation: wfsPulseDot 1.8s ease-in-out infinite;
+ }
+ @keyframes wfsPulseDot {
+-  0%, 100% { box-shadow: 0 0 0 4px var(--lis-primary-xlight, #E1F5EE); }
+-  50%      { box-shadow: 0 0 0 7px var(--lis-primary-xlight, #E1F5EE); }
++  0%, 100% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--wfs-c, var(--lis-primary, #1D9E75)) 20%, transparent); }
++  50%      { box-shadow: 0 0 0 7px color-mix(in srgb, var(--wfs-c, var(--lis-primary, #1D9E75)) 20%, transparent); }
+ }
+ .wfs-label { font-size: 10.5px; color: var(--text-secondary); text-align: center; white-space: nowrap; transition: color .2s; }
+ .wfs-step--done .wfs-label, .wfs-step--active .wfs-label { color: var(--text-primary); font-weight: 500; }
+-.wfs-line { flex: 1; height: 1.5px; background: var(--border-color); margin: 15px -2px 0; min-width: 16px; transition: background .3s; }
+-.wfs-line--done { background: var(--lis-primary, #1D9E75); }
+ 
+ /* Dense variant — for narrower slots such as the Billing page header,
+    where the stepper sits to the right of the title instead of on its
+@@ -42,4 +72,4 @@
+ .wfs-timeline--dense .wfs-step { width: 68px; gap: 4px; }
+ .wfs-timeline--dense .wfs-dot { width: 24px; height: 24px; font-size: 11px; }
+ .wfs-timeline--dense .wfs-label { font-size: 9.5px; }
+-.wfs-timeline--dense .wfs-line { margin: 12px -2px 0; min-width: 10px; }
++.wfs-timeline--dense .wfs-track { top: 10.5px; left: 34px; right: 34px; }
+diff --git a/src/app/shared/components/workflow-stepper/workflow-stepper.component.html b/src/app/shared/components/workflow-stepper/workflow-stepper.component.html
+index 58426ce..a9c774f 100644
+--- a/src/app/shared/components/workflow-stepper/workflow-stepper.component.html
++++ b/src/app/shared/components/workflow-stepper/workflow-stepper.component.html
+@@ -1,8 +1,17 @@
+ <div class="wfs-timeline" [class.wfs-timeline--dense]="dense()" role="list" [attr.aria-label]="ariaLabel()">
+-  @for (step of steps(); track step.label; let i = $index; let last = $last) {
++  <!-- Single continuous connector track (dot-center to dot-center) so the
++       trail is always visually joined, never a series of separate segments
++       with gaps between them. -->
++  <div class="wfs-track" aria-hidden="true">
++    <div class="wfs-track-gradient" [style.background]="trackGradient()"></div>
++    <div class="wfs-track-mask" [style.left.%]="progressPct()"></div>
++  </div>
++
++  @for (step of steps(); track step.label; let i = $index) {
+     <div class="wfs-step" role="listitem"
+          [class.wfs-step--done]="stepState(i) === 'done'"
+-         [class.wfs-step--active]="stepState(i) === 'active'">
++         [class.wfs-step--active]="stepState(i) === 'active'"
++         [style.--wfs-c]="stepColor(i)">
+       <div class="wfs-dot" [attr.aria-current]="stepState(i) === 'active' ? 'step' : null">
+         @if (stepState(i) === 'done') {
+           <i class="ti ti-check" aria-hidden="true"></i>
+@@ -12,6 +21,5 @@
+       </div>
+       <div class="wfs-label">{{ step.label }}</div>
+     </div>
+-    @if (!last) { <div class="wfs-line" [class.wfs-line--done]="stepState(i) === 'done'" aria-hidden="true"></div> }
+   }
+ </div>
+diff --git a/src/app/shared/components/workflow-stepper/workflow-stepper.component.ts b/src/app/shared/components/workflow-stepper/workflow-stepper.component.ts
+index c92d5ed..5a9c788 100644
+--- a/src/app/shared/components/workflow-stepper/workflow-stepper.component.ts
++++ b/src/app/shared/components/workflow-stepper/workflow-stepper.component.ts
+@@ -39,10 +39,44 @@ export class WorkflowStepperComponent {
+   /** Override the default aria-label when a page needs a more specific description. */
+   readonly ariaLabel = input('Workflow steps');
+ 
++  /**
++   * Per-step accent colors, cycled by index. Gives each stage of the
++   * trail its own identity (instead of one flat teal) while the
++   * connector track (see template + CSS) stitches them into a single
++   * unbroken multi-color line — so the trail always reads as
++   * *connected* rather than a row of separate, floating dots.
++   */
++  private readonly palette: readonly string[] = [
++    '#1D9E75', // teal — brand primary
++    '#5367FE', // indigo — brand secondary
++    '#8B5CF6', // violet
++    '#F59E0B', // amber
++    '#EC4899', // pink
++    '#06B6D4', // cyan
++  ];
++
++  stepColor(index: number): string {
++    return this.palette[index % this.palette.length];
++  }
++
+   stepState(index: number): WorkflowStepState {
+     const active = this.activeIndex();
+     if (index < active) return 'done';
+     if (index === active) return 'active';
+     return 'pending';
+   }
++
++  /** % of the track (dot-center to dot-center) that's been completed. */
++  progressPct(): number {
++    const total = this.steps().length;
++    if (total < 2) return 0;
++    const active = Math.min(Math.max(this.activeIndex(), 0), total - 1);
++    return (active / (total - 1)) * 100;
++  }
++
++  /** Full-length multi-color gradient underlying the connector track. */
++  trackGradient(): string {
++    const colors = this.steps().map((_, i) => this.stepColor(i));
++    return `linear-gradient(to right, ${colors.join(', ')})`;
++  }
+ }
+-- 
+2.43.0
+

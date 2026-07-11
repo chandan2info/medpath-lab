@@ -1,0 +1,60 @@
+From 1c0d71e318ae53c59a5935119e40f1945e69eecb Mon Sep 17 00:00:00 2001
+From: Chandan <chandan@medpathlab.dev>
+Date: Sat, 11 Jul 2026 14:29:40 +0000
+Subject: [PATCH] fix(patient-registration): make Save/Continue action bar
+ sticky at all viewport widths
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The form-actions--sticky footer was only pinned to the bottom of the
+scroll container inside a max-width: 720px media query, so on normal
+desktop/laptop viewports the Save & Continue / Save buttons for both
+Personal Details and Clinical Information steps flowed with the rest
+of the form and required scrolling to reach — especially on Step 2,
+which is tall enough to push the button below the fold.
+
+Made the sticky positioning unconditional so the action bar always
+pins to the bottom of the scrollable .lis-page-content region,
+keeping the primary CTA visible without any extra scrolling on any
+screen size.
+---
+ .../patient-registration.component.css        | 22 +++++++++++--------
+ 1 file changed, 13 insertions(+), 9 deletions(-)
+
+diff --git a/src/app/features/patient-registration/patient-registration.component.css b/src/app/features/patient-registration/patient-registration.component.css
+index 2eb62b9..7652bc5 100644
+--- a/src/app/features/patient-registration/patient-registration.component.css
++++ b/src/app/features/patient-registration/patient-registration.component.css
+@@ -567,15 +567,19 @@
+   border-color: var(--lis-primary-mid, #5DCAA5);
+ }
+ 
+-/* Keep primary actions reachable on short/mobile viewports
+-   instead of scrolling away below a long form. */
+-@media (max-width: 720px) {
+-  .form-actions--sticky {
+-    position: sticky;
+-    bottom: 0;
+-    z-index: 5;
+-    box-shadow: 0 -6px 16px rgba(0,0,0,0.06);
+-  }
++/* Keep primary actions reachable at all viewport sizes instead of
++   scrolling away below a long form — Step 2 (Clinical Information)
++   in particular runs tall enough that Save & Continue was pushed
++   below the fold on standard desktop viewports. Previously this was
++   scoped to a 720px-and-below media query, so anyone on a normal
++   laptop/desktop screen had to scroll to find the button; it's now
++   unconditional so the action bar always pins to the bottom of the
++   scrollable page content. */
++.form-actions--sticky {
++  position: sticky;
++  bottom: 0;
++  z-index: 5;
++  box-shadow: 0 -6px 16px rgba(0,0,0,0.06);
+ }
+ 
+ /* ── Spinner ────────────────────────────────────────── */
+-- 
+2.43.0
+
