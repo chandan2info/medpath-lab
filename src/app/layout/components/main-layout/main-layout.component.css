@@ -1,6 +1,6 @@
 /* LIS page content area */
     .lis-page-content {
-      padding: 24px 28px;
+      padding: 12px 14px;
       min-height: calc(100vh - var(--lis-topbar-height, 52px));
       overflow-y: auto;
     }

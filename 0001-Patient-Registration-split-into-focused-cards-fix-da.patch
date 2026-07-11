@@ -1,0 +1,639 @@
+From 88fbbdfdf3bb244ac93d3b9596b411a7ad6edcb3 Mon Sep 17 00:00:00 2001
+From: Chandan <chandan@medpath-lab.dev>
+Date: Sat, 11 Jul 2026 13:59:41 +0000
+Subject: [PATCH] Patient Registration: split into focused cards, fix dark-mode
+ toast bug, color-role consistency
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Senior review pass on top of the previously-applied progress-summary
+patch. Decisions made and applied directly:
+
+1. Split Personal Details into 4 cards (Priority 4 / 21, High)
+   Identity, Contact and Address are now standalone lis-cards
+   instead of field-groups stacked inside one ever-taller container.
+   A step-header card holds the title, Personal/Clinical toggle,
+   progress bar and duplicate-patient banner. Cards get a real 16px
+   gap instead of the old glued single-card + flush-footer layout;
+   the action bar is now a standalone, fully-rounded bar to match.
+   Clinical Information (Step 2) already lived in its own card/step
+   and needed no structural change.
+
+2. Consistent section header treatment (Priority 3 / 18)
+   All card headers on this screen — including Clinical Information
+   — now share the same 28px icon badge + font-weight 600 title
+   already used for the Visit Details / Preparation / Medication
+   groups, instead of a plain small glyph.
+
+3. Fixed a real dark-mode bug in the '\''saved'\'' toast
+   .step-saved-toast used --lis-primary-deep as a solid background
+   with white text. --lis-primary-deep is a foreground-text token
+   that intentionally flips per theme (near-black in light mode,
+   near-white in dark mode, confirmed across all 4 palettes) — using
+   it as a solid fill made the toast nearly invisible in dark mode.
+   Swapped to --lis-primary, which stays a consistent brand teal in
+   both themes and matches how .lis-btn--primary already pairs white
+   text with --lis-primary app-wide.
+
+4. Color-role consistency for primary vs primary-deep
+   Established one rule for this screen: --lis-primary for
+   structural/branding elements (icons, borders, fills, buttons),
+   --lis-primary-deep for small-text foreground content, since it's
+   specifically tuned per theme for text-level contrast.
+     - .ok-msg (mobile-valid message): primary -> primary-deep
+     - .reg-progress__label--done: primary -> primary-deep
+   (.gender-card--active and the success/PID block already followed
+   this rule correctly and were left unchanged.)
+
+Verified with npx ng build --configuration development — clean build.
+---
+ .../patient-registration.component.css        |  55 ++-
+ .../patient-registration.component.html       | 425 +++++++++---------
+ 2 files changed, 265 insertions(+), 215 deletions(-)
+
+diff --git a/src/app/features/patient-registration/patient-registration.component.css b/src/app/features/patient-registration/patient-registration.component.css
+index 2eb62b9..33dc4e0 100644
+--- a/src/app/features/patient-registration/patient-registration.component.css
++++ b/src/app/features/patient-registration/patient-registration.component.css
+@@ -8,11 +8,24 @@
+ .reg-form-wrap {
+   display: flex;
+   flex-direction: column;
+-  gap: 0;
++  /* Personal Details is now several short cards (header+progress,
++     Identity, Contact, Address) instead of one giant block; a
++     visible gap is what makes them read as distinct, quickly-
++     scannable sections rather than one long continuous scroll. */
++  gap: 16px;
+   max-width: 1200px;
+   margin: 0 auto;
+ }
+-.reg-card { margin-bottom: 0; border-radius: var(--lis-card-radius) var(--lis-card-radius) 0 0; border-bottom: none; }
++
++/* Step header card (title, mini-steps, progress, duplicate banner)
++   has no .form-grid body, so give it its own bottom breathing room
++   after the last element inside (progress bar or duplicate banner). */
++.reg-card--head { padding-bottom: 14px; }
++
++/* Identity / Contact / Address are now independent, fully-rounded
++   cards — each completed on its own instead of being one more
++   section inside an ever-taller shared container. */
++.reg-subcard { margin-bottom: 0; }
+ 
+ .form-grid {
+   display: grid;
+@@ -44,7 +57,7 @@
+ }
+ .ok-msg {
+   font-size: 11px;
+-  color: var(--lis-primary, #1D9E75);
++  color: var(--lis-primary-deep, #085041);
+   margin-top: 3px;
+   display: flex;
+   align-items: center;
+@@ -116,7 +129,7 @@
+   white-space: nowrap;
+   i { font-size: 13px; }
+ }
+-.reg-progress__label--done { color: var(--lis-primary, #1D9E75); }
++.reg-progress__label--done { color: var(--lis-primary-deep, #085041); }
+ 
+ /* ══════════════════════════════════════════════════════
+    CHARACTER COUNTER (Priority 10 — Address field)
+@@ -131,6 +144,29 @@
+ }
+ .char-counter--near-limit { color: var(--lis-danger, #E24B4A); font-weight: 500; }
+ 
++/* Section titles (Personal Details / Identity / Contact / Address /
++   Clinical Information) — same badge-icon treatment already used
++   for the Visit Details / Preparation / Medication groups below,
++   so every section heading on this screen reads with the same
++   visual weight instead of a plain small glyph. Scoped to this
++   component's own card headers only. */
++.reg-card .lis-card__title,
++.reg-subcard .lis-card__title { font-weight: 600; }
++
++.reg-card .lis-card-icon,
++.reg-subcard .lis-card-icon {
++  font-size: 15px;
++  color: var(--lis-primary, #1D9E75);
++  width: 28px;
++  height: 28px;
++  border-radius: 8px;
++  background: var(--lis-primary-xlight, #E1F5EE);
++  display: inline-flex;
++  align-items: center;
++  justify-content: center;
++  flex-shrink: 0;
++}
++
+ /* ══════════════════════════════════════════════════════
+    FIELD GROUPS — Identity / Contact / Address,
+    Visit Details / Preparation / Medication
+@@ -532,9 +568,8 @@
+   gap: 8px;
+   padding: 14px 20px;
+   border: 0.5px solid var(--border-color);
+-  border-top: none;
+   background: var(--card-bg);
+-  border-radius: 0 0 var(--lis-card-radius) var(--lis-card-radius);
++  border-radius: var(--lis-card-radius);
+ }
+ 
+ .save-btn { min-width: 180px; justify-content: center; }
+@@ -658,7 +693,13 @@
+   gap: 8px;
+   padding: 10px 18px;
+   border-radius: 30px;
+-  background: var(--lis-primary-deep, #085041);
++  /* NOTE: --lis-primary-deep flips per theme (near-black in light
++     mode, near-white in dark mode) — it's designed as a foreground
++     text color over a tinted background, not a solid fill. Using it
++     here as a solid bg with white text made the toast nearly
++     invisible in dark mode. --lis-primary stays a consistent brand
++     hue in both themes, so it's the correct token for a solid fill. */
++  background: var(--lis-primary, #3DC9A8);
+   color: #fff;
+   font-size: 13px;
+   font-weight: 500;
+diff --git a/src/app/features/patient-registration/patient-registration.component.html b/src/app/features/patient-registration/patient-registration.component.html
+index 7af6343..e401bf6 100644
+--- a/src/app/features/patient-registration/patient-registration.component.html
++++ b/src/app/features/patient-registration/patient-registration.component.html
+@@ -79,7 +79,7 @@
+ 
+     <!-- ── Step 1: Demographics ─────────────────────────── -->
+     @if (currentStep() === 1) {
+-      <div class="lis-card reg-card" aria-label="Personal details">
++      <div class="lis-card reg-card reg-card--head" aria-label="Personal details">
+         <div class="lis-card__header">
+           <i class="ti ti-user lis-card-icon" aria-hidden="true"></i>
+           <h2 class="lis-card__title">Personal Details</h2>
+@@ -120,247 +120,256 @@
+             </div>
+           </div>
+         }
++      </div>
+ 
+-        <!-- Identity group -->
+-        <div class="field-group">
+-          <div class="field-group__title"><i class="ti ti-user" aria-hidden="true"></i> Identity</div>
+-          <div class="form-grid">
+-            <!-- First name -->
+-            <div class="lis-field">
+-              <label for="firstName">First Name <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
+-              <input id="firstName" formControlName="firstName"
+-                [class.input-error]="isInvalid('firstName')"
+-                autocomplete="given-name" placeholder="e.g. Ananya" />
+-              @if (isInvalid('firstName')) {
+-                <span class="err-msg" role="alert">
+-                  <i class="ti ti-alert-circle"></i> First name is required
+-                </span>
+-              }
+-            </div>
++      <!-- Identity card -->
++      <div class="lis-card reg-subcard" aria-label="Identity">
++        <div class="lis-card__header">
++          <i class="ti ti-user lis-card-icon" aria-hidden="true"></i>
++          <h3 class="lis-card__title">Identity</h3>
++        </div>
++        <div class="form-grid">
++          <!-- First name -->
++          <div class="lis-field">
++            <label for="firstName">First Name <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
++            <input id="firstName" formControlName="firstName"
++              [class.input-error]="isInvalid('firstName')"
++              autocomplete="given-name" placeholder="e.g. Ananya" />
++            @if (isInvalid('firstName')) {
++              <span class="err-msg" role="alert">
++                <i class="ti ti-alert-circle"></i> First name is required
++              </span>
++            }
++          </div>
+ 
+-            <!-- Last name -->
+-            <div class="lis-field">
+-              <label for="lastName">Last Name <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
+-              <input id="lastName" formControlName="lastName"
+-                [class.input-error]="isInvalid('lastName')"
+-                autocomplete="family-name" placeholder="e.g. Krishnaswamy" />
+-              @if (isInvalid('lastName')) {
+-                <span class="err-msg" role="alert">
+-                  <i class="ti ti-alert-circle"></i> Last name is required
+-                </span>
+-              }
+-            </div>
++          <!-- Last name -->
++          <div class="lis-field">
++            <label for="lastName">Last Name <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
++            <input id="lastName" formControlName="lastName"
++              [class.input-error]="isInvalid('lastName')"
++              autocomplete="family-name" placeholder="e.g. Krishnaswamy" />
++            @if (isInvalid('lastName')) {
++              <span class="err-msg" role="alert">
++                <i class="ti ti-alert-circle"></i> Last name is required
++              </span>
++            }
++          </div>
+ 
+-            <!-- Date of Birth — custom themed date picker (no native OS calendar) -->
+-            <div class="lis-field">
+-              <label for="dob">Date of Birth <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
+-              <app-dob-date-picker
+-                formControlName="dob"
+-                inputId="dob"
+-                [invalid]="isInvalid('dob')"
+-                [max]="todayISO">
+-              </app-dob-date-picker>
+-              @if (isInvalid('dob')) {
+-                <span class="err-msg" role="alert">
+-                  <i class="ti ti-alert-circle"></i> Date of birth is required
+-                </span>
+-              }
++          <!-- Date of Birth — custom themed date picker (no native OS calendar) -->
++          <div class="lis-field">
++            <label for="dob">Date of Birth <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
++            <app-dob-date-picker
++              formControlName="dob"
++              inputId="dob"
++              [invalid]="isInvalid('dob')"
++              [max]="todayISO">
++            </app-dob-date-picker>
++            @if (isInvalid('dob')) {
++              <span class="err-msg" role="alert">
++                <i class="ti ti-alert-circle"></i> Date of birth is required
++              </span>
++            }
++          </div>
++
++          <!-- Age — auto-calculated readonly, styled as an information card -->
++          <div class="lis-field age-field">
++            <div class="age-header">
++              <label id="age-label">Age</label>
++              <span class="auto-chip">
++                <i class="ti ti-lock" aria-hidden="true"></i> Auto
++              </span>
+             </div>
+ 
+-            <!-- Age — auto-calculated readonly, styled as an information card -->
+-            <div class="lis-field age-field">
+-              <div class="age-header">
+-                <label id="age-label">Age</label>
+-                <span class="auto-chip">
+-                  <i class="ti ti-lock" aria-hidden="true"></i> Auto
+-                </span>
+-              </div>
++            @if (ageParts(); as age) {
++              <div class="age-card" role="group" aria-labelledby="age-label"
++                [class.age-tick-a]="ageTick() === 0" [class.age-tick-b]="ageTick() === 1"
++                [attr.aria-label]="'Age, automatically calculated. ' + age.years + ' years, ' + age.months + ' months, ' + age.days + ' days. Read only.'">
++                <div class="age-card__icon" aria-hidden="true">
++                  <i class="ti ti-calendar-user"></i>
++                </div>
+ 
+-              @if (ageParts(); as age) {
+-                <div class="age-card" role="group" aria-labelledby="age-label"
+-                  [class.age-tick-a]="ageTick() === 0" [class.age-tick-b]="ageTick() === 1"
+-                  [attr.aria-label]="'Age, automatically calculated. ' + age.years + ' years, ' + age.months + ' months, ' + age.days + ' days. Read only.'">
+-                  <div class="age-card__icon" aria-hidden="true">
+-                    <i class="ti ti-calendar-user"></i>
++                <div class="age-card__body">
++                  <div class="age-card__segment">
++                    <span class="age-card__value age-card__value--years">{{ age.years }}</span>
++                    <span class="age-card__unit">Years</span>
+                   </div>
++                  <span class="age-card__divider" aria-hidden="true"></span>
+ 
+-                  <div class="age-card__body">
+-                    <div class="age-card__segment">
+-                      <span class="age-card__value age-card__value--years">{{ age.years }}</span>
+-                      <span class="age-card__unit">Years</span>
+-                    </div>
+-                    <span class="age-card__divider" aria-hidden="true"></span>
+-
+-                    <div class="age-card__segment">
+-                      <span class="age-card__value age-card__value--months">{{ age.months }}</span>
+-                      <span class="age-card__unit">Months</span>
+-                    </div>
+-                    <span class="age-card__divider" aria-hidden="true"></span>
+-
+-                    <div class="age-card__segment">
+-                      <span class="age-card__value age-card__value--days">{{ age.days }}</span>
+-                      <span class="age-card__unit">Days</span>
+-                    </div>
++                  <div class="age-card__segment">
++                    <span class="age-card__value age-card__value--months">{{ age.months }}</span>
++                    <span class="age-card__unit">Months</span>
+                   </div>
++                  <span class="age-card__divider" aria-hidden="true"></span>
+ 
+-                  <span class="age-card__divider age-card__divider--lock" aria-hidden="true"></span>
+-
+-                  <div class="age-card__lock-section">
+-                    <div class="age-card__lock"
+-                      title="This field is automatically calculated from the Date of Birth and cannot be edited.">
+-                      <i class="ti ti-lock" aria-hidden="true"></i>
+-                    </div>
++                  <div class="age-card__segment">
++                    <span class="age-card__value age-card__value--days">{{ age.days }}</span>
++                    <span class="age-card__unit">Days</span>
+                   </div>
+                 </div>
+ 
+-                <span class="helper-text age-card__helper">
+-                  <i class="ti ti-circle-check-filled" aria-hidden="true"></i>
+-                  Auto calculated from Date of Birth &bull; {{ dobFormatted() }}
+-                </span>
+-              } @else {
+-                <div class="age-card age-card--empty" role="group" aria-labelledby="age-label"
+-                  aria-label="Age will be calculated after selecting date of birth">
+-                  <div class="age-card__icon" aria-hidden="true">
+-                    <i class="ti ti-calendar-user"></i>
++                <span class="age-card__divider age-card__divider--lock" aria-hidden="true"></span>
++
++                <div class="age-card__lock-section">
++                  <div class="age-card__lock"
++                    title="This field is automatically calculated from the Date of Birth and cannot be edited.">
++                    <i class="ti ti-lock" aria-hidden="true"></i>
+                   </div>
++                </div>
++              </div>
+ 
+-                  <div class="age-card__body">
+-                    <div class="age-card__segment">
+-                      <span class="age-card__value age-card__value--placeholder">—</span>
+-                      <span class="age-card__unit">Years</span>
+-                    </div>
+-                    <span class="age-card__divider" aria-hidden="true"></span>
+-
+-                    <div class="age-card__segment">
+-                      <span class="age-card__value age-card__value--placeholder">—</span>
+-                      <span class="age-card__unit">Months</span>
+-                    </div>
+-                    <span class="age-card__divider" aria-hidden="true"></span>
+-
+-                    <div class="age-card__segment">
+-                      <span class="age-card__value age-card__value--placeholder">—</span>
+-                      <span class="age-card__unit">Days</span>
+-                    </div>
++              <span class="helper-text age-card__helper">
++                <i class="ti ti-circle-check-filled" aria-hidden="true"></i>
++                Auto calculated from Date of Birth &bull; {{ dobFormatted() }}
++              </span>
++            } @else {
++              <div class="age-card age-card--empty" role="group" aria-labelledby="age-label"
++                aria-label="Age will be calculated after selecting date of birth">
++                <div class="age-card__icon" aria-hidden="true">
++                  <i class="ti ti-calendar-user"></i>
++                </div>
++
++                <div class="age-card__body">
++                  <div class="age-card__segment">
++                    <span class="age-card__value age-card__value--placeholder">—</span>
++                    <span class="age-card__unit">Years</span>
+                   </div>
++                  <span class="age-card__divider" aria-hidden="true"></span>
+ 
+-                  <span class="age-card__divider age-card__divider--lock" aria-hidden="true"></span>
++                  <div class="age-card__segment">
++                    <span class="age-card__value age-card__value--placeholder">—</span>
++                    <span class="age-card__unit">Months</span>
++                  </div>
++                  <span class="age-card__divider" aria-hidden="true"></span>
+ 
+-                  <div class="age-card__lock-section">
+-                    <div class="age-card__lock"
+-                      title="This field is automatically calculated from the Date of Birth and cannot be edited.">
+-                      <i class="ti ti-lock" aria-hidden="true"></i>
+-                    </div>
++                  <div class="age-card__segment">
++                    <span class="age-card__value age-card__value--placeholder">—</span>
++                    <span class="age-card__unit">Days</span>
+                   </div>
+                 </div>
+ 
+-                <span class="helper-text">Select Date of Birth to calculate age.</span>
+-              }
+-            </div>
++                <span class="age-card__divider age-card__divider--lock" aria-hidden="true"></span>
+ 
+-            <!-- Gender -->
+-            <div class="lis-field">
+-              <label id="gender-label">Gender <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
+-              <div class="gender-cards" role="group" aria-labelledby="gender-label">
+-                <button type="button" class="gender-card"
+-                  [class.gender-card--active]="form.value.gender === 'Male'"
+-                  (click)="form.patchValue({gender: 'Male'})"
+-                  [attr.aria-pressed]="form.value.gender === 'Male'">
+-                  <i class="ti ti-gender-male" aria-hidden="true"></i>
+-                  <span>Male</span>
+-                </button>
+-                <button type="button" class="gender-card"
+-                  [class.gender-card--active]="form.value.gender === 'Female'"
+-                  (click)="form.patchValue({gender: 'Female'})"
+-                  [attr.aria-pressed]="form.value.gender === 'Female'">
+-                  <i class="ti ti-gender-female" aria-hidden="true"></i>
+-                  <span>Female</span>
+-                </button>
+-                <button type="button" class="gender-card"
+-                  [class.gender-card--active]="form.value.gender === 'Other'"
+-                  (click)="form.patchValue({gender: 'Other'})"
+-                  [attr.aria-pressed]="form.value.gender === 'Other'">
+-                  <i class="ti ti-gender-genderless" aria-hidden="true"></i>
+-                  <span>Other</span>
+-                </button>
++                <div class="age-card__lock-section">
++                  <div class="age-card__lock"
++                    title="This field is automatically calculated from the Date of Birth and cannot be edited.">
++                    <i class="ti ti-lock" aria-hidden="true"></i>
++                  </div>
++                </div>
+               </div>
+-              @if (isInvalid('gender')) {
+-                <span class="err-msg" role="alert">
+-                  <i class="ti ti-alert-circle"></i> Please select a gender
+-                </span>
+-              }
+-            </div>
+ 
+-            <!-- Blood Group -->
+-            <div class="lis-field">
+-              <label for="bloodGroup">Blood Group</label>
+-              <select id="bloodGroup" formControlName="bloodGroup">
+-                @for (bg of bloodGroups; track bg) {
+-                  <option [value]="bg">{{ bg }}</option>
+-                }
+-              </select>
++              <span class="helper-text">Select Date of Birth to calculate age.</span>
++            }
++          </div>
++
++          <!-- Gender -->
++          <div class="lis-field">
++            <label id="gender-label">Gender <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
++            <div class="gender-cards" role="group" aria-labelledby="gender-label">
++              <button type="button" class="gender-card"
++                [class.gender-card--active]="form.value.gender === 'Male'"
++                (click)="form.patchValue({gender: 'Male'})"
++                [attr.aria-pressed]="form.value.gender === 'Male'">
++                <i class="ti ti-gender-male" aria-hidden="true"></i>
++                <span>Male</span>
++              </button>
++              <button type="button" class="gender-card"
++                [class.gender-card--active]="form.value.gender === 'Female'"
++                (click)="form.patchValue({gender: 'Female'})"
++                [attr.aria-pressed]="form.value.gender === 'Female'">
++                <i class="ti ti-gender-female" aria-hidden="true"></i>
++                <span>Female</span>
++              </button>
++              <button type="button" class="gender-card"
++                [class.gender-card--active]="form.value.gender === 'Other'"
++                (click)="form.patchValue({gender: 'Other'})"
++                [attr.aria-pressed]="form.value.gender === 'Other'">
++                <i class="ti ti-gender-genderless" aria-hidden="true"></i>
++                <span>Other</span>
++              </button>
+             </div>
++            @if (isInvalid('gender')) {
++              <span class="err-msg" role="alert">
++                <i class="ti ti-alert-circle"></i> Please select a gender
++              </span>
++            }
++          </div>
++
++          <!-- Blood Group -->
++          <div class="lis-field">
++            <label for="bloodGroup">Blood Group</label>
++            <select id="bloodGroup" formControlName="bloodGroup">
++              @for (bg of bloodGroups; track bg) {
++                <option [value]="bg">{{ bg }}</option>
++              }
++            </select>
+           </div>
+         </div>
++      </div>
+ 
+-        <!-- Contact group -->
+-        <div class="field-group">
+-          <div class="field-group__title"><i class="ti ti-address-book" aria-hidden="true"></i> Contact</div>
+-          <div class="form-grid">
+-            <!-- Mobile Number — with +91 prefix -->
+-            <div class="lis-field">
+-              <label for="mobile">Mobile Number <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
+-              <div class="phone-wrap" [class.phone-wrap--error]="isInvalid('mobile')">
+-                <span class="phone-prefix">
+-                  <span class="phone-flag">🇮🇳</span>
+-                  +91
+-                </span>
+-                <input id="mobile" formControlName="mobile" type="tel"
+-                  class="phone-input"
+-                  [class.input-error]="isInvalid('mobile')"
+-                  autocomplete="tel" placeholder="98765 43210"
+-                  maxlength="10" inputmode="numeric"
+-                  (input)="onMobileChange()" />
+-                @if (isValidTouched('mobile')) {
+-                  <i class="ti ti-circle-check phone-valid-icon" aria-hidden="true"></i>
+-                }
+-              </div>
+-              @if (isInvalid('mobile')) {
+-                <span class="err-msg" role="alert">
+-                  <i class="ti ti-alert-circle"></i> Valid 10-digit number required
+-                </span>
+-              } @else if (isValidTouched('mobile')) {
+-                <span class="ok-msg">
+-                  <i class="ti ti-circle-check"></i> Mobile number looks valid
+-                </span>
+-              } @else {
+-                <span class="helper-text">Used for SMS reports and appointment reminders</span>
++      <!-- Contact card -->
++      <div class="lis-card reg-subcard" aria-label="Contact">
++        <div class="lis-card__header">
++          <i class="ti ti-address-book lis-card-icon" aria-hidden="true"></i>
++          <h3 class="lis-card__title">Contact</h3>
++        </div>
++        <div class="form-grid">
++          <!-- Mobile Number — with +91 prefix -->
++          <div class="lis-field">
++            <label for="mobile">Mobile Number <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
++            <div class="phone-wrap" [class.phone-wrap--error]="isInvalid('mobile')">
++              <span class="phone-prefix">
++                <span class="phone-flag">🇮🇳</span>
++                +91
++              </span>
++              <input id="mobile" formControlName="mobile" type="tel"
++                class="phone-input"
++                [class.input-error]="isInvalid('mobile')"
++                autocomplete="tel" placeholder="98765 43210"
++                maxlength="10" inputmode="numeric"
++                (input)="onMobileChange()" />
++              @if (isValidTouched('mobile')) {
++                <i class="ti ti-circle-check phone-valid-icon" aria-hidden="true"></i>
+               }
+             </div>
++            @if (isInvalid('mobile')) {
++              <span class="err-msg" role="alert">
++                <i class="ti ti-alert-circle"></i> Valid 10-digit number required
++              </span>
++            } @else if (isValidTouched('mobile')) {
++              <span class="ok-msg">
++                <i class="ti ti-circle-check"></i> Mobile number looks valid
++              </span>
++            } @else {
++              <span class="helper-text">Used for SMS reports and appointment reminders</span>
++            }
++          </div>
+ 
+-            <!-- Email -->
+-            <div class="lis-field">
+-              <label for="email">Email <span class="opt-label">(Optional)</span></label>
+-              <input id="email" formControlName="email" type="email"
+-                autocomplete="email" placeholder="name@email.com" />
+-              <span class="helper-text">Optional — used to email lab reports</span>
+-            </div>
++          <!-- Email -->
++          <div class="lis-field">
++            <label for="email">Email <span class="opt-label">(Optional)</span></label>
++            <input id="email" formControlName="email" type="email"
++              autocomplete="email" placeholder="name@email.com" />
++            <span class="helper-text">Optional — used to email lab reports</span>
+           </div>
+         </div>
++      </div>
+ 
+-        <!-- Address group -->
+-        <div class="field-group">
+-          <div class="field-group__title"><i class="ti ti-map-pin" aria-hidden="true"></i> Address</div>
+-          <div class="form-grid">
+-            <!-- Address — full width -->
+-            <div class="lis-field form-full">
+-              <label for="address">Address <span class="opt-label">(Optional)</span></label>
+-              <textarea id="address" formControlName="address" rows="2"
+-                class="auto-expand" [maxlength]="addressMaxLen" (input)="autoResize($event)"
+-                placeholder="e.g. 12, MG Road, Indiranagar, Bengaluru"></textarea>
+-              <span class="char-counter" [class.char-counter--near-limit]="addressLength() >= addressMaxLen - 20">
+-                {{ addressLength() }} / {{ addressMaxLen }} characters
+-              </span>
+-            </div>
++      <!-- Address card -->
++      <div class="lis-card reg-subcard" aria-label="Address">
++        <div class="lis-card__header">
++          <i class="ti ti-map-pin lis-card-icon" aria-hidden="true"></i>
++          <h3 class="lis-card__title">Address</h3>
++        </div>
++        <div class="form-grid">
++          <!-- Address — full width -->
++          <div class="lis-field form-full">
++            <label for="address">Address <span class="opt-label">(Optional)</span></label>
++            <textarea id="address" formControlName="address" rows="2"
++              class="auto-expand" [maxlength]="addressMaxLen" (input)="autoResize($event)"
++              placeholder="e.g. 12, MG Road, Indiranagar, Bengaluru"></textarea>
++            <span class="char-counter" [class.char-counter--near-limit]="addressLength() >= addressMaxLen - 20">
++              {{ addressLength() }} / {{ addressMaxLen }} characters
++            </span>
+           </div>
+         </div>
+       </div>
+-- 
+2.43.0
+

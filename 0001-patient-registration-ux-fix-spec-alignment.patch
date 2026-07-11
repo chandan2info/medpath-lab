@@ -1,0 +1,151 @@
+From 57928051cbf1fe21dcbdbf7d6473793fe8d4d680 Mon Sep 17 00:00:00 2001
+From: Claude <claude@anthropic.com>
+Date: Fri, 10 Jul 2026 20:35:01 +0000
+Subject: [PATCH] Patient Registration: align spacing/typography/inputs to
+ UX-fix spec
+
+- Introduce component-scoped spacing scale (row 24px / field 20px /
+  section 40px) and apply it to the form grid, replacing the old
+  ad-hoc 18px/10px gaps.
+- Replace the border-based divider between field-groups with pure
+  spacing (40px), per audit item 1/16 (use spacing, not borders).
+- Bump section-title typography to the spec'd 18px/600 and hide the
+  decorative per-section icons (Identity/Contact/Address/Visit
+  Details/Preparation/Medication) since the text label alone already
+  identifies the group (audit item 12).
+- Standardize field labels to 14px/600 for better scannability/
+  contrast (audit item 5, accessibility item 18).
+- Standardize inputs/selects/textareas to a 44px accessible height
+  and 15px/500 text, soften the default background to --body-bg so
+  fields read as a soft surface instead of pure white fighting the
+  card for attention, and add a clear focus ring + background swap
+  on focus (audit item 6, instructions item 5/13).
+- Match the phone-number wrapper height to the new 44px input
+  height so it doesn't clip.
+
+No HTML structure, business logic, or functionality changed.
+---
+ .../patient-registration.component.css        | 76 ++++++++++++++-----
+ 1 file changed, 58 insertions(+), 18 deletions(-)
+
+diff --git a/src/app/features/patient-registration/patient-registration.component.css b/src/app/features/patient-registration/patient-registration.component.css
+index 2eb62b9..7a1a24c 100644
+--- a/src/app/features/patient-registration/patient-registration.component.css
++++ b/src/app/features/patient-registration/patient-registration.component.css
+@@ -1,4 +1,13 @@
+-:host { display: block; }
++:host {
++  display: block;
++  /* Spacing system for this screen — 8px base scale, per the
++     UI-fix spec: 24px between rows, 20px between fields in a
++     row, 40px between sections. No magic numbers below. */
++  --pr-row-gap: 24px;
++  --pr-field-gap: 20px;
++  --pr-section-gap: 40px;
++  --pr-input-height: 44px;
++}
+ 
+ 
+ 
+@@ -17,11 +26,44 @@
+ .form-grid {
+   display: grid;
+   grid-template-columns: 1fr 1fr 1fr;
+-  gap: 18px;
++  gap: var(--pr-row-gap) var(--pr-field-gap);
+   padding: 20px;
+ }
+ .form-full { grid-column: 1 / -1; }
+ 
++/* ══════════════════════════════════════════════════════
++   LABEL / INPUT STANDARDIZATION
++   Field Label: 14px/600 (was 12px/500 — too weak to scan
++   quickly). Input text: 15px/500 at a consistent 44px height
++   (was 38px, under the 44px accessible click-target minimum).
++   Background is pulled down to --body-bg so the field reads as
++   a soft surface instead of pure white fighting the card for
++   attention; focus swaps it back to full white with a visible ring.
++   ══════════════════════════════════════════════════════ */
++.reg-card .lis-field label {
++  font-size: 14px;
++  font-weight: 600;
++  color: var(--text-primary);
++}
++.reg-card .lis-field input,
++.reg-card .lis-field select,
++.reg-card .lis-field textarea {
++  height: var(--pr-input-height);
++  font-size: 15px;
++  font-weight: 500;
++  background: var(--body-bg);
++  border-color: var(--border-color);
++  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
++}
++.reg-card .lis-field textarea { height: auto; min-height: var(--pr-input-height); }
++.reg-card .lis-field input:focus,
++.reg-card .lis-field select:focus,
++.reg-card .lis-field textarea:focus {
++  background: var(--card-bg);
++  border-color: var(--lis-primary, #1D9E75);
++  box-shadow: 0 0 0 3px var(--lis-primary-xlight, #E1F5EE);
++}
++
+ @media (max-width: 860px) { .form-grid { grid-template-columns: 1fr 1fr; } }
+ @media (max-width: 560px) { .form-grid { grid-template-columns: 1fr; } }
+ 
+@@ -135,30 +177,28 @@
+    FIELD GROUPS — Identity / Contact / Address,
+    Visit Details / Preparation / Medication
+    ══════════════════════════════════════════════════════ */
+-.field-group + .field-group { border-top: 0.5px solid var(--border-color); margin-top: 4px; }
++/* Sections are separated by whitespace, not a rule line — the
++   40px gap alone is enough to read as a new group without adding
++   another visual container. */
++.field-group + .field-group { margin-top: var(--pr-section-gap); }
+ .field-group__title {
+   display: flex;
+   align-items: center;
+   gap: 8px;
+-  font-size: 13px;
+-  font-weight: 700;
++  font-size: 18px;
++  font-weight: 600;
+   color: var(--text-primary);
+   padding: 16px 20px 0;
+-  i {
+-    font-size: 16px;
+-    color: var(--lis-primary, #1D9E75);
+-    width: 26px;
+-    height: 26px;
+-    border-radius: 7px;
+-    background: var(--lis-primary-xlight, #E1F5EE);
+-    display: inline-flex;
+-    align-items: center;
+-    justify-content: center;
+-  }
+ }
++/* Decorative per-section icons (Identity/Contact/Address/Visit
++   Details/Preparation/Medication) removed — the text label alone
++   is enough to identify the group, and the icon added no
++   recognition value once every section had one. */
++.field-group__title i { display: none; }
++
+ /* Slightly tighter rows within a group, more air between groups
+    (Priority 20 — form density / visual rhythm). */
+-.field-group .form-grid { padding-top: 10px; padding-bottom: 4px; gap: 10px 18px; }
++.field-group .form-grid { padding-top: 10px; padding-bottom: 4px; gap: var(--pr-row-gap) var(--pr-field-gap); }
+ 
+ /* ══════════════════════════════════════════════════════
+    VISIT DETAILS / PREPARATION — column widths
+@@ -368,7 +408,7 @@
+   border: 1px solid var(--border-color);
+   border-radius: 8px;
+   overflow: hidden;
+-  height: 42px;
++  height: var(--pr-input-height, 44px);
+   transition: border-color 0.15s;
+ 
+   &:focus-within { border-color: var(--lis-primary, #1D9E75); box-shadow: 0 0 0 3px var(--lis-primary-xlight, #E1F5EE); }
+-- 
+2.43.0
+
