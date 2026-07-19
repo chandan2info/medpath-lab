@@ -1,0 +1,57 @@
+diff --git a/src/app/features/patient-registration/patient-registration.component.css b/src/app/features/patient-registration/patient-registration.component.css
+index 2eb62b9..c1eaf30 100644
+--- a/src/app/features/patient-registration/patient-registration.component.css
++++ b/src/app/features/patient-registration/patient-registration.component.css
+@@ -520,7 +520,10 @@
+ 
+ .recap-info { flex: 1; min-width: 0; }
+ .recap-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+-.recap-meta { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
++/* .recap-meta removed — the Clinical step recap now uses the canonical
++   global .pat-detail-row / .pat-detail-item styling (see styles.css)
++   instead of its own bespoke text row, matching Billing/Test
++   Order/Sample Collection. */
+ .recap-edit { margin-left: auto; }
+ 
+ /* ══════════════════════════════════════════════════════
+diff --git a/src/app/features/patient-registration/patient-registration.component.html b/src/app/features/patient-registration/patient-registration.component.html
+index 7af6343..bae9183 100644
+--- a/src/app/features/patient-registration/patient-registration.component.html
++++ b/src/app/features/patient-registration/patient-registration.component.html
+@@ -395,8 +395,12 @@
+           </div>
+           <div class="recap-info">
+             <div class="recap-name">{{ form.value.firstName }} {{ form.value.lastName }}</div>
+-            <div class="recap-meta">
+-              {{ ageDisplay() || '—' }} · {{ form.value.gender || '—' }} · {{ form.value.mobile || '—' }}
++            <div class="pat-detail-row">
++              <span class="pat-detail-item"><i class="ti ti-cake pat-detail-icon" aria-hidden="true"></i>{{ ageDisplay() || '—' }}</span>
++              <span class="pat-detail-sep" aria-hidden="true">|</span>
++              <span class="pat-detail-item"><i class="ti {{ genderIcon() }} pat-detail-icon" aria-hidden="true"></i>{{ form.value.gender || '—' }}</span>
++              <span class="pat-detail-sep" aria-hidden="true">|</span>
++              <span class="pat-detail-item"><i class="ti ti-phone pat-detail-icon" aria-hidden="true"></i>{{ form.value.mobile || '—' }}</span>
+             </div>
+           </div>
+           <button type="button" class="recap-edit lis-btn lis-btn--secondary lis-btn--sm"
+diff --git a/src/app/features/patient-registration/patient-registration.component.ts b/src/app/features/patient-registration/patient-registration.component.ts
+index 186d3ab..d9f5759 100644
+--- a/src/app/features/patient-registration/patient-registration.component.ts
++++ b/src/app/features/patient-registration/patient-registration.component.ts
+@@ -209,6 +209,17 @@ export class PatientRegistrationComponent implements OnInit {
+     el.style.height = `${el.scrollHeight}px`;
+   }
+ 
++  // Icon for the gender shown in the Clinical step's patient recap —
++  // mirrors the same mapping used on Billing/Test Order/Sample Collection
++  // so the icon reads identically wherever gender appears in a patient
++  // metadata row.
++  genderIcon(): string {
++    const g = (this.form.value.gender ?? '').toLowerCase();
++    if (g === 'male')   return 'ti-gender-male';
++    if (g === 'female') return 'ti-gender-female';
++    return 'ti-gender-genderless';
++  }
++
+   // Counts how many of the Step 1 required fields currently hold a
+   // non-empty value, powering the progress chip in the card header.
+   private updateStep1Progress(): void {

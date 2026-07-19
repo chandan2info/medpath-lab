@@ -209,6 +209,17 @@ export class PatientRegistrationComponent implements OnInit {
     el.style.height = `${el.scrollHeight}px`;
   }
 
+  // Icon for the gender shown in the Clinical step's patient recap —
+  // mirrors the same mapping used on Billing/Test Order/Sample Collection
+  // so the icon reads identically wherever gender appears in a patient
+  // metadata row.
+  genderIcon(): string {
+    const g = (this.form.value.gender ?? '').toLowerCase();
+    if (g === 'male')   return 'ti-gender-male';
+    if (g === 'female') return 'ti-gender-female';
+    return 'ti-gender-genderless';
+  }
+
   // Counts how many of the Step 1 required fields currently hold a
   // non-empty value, powering the progress chip in the card header.
   private updateStep1Progress(): void {

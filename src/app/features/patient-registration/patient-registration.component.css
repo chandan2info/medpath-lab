@@ -520,7 +520,10 @@
 
 .recap-info { flex: 1; min-width: 0; }
 .recap-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
-.recap-meta { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+/* .recap-meta removed — the Clinical step recap now uses the canonical
+   global .pat-detail-row / .pat-detail-item styling (see styles.css)
+   instead of its own bespoke text row, matching Billing/Test
+   Order/Sample Collection. */
 .recap-edit { margin-left: auto; }
 
 /* ══════════════════════════════════════════════════════

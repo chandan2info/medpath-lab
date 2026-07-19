@@ -395,8 +395,12 @@
           </div>
           <div class="recap-info">
             <div class="recap-name">{{ form.value.firstName }} {{ form.value.lastName }}</div>
-            <div class="recap-meta">
-              {{ ageDisplay() || '—' }} · {{ form.value.gender || '—' }} · {{ form.value.mobile || '—' }}
+            <div class="pat-detail-row">
+              <span class="pat-detail-item"><i class="ti ti-cake pat-detail-icon" aria-hidden="true"></i>{{ ageDisplay() || '—' }}</span>
+              <span class="pat-detail-sep" aria-hidden="true">|</span>
+              <span class="pat-detail-item"><i class="ti {{ genderIcon() }} pat-detail-icon" aria-hidden="true"></i>{{ form.value.gender || '—' }}</span>
+              <span class="pat-detail-sep" aria-hidden="true">|</span>
+              <span class="pat-detail-item"><i class="ti ti-phone pat-detail-icon" aria-hidden="true"></i>{{ form.value.mobile || '—' }}</span>
             </div>
           </div>
           <button type="button" class="recap-edit lis-btn lis-btn--secondary lis-btn--sm"
