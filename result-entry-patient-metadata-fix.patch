@@ -1,0 +1,161 @@
+diff --git a/src/app/features/result-entry/result-entry.component.html b/src/app/features/result-entry/result-entry.component.html
+index 8750978..423ecc1 100644
+--- a/src/app/features/result-entry/result-entry.component.html
++++ b/src/app/features/result-entry/result-entry.component.html
+@@ -10,7 +10,9 @@
+           <ol class="breadcrumb">
+             <li><a routerLink="/dashboard/home">Home</a></li>
+             <li><a routerLink="/dashboard/tracking">Tracking</a></li>
+-            <li aria-current="page">Arun Pillai — SMP-2406-087</li>
++            @if (patient) {
++              <li aria-current="page">{{ patient.firstName }} {{ patient.lastName }} — SMP-2406-087</li>
++            }
+           </ol>
+         </nav>
+       </div>
+@@ -24,28 +26,35 @@
+ <div class="re-layout">
+   <!-- Left: entry area -->
+   <div class="re-main">
+-    <!-- Patient card -->
+-    <div class="pat-bar">
+-      <div class="pat-av" aria-hidden="true">AP</div>
+-      <div class="pat-info">
+-        <div class="pat-name">Arun Pillai</div>
+-        <div class="pat-meta">
+-          <span class="pat-meta-item"><i class="ti ti-calendar" aria-hidden="true"></i> {{ patientAge() }}</span>
+-          <span class="pat-sep" aria-hidden="true">|</span>
+-          <span class="pat-meta-item"><i class="ti {{ genderIcon() }}" aria-hidden="true"></i> {{ patientGender() }}</span>
+-          <span class="pat-sep" aria-hidden="true">|</span>
+-          <span class="pat-meta-item"><i class="ti ti-id-badge-2" aria-hidden="true"></i> <span class="lis-mono">PAT-2406-0316</span></span>
+-          <span class="pat-sep" aria-hidden="true">|</span>
+-          <span class="pat-meta-item"><i class="ti ti-flask" aria-hidden="true"></i> <span class="lis-mono">SMP-2406-087</span></span>
++    <!-- Patient card — bound to the same PatientFlowService patient used on
++         Registration/Test Order/Billing/Sample Collection, so the name,
++         age, gender, and patient ID shown here always match the rest of
++         the workflow instead of a fixed demo record. -->
++    @if (patient) {
++      <div class="pat-bar">
++        <div class="pat-av" aria-hidden="true">{{ patientInitials }}</div>
++        <div class="pat-info">
++          <div class="pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
++          <div class="pat-meta">
++            <span class="pat-meta-item age-inline" [title]="patientAgeBreakdown()">
++              <i class="ti ti-cake" aria-hidden="true"></i> <span class="age-inline__y">{{ ageParts().years }}y</span><span class="age-inline__sep"> · </span><span class="age-inline__m">{{ ageParts().months }}m</span><span class="age-inline__sep"> · </span><span class="age-inline__d">{{ ageParts().days }}d</span>
++            </span>
++            <span class="pat-sep" aria-hidden="true">|</span>
++            <span class="pat-meta-item"><i class="ti {{ genderIcon() }}" aria-hidden="true"></i> {{ patient.gender | titlecase }}</span>
++            <span class="pat-sep" aria-hidden="true">|</span>
++            <span class="pat-meta-item"><i class="ti ti-id-badge-2" aria-hidden="true"></i> <span class="lis-mono">{{ patient.id }}</span></span>
++            <span class="pat-sep" aria-hidden="true">|</span>
++            <span class="pat-meta-item"><i class="ti ti-flask" aria-hidden="true"></i> <span class="lis-mono">SMP-2406-087</span></span>
++          </div>
++          <div class="pat-tests"><i class="ti ti-clipboard-list" aria-hidden="true"></i> KFT · Urine R/M</div>
+         </div>
+-        <div class="pat-tests"><i class="ti ti-clipboard-list" aria-hidden="true"></i> KFT · Urine R/M</div>
+-      </div>
+-      <div class="pat-doctor-badge">
+-        <i class="ti ti-stethoscope" aria-hidden="true"></i>
+-        <span>Ref: Dr. Suresh Menon</span>
++        <div class="pat-doctor-badge">
++          <i class="ti ti-stethoscope" aria-hidden="true"></i>
++          <span>Ref: {{ patient.refDoctor }}</span>
++        </div>
++        <span class="stat-chip" aria-label="STAT priority">STAT</span>
+       </div>
+-      <span class="stat-chip" aria-label="STAT priority">STAT</span>
+-    </div>
++    }
+ 
+     <!-- Tab bar -->
+     <div class="tab-bar" role="tablist" aria-label="Test tabs">
+diff --git a/src/app/features/result-entry/result-entry.component.ts b/src/app/features/result-entry/result-entry.component.ts
+index a9bbc2c..9cadd75 100644
+--- a/src/app/features/result-entry/result-entry.component.ts
++++ b/src/app/features/result-entry/result-entry.component.ts
+@@ -1,8 +1,9 @@
+-import { Component, signal, computed, ChangeDetectionStrategy, inject, HostListener, ElementRef } from '@angular/core';
++import { Component, signal, computed, ChangeDetectionStrategy, inject, HostListener, ElementRef, OnInit } from '@angular/core';
+ import { Router, RouterLink } from '@angular/router';
+-import { NgClass, NgStyle } from '@angular/common';
++import { NgClass, NgStyle, TitleCasePipe } from '@angular/common';
+ import { ResultParameter, ResultFlag } from '../../shared/models/lis.models';
+ import { ReportPreviewService } from '../../core/services/report-preview.service';
++import { PatientFlowService } from '../../core/services/patient-flow.service';
+ 
+ interface ParamRow extends ResultParameter {
+   editing: boolean;
+@@ -65,26 +66,63 @@ const TABS: TabDef[] = [
+ @Component({
+   selector: 'app-result-entry',
+   standalone: true,
+-  imports: [RouterLink, NgClass, NgStyle],
++  imports: [RouterLink, NgClass, NgStyle, TitleCasePipe],
+   changeDetection: ChangeDetectionStrategy.OnPush,
+     templateUrl: './result-entry.component.html',
+     styleUrl: './result-entry.component.css',
+ })
+-export class ResultEntryComponent {
++export class ResultEntryComponent implements OnInit {
+   private readonly router     = inject(Router);
+   private readonly previewSvc = inject(ReportPreviewService);
+   private readonly host       = inject(ElementRef<HTMLElement>);
++  protected readonly flow     = inject(PatientFlowService);
+ 
+   protected readonly tabs: TabDef[] = TABS;
+ 
+-  /** Patient demographics — drives the gender-specific icon in the patient bar. */
+-  patientAge = signal('61Y');
+-  patientGender = signal<'Male' | 'Female' | 'Other'>('Male');
+-  genderIcon = computed(() => ({
+-    Male: 'ti-gender-male',
+-    Female: 'ti-gender-female',
+-    Other: 'ti-gender-transgender',
+-  }[this.patientGender()]));
++  ngOnInit(): void {
++    // Same guard used on Test Order/Billing/Sample Collection — Result
++    // Entry is part of the same patient workflow, so it shouldn't show
++    // a page's worth of demographic data for a patient that was never
++    // registered.
++    if (!this.flow.patient()) {
++      this.router.navigate(['/dashboard/registration']);
++    }
++  }
++
++  /** Single source of truth for the patient bar — shared with
++   *  Registration/Test Order/Billing/Sample Collection via
++   *  PatientFlowService, instead of this page's own hardcoded copy. */
++  get patient() { return this.flow.patient(); }
++
++  get patientInitials(): string {
++    const p = this.patient;
++    if (!p) return '?';
++    return (p.firstName[0] + p.lastName[0]).toUpperCase();
++  }
++
++  /** Detailed breakdown used in the patient info row, e.g. "9y 11m 2d". */
++  patientAgeBreakdown(): string {
++    const p = this.patient;
++    if (!p) return '';
++    return this.flow.formatAgeBreakdown(p.dob);
++  }
++
++  /** Raw Y/M/D parts for the colorized inline age breakdown (see .age-inline* in styles.css). */
++  ageParts(): { years: number; months: number; days: number } {
++    const p = this.patient;
++    if (!p) return { years: 0, months: 0, days: 0 };
++    return this.flow.calcAgeParts(p.dob);
++  }
++
++  /** Mirrors the male/female/genderless mapping used on Billing/Test
++   *  Order/Sample Collection, so the icon reads identically everywhere
++   *  a patient's gender appears. */
++  genderIcon(): string {
++    const g = (this.patient?.gender ?? '').toLowerCase();
++    if (g === 'male')   return 'ti-gender-male';
++    if (g === 'female') return 'ti-gender-female';
++    return 'ti-gender-genderless';
++  }
+ 
+   /** Pristine copy of every tab's data, used to power the reset controls. */
+   private readonly originalTabData: Record<string, ParamRow[]> =

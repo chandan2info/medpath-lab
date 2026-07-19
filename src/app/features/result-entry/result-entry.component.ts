@@ -1,8 +1,9 @@
-import { Component, signal, computed, ChangeDetectionStrategy, inject, HostListener, ElementRef } from '@angular/core';
+import { Component, signal, computed, ChangeDetectionStrategy, inject, HostListener, ElementRef, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { NgClass, NgStyle } from '@angular/common';
+import { NgClass, NgStyle, TitleCasePipe } from '@angular/common';
 import { ResultParameter, ResultFlag } from '../../shared/models/lis.models';
 import { ReportPreviewService } from '../../core/services/report-preview.service';
+import { PatientFlowService } from '../../core/services/patient-flow.service';
 
 interface ParamRow extends ResultParameter {
   editing: boolean;
@@ -65,26 +66,63 @@ const TABS: TabDef[] = [
 @Component({
   selector: 'app-result-entry',
   standalone: true,
-  imports: [RouterLink, NgClass, NgStyle],
+  imports: [RouterLink, NgClass, NgStyle, TitleCasePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './result-entry.component.html',
     styleUrl: './result-entry.component.css',
 })
-export class ResultEntryComponent {
+export class ResultEntryComponent implements OnInit {
   private readonly router     = inject(Router);
   private readonly previewSvc = inject(ReportPreviewService);
   private readonly host       = inject(ElementRef<HTMLElement>);
+  protected readonly flow     = inject(PatientFlowService);
 
   protected readonly tabs: TabDef[] = TABS;
 
-  /** Patient demographics — drives the gender-specific icon in the patient bar. */
-  patientAge = signal('61Y');
-  patientGender = signal<'Male' | 'Female' | 'Other'>('Male');
-  genderIcon = computed(() => ({
-    Male: 'ti-gender-male',
-    Female: 'ti-gender-female',
-    Other: 'ti-gender-transgender',
-  }[this.patientGender()]));
+  ngOnInit(): void {
+    // Same guard used on Test Order/Billing/Sample Collection — Result
+    // Entry is part of the same patient workflow, so it shouldn't show
+    // a page's worth of demographic data for a patient that was never
+    // registered.
+    if (!this.flow.patient()) {
+      this.router.navigate(['/dashboard/registration']);
+    }
+  }
+
+  /** Single source of truth for the patient bar — shared with
+   *  Registration/Test Order/Billing/Sample Collection via
+   *  PatientFlowService, instead of this page's own hardcoded copy. */
+  get patient() { return this.flow.patient(); }
+
+  get patientInitials(): string {
+    const p = this.patient;
+    if (!p) return '?';
+    return (p.firstName[0] + p.lastName[0]).toUpperCase();
+  }
+
+  /** Detailed breakdown used in the patient info row, e.g. "9y 11m 2d". */
+  patientAgeBreakdown(): string {
+    const p = this.patient;
+    if (!p) return '';
+    return this.flow.formatAgeBreakdown(p.dob);
+  }
+
+  /** Raw Y/M/D parts for the colorized inline age breakdown (see .age-inline* in styles.css). */
+  ageParts(): { years: number; months: number; days: number } {
+    const p = this.patient;
+    if (!p) return { years: 0, months: 0, days: 0 };
+    return this.flow.calcAgeParts(p.dob);
+  }
+
+  /** Mirrors the male/female/genderless mapping used on Billing/Test
+   *  Order/Sample Collection, so the icon reads identically everywhere
+   *  a patient's gender appears. */
+  genderIcon(): string {
+    const g = (this.patient?.gender ?? '').toLowerCase();
+    if (g === 'male')   return 'ti-gender-male';
+    if (g === 'female') return 'ti-gender-female';
+    return 'ti-gender-genderless';
+  }
 
   /** Pristine copy of every tab's data, used to power the reset controls. */
   private readonly originalTabData: Record<string, ParamRow[]> =

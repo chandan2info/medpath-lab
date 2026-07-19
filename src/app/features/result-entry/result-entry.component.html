@@ -10,7 +10,9 @@
           <ol class="breadcrumb">
             <li><a routerLink="/dashboard/home">Home</a></li>
             <li><a routerLink="/dashboard/tracking">Tracking</a></li>
-            <li aria-current="page">Arun Pillai — SMP-2406-087</li>
+            @if (patient) {
+              <li aria-current="page">{{ patient.firstName }} {{ patient.lastName }} — SMP-2406-087</li>
+            }
           </ol>
         </nav>
       </div>
@@ -24,28 +26,35 @@
 <div class="re-layout">
   <!-- Left: entry area -->
   <div class="re-main">
-    <!-- Patient card -->
-    <div class="pat-bar">
-      <div class="pat-av" aria-hidden="true">AP</div>
-      <div class="pat-info">
-        <div class="pat-name">Arun Pillai</div>
-        <div class="pat-meta">
-          <span class="pat-meta-item"><i class="ti ti-calendar" aria-hidden="true"></i> {{ patientAge() }}</span>
-          <span class="pat-sep" aria-hidden="true">|</span>
-          <span class="pat-meta-item"><i class="ti {{ genderIcon() }}" aria-hidden="true"></i> {{ patientGender() }}</span>
-          <span class="pat-sep" aria-hidden="true">|</span>
-          <span class="pat-meta-item"><i class="ti ti-id-badge-2" aria-hidden="true"></i> <span class="lis-mono">PAT-2406-0316</span></span>
-          <span class="pat-sep" aria-hidden="true">|</span>
-          <span class="pat-meta-item"><i class="ti ti-flask" aria-hidden="true"></i> <span class="lis-mono">SMP-2406-087</span></span>
+    <!-- Patient card — bound to the same PatientFlowService patient used on
+         Registration/Test Order/Billing/Sample Collection, so the name,
+         age, gender, and patient ID shown here always match the rest of
+         the workflow instead of a fixed demo record. -->
+    @if (patient) {
+      <div class="pat-bar">
+        <div class="pat-av" aria-hidden="true">{{ patientInitials }}</div>
+        <div class="pat-info">
+          <div class="pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
+          <div class="pat-meta">
+            <span class="pat-meta-item age-inline" [title]="patientAgeBreakdown()">
+              <i class="ti ti-cake" aria-hidden="true"></i> <span class="age-inline__y">{{ ageParts().years }}y</span><span class="age-inline__sep"> · </span><span class="age-inline__m">{{ ageParts().months }}m</span><span class="age-inline__sep"> · </span><span class="age-inline__d">{{ ageParts().days }}d</span>
+            </span>
+            <span class="pat-sep" aria-hidden="true">|</span>
+            <span class="pat-meta-item"><i class="ti {{ genderIcon() }}" aria-hidden="true"></i> {{ patient.gender | titlecase }}</span>
+            <span class="pat-sep" aria-hidden="true">|</span>
+            <span class="pat-meta-item"><i class="ti ti-id-badge-2" aria-hidden="true"></i> <span class="lis-mono">{{ patient.id }}</span></span>
+            <span class="pat-sep" aria-hidden="true">|</span>
+            <span class="pat-meta-item"><i class="ti ti-flask" aria-hidden="true"></i> <span class="lis-mono">SMP-2406-087</span></span>
+          </div>
+          <div class="pat-tests"><i class="ti ti-clipboard-list" aria-hidden="true"></i> KFT · Urine R/M</div>
         </div>
-        <div class="pat-tests"><i class="ti ti-clipboard-list" aria-hidden="true"></i> KFT · Urine R/M</div>
+        <div class="pat-doctor-badge">
+          <i class="ti ti-stethoscope" aria-hidden="true"></i>
+          <span>Ref: {{ patient.refDoctor }}</span>
+        </div>
+        <span class="stat-chip" aria-label="STAT priority">STAT</span>
       </div>
-      <div class="pat-doctor-badge">
-        <i class="ti ti-stethoscope" aria-hidden="true"></i>
-        <span>Ref: Dr. Suresh Menon</span>
-      </div>
-      <span class="stat-chip" aria-label="STAT priority">STAT</span>
-    </div>
+    }
 
     <!-- Tab bar -->
     <div class="tab-bar" role="tablist" aria-label="Test tabs">
