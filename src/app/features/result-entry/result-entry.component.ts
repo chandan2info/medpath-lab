@@ -1,9 +1,23 @@
 import { Component, signal, computed, ChangeDetectionStrategy, inject, HostListener, ElementRef, OnInit } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { map } from 'rxjs';
 import { NgClass, NgStyle, TitleCasePipe } from '@angular/common';
 import { ResultParameter, ResultFlag } from '../../shared/models/lis.models';
 import { ReportPreviewService } from '../../core/services/report-preview.service';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
+import { SampleTrackingService } from '../../core/services/sample-tracking.service';
+
+/** Normalized shape the patient bar renders from, regardless of which
+ *  source it came from (see `patient` getter below). */
+interface PatientBarView {
+  firstName: string;
+  lastName: string;
+  dob: string;
+  gender: string;
+  id: string;
+  refDoctor: string;
+}
 
 interface ParamRow extends ResultParameter {
   editing: boolean;
@@ -72,32 +86,88 @@ const TABS: TabDef[] = [
     styleUrl: './result-entry.component.css',
 })
 export class ResultEntryComponent implements OnInit {
-  private readonly router     = inject(Router);
-  private readonly previewSvc = inject(ReportPreviewService);
-  private readonly host       = inject(ElementRef<HTMLElement>);
-  protected readonly flow     = inject(PatientFlowService);
+  private readonly router      = inject(Router);
+  private readonly route       = inject(ActivatedRoute);
+  private readonly previewSvc  = inject(ReportPreviewService);
+  private readonly host        = inject(ElementRef<HTMLElement>);
+  private readonly sampleSvc   = inject(SampleTrackingService);
+  protected readonly flow      = inject(PatientFlowService);
 
   protected readonly tabs: TabDef[] = TABS;
 
+  /** `:sampleId` when Result Entry was opened from a specific row in
+   *  Sample Tracking; null when opened generically (e.g. from Sample
+   *  Collection's "Enter results" step, or the sidebar). Kept as a
+   *  signal (not just a snapshot read) so navigating from one sample
+   *  straight to another re-resolves the patient bar instead of reusing
+   *  the previous component instance's stale data. */
+  private readonly sampleId = toSignal(
+    this.route.paramMap.pipe(map(m => m.get('sampleId'))),
+    { initialValue: this.route.snapshot.paramMap.get('sampleId') }
+  );
+
+  /** The sample the user clicked in Sample Tracking, if any. */
+  sample = computed(() => this.sampleSvc.getById(this.sampleId()));
+
   ngOnInit(): void {
-    // Same guard used on Test Order/Billing/Sample Collection — Result
-    // Entry is part of the same patient workflow, so it shouldn't show
-    // a page's worth of demographic data for a patient that was never
-    // registered.
-    if (!this.flow.patient()) {
+    // A sampleId that doesn't resolve (stale/typed-in link) sends the
+    // user back to the queue instead of silently showing a blank bar.
+    if (this.sampleId() && !this.sample()) {
+      this.router.navigate(['/dashboard/tracking']);
+      return;
+    }
+    // No sampleId at all means Result Entry was opened as a continuation
+    // of the single active registration (from Sample Collection or the
+    // sidebar) — same guard as Test Order/Billing/Sample Collection.
+    if (!this.sampleId() && !this.flow.patient()) {
       this.router.navigate(['/dashboard/registration']);
     }
   }
 
-  /** Single source of truth for the patient bar — shared with
-   *  Registration/Test Order/Billing/Sample Collection via
-   *  PatientFlowService, instead of this page's own hardcoded copy. */
-  get patient() { return this.flow.patient(); }
+  /** Single normalized patient view for the bar — sourced from the
+   *  clicked Sample Tracking row when present, otherwise from
+   *  PatientFlowService (Registration/Test Order/Billing/Sample
+   *  Collection's shared active patient). Either way, this is real
+   *  data driving the page, never a hardcoded demo record. */
+  get patient(): PatientBarView | null {
+    const s = this.sample();
+    if (s) {
+      const [firstName, ...rest] = s.patientName.split(' ');
+      return { firstName, lastName: rest.join(' '), dob: s.dob ?? '', gender: s.gender ?? '', id: s.patientId, refDoctor: s.refDoctor ?? '—' };
+    }
+    const p = this.flow.patient();
+    if (p) {
+      return { firstName: p.firstName, lastName: p.lastName, dob: p.dob, gender: p.gender, id: p.id, refDoctor: p.refDoctor };
+    }
+    return null;
+  }
+
+  /** Sample id shown in the breadcrumb/meta row — the real clicked
+   *  sample's id when known, otherwise a placeholder since Sample
+   *  Collection doesn't yet hand off a generated sample id. */
+  get sampleLabel(): string {
+    return this.sample()?.id ?? 'SMP-2406-087';
+  }
+
+  /** Ordered tests shown under the patient name — the real sample's
+   *  tests when known, otherwise whatever's currently on the active
+   *  Test Order. */
+  get orderedTestsLabel(): string {
+    const s = this.sample();
+    if (s) return s.tests.join(' · ');
+    const tests = this.flow.selectedTests().map(t => t.id);
+    return tests.length ? tests.join(' · ') : '—';
+  }
+
+  /** STAT chip only appears when the actual sample/order is STAT priority. */
+  get isStat(): boolean {
+    return this.sample()?.priority === 'stat';
+  }
 
   get patientInitials(): string {
     const p = this.patient;
     if (!p) return '?';
-    return (p.firstName[0] + p.lastName[0]).toUpperCase();
+    return (p.firstName[0] + (p.lastName[0] ?? '')).toUpperCase();
   }
 
   /** Detailed breakdown used in the patient info row, e.g. "9y 11m 2d". */

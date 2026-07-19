@@ -11,7 +11,7 @@
             <li><a routerLink="/dashboard/home">Home</a></li>
             <li><a routerLink="/dashboard/tracking">Tracking</a></li>
             @if (patient) {
-              <li aria-current="page">{{ patient.firstName }} {{ patient.lastName }} — SMP-2406-087</li>
+              <li aria-current="page">{{ patient.firstName }} {{ patient.lastName }} — {{ sampleLabel }}</li>
             }
           </ol>
         </nav>
@@ -26,10 +26,10 @@
 <div class="re-layout">
   <!-- Left: entry area -->
   <div class="re-main">
-    <!-- Patient card — bound to the same PatientFlowService patient used on
-         Registration/Test Order/Billing/Sample Collection, so the name,
-         age, gender, and patient ID shown here always match the rest of
-         the workflow instead of a fixed demo record. -->
+    <!-- Patient card — bound to whichever real record is in scope: the
+         Sample Tracking row the user clicked (via :sampleId), or the
+         PatientFlowService active patient when continuing straight from
+         Sample Collection. Never a fixed demo record. -->
     @if (patient) {
       <div class="pat-bar">
         <div class="pat-av" aria-hidden="true">{{ patientInitials }}</div>
@@ -44,15 +44,17 @@
             <span class="pat-sep" aria-hidden="true">|</span>
             <span class="pat-meta-item"><i class="ti ti-id-badge-2" aria-hidden="true"></i> <span class="lis-mono">{{ patient.id }}</span></span>
             <span class="pat-sep" aria-hidden="true">|</span>
-            <span class="pat-meta-item"><i class="ti ti-flask" aria-hidden="true"></i> <span class="lis-mono">SMP-2406-087</span></span>
+            <span class="pat-meta-item"><i class="ti ti-flask" aria-hidden="true"></i> <span class="lis-mono">{{ sampleLabel }}</span></span>
           </div>
-          <div class="pat-tests"><i class="ti ti-clipboard-list" aria-hidden="true"></i> KFT · Urine R/M</div>
+          <div class="pat-tests"><i class="ti ti-clipboard-list" aria-hidden="true"></i> {{ orderedTestsLabel }}</div>
         </div>
         <div class="pat-doctor-badge">
           <i class="ti ti-stethoscope" aria-hidden="true"></i>
           <span>Ref: {{ patient.refDoctor }}</span>
         </div>
-        <span class="stat-chip" aria-label="STAT priority">STAT</span>
+        @if (isStat) {
+          <span class="stat-chip" aria-label="STAT priority">STAT</span>
+        }
       </div>
     }
 

@@ -74,6 +74,13 @@ export const routes: Routes = [
         title: 'Result Entry — MedPath LIS',
       },
       {
+        path: 'results/:sampleId',
+        loadComponent: () =>
+          import('./features/result-entry/result-entry.component')
+            .then(m => m.ResultEntryComponent),
+        title: 'Result Entry — MedPath LIS',
+      },
+      {
         path: 'reports',
         loadComponent: () =>
           import('./features/reports/reports.component').then(m => m.ReportsComponent),

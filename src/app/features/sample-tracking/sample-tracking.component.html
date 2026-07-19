@@ -190,7 +190,7 @@
       </div>
 
       <div class="det-actions">
-        <a routerLink="/dashboard/results" class="lis-btn lis-btn--primary lis-btn--full">
+        <a [routerLink]="['/dashboard/results', selectedSample()!.id]" class="lis-btn lis-btn--primary lis-btn--full">
           <i class="ti ti-writing" aria-hidden="true"></i> Enter results
         </a>
         <button type="button" class="lis-btn lis-btn--secondary lis-btn--full">

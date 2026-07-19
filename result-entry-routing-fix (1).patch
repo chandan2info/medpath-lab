@@ -1,0 +1,329 @@
+diff --git a/src/app/app.routes.ts b/src/app/app.routes.ts
+index 7f32b86..6759789 100644
+--- a/src/app/app.routes.ts
++++ b/src/app/app.routes.ts
+@@ -73,6 +73,13 @@ export const routes: Routes = [
+             .then(m => m.ResultEntryComponent),
+         title: 'Result Entry — MedPath LIS',
+       },
++      {
++        path: 'results/:sampleId',
++        loadComponent: () =>
++          import('./features/result-entry/result-entry.component')
++            .then(m => m.ResultEntryComponent),
++        title: 'Result Entry — MedPath LIS',
++      },
+       {
+         path: 'reports',
+         loadComponent: () =>
+diff --git a/src/app/core/services/sample-tracking.service.ts b/src/app/core/services/sample-tracking.service.ts
+new file mode 100644
+index 0000000..fe8603a
+--- /dev/null
++++ b/src/app/core/services/sample-tracking.service.ts
+@@ -0,0 +1,35 @@
++// ─────────────────────────────────────────────
++//  SampleTrackingService
++//  Single source of truth for the lab-wide sample
++//  queue. Sample Tracking lists/filters/sorts these;
++//  Result Entry looks one up by id (via the
++//  `/dashboard/results/:sampleId` route) so the patient
++//  bar always matches the row the user actually clicked.
++// ─────────────────────────────────────────────
++import { Injectable, signal } from '@angular/core';
++import { Sample } from '../../shared/models/lis.models';
++
++const SAMPLES: Sample[] = [
++  { id:'SMP-2406-087', patientId:'PAT-0316', patientName:'Arun Pillai',   dob:'1965-03-12', gender:'male',   refDoctor:'Dr. Rajesh Iyer',  tests:['KFT','Urine R/M'],  priority:'stat',    status:'critical',   collectedAt:'9:20 AM',  etaLabel:'Now',   tubes:[{id:'087-A',color:'#E24B4A',label:'Red top (SST)',   tests:['KFT']},{id:'087-B',color:'#C9A227',label:'Yellow (Urine)',tests:['Urine R/M']}] },
++  { id:'SMP-2406-084', patientId:'PAT-0318', patientName:'Kavitha Nair',  dob:'1990-07-22', gender:'female', refDoctor:'Dr. Anjali Rao',    tests:['CBC','LFT'],         priority:'routine', status:'processing', collectedAt:'9:55 AM',  etaLabel:'11:30', tubes:[{id:'084-A',color:'#E24B4A',label:'Red top (SST)',   tests:['LFT']},{id:'084-B',color:'#2B8B3E',label:'Green (EDTA)', tests:['CBC']}] },
++  { id:'SMP-2406-085', patientId:'PAT-0317', patientName:'Suresh Menon',  dob:'1958-11-05', gender:'male',   refDoctor:'Dr. Meera Pillai',  tests:['HbA1c','Lipids'],    priority:'routine', status:'pending',    collectedAt:'9:41 AM',  etaLabel:'12:00', tubes:[{id:'085-A',color:'#9F4BA8',label:'Purple (EDTA)',   tests:['HbA1c','Lipids']}] },
++  { id:'SMP-2406-086', patientId:'PAT-0315', patientName:'Priya Sharma',  dob:'1985-02-18', gender:'female', refDoctor:'Dr. Vikram Shah',   tests:['Thyroid panel'],     priority:'routine', status:'ready',      collectedAt:'9:30 AM',  etaLabel:'Done',  tubes:[{id:'086-A',color:'#9F4BA8',label:'Purple (EDTA)',   tests:['Thyroid panel']}] },
++  { id:'SMP-2406-088', patientId:'PAT-0320', patientName:'Meena Joshi',   dob:'1972-09-30', gender:'female', refDoctor:'Dr. Arjun Kumar',   tests:['CBC','ESR'],         priority:'routine', status:'processing', collectedAt:'10:10 AM', etaLabel:'12:15', tubes:[{id:'088-A',color:'#E24B4A',label:'Red top (SST)',   tests:['ESR','CBC']}] },
++  { id:'SMP-2406-089', patientId:'PAT-0321', patientName:'Deepak Rao',    dob:'1995-05-14', gender:'male',   refDoctor:'Dr. Sunita Desai',  tests:['Blood glucose'],     priority:'routine', status:'ready',      collectedAt:'10:22 AM', etaLabel:'Done',  tubes:[{id:'089-A',color:'#2B8B3E',label:'Green (fluoride)',tests:['Blood glucose']}] },
++];
++
++@Injectable({ providedIn: 'root' })
++export class SampleTrackingService {
++  private readonly _samples = signal<Sample[]>(SAMPLES);
++
++  /** All samples currently in the lab queue. */
++  readonly samples = this._samples.asReadonly();
++
++  /** Looks up a single sample by id — used by Result Entry to resolve the
++   *  `:sampleId` route param into the record the user clicked in Sample
++   *  Tracking. Returns undefined if the id doesn't exist (e.g. stale link). */
++  getById(id: string | null | undefined): Sample | undefined {
++    if (!id) return undefined;
++    return this._samples().find(s => s.id === id);
++  }
++}
+diff --git a/src/app/features/result-entry/result-entry.component.html b/src/app/features/result-entry/result-entry.component.html
+index 423ecc1..8e254df 100644
+--- a/src/app/features/result-entry/result-entry.component.html
++++ b/src/app/features/result-entry/result-entry.component.html
+@@ -11,7 +11,7 @@
+             <li><a routerLink="/dashboard/home">Home</a></li>
+             <li><a routerLink="/dashboard/tracking">Tracking</a></li>
+             @if (patient) {
+-              <li aria-current="page">{{ patient.firstName }} {{ patient.lastName }} — SMP-2406-087</li>
++              <li aria-current="page">{{ patient.firstName }} {{ patient.lastName }} — {{ sampleLabel }}</li>
+             }
+           </ol>
+         </nav>
+@@ -26,10 +26,10 @@
+ <div class="re-layout">
+   <!-- Left: entry area -->
+   <div class="re-main">
+-    <!-- Patient card — bound to the same PatientFlowService patient used on
+-         Registration/Test Order/Billing/Sample Collection, so the name,
+-         age, gender, and patient ID shown here always match the rest of
+-         the workflow instead of a fixed demo record. -->
++    <!-- Patient card — bound to whichever real record is in scope: the
++         Sample Tracking row the user clicked (via :sampleId), or the
++         PatientFlowService active patient when continuing straight from
++         Sample Collection. Never a fixed demo record. -->
+     @if (patient) {
+       <div class="pat-bar">
+         <div class="pat-av" aria-hidden="true">{{ patientInitials }}</div>
+@@ -44,15 +44,17 @@
+             <span class="pat-sep" aria-hidden="true">|</span>
+             <span class="pat-meta-item"><i class="ti ti-id-badge-2" aria-hidden="true"></i> <span class="lis-mono">{{ patient.id }}</span></span>
+             <span class="pat-sep" aria-hidden="true">|</span>
+-            <span class="pat-meta-item"><i class="ti ti-flask" aria-hidden="true"></i> <span class="lis-mono">SMP-2406-087</span></span>
++            <span class="pat-meta-item"><i class="ti ti-flask" aria-hidden="true"></i> <span class="lis-mono">{{ sampleLabel }}</span></span>
+           </div>
+-          <div class="pat-tests"><i class="ti ti-clipboard-list" aria-hidden="true"></i> KFT · Urine R/M</div>
++          <div class="pat-tests"><i class="ti ti-clipboard-list" aria-hidden="true"></i> {{ orderedTestsLabel }}</div>
+         </div>
+         <div class="pat-doctor-badge">
+           <i class="ti ti-stethoscope" aria-hidden="true"></i>
+           <span>Ref: {{ patient.refDoctor }}</span>
+         </div>
+-        <span class="stat-chip" aria-label="STAT priority">STAT</span>
++        @if (isStat) {
++          <span class="stat-chip" aria-label="STAT priority">STAT</span>
++        }
+       </div>
+     }
+ 
+diff --git a/src/app/features/result-entry/result-entry.component.ts b/src/app/features/result-entry/result-entry.component.ts
+index 9cadd75..a096afa 100644
+--- a/src/app/features/result-entry/result-entry.component.ts
++++ b/src/app/features/result-entry/result-entry.component.ts
+@@ -1,9 +1,23 @@
+ import { Component, signal, computed, ChangeDetectionStrategy, inject, HostListener, ElementRef, OnInit } from '@angular/core';
+-import { Router, RouterLink } from '@angular/router';
++import { toSignal } from '@angular/core/rxjs-interop';
++import { ActivatedRoute, Router, RouterLink } from '@angular/router';
++import { map } from 'rxjs';
+ import { NgClass, NgStyle, TitleCasePipe } from '@angular/common';
+ import { ResultParameter, ResultFlag } from '../../shared/models/lis.models';
+ import { ReportPreviewService } from '../../core/services/report-preview.service';
+ import { PatientFlowService } from '../../core/services/patient-flow.service';
++import { SampleTrackingService } from '../../core/services/sample-tracking.service';
++
++/** Normalized shape the patient bar renders from, regardless of which
++ *  source it came from (see `patient` getter below). */
++interface PatientBarView {
++  firstName: string;
++  lastName: string;
++  dob: string;
++  gender: string;
++  id: string;
++  refDoctor: string;
++}
+ 
+ interface ParamRow extends ResultParameter {
+   editing: boolean;
+@@ -72,32 +86,88 @@ const TABS: TabDef[] = [
+     styleUrl: './result-entry.component.css',
+ })
+ export class ResultEntryComponent implements OnInit {
+-  private readonly router     = inject(Router);
+-  private readonly previewSvc = inject(ReportPreviewService);
+-  private readonly host       = inject(ElementRef<HTMLElement>);
+-  protected readonly flow     = inject(PatientFlowService);
++  private readonly router      = inject(Router);
++  private readonly route       = inject(ActivatedRoute);
++  private readonly previewSvc  = inject(ReportPreviewService);
++  private readonly host        = inject(ElementRef<HTMLElement>);
++  private readonly sampleSvc   = inject(SampleTrackingService);
++  protected readonly flow      = inject(PatientFlowService);
+ 
+   protected readonly tabs: TabDef[] = TABS;
+ 
++  /** `:sampleId` when Result Entry was opened from a specific row in
++   *  Sample Tracking; null when opened generically (e.g. from Sample
++   *  Collection's "Enter results" step, or the sidebar). Kept as a
++   *  signal (not just a snapshot read) so navigating from one sample
++   *  straight to another re-resolves the patient bar instead of reusing
++   *  the previous component instance's stale data. */
++  private readonly sampleId = toSignal(
++    this.route.paramMap.pipe(map(m => m.get('sampleId'))),
++    { initialValue: this.route.snapshot.paramMap.get('sampleId') }
++  );
++
++  /** The sample the user clicked in Sample Tracking, if any. */
++  sample = computed(() => this.sampleSvc.getById(this.sampleId()));
++
+   ngOnInit(): void {
+-    // Same guard used on Test Order/Billing/Sample Collection — Result
+-    // Entry is part of the same patient workflow, so it shouldn't show
+-    // a page's worth of demographic data for a patient that was never
+-    // registered.
+-    if (!this.flow.patient()) {
++    // A sampleId that doesn't resolve (stale/typed-in link) sends the
++    // user back to the queue instead of silently showing a blank bar.
++    if (this.sampleId() && !this.sample()) {
++      this.router.navigate(['/dashboard/tracking']);
++      return;
++    }
++    // No sampleId at all means Result Entry was opened as a continuation
++    // of the single active registration (from Sample Collection or the
++    // sidebar) — same guard as Test Order/Billing/Sample Collection.
++    if (!this.sampleId() && !this.flow.patient()) {
+       this.router.navigate(['/dashboard/registration']);
+     }
+   }
+ 
+-  /** Single source of truth for the patient bar — shared with
+-   *  Registration/Test Order/Billing/Sample Collection via
+-   *  PatientFlowService, instead of this page's own hardcoded copy. */
+-  get patient() { return this.flow.patient(); }
++  /** Single normalized patient view for the bar — sourced from the
++   *  clicked Sample Tracking row when present, otherwise from
++   *  PatientFlowService (Registration/Test Order/Billing/Sample
++   *  Collection's shared active patient). Either way, this is real
++   *  data driving the page, never a hardcoded demo record. */
++  get patient(): PatientBarView | null {
++    const s = this.sample();
++    if (s) {
++      const [firstName, ...rest] = s.patientName.split(' ');
++      return { firstName, lastName: rest.join(' '), dob: s.dob ?? '', gender: s.gender ?? '', id: s.patientId, refDoctor: s.refDoctor ?? '—' };
++    }
++    const p = this.flow.patient();
++    if (p) {
++      return { firstName: p.firstName, lastName: p.lastName, dob: p.dob, gender: p.gender, id: p.id, refDoctor: p.refDoctor };
++    }
++    return null;
++  }
++
++  /** Sample id shown in the breadcrumb/meta row — the real clicked
++   *  sample's id when known, otherwise a placeholder since Sample
++   *  Collection doesn't yet hand off a generated sample id. */
++  get sampleLabel(): string {
++    return this.sample()?.id ?? 'SMP-2406-087';
++  }
++
++  /** Ordered tests shown under the patient name — the real sample's
++   *  tests when known, otherwise whatever's currently on the active
++   *  Test Order. */
++  get orderedTestsLabel(): string {
++    const s = this.sample();
++    if (s) return s.tests.join(' · ');
++    const tests = this.flow.selectedTests().map(t => t.id);
++    return tests.length ? tests.join(' · ') : '—';
++  }
++
++  /** STAT chip only appears when the actual sample/order is STAT priority. */
++  get isStat(): boolean {
++    return this.sample()?.priority === 'stat';
++  }
+ 
+   get patientInitials(): string {
+     const p = this.patient;
+     if (!p) return '?';
+-    return (p.firstName[0] + p.lastName[0]).toUpperCase();
++    return (p.firstName[0] + (p.lastName[0] ?? '')).toUpperCase();
+   }
+ 
+   /** Detailed breakdown used in the patient info row, e.g. "9y 11m 2d". */
+diff --git a/src/app/features/sample-tracking/sample-tracking.component.html b/src/app/features/sample-tracking/sample-tracking.component.html
+index f965c19..2277ac8 100644
+--- a/src/app/features/sample-tracking/sample-tracking.component.html
++++ b/src/app/features/sample-tracking/sample-tracking.component.html
+@@ -190,7 +190,7 @@
+       </div>
+ 
+       <div class="det-actions">
+-        <a routerLink="/dashboard/results" class="lis-btn lis-btn--primary lis-btn--full">
++        <a [routerLink]="['/dashboard/results', selectedSample()!.id]" class="lis-btn lis-btn--primary lis-btn--full">
+           <i class="ti ti-writing" aria-hidden="true"></i> Enter results
+         </a>
+         <button type="button" class="lis-btn lis-btn--secondary lis-btn--full">
+diff --git a/src/app/features/sample-tracking/sample-tracking.component.ts b/src/app/features/sample-tracking/sample-tracking.component.ts
+index bb6a84b..7a032c4 100644
+--- a/src/app/features/sample-tracking/sample-tracking.component.ts
++++ b/src/app/features/sample-tracking/sample-tracking.component.ts
+@@ -6,11 +6,12 @@
+ //  entered right after billing, see Screen 4a —
+ //  Sample Collection.)
+ // ─────────────────────────────────────────────
+-import { Component, signal, computed, ChangeDetectionStrategy } from '@angular/core';
++import { Component, signal, computed, ChangeDetectionStrategy, inject } from '@angular/core';
+ import { RouterLink } from '@angular/router';
+ import { StatusPillComponent } from '../../shared/components/status-pill/status-pill.component';
+ import { Sample, SampleStatus } from '../../shared/models/lis.models';
+ import { TableSort } from '../../shared/utils/table-sort';
++import { SampleTrackingService } from '../../core/services/sample-tracking.service';
+ 
+ /** Sortable projection of a Sample row — priority/status ranked so STAT/critical sort to the top. */
+ interface SampleRow extends Sample {
+@@ -21,15 +22,6 @@ interface SampleRow extends Sample {
+ const PRIORITY_RANK: Record<Sample['priority'], number> = { stat: 0, urgent: 1, routine: 2 };
+ const STATUS_RANK: Record<SampleStatus, number> = { critical: 0, processing: 1, pending: 2, ready: 3, dispatched: 4 };
+ 
+-const SAMPLES: Sample[] = [
+-  { id:'SMP-2406-087', patientId:'PAT-0316', patientName:'Arun Pillai',     tests:['KFT','Urine R/M'],  priority:'stat',    status:'critical',   collectedAt:'9:20 AM',  etaLabel:'Now',   tubes:[{id:'087-A',color:'#E24B4A',label:'Red top (SST)',   tests:['KFT']},{id:'087-B',color:'#C9A227',label:'Yellow (Urine)',tests:['Urine R/M']}] },
+-  { id:'SMP-2406-084', patientId:'PAT-0318', patientName:'Kavitha Nair',    tests:['CBC','LFT'],         priority:'routine', status:'processing', collectedAt:'9:55 AM',  etaLabel:'11:30', tubes:[{id:'084-A',color:'#E24B4A',label:'Red top (SST)',   tests:['LFT']},{id:'084-B',color:'#2B8B3E',label:'Green (EDTA)', tests:['CBC']}] },
+-  { id:'SMP-2406-085', patientId:'PAT-0317', patientName:'Suresh Menon',    tests:['HbA1c','Lipids'],    priority:'routine', status:'pending',    collectedAt:'9:41 AM',  etaLabel:'12:00', tubes:[{id:'085-A',color:'#9F4BA8',label:'Purple (EDTA)',   tests:['HbA1c','Lipids']}] },
+-  { id:'SMP-2406-086', patientId:'PAT-0315', patientName:'Priya Sharma',    tests:['Thyroid panel'],     priority:'routine', status:'ready',      collectedAt:'9:30 AM',  etaLabel:'Done',  tubes:[{id:'086-A',color:'#9F4BA8',label:'Purple (EDTA)',   tests:['Thyroid panel']}] },
+-  { id:'SMP-2406-088', patientId:'PAT-0320', patientName:'Meena Joshi',     tests:['CBC','ESR'],         priority:'routine', status:'processing', collectedAt:'10:10 AM', etaLabel:'12:15', tubes:[{id:'088-A',color:'#E24B4A',label:'Red top (SST)',   tests:['ESR','CBC']}] },
+-  { id:'SMP-2406-089', patientId:'PAT-0321', patientName:'Deepak Rao',      tests:['Blood glucose'],     priority:'routine', status:'ready',      collectedAt:'10:22 AM', etaLabel:'Done',  tubes:[{id:'089-A',color:'#2B8B3E',label:'Green (fluoride)',tests:['Blood glucose']}] },
+-];
+-
+ const FILTER_OPTS: { label: string; value: SampleStatus | 'all' }[] = [
+   { label: 'All',        value: 'all'        },
+   { label: 'STAT',       value: 'critical'   },
+@@ -47,17 +39,25 @@ const FILTER_OPTS: { label: string; value: SampleStatus | 'all' }[] = [
+   styleUrl: './sample-tracking.component.css',
+ })
+ export class SampleTrackingComponent {
++  private readonly svc = inject(SampleTrackingService);
++
+   protected readonly filterOpts  = FILTER_OPTS;
+   protected readonly barcodeWidths = [2,1,3,1,2,1,1,2,3,1,2,1,2,3,1];
+ 
+   searchQ        = signal('');
+   activeFilter   = signal<SampleStatus | 'all'>('all');
+-  selectedSample = signal<Sample | null>(SAMPLES[0]);
++  selectedSample = signal<Sample | null>(null);
++
++  constructor() {
++    // Default the detail panel to the first row once the queue loads.
++    const first = this.svc.samples()[0];
++    if (first) this.selectedSample.set(first);
++  }
+ 
+   filteredSamples = computed(() => {
+     const f = this.activeFilter();
+     const q = this.searchQ().toLowerCase();
+-    return SAMPLES.filter(s =>
++    return this.svc.samples().filter(s =>
+       (f === 'all' || s.status === f || (f === 'critical' && s.priority === 'stat')) &&
+       (s.patientName.toLowerCase().includes(q) || s.id.toLowerCase().includes(q))
+     );
+diff --git a/src/app/shared/models/lis.models.ts b/src/app/shared/models/lis.models.ts
+index 378c272..332e85b 100644
+--- a/src/app/shared/models/lis.models.ts
++++ b/src/app/shared/models/lis.models.ts
+@@ -51,6 +51,9 @@ export interface Sample {
+   id: string;
+   patientId: string;
+   patientName: string;
++  dob?: string;
++  gender?: Gender;
++  refDoctor?: string;
+   tests: string[];
+   priority: Priority;
+   status: SampleStatus;

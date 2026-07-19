@@ -51,6 +51,9 @@ export interface Sample {
   id: string;
   patientId: string;
   patientName: string;
+  dob?: string;
+  gender?: Gender;
+  refDoctor?: string;
   tests: string[];
   priority: Priority;
   status: SampleStatus;
