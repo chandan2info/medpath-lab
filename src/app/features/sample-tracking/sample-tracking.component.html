@@ -18,12 +18,12 @@
   </div>
 
   <div class="header-actions">
-    <button class="lis-btn lis-btn--secondary lis-btn--sm">
-      <i class="ti ti-printer" aria-hidden="true"></i> Print all labels
+    <button class="lis-btn lis-btn--secondary lis-btn--sm" (click)="printLabels()">
+      <i class="ti ti-printer" aria-hidden="true"></i> Print labels ({{ sortedSamples().length }})
     </button>
-    <button class="lis-btn lis-btn--primary lis-btn--sm">
+    <a routerLink="/dashboard/registration" class="lis-btn lis-btn--primary lis-btn--sm">
       <i class="ti ti-plus" aria-hidden="true"></i> Add sample
-    </button>
+    </a>
   </div>
 </div>
 
@@ -34,6 +34,11 @@
       [value]="searchQ()"
       (input)="searchQ.set($any($event.target).value)"
       aria-label="Search samples" />
+    @if (searchQ()) {
+      <button type="button" class="ts-clear" (click)="searchQ.set('')" aria-label="Clear search">
+        <i class="ti ti-x" aria-hidden="true"></i>
+      </button>
+    }
   </div>
   <div class="filter-pills" role="group" aria-label="Filter samples by status">
     @for (f of filterOpts; track f.value) {
@@ -44,6 +49,8 @@
     }
   </div>
 </div>
+
+<div class="result-count">{{ sortedSamples().length }} of {{ totalCount() }} samples</div>
 
 <div class="tracking-body">
   <!-- Sample table -->
@@ -106,33 +113,50 @@
         </tr>
       </thead>
       <tbody>
-        @for (s of sortedSamples(); track s.id) {
-          <tr (click)="selectSample(s)"
-            [class.row--selected]="selectedSample()?.id === s.id"
-            [attr.aria-selected]="selectedSample()?.id === s.id">
-            <td><span class="lis-mono">{{ s.id }}</span></td>
-            <td>
-              {{ s.patientName }}
-              <div class="tbl-sub">{{ s.patientId }}</div>
+        @if (sortedSamples().length === 0) {
+          <tr>
+            <td colspan="7" class="tbl-empty">
+              <i class="ti ti-search-off" aria-hidden="true"></i>
+              <span>No samples match "{{ searchQ() }}"{{ activeFilter() !== 'all' ? ' in this filter' : '' }}.</span>
+              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="clearFilters()">
+                Clear search &amp; filters
+              </button>
             </td>
-            <td>
-              <div class="tube-dots">
-                @for (tube of s.tubes; track tube.id) {
-                  <span class="tube-dot" [style.background]="tube.color" [attr.title]="tube.label"></span>
-                }
-              </div>
-            </td>
-            <td class="tbl-tests">{{ s.tests.join(' · ') }}</td>
-            <td>
-              @if (s.priority === 'stat') {
-                <lis-status-pill status="stat" />
-              } @else {
-                <span class="prio-label">Routine</span>
-              }
-            </td>
-            <td><lis-status-pill [status]="s.status" /></td>
-            <td [class.eta-urgent]="s.etaLabel === 'Now'">{{ s.etaLabel }}</td>
           </tr>
+        } @else {
+          @for (s of sortedSamples(); track s.id) {
+            <tr (click)="selectSample(s)"
+              (keydown.enter)="selectSample(s)"
+              (keydown.space)="$event.preventDefault(); selectSample(s)"
+              tabindex="0"
+              [class.row--selected]="selectedSample()?.id === s.id"
+              [attr.aria-selected]="selectedSample()?.id === s.id">
+              <td><span class="lis-mono">{{ s.id }}</span></td>
+              <td>
+                {{ s.patientName }}
+                <div class="tbl-sub">{{ s.patientId }}</div>
+              </td>
+              <td>
+                <div class="tube-dots">
+                  @for (tube of s.tubes; track tube.id) {
+                    <span class="tube-dot" [style.background]="tube.color" [attr.aria-label]="tube.label" title="{{ tube.label }}">
+                      <span class="tube-dot__code" aria-hidden="true">{{ tube.label[0] }}</span>
+                    </span>
+                  }
+                </div>
+              </td>
+              <td class="tbl-tests">{{ s.tests.join(' · ') }}</td>
+              <td>
+                @if (s.priority === 'stat') {
+                  <lis-status-pill status="stat" />
+                } @else {
+                  <span class="prio-label">Routine</span>
+                }
+              </td>
+              <td><lis-status-pill [status]="s.status" /></td>
+              <td [class.eta-urgent]="s.etaLabel === 'Now'">{{ s.etaLabel }}</td>
+            </tr>
+          }
         }
       </tbody>
     </table>
@@ -177,13 +201,14 @@
               <div class="tube-label-sm">{{ tube.label }}</div>
               <div class="tube-tests-sm">{{ tube.tests.join(' · ') }}</div>
             </div>
-            <div class="barcode" [attr.aria-label]="'Barcode for tube ' + tube.id">
+            <div class="barcode" [attr.aria-label]="'Barcode preview for tube ' + tube.id + ' — reprint for a scannable label'">
               <div class="bc-bars" aria-hidden="true">
-                @for (w of barcodeWidths; track $index) {
+                @for (w of barcodeWidths(tube.id); track $index) {
                   <div class="bc-bar" [style.width.px]="w"></div>
                 }
               </div>
               <div class="bc-num">{{ tube.id }}</div>
+              <div class="bc-caption">Preview only</div>
             </div>
           </div>
         }

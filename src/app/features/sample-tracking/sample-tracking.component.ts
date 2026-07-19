@@ -22,12 +22,13 @@ interface SampleRow extends Sample {
 const PRIORITY_RANK: Record<Sample['priority'], number> = { stat: 0, urgent: 1, routine: 2 };
 const STATUS_RANK: Record<SampleStatus, number> = { critical: 0, processing: 1, pending: 2, ready: 3, dispatched: 4 };
 
-const FILTER_OPTS: { label: string; value: SampleStatus | 'all' }[] = [
-  { label: 'All',        value: 'all'        },
-  { label: 'STAT',       value: 'critical'   },
-  { label: 'Processing', value: 'processing' },
-  { label: 'Pending',    value: 'pending'    },
-  { label: 'Ready',      value: 'ready'      },
+const FILTER_OPTS: { label: string; value: SampleStatus | 'all' | 'stat-priority' }[] = [
+  { label: 'All',            value: 'all'          },
+  { label: 'STAT priority',  value: 'stat-priority'},
+  { label: 'Critical status',value: 'critical'     },
+  { label: 'Processing',     value: 'processing'   },
+  { label: 'Pending',        value: 'pending'      },
+  { label: 'Ready',          value: 'ready'        },
 ];
 
 @Component({
@@ -42,10 +43,9 @@ export class SampleTrackingComponent {
   private readonly svc = inject(SampleTrackingService);
 
   protected readonly filterOpts  = FILTER_OPTS;
-  protected readonly barcodeWidths = [2,1,3,1,2,1,1,2,3,1,2,1,2,3,1];
 
   searchQ        = signal('');
-  activeFilter   = signal<SampleStatus | 'all'>('all');
+  activeFilter   = signal<SampleStatus | 'all' | 'stat-priority'>('all');
   selectedSample = signal<Sample | null>(null);
 
   constructor() {
@@ -54,11 +54,18 @@ export class SampleTrackingComponent {
     if (first) this.selectedSample.set(first);
   }
 
+  /** Total samples in the queue, unfiltered — shown next to the filtered count so
+   *  a user narrowing a search can tell the difference between "no matches" and
+   *  "still loading". */
+  totalCount = computed(() => this.svc.samples().length);
+
   filteredSamples = computed(() => {
     const f = this.activeFilter();
     const q = this.searchQ().toLowerCase();
     return this.svc.samples().filter(s =>
-      (f === 'all' || s.status === f || (f === 'critical' && s.priority === 'stat')) &&
+      (f === 'all'
+        || (f === 'stat-priority' && s.priority === 'stat')
+        || s.status === f) &&
       (s.patientName.toLowerCase().includes(q) || s.id.toLowerCase().includes(q))
     );
   });
@@ -77,7 +84,33 @@ export class SampleTrackingComponent {
 
   selectSample(s: Sample): void { this.selectedSample.set(s); }
 
+  /** Clears search text and resets the status/priority filter back to "All". */
+  clearFilters(): void {
+    this.searchQ.set('');
+    this.activeFilter.set('all');
+  }
+
   initials(name: string): string {
-    return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return '?';
+    return (parts[0][0] + (parts[1]?.[0] ?? '')).toUpperCase();
+  }
+
+  /** Deterministic per-tube bar pattern (derived from the tube id) so the
+   *  decorative barcode at least looks distinct per tube instead of every
+   *  tube on every sample rendering the exact same bars — it's still not a
+   *  scannable barcode, just less likely to be mistaken for one. */
+  barcodeWidths(tubeId: string): number[] {
+    const widths: number[] = [];
+    for (let i = 0; i < 15; i++) {
+      const code = tubeId.charCodeAt(i % tubeId.length) + i;
+      widths.push((code % 3) + 1);
+    }
+    return widths;
+  }
+
+  /** Header action: print labels for whatever's currently visible in the table. */
+  printLabels(): void {
+    window.print();
   }
 }
