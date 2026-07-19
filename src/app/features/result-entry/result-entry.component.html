@@ -1,11 +1,20 @@
 <div class="page-header">
-  <div class="page-header-main">
-    <nav aria-label="Breadcrumb"><ol class="breadcrumb">
-      <li><a routerLink="/dashboard/home">Home</a></li>
-      <li><a routerLink="/dashboard/tracking">Tracking</a></li>
-      <li aria-current="page">Arun Pillai — SMP-2406-087</li>
-    </ol></nav>
-    <h1 class="page-title">Result Entry</h1>
+  <div class="page-header__left">
+    <div class="page-header__title-row">
+      <div class="page-header__icon" aria-hidden="true">
+        <i class="ti ti-clipboard-list"></i>
+      </div>
+      <div>
+        <h1 class="page-title">Result Entry</h1>
+        <nav aria-label="Breadcrumb">
+          <ol class="breadcrumb">
+            <li><a routerLink="/dashboard/home">Home</a></li>
+            <li><a routerLink="/dashboard/tracking">Tracking</a></li>
+            <li aria-current="page">Arun Pillai — SMP-2406-087</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
   </div>
   <div class="autosave-chip" aria-live="polite">
     <i class="ti ti-circle-check" aria-hidden="true"></i> Autosaved {{ lastSavedAt() }}
@@ -116,6 +125,7 @@
                       [class]="'result-input--' + p.flag"
                       [attr.data-row-index]="i"
                       type="number"
+                      placeholder="Enter value"
                       [value]="p.value"
                       (input)="updateValue(i, $any($event.target).value)"
                       (keydown)="onResultKeydown($event, i)"
