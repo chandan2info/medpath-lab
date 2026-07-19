@@ -1,0 +1,134 @@
+diff --git a/src/app/features/result-entry/result-entry.component.css b/src/app/features/result-entry/result-entry.component.css
+index 5cf465e..71dfdee 100644
+--- a/src/app/features/result-entry/result-entry.component.css
++++ b/src/app/features/result-entry/result-entry.component.css
+@@ -40,52 +40,16 @@
+   overflow: hidden;
+ }
+ 
+-/* ── Patient bar ─────────────────────────────── */
+-.pat-bar {
+-  display: flex;
+-  align-items: center;
+-  gap: 12px;
+-  padding: 14px 16px;
+-  border-bottom: 0.5px solid var(--border-color);
+-  flex-wrap: wrap;
+-}
+-.pat-av {
+-  width: 44px;
+-  height: 44px;
+-  border-radius: 50%;
+-  background: var(--lis-primary-xlight, #E1F5EE);
+-  display: flex;
+-  align-items: center;
+-  justify-content: center;
+-  font-size: 14px;
+-  font-weight: 700;
+-  color: var(--lis-primary-deep, #085041);
+-  flex-shrink: 0;
+-  border: 1.5px solid var(--lis-primary-mid);
+-}
+-.pat-info { flex: 1; min-width: 180px; }
+-.pat-name { font-size: 15px; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
+-.pat-meta { font-size: 12px; color: var(--text-secondary); margin-top: 3px; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+-.pat-meta-item { display: inline-flex; align-items: center; gap: 4px; }
+-.pat-meta-item i { font-size: 12px; opacity: 0.7; }
+-.pat-sep { opacity: 0.35; font-size: 11px; }
+-.pat-tests { font-size: 11px; color: var(--text-secondary); opacity: 0.85; margin-top: 3px; display: flex; align-items: center; gap: 5px; }
+-.pat-tests i { font-size: 12px; opacity: 0.7; }
+-
+-.pat-doctor-badge {
+-  display: flex;
+-  align-items: center;
+-  gap: 6px;
+-  padding: 5px 10px;
+-  border-radius: 20px;
+-  background: var(--body-bg);
+-  border: 0.5px solid var(--border-color);
+-  font-size: 11px;
+-  font-weight: 500;
+-  color: var(--text-primary);
+-  white-space: nowrap;
+-}
+-.pat-doctor-badge i { color: var(--lis-primary); font-size: 13px; }
++/* ── Patient card ─────────────────────────────── */
++/* .pat-info-row / .pat-av / .pat-id-main / .pat-name-row / .pat-name /
++   .pat-detail-row / .pat-detail-item / .pat-detail-icon / .pat-detail-sep /
++   .pill are the canonical shared "Patient Info Metadata" styles from
++   styles.css (same pattern used on Billing and Test Order) — intentionally
++   not redefined here so patient details look identical across the flow.
++   The only page-specific addition is the divider below, since here the
++   patient row sits inside .re-main above the tab bar rather than as its
++   own standalone card. */
++.pat-info-row--bordered { border-bottom: 0.5px solid var(--border-color); }
+ 
+ .stat-chip { background: var(--lis-danger,#E24B4A); color: #fff; font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 10px; letter-spacing: 0.03em; }
+ .stat-chip--sm { padding: 1px 6px; font-weight: 500; }
+diff --git a/src/app/features/result-entry/result-entry.component.html b/src/app/features/result-entry/result-entry.component.html
+index 8e254df..607a2d5 100644
+--- a/src/app/features/result-entry/result-entry.component.html
++++ b/src/app/features/result-entry/result-entry.component.html
+@@ -30,31 +30,42 @@
+          Sample Tracking row the user clicked (via :sampleId), or the
+          PatientFlowService active patient when continuing straight from
+          Sample Collection. Never a fixed demo record. -->
++    <!-- Patient card — bound to whichever real record is in scope: the
++         Sample Tracking row the user clicked (via :sampleId), or the
++         PatientFlowService active patient when continuing straight from
++         Sample Collection. Never a fixed demo record.
++         Uses the canonical Patient Info Metadata pattern (pat-info-row /
++         pat-name-row / pat-detail-row) shared with Billing and Test Order,
++         so patient details read identically across the whole flow. -->
+     @if (patient) {
+-      <div class="pat-bar">
++      <div class="pat-info-row pat-info-row--bordered">
+         <div class="pat-av" aria-hidden="true">{{ patientInitials }}</div>
+-        <div class="pat-info">
+-          <div class="pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
+-          <div class="pat-meta">
+-            <span class="pat-meta-item age-inline" [title]="patientAgeBreakdown()">
+-              <i class="ti ti-cake" aria-hidden="true"></i> <span class="age-inline__y">{{ ageParts().years }}y</span><span class="age-inline__sep"> · </span><span class="age-inline__m">{{ ageParts().months }}m</span><span class="age-inline__sep"> · </span><span class="age-inline__d">{{ ageParts().days }}d</span>
++        <div class="pat-id-main">
++          <div class="pat-name-row">
++            <div class="pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
++            @if (isStat) {
++              <span class="pill pill--stat" aria-label="STAT priority">
++                <i class="ti ti-flag-3" aria-hidden="true"></i>STAT
++              </span>
++            }
++          </div>
++          <div class="pat-detail-row">
++            <span class="pat-detail-item"><i class="ti ti-id-badge-2 pat-detail-icon" aria-hidden="true"></i><span class="lis-mono">{{ patient.id }}</span></span>
++            <span class="pat-detail-sep" aria-hidden="true">|</span>
++            <span class="pat-detail-item"><i class="ti ti-flask pat-detail-icon" aria-hidden="true"></i><span class="lis-mono">{{ sampleLabel }}</span></span>
++            <span class="pat-detail-sep" aria-hidden="true">|</span>
++            <span class="pat-detail-item age-inline" [title]="patientAgeBreakdown()">
++              <i class="ti ti-cake pat-detail-icon" aria-hidden="true"></i><span class="age-inline__y">{{ ageParts().years }}y</span><span class="age-inline__sep"> · </span><span class="age-inline__m">{{ ageParts().months }}m</span><span class="age-inline__sep"> · </span><span class="age-inline__d">{{ ageParts().days }}d</span>
+             </span>
+-            <span class="pat-sep" aria-hidden="true">|</span>
+-            <span class="pat-meta-item"><i class="ti {{ genderIcon() }}" aria-hidden="true"></i> {{ patient.gender | titlecase }}</span>
+-            <span class="pat-sep" aria-hidden="true">|</span>
+-            <span class="pat-meta-item"><i class="ti ti-id-badge-2" aria-hidden="true"></i> <span class="lis-mono">{{ patient.id }}</span></span>
+-            <span class="pat-sep" aria-hidden="true">|</span>
+-            <span class="pat-meta-item"><i class="ti ti-flask" aria-hidden="true"></i> <span class="lis-mono">{{ sampleLabel }}</span></span>
++            <span class="pat-detail-sep" aria-hidden="true">|</span>
++            <span class="pat-detail-item"><i class="ti {{ genderIcon() }} pat-detail-icon" aria-hidden="true"></i>{{ patient.gender | titlecase }}</span>
++          </div>
++          <div class="pat-detail-row">
++            <span class="pat-detail-item"><i class="ti ti-clipboard-list pat-detail-icon" aria-hidden="true"></i>{{ orderedTestsLabel }}</span>
++            <span class="pat-detail-sep" aria-hidden="true">|</span>
++            <span class="pat-detail-item"><i class="ti ti-stethoscope pat-detail-icon" aria-hidden="true"></i>{{ patient.refDoctor }}</span>
+           </div>
+-          <div class="pat-tests"><i class="ti ti-clipboard-list" aria-hidden="true"></i> {{ orderedTestsLabel }}</div>
+-        </div>
+-        <div class="pat-doctor-badge">
+-          <i class="ti ti-stethoscope" aria-hidden="true"></i>
+-          <span>Ref: {{ patient.refDoctor }}</span>
+         </div>
+-        @if (isStat) {
+-          <span class="stat-chip" aria-label="STAT priority">STAT</span>
+-        }
+       </div>
+     }
+ 
