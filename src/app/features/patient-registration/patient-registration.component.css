@@ -658,22 +658,22 @@
 }
 
 .recap-info { flex: 1; min-width: 0; }
-.recap-name { font-size: 13px; font-weight: 700; color: var(--primary-deeper, #5367FE); }
+.recap-name { font-size: 13px; font-weight: 700; color: var(--lis-primary-deep, #085041); }
 /* Detail row/items/icons scoped to the recap panel only — reuses the
-   global .pat-detail-row structure but recolors it with --primary-deeper
-   (fixed indigo, identical value in both light and dark themes) instead
-   of the LIS palette-dependent tokens, so the metadata reads consistently
-   on-brand regardless of theme or active color palette. */
+   global .pat-detail-row structure but recolors it to the themed
+   primary-deep foreground (readable on the tinted background in both
+   light and dark) instead of the generic --text-primary default, and
+   gives each item a subtle chip so the metadata separates cleanly. */
 .patient-recap .pat-detail-row { margin-top: 4px; gap: 6px; }
 .patient-recap .pat-detail-item {
-  color: var(--primary-deeper, #5367FE);
+  color: var(--lis-primary-deep, #085041);
   font-weight: 500;
   background: var(--card-bg);
   border: 0.5px solid var(--lis-primary-mid, #5DCAA5);
   border-radius: 20px;
   padding: 2px 9px 2px 7px;
 }
-.patient-recap .pat-detail-icon { color: var(--primary-deeper, #5367FE); }
+.patient-recap .pat-detail-icon { color: var(--lis-primary-deep, #085041); }
 .patient-recap .pat-detail-sep { display: none; }
 /* .recap-meta removed — the Clinical step recap now uses the canonical
    global .pat-detail-row / .pat-detail-item styling (see styles.css)

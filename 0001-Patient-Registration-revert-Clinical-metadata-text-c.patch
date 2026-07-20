@@ -1,0 +1,90 @@
+From 963605b163b641105d30b6544fb2acdcb27c4124 Mon Sep 17 00:00:00 2001
+From: Claude <claude@anthropic.com>
+Date: Mon, 20 Jul 2026 19:47:14 +0000
+Subject: [PATCH] Patient Registration: revert Clinical metadata text color,
+ tint the panel background with --primary-deeper instead
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- recap name, detail chips, and their icons reverted from
+  --primary-deeper back to --lis-primary-deep (palette-aware foreground
+  token) as they were previously
+- .patient-recap background now tints from --primary-deeper (fixed
+  indigo, identical value in both light and dark theme blocks) blended
+  into --card-bg via color-mix, instead of the --lis-primary-xlight
+  wash — this was the actual ask: --primary-deeper on the background,
+  not the text. Falls back to a plain card background in browsers
+  without color-mix support (same fallback pattern already used by
+  .age-card in this file).
+---
+ .../patient-registration.component.css        | 37 ++++++++++++-------
+ 1 file changed, 23 insertions(+), 14 deletions(-)
+
+diff --git a/src/app/features/patient-registration/patient-registration.component.css b/src/app/features/patient-registration/patient-registration.component.css
+index a5b4bcb..6ee3f56 100644
+--- a/src/app/features/patient-registration/patient-registration.component.css
++++ b/src/app/features/patient-registration/patient-registration.component.css
+@@ -632,13 +632,22 @@
+   gap: 12px;
+   padding: 10px 20px;
+   border-bottom: 1px solid var(--lis-primary-mid, #5DCAA5);
+-  /* Was a flat --lis-primary-xlight wash with generic --text-primary
+-     copy — low contrast in dark mode and mismatched hue in some
+-     palettes. A soft directional tint + the primary-deep/xlight pairing
+-     (same combo used by .success-pid-block) keeps proper contrast in
+-     both themes and reads as clearly "on brand" rather than a plain
+-     background tint. */
+-  background: linear-gradient(120deg, var(--lis-primary-xlight, #E1F5EE), var(--card-bg) 165%);
++  /* Background now tints from --primary-deeper (fixed indigo, identical
++     in both light and dark theme blocks) blended into --card-bg, instead
++     of the palette-dependent --lis-primary-xlight wash used before —
++     so the panel reads the same "on brand" indigo tone in every theme.
++     color-mix keeps it a soft tint rather than a solid block; falls
++     back to a plain card background in browsers without color-mix. */
++  background: var(--card-bg);
++}
++@supports (background: color-mix(in srgb, red, blue)) {
++  .patient-recap {
++    background: linear-gradient(
++      120deg,
++      color-mix(in srgb, var(--primary-deeper, #5367FE) 14%, var(--card-bg)),
++      var(--card-bg) 165%
++    );
++  }
+ }
+ 
+ .recap-av {
+@@ -658,22 +667,22 @@
+ }
+ 
+ .recap-info { flex: 1; min-width: 0; }
+-.recap-name { font-size: 13px; font-weight: 700; color: var(--primary-deeper, #5367FE); }
++.recap-name { font-size: 13px; font-weight: 700; color: var(--lis-primary-deep, #085041); }
+ /* Detail row/items/icons scoped to the recap panel only — reuses the
+-   global .pat-detail-row structure but recolors it with --primary-deeper
+-   (fixed indigo, identical value in both light and dark themes) instead
+-   of the LIS palette-dependent tokens, so the metadata reads consistently
+-   on-brand regardless of theme or active color palette. */
++   global .pat-detail-row structure but recolors it to the themed
++   primary-deep foreground (readable on the tinted background in both
++   light and dark) instead of the generic --text-primary default, and
++   gives each item a subtle chip so the metadata separates cleanly. */
+ .patient-recap .pat-detail-row { margin-top: 4px; gap: 6px; }
+ .patient-recap .pat-detail-item {
+-  color: var(--primary-deeper, #5367FE);
++  color: var(--lis-primary-deep, #085041);
+   font-weight: 500;
+   background: var(--card-bg);
+   border: 0.5px solid var(--lis-primary-mid, #5DCAA5);
+   border-radius: 20px;
+   padding: 2px 9px 2px 7px;
+ }
+-.patient-recap .pat-detail-icon { color: var(--primary-deeper, #5367FE); }
++.patient-recap .pat-detail-icon { color: var(--lis-primary-deep, #085041); }
+ .patient-recap .pat-detail-sep { display: none; }
+ /* .recap-meta removed — the Clinical step recap now uses the canonical
+    global .pat-detail-row / .pat-detail-item styling (see styles.css)
+-- 
+2.43.0
+
