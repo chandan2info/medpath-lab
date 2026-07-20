@@ -290,14 +290,21 @@
               }
             </div>
 
-            <!-- Blood Group -->
+            <!-- Blood Group — reverted to a native <select> (bound via
+                 formControlName, same as before) but polished with the
+                 same icon-trigger + custom chevron treatment as the DOB
+                 date picker, instead of the plain default select box. -->
             <div class="lis-field">
-              <label for="bloodGroup">Blood Group</label>
-              <select id="bloodGroup" formControlName="bloodGroup">
-                @for (bg of bloodGroups; track bg) {
-                  <option [value]="bg">{{ bg }}</option>
-                }
-              </select>
+              <label for="bloodGroup">Blood Group <span class="opt-label">(Optional)</span></label>
+              <div class="bg-select-wrap">
+                <i class="ti ti-droplet-filled bg-select-wrap__icon" aria-hidden="true"></i>
+                <select id="bloodGroup" formControlName="bloodGroup" class="bg-select-wrap__select">
+                  @for (bg of bloodGroups; track bg) {
+                    <option [value]="bg">{{ bg }}</option>
+                  }
+                </select>
+                <i class="ti ti-chevron-down bg-select-wrap__chevron" aria-hidden="true"></i>
+              </div>
             </div>
           </div>
         </div>
@@ -454,13 +461,28 @@
               </div>
             </div>
 
-            <!-- Sample collection -->
+            <!-- Sample collection — modernized from a native <select> to
+                 the same icon segmented-control pattern used for Visit
+                 type / Fasting status just above, instead of being the
+                 one legacy dropdown on this step. Icons intentionally
+                 mirror Visit type's Walk-in/Home visit icons since the
+                 two fields are already auto-synced. -->
             <div class="lis-field sample-collection-field sample-collection-field--tablet-full">
-              <label for="collection">Sample collection</label>
-              <select id="collection" formControlName="collection">
-                <option>At lab counter</option>
-                <option>Home collection</option>
-              </select>
+              <label id="collection-label">Sample collection</label>
+              <div class="lis-seg lis-seg--lg lis-seg--spaced" role="group" aria-labelledby="collection-label">
+                <button type="button" class="lis-seg__opt"
+                  [class.lis-seg__opt--active]="form.value.collection === 'At lab counter'"
+                  (click)="form.patchValue({collection: 'At lab counter'})"
+                  [attr.aria-pressed]="form.value.collection === 'At lab counter'">
+                  <i class="ti ti-building-hospital" aria-hidden="true"></i> At lab counter
+                </button>
+                <button type="button" class="lis-seg__opt"
+                  [class.lis-seg__opt--active]="form.value.collection === 'Home collection'"
+                  (click)="form.patchValue({collection: 'Home collection'})"
+                  [attr.aria-pressed]="form.value.collection === 'Home collection'">
+                  <i class="ti ti-home" aria-hidden="true"></i> Home collection
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -506,11 +528,15 @@
           </div>
         </div>
 
-        <!-- Medication group -->
+        <!-- Medication group — commented out (disabled) per request.
+             The underlying 'medications' FormControl is untouched in
+             the TS form group, so re-enabling this is just uncommenting
+             the block below; no other wiring changes needed. -->
+        <!--
         <div class="field-group">
           <div class="field-group__title"><i class="ti ti-pill" aria-hidden="true"></i> Medication</div>
           <div class="form-grid">
-            <!-- Known conditions / medications -->
+            <!-- Known conditions / medications --
             <div class="lis-field form-full">
               <label for="medications">
                 Known conditions / medications <span class="opt-label">(optional)</span>
@@ -521,6 +547,7 @@
             </div>
           </div>
         </div>
+        -->
       </div>
 
       <!-- Step 2 actions — sticky so they stay reachable on smaller screens -->

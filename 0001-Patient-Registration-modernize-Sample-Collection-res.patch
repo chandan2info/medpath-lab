@@ -1,0 +1,244 @@
+From c0ac673238329f2484895d9113e8751bc020c984 Mon Sep 17 00:00:00 2001
+From: Claude <claude@anthropic.com>
+Date: Mon, 20 Jul 2026 19:38:55 +0000
+Subject: [PATCH] Patient Registration: modernize Sample Collection, restyle
+ Clinical metadata with --primary-deeper, polish Blood Group select, comment
+ out Medication
+
+- Sample Collection: replaced legacy native <select> with the same icon
+  segmented-control pattern already used for Visit type / Fasting status
+  (At lab counter / Home collection), keeping the existing
+  visitType<->collection auto-sync logic untouched
+- Widened the Visit Details grid's third column slightly to fit the new
+  Sample Collection segmented control's longer button labels
+- Blood Group: kept as a native <select> (same formControlName binding
+  as before) but polished it with the same icon + custom chevron +
+  focus-ring treatment as the DOB date picker's trigger, instead of the
+  plain OS select box. Native OS arrow stripped via appearance:none so
+  only the custom chevron shows.
+- Clinical patient metadata (Step 2 recap panel): background changed
+  from a flat --lis-primary-xlight wash to a soft directional gradient
+  for better depth; recap name, detail-item chips and their icons now
+  use --primary-deeper, which resolves to the same fixed indigo
+  (#5367FE) in both light and dark theme blocks, so the metadata color
+  is explicitly consistent across modes/palettes rather than flipping
+  per LIS palette. Each detail item is now a bordered chip instead of
+  plain separator-delimited text.
+- Commented out the Medication field-group + its textarea input per
+  request; the 'medications' FormControl in the TS form group is
+  untouched, so re-enabling is just uncommenting the block
+---
+ .../patient-registration.component.css        | 76 ++++++++++++++++++-
+ .../patient-registration.component.html       | 57 ++++++++++----
+ 2 files changed, 114 insertions(+), 19 deletions(-)
+
+diff --git a/src/app/features/patient-registration/patient-registration.component.css b/src/app/features/patient-registration/patient-registration.component.css
+index 95ae7f4..a5b4bcb 100644
+--- a/src/app/features/patient-registration/patient-registration.component.css
++++ b/src/app/features/patient-registration/patient-registration.component.css
+@@ -225,12 +225,14 @@
+    it lines up under Visit Details above it, then spans the first
+    two columns so it gets a wider control instead of a cramped 1/3.
+    ══════════════════════════════════════════════════════ */
+-.form-grid--visit { grid-template-columns: 1fr 1.4fr 0.85fr; }
++.form-grid--visit { grid-template-columns: 1fr 1.25fr 1.05fr; }
+ @media (max-width: 860px) { .form-grid--visit { grid-template-columns: 1fr 1fr; } }
+ @media (max-width: 560px) { .form-grid--visit { grid-template-columns: 1fr; } }
+ 
+ .visit-type-field { min-width: 0; }
+ .sample-collection-field { min-width: 0; }
++.sample-collection-field .lis-seg__opt { font-size: 12px; gap: 5px; padding: 0 6px; white-space: nowrap; }
++.sample-collection-field .lis-seg__opt i { font-size: 14px; }
+ @media (max-width: 860px) { .sample-collection-field--tablet-full { grid-column: 1 / -1; } }
+ 
+ /* Fasting status is the only control in the Preparation group's first
+@@ -568,6 +570,50 @@
+ }
+ .gender-card--active:hover { transform: none; box-shadow: inset 0 0 0 1px var(--lis-primary-mid, #5DCAA5); }
+ 
++/* ══════════════════════════════════════════════════════
++   BLOOD GROUP — native <select>, polished to match the DOB
++   date picker's trigger treatment (icon + custom chevron +
++   card border/focus-ring) instead of the plain OS select box.
++   ══════════════════════════════════════════════════════ */
++.bg-select-wrap {
++  position: relative;
++  display: flex;
++  align-items: center;
++  gap: 8px;
++  height: 38px;
++  padding: 0 11px;
++  border: 1px solid var(--border-color);
++  border-radius: 8px;
++  background: var(--card-bg);
++  transition: border-color 0.15s ease, box-shadow 0.15s ease;
++}
++.bg-select-wrap:hover { border-color: var(--lis-primary-mid, #5DCAA5); }
++.bg-select-wrap:focus-within {
++  border-color: var(--lis-primary, #1D9E75);
++  box-shadow: 0 0 0 3px var(--lis-primary-xlight, #E1F5EE);
++}
++.bg-select-wrap__icon { font-size: 15px; color: var(--lis-danger, #E24B4A); opacity: 0.8; flex-shrink: 0; }
++.bg-select-wrap__chevron { font-size: 13px; color: var(--text-secondary); flex-shrink: 0; pointer-events: none; }
++.bg-select-wrap__select {
++  flex: 1;
++  min-width: 0;
++  height: 100%;
++  border: none !important;
++  outline: none !important;
++  box-shadow: none !important;
++  background: transparent !important;
++  border-radius: 0 !important;
++  /* Strip the native OS arrow so only our custom chevron shows. */
++  appearance: none;
++  -webkit-appearance: none;
++  -moz-appearance: none;
++  font-family: var(--font-family);
++  font-size: 13px;
++  color: var(--text-primary);
++  cursor: pointer;
++  padding: 0 !important;
++}
++
+ /* Textareas that grow with content instead of leaving a tall
+    empty box; still resizable if the operator wants more room. */
+ .auto-expand {
+@@ -585,8 +631,14 @@
+   align-items: center;
+   gap: 12px;
+   padding: 10px 20px;
+-  border-bottom: 0.5px solid var(--border-color);
+-  background: var(--lis-primary-xlight, #E1F5EE);
++  border-bottom: 1px solid var(--lis-primary-mid, #5DCAA5);
++  /* Was a flat --lis-primary-xlight wash with generic --text-primary
++     copy — low contrast in dark mode and mismatched hue in some
++     palettes. A soft directional tint + the primary-deep/xlight pairing
++     (same combo used by .success-pid-block) keeps proper contrast in
++     both themes and reads as clearly "on brand" rather than a plain
++     background tint. */
++  background: linear-gradient(120deg, var(--lis-primary-xlight, #E1F5EE), var(--card-bg) 165%);
+ }
+ 
+ .recap-av {
+@@ -606,7 +658,23 @@
+ }
+ 
+ .recap-info { flex: 1; min-width: 0; }
+-.recap-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
++.recap-name { font-size: 13px; font-weight: 700; color: var(--primary-deeper, #5367FE); }
++/* Detail row/items/icons scoped to the recap panel only — reuses the
++   global .pat-detail-row structure but recolors it with --primary-deeper
++   (fixed indigo, identical value in both light and dark themes) instead
++   of the LIS palette-dependent tokens, so the metadata reads consistently
++   on-brand regardless of theme or active color palette. */
++.patient-recap .pat-detail-row { margin-top: 4px; gap: 6px; }
++.patient-recap .pat-detail-item {
++  color: var(--primary-deeper, #5367FE);
++  font-weight: 500;
++  background: var(--card-bg);
++  border: 0.5px solid var(--lis-primary-mid, #5DCAA5);
++  border-radius: 20px;
++  padding: 2px 9px 2px 7px;
++}
++.patient-recap .pat-detail-icon { color: var(--primary-deeper, #5367FE); }
++.patient-recap .pat-detail-sep { display: none; }
+ /* .recap-meta removed — the Clinical step recap now uses the canonical
+    global .pat-detail-row / .pat-detail-item styling (see styles.css)
+    instead of its own bespoke text row, matching Billing/Test
+diff --git a/src/app/features/patient-registration/patient-registration.component.html b/src/app/features/patient-registration/patient-registration.component.html
+index cd9ddc3..438935a 100644
+--- a/src/app/features/patient-registration/patient-registration.component.html
++++ b/src/app/features/patient-registration/patient-registration.component.html
+@@ -290,14 +290,21 @@
+               }
+             </div>
+ 
+-            <!-- Blood Group -->
++            <!-- Blood Group — reverted to a native <select> (bound via
++                 formControlName, same as before) but polished with the
++                 same icon-trigger + custom chevron treatment as the DOB
++                 date picker, instead of the plain default select box. -->
+             <div class="lis-field">
+-              <label for="bloodGroup">Blood Group</label>
+-              <select id="bloodGroup" formControlName="bloodGroup">
+-                @for (bg of bloodGroups; track bg) {
+-                  <option [value]="bg">{{ bg }}</option>
+-                }
+-              </select>
++              <label for="bloodGroup">Blood Group <span class="opt-label">(Optional)</span></label>
++              <div class="bg-select-wrap">
++                <i class="ti ti-droplet-filled bg-select-wrap__icon" aria-hidden="true"></i>
++                <select id="bloodGroup" formControlName="bloodGroup" class="bg-select-wrap__select">
++                  @for (bg of bloodGroups; track bg) {
++                    <option [value]="bg">{{ bg }}</option>
++                  }
++                </select>
++                <i class="ti ti-chevron-down bg-select-wrap__chevron" aria-hidden="true"></i>
++              </div>
+             </div>
+           </div>
+         </div>
+@@ -454,13 +461,28 @@
+               </div>
+             </div>
+ 
+-            <!-- Sample collection -->
++            <!-- Sample collection — modernized from a native <select> to
++                 the same icon segmented-control pattern used for Visit
++                 type / Fasting status just above, instead of being the
++                 one legacy dropdown on this step. Icons intentionally
++                 mirror Visit type's Walk-in/Home visit icons since the
++                 two fields are already auto-synced. -->
+             <div class="lis-field sample-collection-field sample-collection-field--tablet-full">
+-              <label for="collection">Sample collection</label>
+-              <select id="collection" formControlName="collection">
+-                <option>At lab counter</option>
+-                <option>Home collection</option>
+-              </select>
++              <label id="collection-label">Sample collection</label>
++              <div class="lis-seg lis-seg--lg lis-seg--spaced" role="group" aria-labelledby="collection-label">
++                <button type="button" class="lis-seg__opt"
++                  [class.lis-seg__opt--active]="form.value.collection === 'At lab counter'"
++                  (click)="form.patchValue({collection: 'At lab counter'})"
++                  [attr.aria-pressed]="form.value.collection === 'At lab counter'">
++                  <i class="ti ti-building-hospital" aria-hidden="true"></i> At lab counter
++                </button>
++                <button type="button" class="lis-seg__opt"
++                  [class.lis-seg__opt--active]="form.value.collection === 'Home collection'"
++                  (click)="form.patchValue({collection: 'Home collection'})"
++                  [attr.aria-pressed]="form.value.collection === 'Home collection'">
++                  <i class="ti ti-home" aria-hidden="true"></i> Home collection
++                </button>
++              </div>
+             </div>
+           </div>
+         </div>
+@@ -506,11 +528,15 @@
+           </div>
+         </div>
+ 
+-        <!-- Medication group -->
++        <!-- Medication group — commented out (disabled) per request.
++             The underlying 'medications' FormControl is untouched in
++             the TS form group, so re-enabling this is just uncommenting
++             the block below; no other wiring changes needed. -->
++        <!--
+         <div class="field-group">
+           <div class="field-group__title"><i class="ti ti-pill" aria-hidden="true"></i> Medication</div>
+           <div class="form-grid">
+-            <!-- Known conditions / medications -->
++            <!-- Known conditions / medications --
+             <div class="lis-field form-full">
+               <label for="medications">
+                 Known conditions / medications <span class="opt-label">(optional)</span>
+@@ -521,6 +547,7 @@
+             </div>
+           </div>
+         </div>
++        -->
+       </div>
+ 
+       <!-- Step 2 actions — sticky so they stay reachable on smaller screens -->
+-- 
+2.43.0
+

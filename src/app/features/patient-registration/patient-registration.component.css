@@ -225,12 +225,14 @@
    it lines up under Visit Details above it, then spans the first
    two columns so it gets a wider control instead of a cramped 1/3.
    ══════════════════════════════════════════════════════ */
-.form-grid--visit { grid-template-columns: 1fr 1.4fr 0.85fr; }
+.form-grid--visit { grid-template-columns: 1fr 1.25fr 1.05fr; }
 @media (max-width: 860px) { .form-grid--visit { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 560px) { .form-grid--visit { grid-template-columns: 1fr; } }
 
 .visit-type-field { min-width: 0; }
 .sample-collection-field { min-width: 0; }
+.sample-collection-field .lis-seg__opt { font-size: 12px; gap: 5px; padding: 0 6px; white-space: nowrap; }
+.sample-collection-field .lis-seg__opt i { font-size: 14px; }
 @media (max-width: 860px) { .sample-collection-field--tablet-full { grid-column: 1 / -1; } }
 
 /* Fasting status is the only control in the Preparation group's first
@@ -568,6 +570,50 @@
 }
 .gender-card--active:hover { transform: none; box-shadow: inset 0 0 0 1px var(--lis-primary-mid, #5DCAA5); }
 
+/* ══════════════════════════════════════════════════════
+   BLOOD GROUP — native <select>, polished to match the DOB
+   date picker's trigger treatment (icon + custom chevron +
+   card border/focus-ring) instead of the plain OS select box.
+   ══════════════════════════════════════════════════════ */
+.bg-select-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 11px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--card-bg);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.bg-select-wrap:hover { border-color: var(--lis-primary-mid, #5DCAA5); }
+.bg-select-wrap:focus-within {
+  border-color: var(--lis-primary, #1D9E75);
+  box-shadow: 0 0 0 3px var(--lis-primary-xlight, #E1F5EE);
+}
+.bg-select-wrap__icon { font-size: 15px; color: var(--lis-danger, #E24B4A); opacity: 0.8; flex-shrink: 0; }
+.bg-select-wrap__chevron { font-size: 13px; color: var(--text-secondary); flex-shrink: 0; pointer-events: none; }
+.bg-select-wrap__select {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  /* Strip the native OS arrow so only our custom chevron shows. */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  font-family: var(--font-family);
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 0 !important;
+}
+
 /* Textareas that grow with content instead of leaving a tall
    empty box; still resizable if the operator wants more room. */
 .auto-expand {
@@ -585,8 +631,14 @@
   align-items: center;
   gap: 12px;
   padding: 10px 20px;
-  border-bottom: 0.5px solid var(--border-color);
-  background: var(--lis-primary-xlight, #E1F5EE);
+  border-bottom: 1px solid var(--lis-primary-mid, #5DCAA5);
+  /* Was a flat --lis-primary-xlight wash with generic --text-primary
+     copy — low contrast in dark mode and mismatched hue in some
+     palettes. A soft directional tint + the primary-deep/xlight pairing
+     (same combo used by .success-pid-block) keeps proper contrast in
+     both themes and reads as clearly "on brand" rather than a plain
+     background tint. */
+  background: linear-gradient(120deg, var(--lis-primary-xlight, #E1F5EE), var(--card-bg) 165%);
 }
 
 .recap-av {
@@ -606,7 +658,23 @@
 }
 
 .recap-info { flex: 1; min-width: 0; }
-.recap-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.recap-name { font-size: 13px; font-weight: 700; color: var(--primary-deeper, #5367FE); }
+/* Detail row/items/icons scoped to the recap panel only — reuses the
+   global .pat-detail-row structure but recolors it with --primary-deeper
+   (fixed indigo, identical value in both light and dark themes) instead
+   of the LIS palette-dependent tokens, so the metadata reads consistently
+   on-brand regardless of theme or active color palette. */
+.patient-recap .pat-detail-row { margin-top: 4px; gap: 6px; }
+.patient-recap .pat-detail-item {
+  color: var(--primary-deeper, #5367FE);
+  font-weight: 500;
+  background: var(--card-bg);
+  border: 0.5px solid var(--lis-primary-mid, #5DCAA5);
+  border-radius: 20px;
+  padding: 2px 9px 2px 7px;
+}
+.patient-recap .pat-detail-icon { color: var(--primary-deeper, #5367FE); }
+.patient-recap .pat-detail-sep { display: none; }
 /* .recap-meta removed — the Clinical step recap now uses the canonical
    global .pat-detail-row / .pat-detail-item styling (see styles.css)
    instead of its own bespoke text row, matching Billing/Test
