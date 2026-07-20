@@ -12,18 +12,43 @@
   max-width: 1200px;
   margin: 0 auto;
 }
-.reg-card { margin-bottom: 0; border-radius: var(--lis-card-radius) var(--lis-card-radius) 0 0; border-bottom: none; }
+.reg-card {
+  margin-bottom: 0;
+  border-radius: var(--lis-card-radius) var(--lis-card-radius) 0 0;
+  border-bottom: none;
+  box-shadow: 0 1px 2px rgba(16,24,40,0.04), 0 1px 6px rgba(16,24,40,0.03);
+}
+.reg-card .lis-card__header {
+  background: linear-gradient(180deg, var(--card-bg), var(--body-bg) 180%);
+}
+.reg-card .lis-card-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--lis-primary-xlight, #E1F5EE);
+  box-shadow: inset 0 0 0 1px rgba(29,158,117,0.14);
+  font-size: 14px !important;
+}
 
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 18px;
-  padding: 20px;
+  gap: 16px;
+  padding: 18px 20px;
 }
 .form-full { grid-column: 1 / -1; }
 
 @media (max-width: 860px) { .form-grid { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 560px) { .form-grid { grid-template-columns: 1fr; } }
+
+/* Contact group has only two controls (Mobile, Email) — giving it its
+   own 2-column track instead of inheriting the 3-column Identity grid
+   removes the dead third column and lets both fields sit wider. */
+.form-grid.form-grid--contact { grid-template-columns: 1fr 1fr; gap: 16px 18px; }
+@media (max-width: 560px) { .form-grid.form-grid--contact { grid-template-columns: 1fr; } }
 
 /* ── Error / validation ─────────────────────────────── */
 /* Softer than a full solid red border — only fires after the
@@ -60,6 +85,31 @@
   margin-top: 3px;
 }
 
+/* Unified hover / focus treatment for every plain input, select and
+   textarea in this form — previously only the phone field had a
+   focus ring, so focus states across the rest of the form felt
+   inconsistent and inert. */
+.reg-card .lis-field input,
+.reg-card .lis-field select,
+.reg-card .lis-field textarea {
+  border-radius: 9px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.reg-card .lis-field input:hover:not(:disabled):not(:focus),
+.reg-card .lis-field select:hover:not(:disabled):not(:focus),
+.reg-card .lis-field textarea:hover:not(:disabled):not(:focus) {
+  border-color: var(--lis-primary-mid, #5DCAA5);
+}
+.reg-card .lis-field input:focus,
+.reg-card .lis-field select:focus,
+.reg-card .lis-field textarea:focus {
+  border-color: var(--lis-primary, #1D9E75);
+  box-shadow: 0 0 0 3px var(--lis-primary-xlight, #E1F5EE);
+}
+.reg-card .lis-field input.input-error:focus {
+  box-shadow: 0 0 0 3px rgba(226,75,74,0.14);
+}
+
 /* Required indicator — a plain asterisk instead of a red dot,
    the conventional/expected way to mark a required field. */
 .req-ast {
@@ -79,6 +129,10 @@
   border: 0;
 }
 
+/* Slightly firmer label weight — reads more confidently now that
+   vertical rhythm across the form is tighter. */
+.reg-card .lis-field label { font-weight: 600; letter-spacing: 0.01em; }
+
 /* ══════════════════════════════════════════════════════
    REGISTRATION PROGRESS SUMMARY (Priority 22)
    Slim bar + label under the Personal Details card header,
@@ -89,7 +143,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 20px 0;
+  padding: 8px 20px 0;
 }
 .reg-progress__bar {
   flex: 1;
@@ -135,30 +189,32 @@
    FIELD GROUPS — Identity / Contact / Address,
    Visit Details / Preparation / Medication
    ══════════════════════════════════════════════════════ */
-.field-group + .field-group { border-top: 0.5px solid var(--border-color); margin-top: 4px; }
+.field-group + .field-group { border-top: 0.5px solid var(--border-color); margin-top: 2px; }
 .field-group__title {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 700;
+  letter-spacing: 0.01em;
   color: var(--text-primary);
-  padding: 16px 20px 0;
+  padding: 14px 20px 0;
   i {
-    font-size: 16px;
+    font-size: 15px;
     color: var(--lis-primary, #1D9E75);
-    width: 26px;
-    height: 26px;
+    width: 24px;
+    height: 24px;
     border-radius: 7px;
     background: var(--lis-primary-xlight, #E1F5EE);
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    box-shadow: inset 0 0 0 1px rgba(29,158,117,0.14);
   }
 }
 /* Slightly tighter rows within a group, more air between groups
    (Priority 20 — form density / visual rhythm). */
-.field-group .form-grid { padding-top: 10px; padding-bottom: 4px; gap: 10px 18px; }
+.field-group .form-grid { padding-top: 8px; padding-bottom: 2px; gap: 12px 16px; }
 
 /* ══════════════════════════════════════════════════════
    VISIT DETAILS / PREPARATION — column widths
@@ -175,13 +231,32 @@
 
 .visit-type-field { min-width: 0; }
 .sample-collection-field { min-width: 0; }
-.fasting-field { grid-column: span 2; min-width: 0; }
-@media (max-width: 860px) { .fasting-field { grid-column: 1 / -1; } }
+@media (max-width: 860px) { .sample-collection-field--tablet-full { grid-column: 1 / -1; } }
+
+/* Fasting status is the only control in the Preparation group's first
+   row — spanning 2 of 3 columns left a dead empty column beside it, so
+   it now spans the full row and the segmented buttons stretch to use
+   that space instead of leaving it blank. */
+.fasting-field--full { grid-column: 1 / -1; min-width: 0; }
+.fasting-field--full .lis-seg__opt { max-width: 220px; }
 
 /* Extra breathing room between the segmented options themselves so the
    active-state background never visually touches/overlaps its neighbour. */
 .lis-seg--spaced { gap: 10px; }
 .lis-seg--spaced .lis-seg__opt { padding: 0 10px; }
+
+/* Segmented options had no hover feedback at all before — add a subtle
+   lift so the control reads as interactive before it's clicked. */
+.reg-card .lis-seg__opt {
+  border-radius: 9px;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+.reg-card .lis-seg__opt:hover:not(.lis-seg__opt--active) {
+  border-color: var(--lis-primary-mid, #5DCAA5);
+  background: var(--lis-primary-xlight, #E1F5EE);
+  color: var(--lis-primary-deep, #085041);
+}
+.reg-card .lis-seg__opt--active { box-shadow: inset 0 0 0 1px var(--lis-primary-mid, #5DCAA5), 0 1px 3px rgba(29,158,117,0.16); }
 
 /* Date of Birth is now rendered by <app-dob-date-picker> (see
    /shared/components/dob-date-picker) — its own stylesheet
@@ -244,6 +319,7 @@
   /* Card should feel elevated over the form background rather
      than blending into it — a touch brighter than --card-bg. */
   background: var(--card-bg);
+  box-shadow: 0 1px 2px rgba(16,24,40,0.03);
 }
 @supports (background: color-mix(in srgb, red, blue)) {
   .age-card {
@@ -366,11 +442,12 @@
   display: flex;
   align-items: stretch;
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: 9px;
   overflow: hidden;
   height: 42px;
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s;
 
+  &:hover:not(:focus-within) { border-color: var(--lis-primary-mid, #5DCAA5); }
   &:focus-within { border-color: var(--lis-primary, #1D9E75); box-shadow: 0 0 0 3px var(--lis-primary-xlight, #E1F5EE); }
 }
 
@@ -430,9 +507,10 @@
   gap: 10px;
   margin: 14px 20px 0;
   padding: 12px 14px;
-  border-radius: 8px;
+  border-radius: 10px;
   background: #FFF7E6;
   border: 0.5px solid #F0C36D;
+  box-shadow: 0 1px 3px rgba(166,113,10,0.08);
 }
 .dup-banner__icon { font-size: 18px; color: #A6710A; flex-shrink: 0; margin-top: 1px; }
 .dup-banner__body { flex: 1; min-width: 0; }
@@ -471,24 +549,32 @@
   cursor: pointer;
   font-family: var(--font-family);
   font-size: 12px;
-  transition: border-color 0.15s, background 0.15s;
+  box-shadow: 0 1px 2px rgba(16,24,40,0.03);
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s, transform 0.15s;
   i { font-size: 18px; }
 }
-.gender-card:hover { border-color: var(--lis-primary-mid, #5DCAA5); }
+.gender-card:hover {
+  border-color: var(--lis-primary-mid, #5DCAA5);
+  box-shadow: 0 4px 10px rgba(29,158,117,0.12);
+  transform: translateY(-1px);
+}
 .gender-card--active {
   background: var(--lis-primary-xlight, #E1F5EE);
   color: var(--lis-primary-deep, #085041);
   border-color: var(--lis-primary, #1D9E75);
   font-weight: 600;
+  box-shadow: inset 0 0 0 1px var(--lis-primary-mid, #5DCAA5);
   i { color: var(--lis-primary, #1D9E75); }
 }
+.gender-card--active:hover { transform: none; box-shadow: inset 0 0 0 1px var(--lis-primary-mid, #5DCAA5); }
 
 /* Textareas that grow with content instead of leaving a tall
    empty box; still resizable if the operator wants more room. */
 .auto-expand {
-  min-height: 44px !important;
+  min-height: 40px !important;
   height: auto;
   overflow-y: hidden;
+  border-radius: 9px;
 }
 
 /* ══════════════════════════════════════════════════════
@@ -498,7 +584,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 20px;
+  padding: 10px 20px;
   border-bottom: 0.5px solid var(--border-color);
   background: var(--lis-primary-xlight, #E1F5EE);
 }
@@ -516,6 +602,7 @@
   font-weight: 700;
   flex-shrink: 0;
   text-transform: uppercase;
+  box-shadow: 0 2px 6px rgba(29,158,117,0.28);
 }
 
 .recap-info { flex: 1; min-width: 0; }
