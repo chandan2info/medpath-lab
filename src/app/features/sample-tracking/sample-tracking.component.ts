@@ -90,6 +90,16 @@ export class SampleTrackingComponent {
     this.activeFilter.set('all');
   }
 
+  /** Drives a one-time 360° spin on the search clear (×) button when clicked
+   *  — purely a tactile "cleared" acknowledgment, not a loading state. */
+  clearSpin = signal(false);
+
+  clearSearch(): void {
+    this.searchQ.set('');
+    this.clearSpin.set(true);
+    setTimeout(() => this.clearSpin.set(false), 350);
+  }
+
   initials(name: string): string {
     const parts = name.trim().split(/\s+/).filter(Boolean);
     if (parts.length === 0) return '?';

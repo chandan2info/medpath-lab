@@ -35,7 +35,7 @@
       (input)="searchQ.set($any($event.target).value)"
       aria-label="Search samples" />
     @if (searchQ()) {
-      <button type="button" class="ts-clear" (click)="searchQ.set('')" aria-label="Clear search">
+      <button type="button" class="ts-clear" [class.ts-clear--spin]="clearSpin()" (click)="clearSearch()" aria-label="Clear search">
         <i class="ti ti-x" aria-hidden="true"></i>
       </button>
     }
