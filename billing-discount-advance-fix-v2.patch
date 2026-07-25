@@ -1,0 +1,56 @@
+diff --git a/src/app/features/billing/billing.component.css b/src/app/features/billing/billing.component.css
+index a56b6bf..ac198bb 100644
+--- a/src/app/features/billing/billing.component.css
++++ b/src/app/features/billing/billing.component.css
+@@ -62,11 +62,18 @@
+ /* ── Discounts grid ──────────────────────── */
+ .disc-group { padding: 4px 16px 14px; &:not(:last-child) { border-bottom: 0.5px solid var(--border-color); padding-bottom: 16px; } }
+ .disc-group__label { font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-secondary); margin: 10px 0 10px; }
+-.disc-group--advance { padding-top: 2px; }
+ .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+-.form-grid--single { grid-template-columns: 1fr; max-width: 280px; }
+ @media (max-width: 540px) { .form-grid { grid-template-columns: 1fr; } }
+ 
++/* Discounts / Advance side-by-side columns */
++.disc-groups-row { display: grid; grid-template-columns: 1fr 1fr; }
++.disc-groups-row .disc-group { padding: 4px 16px 14px; border-bottom: none; }
++.disc-groups-row .disc-group:first-child { border-right: 0.5px solid var(--border-color); }
++@media (max-width: 540px) {
++  .disc-groups-row { grid-template-columns: 1fr; }
++  .disc-groups-row .disc-group:first-child { border-right: none; border-bottom: 0.5px solid var(--border-color); }
++}
++
+ /* Discount % stepper */
+ .stepper-field { display: flex; align-items: stretch; border: 0.5px solid var(--border-color); border-radius: 8px; overflow: hidden; }
+ .stepper-btn {
+diff --git a/src/app/features/billing/billing.component.html b/src/app/features/billing/billing.component.html
+index aea1fb8..c374912 100644
+--- a/src/app/features/billing/billing.component.html
++++ b/src/app/features/billing/billing.component.html
+@@ -159,9 +159,9 @@
+         <i class="ti ti-tag lis-card-icon" aria-hidden="true"></i>
+         <h2 class="lis-card__title">Discounts &amp; Adjustments</h2>
+       </div>
+-      <div class="disc-group">
+-        <div class="disc-group__label">Discounts</div>
+-        <div class="form-grid">
++      <div class="disc-groups-row">
++        <div class="disc-group">
++          <div class="disc-group__label">Discounts</div>
+           <div class="lis-field">
+             <label for="discPct">Discount %</label>
+             <div class="stepper-field">
+@@ -194,11 +194,9 @@
+           </div>
+           -->
+         </div>
+-      </div>
+ 
+-      <div class="disc-group disc-group--advance">
+-        <div class="disc-group__label">Advance</div>
+-        <div class="form-grid form-grid--single">
++        <div class="disc-group">
++          <div class="disc-group__label">Advance</div>
+           <div class="lis-field">
+             <label for="advance">Advance received</label>
+             <div class="currency-field">

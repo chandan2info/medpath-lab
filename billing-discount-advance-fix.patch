@@ -1,0 +1,76 @@
+diff --git a/src/app/features/billing/billing.component.css b/src/app/features/billing/billing.component.css
+index a56b6bf..074c9fb 100644
+--- a/src/app/features/billing/billing.component.css
++++ b/src/app/features/billing/billing.component.css
+@@ -62,9 +62,7 @@
+ /* ── Discounts grid ──────────────────────── */
+ .disc-group { padding: 4px 16px 14px; &:not(:last-child) { border-bottom: 0.5px solid var(--border-color); padding-bottom: 16px; } }
+ .disc-group__label { font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-secondary); margin: 10px 0 10px; }
+-.disc-group--advance { padding-top: 2px; }
+ .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+-.form-grid--single { grid-template-columns: 1fr; max-width: 280px; }
+ @media (max-width: 540px) { .form-grid { grid-template-columns: 1fr; } }
+ 
+ /* Discount % stepper */
+diff --git a/src/app/features/billing/billing.component.html b/src/app/features/billing/billing.component.html
+index aea1fb8..6a6d17b 100644
+--- a/src/app/features/billing/billing.component.html
++++ b/src/app/features/billing/billing.component.html
+@@ -160,7 +160,7 @@
+         <h2 class="lis-card__title">Discounts &amp; Adjustments</h2>
+       </div>
+       <div class="disc-group">
+-        <div class="disc-group__label">Discounts</div>
++        <div class="disc-group__label">Discounts &amp; Advance</div>
+         <div class="form-grid">
+           <div class="lis-field">
+             <label for="discPct">Discount %</label>
+@@ -174,6 +174,24 @@
+               <button type="button" class="stepper-btn" (click)="incrementDiscount(1)" aria-label="Increase discount">+</button>
+             </div>
+           </div>
++          <!-- Advance received — commented out for now: advance collection isn't
++               wired into the Receive Payment flow yet (no pay-mode routes an
++               amount into `advance()`, so a lab op could enter a number here
++               that never actually gets collected/reconciled). Kept in the
++               grid's second column, right next to Discount %, so re-enabling
++               it later is a one-line uncomment, not a layout change.
++          <div class="lis-field">
++            <label for="advance">Advance received</label>
++            <div class="currency-field">
++              <span class="currency-prefix">₹</span>
++              <input id="advance" type="text" inputmode="numeric" pattern="[0-9]*"
++                [value]="advance()"
++                (keydown)="allowNumericKeysOnly($event)"
++                (input)="advance.set(sanitizeNumericInput($event))"
++                placeholder="Enter amount" />
++            </div>
++          </div>
++          -->
+           <!-- Coupon Code and Referral fields — disabled for now (no coupon/referral
+                program is live yet); kept in markup, commented out, so they can be
+                re-enabled quickly once that functionality ships.
+@@ -195,23 +213,6 @@
+           -->
+         </div>
+       </div>
+-
+-      <div class="disc-group disc-group--advance">
+-        <div class="disc-group__label">Advance</div>
+-        <div class="form-grid form-grid--single">
+-          <div class="lis-field">
+-            <label for="advance">Advance received</label>
+-            <div class="currency-field">
+-              <span class="currency-prefix">₹</span>
+-              <input id="advance" type="text" inputmode="numeric" pattern="[0-9]*"
+-                [value]="advance()"
+-                (keydown)="allowNumericKeysOnly($event)"
+-                (input)="advance.set(sanitizeNumericInput($event))"
+-                placeholder="Enter amount" />
+-            </div>
+-          </div>
+-        </div>
+-      </div>
+     </div>
+ 
+     <!-- Payment mode -->
