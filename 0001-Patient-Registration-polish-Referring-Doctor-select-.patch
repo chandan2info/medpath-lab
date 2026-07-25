@@ -1,0 +1,128 @@
+From c8a5252e6fae6ec0e7bb7ca4cc6b7c5dfa9b6ced Mon Sep 17 00:00:00 2001
+From: Claude <claude@anthropic.com>
+Date: Mon, 20 Jul 2026 19:56:57 +0000
+Subject: [PATCH] Patient Registration: polish Referring Doctor select to match
+ Blood Group / DOB trigger treatment
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Referring doctor: same icon + custom chevron + focus-ring wrap
+  treatment as Blood Group and the DOB date picker trigger, instead of
+  a plain native select box. Still a native <select> with the same
+  formControlName binding — no logic changes.
+- Required-field error state (isInvalid('refDoctor')) moved from the
+  select itself onto the wrapper via .ref-select-wrap--error, since the
+  select is now borderless inside the wrap; icon also recolors to
+  --lis-danger when invalid.
+---
+ .../patient-registration.component.css        | 53 +++++++++++++++++++
+ .../patient-registration.component.html       | 26 +++++----
+ 2 files changed, 70 insertions(+), 9 deletions(-)
+
+diff --git a/src/app/features/patient-registration/patient-registration.component.css b/src/app/features/patient-registration/patient-registration.component.css
+index 6ee3f56..c274e27 100644
+--- a/src/app/features/patient-registration/patient-registration.component.css
++++ b/src/app/features/patient-registration/patient-registration.component.css
+@@ -614,6 +614,59 @@
+   padding: 0 !important;
+ }
+ 
++/* ══════════════════════════════════════════════════════
++   REFERRING DOCTOR — same treatment as Blood Group above,
++   with an added error-state variant since this field is
++   required (was previously an .input-error border on the
++   select itself; now lives on the wrapper).
++   ══════════════════════════════════════════════════════ */
++.ref-select-wrap {
++  position: relative;
++  display: flex;
++  align-items: center;
++  gap: 8px;
++  height: 38px;
++  padding: 0 11px;
++  border: 1px solid var(--border-color);
++  border-radius: 8px;
++  background: var(--card-bg);
++  transition: border-color 0.15s ease, box-shadow 0.15s ease;
++}
++.ref-select-wrap:hover:not(.ref-select-wrap--error) { border-color: var(--lis-primary-mid, #5DCAA5); }
++.ref-select-wrap:focus-within {
++  border-color: var(--lis-primary, #1D9E75);
++  box-shadow: 0 0 0 3px var(--lis-primary-xlight, #E1F5EE);
++}
++.ref-select-wrap--error {
++  border-color: #E8A5A4;
++  box-shadow: 0 0 0 1px rgba(226,75,74,0.12);
++}
++.ref-select-wrap--error:focus-within {
++  border-color: var(--lis-danger, #E24B4A);
++  box-shadow: 0 0 0 3px rgba(226,75,74,0.14);
++}
++.ref-select-wrap__icon { font-size: 15px; color: var(--lis-primary, #1D9E75); flex-shrink: 0; }
++.ref-select-wrap--error .ref-select-wrap__icon { color: var(--lis-danger, #E24B4A); }
++.ref-select-wrap__chevron { font-size: 13px; color: var(--text-secondary); flex-shrink: 0; pointer-events: none; }
++.ref-select-wrap__select {
++  flex: 1;
++  min-width: 0;
++  height: 100%;
++  border: none !important;
++  outline: none !important;
++  box-shadow: none !important;
++  background: transparent !important;
++  border-radius: 0 !important;
++  appearance: none;
++  -webkit-appearance: none;
++  -moz-appearance: none;
++  font-family: var(--font-family);
++  font-size: 13px;
++  color: var(--text-primary);
++  cursor: pointer;
++  padding: 0 !important;
++}
++
+ /* Textareas that grow with content instead of leaving a tall
+    empty box; still resizable if the operator wants more room. */
+ .auto-expand {
+diff --git a/src/app/features/patient-registration/patient-registration.component.html b/src/app/features/patient-registration/patient-registration.component.html
+index 438935a..d4adfc5 100644
+--- a/src/app/features/patient-registration/patient-registration.component.html
++++ b/src/app/features/patient-registration/patient-registration.component.html
+@@ -420,17 +420,25 @@
+         <div class="field-group">
+           <div class="field-group__title"><i class="ti ti-stethoscope" aria-hidden="true"></i> Visit Details</div>
+           <div class="form-grid form-grid--visit">
+-            <!-- Referring doctor -->
++            <!-- Referring doctor — polished with the same icon + custom
++                 chevron + focus-ring wrap treatment as Blood Group and
++                 the DOB date picker trigger, instead of a plain select.
++                 Still a native <select> with the same formControlName
++                 binding; error state now lives on the wrapper since the
++                 select itself is borderless inside it. -->
+             <div class="lis-field">
+               <label for="refDoctor">Referring doctor <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
+-              <select id="refDoctor" formControlName="refDoctor"
+-                [class.input-error]="isInvalid('refDoctor')">
+-                <option value="">— Select doctor —</option>
+-                @for (d of flow.doctors; track d) {
+-                  <option [value]="d">{{ d }}</option>
+-                }
+-                <option value="new">+ Add new doctor</option>
+-              </select>
++              <div class="ref-select-wrap" [class.ref-select-wrap--error]="isInvalid('refDoctor')">
++                <i class="ti ti-stethoscope ref-select-wrap__icon" aria-hidden="true"></i>
++                <select id="refDoctor" formControlName="refDoctor" class="ref-select-wrap__select">
++                  <option value="">— Select doctor —</option>
++                  @for (d of flow.doctors; track d) {
++                    <option [value]="d">{{ d }}</option>
++                  }
++                  <option value="new">+ Add new doctor</option>
++                </select>
++                <i class="ti ti-chevron-down ref-select-wrap__chevron" aria-hidden="true"></i>
++              </div>
+               @if (isInvalid('refDoctor')) {
+                 <span class="err-msg" role="alert">Please select a referring doctor</span>
+               }
+-- 
+2.43.0
+

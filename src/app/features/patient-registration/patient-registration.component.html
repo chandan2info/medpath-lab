@@ -407,6 +407,7 @@
               <span class="pat-detail-sep" aria-hidden="true">|</span>
               <span class="pat-detail-item"><i class="ti {{ genderIcon() }} pat-detail-icon" aria-hidden="true"></i>{{ form.value.gender || '—' }}</span>
               <span class="pat-detail-sep" aria-hidden="true">|</span>
+              <span class="pat-details-item" ><i class="ti {{bloodGroups}} pat-detail-icon" aria-hidden="true"></i>{{ form.value.bloodGroup || '—' }}</span>
               <span class="pat-detail-item"><i class="ti ti-phone pat-detail-icon" aria-hidden="true"></i>{{ form.value.mobile || '—' }}</span>
             </div>
           </div>
@@ -420,17 +421,25 @@
         <div class="field-group">
           <div class="field-group__title"><i class="ti ti-stethoscope" aria-hidden="true"></i> Visit Details</div>
           <div class="form-grid form-grid--visit">
-            <!-- Referring doctor -->
+            <!-- Referring doctor — polished with the same icon + custom
+                 chevron + focus-ring wrap treatment as Blood Group and
+                 the DOB date picker trigger, instead of a plain select.
+                 Still a native <select> with the same formControlName
+                 binding; error state now lives on the wrapper since the
+                 select itself is borderless inside it. -->
             <div class="lis-field">
               <label for="refDoctor">Referring doctor <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
-              <select id="refDoctor" formControlName="refDoctor"
-                [class.input-error]="isInvalid('refDoctor')">
-                <option value="">— Select doctor —</option>
-                @for (d of flow.doctors; track d) {
-                  <option [value]="d">{{ d }}</option>
-                }
-                <option value="new">+ Add new doctor</option>
-              </select>
+              <div class="ref-select-wrap" [class.ref-select-wrap--error]="isInvalid('refDoctor')">
+                <i class="ti ti-stethoscope ref-select-wrap__icon" aria-hidden="true"></i>
+                <select id="refDoctor" formControlName="refDoctor" class="ref-select-wrap__select">
+                  <option value="">— Select doctor —</option>
+                  @for (d of flow.doctors; track d) {
+                    <option [value]="d">{{ d }}</option>
+                  }
+                  <option value="new">+ Add new doctor</option>
+                </select>
+                <i class="ti ti-chevron-down ref-select-wrap__chevron" aria-hidden="true"></i>
+              </div>
               @if (isInvalid('refDoctor')) {
                 <span class="err-msg" role="alert">Please select a referring doctor</span>
               }

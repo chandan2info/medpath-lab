@@ -614,6 +614,59 @@
   padding: 0 !important;
 }
 
+/* ══════════════════════════════════════════════════════
+   REFERRING DOCTOR — same treatment as Blood Group above,
+   with an added error-state variant since this field is
+   required (was previously an .input-error border on the
+   select itself; now lives on the wrapper).
+   ══════════════════════════════════════════════════════ */
+.ref-select-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 11px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--card-bg);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.ref-select-wrap:hover:not(.ref-select-wrap--error) { border-color: var(--lis-primary-mid, #5DCAA5); }
+.ref-select-wrap:focus-within {
+  border-color: var(--lis-primary, #1D9E75);
+  box-shadow: 0 0 0 3px var(--lis-primary-xlight, #E1F5EE);
+}
+.ref-select-wrap--error {
+  border-color: #E8A5A4;
+  box-shadow: 0 0 0 1px rgba(226,75,74,0.12);
+}
+.ref-select-wrap--error:focus-within {
+  border-color: var(--lis-danger, #E24B4A);
+  box-shadow: 0 0 0 3px rgba(226,75,74,0.14);
+}
+.ref-select-wrap__icon { font-size: 15px; color: var(--lis-primary, #1D9E75); flex-shrink: 0; }
+.ref-select-wrap--error .ref-select-wrap__icon { color: var(--lis-danger, #E24B4A); }
+.ref-select-wrap__chevron { font-size: 13px; color: var(--text-secondary); flex-shrink: 0; pointer-events: none; }
+.ref-select-wrap__select {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  font-family: var(--font-family);
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 0 !important;
+}
+
 /* Textareas that grow with content instead of leaving a tall
    empty box; still resizable if the operator wants more room. */
 .auto-expand {
