@@ -96,19 +96,6 @@ export class SampleTrackingComponent {
     return (parts[0][0] + (parts[1]?.[0] ?? '')).toUpperCase();
   }
 
-  /** Deterministic per-tube bar pattern (derived from the tube id) so the
-   *  decorative barcode at least looks distinct per tube instead of every
-   *  tube on every sample rendering the exact same bars — it's still not a
-   *  scannable barcode, just less likely to be mistaken for one. */
-  barcodeWidths(tubeId: string): number[] {
-    const widths: number[] = [];
-    for (let i = 0; i < 15; i++) {
-      const code = tubeId.charCodeAt(i % tubeId.length) + i;
-      widths.push((code % 3) + 1);
-    }
-    return widths;
-  }
-
   /** Header action: print labels for whatever's currently visible in the table. */
   printLabels(): void {
     window.print();

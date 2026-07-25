@@ -53,26 +53,32 @@
 
     /* Detail panel */
     .detail-panel { position:sticky; top:80px; max-height:calc(100vh - 96px); overflow-y:auto; }
-    .det-pat { padding:10px 14px; border-bottom:0.5px solid var(--border-color); display:flex; align-items:center; gap:9px; }
-    .det-av { width:30px; height:30px; border-radius:50%; background:var(--lis-primary-xlight,#E1F5EE); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:500; color:var(--lis-primary-deep,#085041); }
+
+    .det-identity { padding:12px 14px; border-bottom:0.5px solid var(--border-color); display:flex; align-items:center; gap:9px; }
+    .det-identity-info { flex:1; min-width:0; }
+    .det-av { width:34px; height:34px; border-radius:50%; background:var(--lis-primary-xlight,#E1F5EE); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; color:var(--lis-primary-deep,#085041); flex-shrink:0; }
+
     .det-section { padding:9px 14px 3px; font-size:11px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.05em; font-weight:500; }
-    .det-row { display:flex; align-items:center; justify-content:space-between; padding:6px 14px; border-bottom:0.5px solid var(--border-color); &:last-of-type { border-bottom:none; } }
-    .det-lbl { font-size:11px; color:var(--text-secondary); }
-    .det-val { font-size:11px; color:var(--text-primary); font-weight:500; }
+
+    /* Compact 2-column info grid — Sample ID / Collected / Priority / Status
+       together, instead of four full-width rows stacked one per line. */
+    .det-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--border-color); border-bottom:0.5px solid var(--border-color); }
+    .det-cell { background:var(--card-bg); padding:8px 14px; display:flex; flex-direction:column; gap:3px; }
+    .det-cell-lbl { font-size:10px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.04em; }
+    .det-cell-val { font-size:12px; color:var(--text-primary); font-weight:500; }
     .det-val--urgent { color:var(--lis-danger,#E24B4A); }
 
-    .tube-list { padding:8px 14px; display:flex; flex-direction:column; gap:7px; }
-    .tube-card { display:flex; align-items:center; gap:9px; padding:8px 10px; border:0.5px solid var(--border-color); border-radius:8px; }
-    .tube-body  { width:13px; height:36px; border-radius:7px; flex-shrink:0; }
-    .tube-info  { flex:1; min-width:0; }
-    .tube-label { font-size:11px; font-weight:500; color:var(--text-primary); }
-    .tube-tests { font-size:11px; color:var(--text-secondary); }
-    .barcode { display:flex; flex-direction:column; align-items:center; gap:3px; }
-    .bc-bars { display:flex; gap:1px; height:20px; align-items:stretch; }
-    .bc-bar  { border-radius:1px; background:var(--text-primary); }
-    .bc-num  { font-size:11px; font-family:monospace; color:var(--text-secondary); }
-    .bc-caption { font-size:9px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.04em; }
-    .det-actions { padding:12px 14px; display:flex; flex-direction:column; gap:7px; border-top:0.5px solid var(--border-color); }
+    .tube-list { padding:8px 14px; display:flex; flex-direction:column; gap:6px; }
+    .tube-row { display:flex; align-items:center; gap:9px; padding:7px 10px; border:0.5px solid var(--border-color); border-radius:8px; }
+    .tube-swatch { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+    .tube-row-info { flex:1; min-width:0; }
+    .tube-id { font-size:10px; color:var(--text-secondary); flex-shrink:0; }
+
+    .det-actions {
+      padding:12px 14px; display:flex; flex-direction:column; gap:7px;
+      border-top:0.5px solid var(--border-color);
+      position:sticky; bottom:0; background:var(--card-bg);
+    }
 /* Table tweaks */
 .tbl-sub    { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
 .tbl-tests  { font-size: 11px; }
@@ -80,16 +86,13 @@
 /* .lis-card-icon is defined globally in styles.css */
 
 /* Detail panel extra classes */
-.det-pname { font-size: 13px; font-weight: 500; color: var(--text-primary); }
-.det-sid   { font-size: 11px; margin-top: 2px; }
-.det-name  { font-size: 12px; font-weight: 500; color: var(--text-primary); }
-.det-meta  { font-size: 11px; color: var(--text-secondary); }
+.det-name  { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.det-meta  { font-size: 11px; color: var(--text-secondary); margin-top: 1px; }
 .tube-label-sm { font-size: 11px; font-weight: 500; color: var(--text-primary); }
 .tube-tests-sm { font-size: 11px; color: var(--text-secondary); }
 
 /* Result count + toolbar additions */
 .result-count { font-size:11px; color:var(--text-secondary); margin:-8px 0 10px 2px; }
-.ts-search--has-value input { padding-right:2px; }
 .ts-clear {
   display:flex; align-items:center; justify-content:center;
   width:16px; height:16px; border:none; background:transparent; cursor:pointer;
@@ -103,6 +106,12 @@
   display:flex; flex-direction:column; align-items:center; gap:8px; cursor:default;
 }
 .tbl-empty i { font-size:22px; }
+.tbl-empty__clear {
+  border:none; background:none; padding:2px 0; margin-top:2px;
+  font-size:12px; font-weight:500; color:var(--lis-primary,#1D9E75);
+  cursor:pointer; text-decoration:underline; text-underline-offset:2px;
+}
+.tbl-empty__clear:hover { color:var(--lis-primary-deep,#085041); }
 
 /* Header action buttons that aren't wired up yet */
 .lis-btn[disabled] { opacity:.5; cursor:not-allowed; }

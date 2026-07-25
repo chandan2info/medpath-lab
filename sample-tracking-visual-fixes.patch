@@ -1,0 +1,211 @@
+diff --git a/src/app/features/sample-tracking/sample-tracking.component.css b/src/app/features/sample-tracking/sample-tracking.component.css
+index 477a79c..7c56aa7 100644
+--- a/src/app/features/sample-tracking/sample-tracking.component.css
++++ b/src/app/features/sample-tracking/sample-tracking.component.css
+@@ -53,26 +53,32 @@
+ 
+     /* Detail panel */
+     .detail-panel { position:sticky; top:80px; max-height:calc(100vh - 96px); overflow-y:auto; }
+-    .det-pat { padding:10px 14px; border-bottom:0.5px solid var(--border-color); display:flex; align-items:center; gap:9px; }
+-    .det-av { width:30px; height:30px; border-radius:50%; background:var(--lis-primary-xlight,#E1F5EE); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:500; color:var(--lis-primary-deep,#085041); }
++
++    .det-identity { padding:12px 14px; border-bottom:0.5px solid var(--border-color); display:flex; align-items:center; gap:9px; }
++    .det-identity-info { flex:1; min-width:0; }
++    .det-av { width:34px; height:34px; border-radius:50%; background:var(--lis-primary-xlight,#E1F5EE); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; color:var(--lis-primary-deep,#085041); flex-shrink:0; }
++
+     .det-section { padding:9px 14px 3px; font-size:11px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.05em; font-weight:500; }
+-    .det-row { display:flex; align-items:center; justify-content:space-between; padding:6px 14px; border-bottom:0.5px solid var(--border-color); &:last-of-type { border-bottom:none; } }
+-    .det-lbl { font-size:11px; color:var(--text-secondary); }
+-    .det-val { font-size:11px; color:var(--text-primary); font-weight:500; }
++
++    /* Compact 2-column info grid — Sample ID / Collected / Priority / Status
++       together, instead of four full-width rows stacked one per line. */
++    .det-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--border-color); border-bottom:0.5px solid var(--border-color); }
++    .det-cell { background:var(--card-bg); padding:8px 14px; display:flex; flex-direction:column; gap:3px; }
++    .det-cell-lbl { font-size:10px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.04em; }
++    .det-cell-val { font-size:12px; color:var(--text-primary); font-weight:500; }
+     .det-val--urgent { color:var(--lis-danger,#E24B4A); }
+ 
+-    .tube-list { padding:8px 14px; display:flex; flex-direction:column; gap:7px; }
+-    .tube-card { display:flex; align-items:center; gap:9px; padding:8px 10px; border:0.5px solid var(--border-color); border-radius:8px; }
+-    .tube-body  { width:13px; height:36px; border-radius:7px; flex-shrink:0; }
+-    .tube-info  { flex:1; min-width:0; }
+-    .tube-label { font-size:11px; font-weight:500; color:var(--text-primary); }
+-    .tube-tests { font-size:11px; color:var(--text-secondary); }
+-    .barcode { display:flex; flex-direction:column; align-items:center; gap:3px; }
+-    .bc-bars { display:flex; gap:1px; height:20px; align-items:stretch; }
+-    .bc-bar  { border-radius:1px; background:var(--text-primary); }
+-    .bc-num  { font-size:11px; font-family:monospace; color:var(--text-secondary); }
+-    .bc-caption { font-size:9px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.04em; }
+-    .det-actions { padding:12px 14px; display:flex; flex-direction:column; gap:7px; border-top:0.5px solid var(--border-color); }
++    .tube-list { padding:8px 14px; display:flex; flex-direction:column; gap:6px; }
++    .tube-row { display:flex; align-items:center; gap:9px; padding:7px 10px; border:0.5px solid var(--border-color); border-radius:8px; }
++    .tube-swatch { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
++    .tube-row-info { flex:1; min-width:0; }
++    .tube-id { font-size:10px; color:var(--text-secondary); flex-shrink:0; }
++
++    .det-actions {
++      padding:12px 14px; display:flex; flex-direction:column; gap:7px;
++      border-top:0.5px solid var(--border-color);
++      position:sticky; bottom:0; background:var(--card-bg);
++    }
+ /* Table tweaks */
+ .tbl-sub    { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+ .tbl-tests  { font-size: 11px; }
+@@ -80,16 +86,13 @@
+ /* .lis-card-icon is defined globally in styles.css */
+ 
+ /* Detail panel extra classes */
+-.det-pname { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+-.det-sid   { font-size: 11px; margin-top: 2px; }
+-.det-name  { font-size: 12px; font-weight: 500; color: var(--text-primary); }
+-.det-meta  { font-size: 11px; color: var(--text-secondary); }
++.det-name  { font-size: 13px; font-weight: 600; color: var(--text-primary); }
++.det-meta  { font-size: 11px; color: var(--text-secondary); margin-top: 1px; }
+ .tube-label-sm { font-size: 11px; font-weight: 500; color: var(--text-primary); }
+ .tube-tests-sm { font-size: 11px; color: var(--text-secondary); }
+ 
+ /* Result count + toolbar additions */
+ .result-count { font-size:11px; color:var(--text-secondary); margin:-8px 0 10px 2px; }
+-.ts-search--has-value input { padding-right:2px; }
+ .ts-clear {
+   display:flex; align-items:center; justify-content:center;
+   width:16px; height:16px; border:none; background:transparent; cursor:pointer;
+@@ -103,6 +106,12 @@
+   display:flex; flex-direction:column; align-items:center; gap:8px; cursor:default;
+ }
+ .tbl-empty i { font-size:22px; }
++.tbl-empty__clear {
++  border:none; background:none; padding:2px 0; margin-top:2px;
++  font-size:12px; font-weight:500; color:var(--lis-primary,#1D9E75);
++  cursor:pointer; text-decoration:underline; text-underline-offset:2px;
++}
++.tbl-empty__clear:hover { color:var(--lis-primary-deep,#085041); }
+ 
+ /* Header action buttons that aren't wired up yet */
+ .lis-btn[disabled] { opacity:.5; cursor:not-allowed; }
+diff --git a/src/app/features/sample-tracking/sample-tracking.component.html b/src/app/features/sample-tracking/sample-tracking.component.html
+index 19870c3..b1d6e5f 100644
+--- a/src/app/features/sample-tracking/sample-tracking.component.html
++++ b/src/app/features/sample-tracking/sample-tracking.component.html
+@@ -30,7 +30,7 @@
+ <div class="tracking-toolbar">
+   <div class="ts-search" role="search">
+     <i class="ti ti-search" aria-hidden="true"></i>
+-    <input type="search" placeholder="Search by patient name or sample ID…"
++    <input type="text" placeholder="Search by patient name or sample ID…"
+       [value]="searchQ()"
+       (input)="searchQ.set($any($event.target).value)"
+       aria-label="Search samples" />
+@@ -118,7 +118,7 @@
+             <td colspan="7" class="tbl-empty">
+               <i class="ti ti-search-off" aria-hidden="true"></i>
+               <span>No samples match "{{ searchQ() }}"{{ activeFilter() !== 'all' ? ' in this filter' : '' }}.</span>
+-              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="clearFilters()">
++              <button type="button" class="tbl-empty__clear" (click)="clearFilters()">
+                 Clear search &amp; filters
+               </button>
+             </td>
+@@ -165,51 +165,46 @@
+   <!-- Detail panel -->
+   @if (selectedSample()) {
+     <aside class="detail-panel lis-card" aria-label="Sample detail">
+-      <div class="lis-card__header">
+-        <div>
+-          <div class="det-pname">{{ selectedSample()!.patientName }}</div>
+-          <div class="lis-mono det-sid">{{ selectedSample()!.id }}</div>
+-        </div>
+-        @if (selectedSample()!.priority === 'stat') { <lis-status-pill status="stat" /> }
+-      </div>
+-
+-      <div class="det-pat">
++      <div class="det-identity">
+         <div class="det-av" aria-hidden="true">{{ initials(selectedSample()!.patientName) }}</div>
+-        <div>
++        <div class="det-identity-info">
+           <div class="det-name">{{ selectedSample()!.patientName }}</div>
+           <div class="det-meta">{{ selectedSample()!.patientId }} · {{ selectedSample()!.tests.join(', ') }}</div>
+         </div>
++        @if (selectedSample()!.priority === 'stat') { <lis-status-pill status="stat" /> }
+       </div>
+ 
+-      <div class="det-section">Sample info</div>
+-      <div class="det-row"><span class="det-lbl">Collected at</span><span class="det-val">{{ selectedSample()!.collectedAt }}</span></div>
+-      <div class="det-row"><span class="det-lbl">Priority</span>
+-        <span class="det-val" [class.det-val--urgent]="selectedSample()!.priority === 'stat'">
+-          {{ selectedSample()!.priority.toUpperCase() }}
+-        </span>
+-      </div>
+-      <div class="det-row"><span class="det-lbl">Status</span>
+-        <lis-status-pill [status]="selectedSample()!.status" />
++      <div class="det-grid">
++        <div class="det-cell">
++          <span class="det-cell-lbl">Sample ID</span>
++          <span class="det-cell-val lis-mono">{{ selectedSample()!.id }}</span>
++        </div>
++        <div class="det-cell">
++          <span class="det-cell-lbl">Collected</span>
++          <span class="det-cell-val">{{ selectedSample()!.collectedAt }}</span>
++        </div>
++        <div class="det-cell">
++          <span class="det-cell-lbl">Priority</span>
++          <span class="det-cell-val" [class.det-val--urgent]="selectedSample()!.priority === 'stat'">
++            {{ selectedSample()!.priority === 'stat' ? 'STAT' : 'Routine' }}
++          </span>
++        </div>
++        <div class="det-cell">
++          <span class="det-cell-lbl">Status</span>
++          <lis-status-pill [status]="selectedSample()!.status" />
++        </div>
+       </div>
+ 
+-      <div class="det-section">Tubes assigned</div>
++      <div class="det-section">Tubes assigned ({{ selectedSample()!.tubes.length }})</div>
+       <div class="tube-list">
+         @for (tube of selectedSample()!.tubes; track tube.id) {
+-          <div class="tube-card">
+-            <div class="tube-body" [style.background]="tube.color" aria-hidden="true"></div>
+-            <div class="tube-info">
++          <div class="tube-row">
++            <span class="tube-swatch" [style.background]="tube.color" aria-hidden="true"></span>
++            <div class="tube-row-info">
+               <div class="tube-label-sm">{{ tube.label }}</div>
+               <div class="tube-tests-sm">{{ tube.tests.join(' · ') }}</div>
+             </div>
+-            <div class="barcode" [attr.aria-label]="'Barcode preview for tube ' + tube.id + ' — reprint for a scannable label'">
+-              <div class="bc-bars" aria-hidden="true">
+-                @for (w of barcodeWidths(tube.id); track $index) {
+-                  <div class="bc-bar" [style.width.px]="w"></div>
+-                }
+-              </div>
+-              <div class="bc-num">{{ tube.id }}</div>
+-              <div class="bc-caption">Preview only</div>
+-            </div>
++            <span class="tube-id lis-mono">{{ tube.id }}</span>
+           </div>
+         }
+       </div>
+diff --git a/src/app/features/sample-tracking/sample-tracking.component.ts b/src/app/features/sample-tracking/sample-tracking.component.ts
+index 66450a1..80354d6 100644
+--- a/src/app/features/sample-tracking/sample-tracking.component.ts
++++ b/src/app/features/sample-tracking/sample-tracking.component.ts
+@@ -96,19 +96,6 @@ export class SampleTrackingComponent {
+     return (parts[0][0] + (parts[1]?.[0] ?? '')).toUpperCase();
+   }
+ 
+-  /** Deterministic per-tube bar pattern (derived from the tube id) so the
+-   *  decorative barcode at least looks distinct per tube instead of every
+-   *  tube on every sample rendering the exact same bars — it's still not a
+-   *  scannable barcode, just less likely to be mistaken for one. */
+-  barcodeWidths(tubeId: string): number[] {
+-    const widths: number[] = [];
+-    for (let i = 0; i < 15; i++) {
+-      const code = tubeId.charCodeAt(i % tubeId.length) + i;
+-      widths.push((code % 3) + 1);
+-    }
+-    return widths;
+-  }
+-
+   /** Header action: print labels for whatever's currently visible in the table. */
+   printLabels(): void {
+     window.print();

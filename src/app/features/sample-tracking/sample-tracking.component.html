@@ -30,7 +30,7 @@
 <div class="tracking-toolbar">
   <div class="ts-search" role="search">
     <i class="ti ti-search" aria-hidden="true"></i>
-    <input type="search" placeholder="Search by patient name or sample ID…"
+    <input type="text" placeholder="Search by patient name or sample ID…"
       [value]="searchQ()"
       (input)="searchQ.set($any($event.target).value)"
       aria-label="Search samples" />
@@ -118,7 +118,7 @@
             <td colspan="7" class="tbl-empty">
               <i class="ti ti-search-off" aria-hidden="true"></i>
               <span>No samples match "{{ searchQ() }}"{{ activeFilter() !== 'all' ? ' in this filter' : '' }}.</span>
-              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="clearFilters()">
+              <button type="button" class="tbl-empty__clear" (click)="clearFilters()">
                 Clear search &amp; filters
               </button>
             </td>
@@ -165,51 +165,46 @@
   <!-- Detail panel -->
   @if (selectedSample()) {
     <aside class="detail-panel lis-card" aria-label="Sample detail">
-      <div class="lis-card__header">
-        <div>
-          <div class="det-pname">{{ selectedSample()!.patientName }}</div>
-          <div class="lis-mono det-sid">{{ selectedSample()!.id }}</div>
+      <div class="det-identity">
+        <div class="det-av" aria-hidden="true">{{ initials(selectedSample()!.patientName) }}</div>
+        <div class="det-identity-info">
+          <div class="det-name">{{ selectedSample()!.patientName }}</div>
+          <div class="det-meta">{{ selectedSample()!.patientId }} · {{ selectedSample()!.tests.join(', ') }}</div>
         </div>
         @if (selectedSample()!.priority === 'stat') { <lis-status-pill status="stat" /> }
       </div>
 
-      <div class="det-pat">
-        <div class="det-av" aria-hidden="true">{{ initials(selectedSample()!.patientName) }}</div>
-        <div>
-          <div class="det-name">{{ selectedSample()!.patientName }}</div>
-          <div class="det-meta">{{ selectedSample()!.patientId }} · {{ selectedSample()!.tests.join(', ') }}</div>
+      <div class="det-grid">
+        <div class="det-cell">
+          <span class="det-cell-lbl">Sample ID</span>
+          <span class="det-cell-val lis-mono">{{ selectedSample()!.id }}</span>
+        </div>
+        <div class="det-cell">
+          <span class="det-cell-lbl">Collected</span>
+          <span class="det-cell-val">{{ selectedSample()!.collectedAt }}</span>
+        </div>
+        <div class="det-cell">
+          <span class="det-cell-lbl">Priority</span>
+          <span class="det-cell-val" [class.det-val--urgent]="selectedSample()!.priority === 'stat'">
+            {{ selectedSample()!.priority === 'stat' ? 'STAT' : 'Routine' }}
+          </span>
+        </div>
+        <div class="det-cell">
+          <span class="det-cell-lbl">Status</span>
+          <lis-status-pill [status]="selectedSample()!.status" />
         </div>
       </div>
 
-      <div class="det-section">Sample info</div>
-      <div class="det-row"><span class="det-lbl">Collected at</span><span class="det-val">{{ selectedSample()!.collectedAt }}</span></div>
-      <div class="det-row"><span class="det-lbl">Priority</span>
-        <span class="det-val" [class.det-val--urgent]="selectedSample()!.priority === 'stat'">
-          {{ selectedSample()!.priority.toUpperCase() }}
-        </span>
-      </div>
-      <div class="det-row"><span class="det-lbl">Status</span>
-        <lis-status-pill [status]="selectedSample()!.status" />
-      </div>
-
-      <div class="det-section">Tubes assigned</div>
+      <div class="det-section">Tubes assigned ({{ selectedSample()!.tubes.length }})</div>
       <div class="tube-list">
         @for (tube of selectedSample()!.tubes; track tube.id) {
-          <div class="tube-card">
-            <div class="tube-body" [style.background]="tube.color" aria-hidden="true"></div>
-            <div class="tube-info">
+          <div class="tube-row">
+            <span class="tube-swatch" [style.background]="tube.color" aria-hidden="true"></span>
+            <div class="tube-row-info">
               <div class="tube-label-sm">{{ tube.label }}</div>
               <div class="tube-tests-sm">{{ tube.tests.join(' · ') }}</div>
             </div>
-            <div class="barcode" [attr.aria-label]="'Barcode preview for tube ' + tube.id + ' — reprint for a scannable label'">
-              <div class="bc-bars" aria-hidden="true">
-                @for (w of barcodeWidths(tube.id); track $index) {
-                  <div class="bc-bar" [style.width.px]="w"></div>
-                }
-              </div>
-              <div class="bc-num">{{ tube.id }}</div>
-              <div class="bc-caption">Preview only</div>
-            </div>
+            <span class="tube-id lis-mono">{{ tube.id }}</span>
           </div>
         }
       </div>
