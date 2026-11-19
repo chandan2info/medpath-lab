@@ -95,14 +95,22 @@ const DOCTORS = [
 // duplicate-patient detection on the registration form.
 // Replace with a real lookup API call in production.
 export interface KnownPatientRecord {
+  id: string;
   name: string;
+  firstName: string;
+  lastName: string;
   mobile: string;
+  dob: string;
+  gender: string;
+  bloodGroup: string;
+  email: string;
+  address: string;
   registeredLabel: string;
 }
 
 const KNOWN_PATIENTS: KnownPatientRecord[] = [
-  { name: 'Chandan Kumar',  mobile: '9876543210', registeredLabel: 'Registered 3 months ago' },
-  { name: 'Priya Sharma',   mobile: '9845123456', registeredLabel: 'Registered 2 weeks ago' },
+  { id:'PAT-2608-0101', name:'Chandan Kumar', firstName:'Chandan', lastName:'Kumar', mobile:'9876543210', dob:'1991-05-14', gender:'Male', bloodGroup:'B+', email:'', address:'', registeredLabel:'Registered 3 months ago' },
+  { id:'PAT-2611-0102', name:'Priya Sharma', firstName:'Priya', lastName:'Sharma', mobile:'9845123456', dob:'1994-02-21', gender:'Female', bloodGroup:'O+', email:'priya@example.com', address:'Indiranagar, Bengaluru', registeredLabel:'Registered 2 weeks ago' },
 ];
 
 @Injectable({ providedIn: 'root' })
@@ -153,11 +161,11 @@ export class PatientFlowService {
   );
 
   // ── Actions ───────────────────────────────
-  registerPatient(data: Omit<RegisteredPatient, 'id'>): RegisteredPatient {
+  registerPatient(data: Omit<RegisteredPatient, 'id'>, existingPatientId?: string): RegisteredPatient {
     const seq = String(Math.floor(Math.random() * 900) + 100);
     const mm  = String(new Date().getMonth() + 1).padStart(2, '0');
     const yy  = String(new Date().getFullYear()).slice(2);
-    const pat: RegisteredPatient = { ...data, id: `PAT-${yy}${mm}-0${seq}` };
+    const pat: RegisteredPatient = { ...data, id: existingPatientId ?? `PAT-${yy}${mm}-0${seq}` };
     this._patient.set(pat);
     this._selected.set(new Set());          // reset tests for new patient
     this._discountPct.set(0);
@@ -189,6 +197,16 @@ export class PatientFlowService {
   findByMobile(mobile: string): KnownPatientRecord | null {
     if (!mobile || mobile.length !== 10) return null;
     return KNOWN_PATIENTS.find(p => p.mobile === mobile) ?? null;
+  }
+
+  searchPatients(query: string): KnownPatientRecord[] {
+    const q = query.trim().toLowerCase();
+    if (q.length < 2) return [];
+    return KNOWN_PATIENTS.filter(p =>
+      p.id.toLowerCase().includes(q) ||
+      p.name.toLowerCase().includes(q) ||
+      p.mobile.includes(q)
+    );
   }
 
   calcAge(dob: string): string {
