@@ -42,7 +42,7 @@
 @if (step1Saved()) {
   <div class="step-saved-toast" role="status" aria-live="polite">
     <i class="ti ti-circle-check" aria-hidden="true"></i>
-    Personal details saved
+    {{ selectedExistingPatient() ? 'Patient details confirmed' : 'Personal details saved' }}
   </div>
 }
 
