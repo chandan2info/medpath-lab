@@ -100,36 +100,49 @@
           </span>
         </div>
 
-        <!-- Existing patient lookup: demo directory only until a patient API is connected. -->
-        <div class="field-group">
-          <div class="field-group__title"><i class="ti ti-search" aria-hidden="true"></i> Find Existing Patient</div>
-          <span class="helper-text">Demo patient directory only. Connect this lookup to the patient API before production use.</span>
-          <div class="form-grid">
-            <div class="lis-field form-full">
-              <label for="patientSearch">Search by Patient ID, name or mobile</label>
+        <!-- Existing-patient lookup — compact panel styled with the LIS theme tokens. -->
+        <section class="patient-search-panel" aria-label="Find existing patient">
+          <div class="patient-search-panel__intro">
+            <span class="patient-search-panel__icon"><i class="ti ti-search" aria-hidden="true"></i></span>
+            <div class="patient-search-panel__copy">
+              <h3>Find Existing Patient</h3>
+              <p>Search by Patient ID, mobile number or name to avoid duplicate registration.</p>
+            </div>
+            <div class="patient-search-panel__input">
               <input id="patientSearch" type="search" [value]="patientSearchQuery()"
                 (input)="searchExistingPatients($any($event.target).value)"
-                placeholder="e.g. PAT-2608-0101, Chandan or 9876543210" />
-              <span class="helper-text">Select an existing record to reuse its Patient ID and create a new visit.</span>
-              @if (patientSearchResults().length) {
-                <div class="dup-banner" role="list" aria-label="Matching patients">
-                  @for (patient of patientSearchResults(); track patient.id) {
-                    <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm"
-                      role="listitem" (click)="selectExistingPatient(patient)">
-                      {{ patient.name }} · {{ patient.id }} · +91 {{ patient.mobile }}
-                    </button>
-                  }
-                </div>
-              }
-              @if (selectedExistingPatientId()) {
-                <div class="ok-msg" role="status">
-                  <i class="ti ti-circle-check"></i> Existing patient selected: {{ selectedExistingPatientId() }}
-                  <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="clearExistingPatientSelection()">Clear selection</button>
-                </div>
-              }
+                placeholder="Search by patient ID, mobile number or name"
+                aria-label="Search by patient ID, mobile number or name" />
             </div>
           </div>
-        </div>
+          @if (patientSearchResults().length) {
+            <div class="patient-search-results" aria-label="Matching patients">
+              @for (patient of patientSearchResults(); track patient.id) {
+                <button type="button" class="patient-search-result"
+                  (click)="selectExistingPatient(patient)">
+                  <span class="patient-search-result__identity">
+                    <span class="patient-search-result__tag">Possible match</span>
+                    <strong>{{ patient.id }} · {{ patient.name }}</strong>
+                    <small>+91 {{ patient.mobile }}</small>
+                  </span>
+                  <span class="patient-search-result__action">Use this patient <i class="ti ti-arrow-right"></i></span>
+                </button>
+              }
+            </div>
+          }
+          @if (selectedExistingPatientId()) {
+            <div class="patient-search-selected" role="status">
+              <i class="ti ti-circle-check" aria-hidden="true"></i>
+              Existing patient selected: <strong>{{ selectedExistingPatientId() }}</strong>
+              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="clearExistingPatientSelection()">Clear</button>
+            </div>
+          }
+          <div class="patient-search-panel__note">
+            <i class="ti ti-info-circle" aria-hidden="true"></i>
+            Existing patients are linked to a new visit — no duplicate profile is created.
+            <span class="patient-search-panel__demo">Demo directory until patient API integration.</span>
+          </div>
+        </section>
 
         <!-- Duplicate patient warning -->
         @if (duplicateMatch() && !duplicateDismissed()) {
@@ -340,60 +353,34 @@
           </div>
         </div>
 
-        <!-- Contact group -->
-        <div class="field-group">
-          <div class="field-group__title"><i class="ti ti-address-book" aria-hidden="true"></i> Contact</div>
-          <div class="form-grid form-grid--contact">
-            <!-- Mobile Number — with +91 prefix -->
+        <!-- Contact and Address share one visual group to reduce unnecessary vertical separation. -->
+        <div class="field-group contact-address-group">
+          <div class="field-group__title"><i class="ti ti-address-book" aria-hidden="true"></i> Contact & Address</div>
+          <div class="form-grid form-grid--contact-address">
             <div class="lis-field">
               <label for="mobile">Mobile Number <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
               <div class="phone-wrap" [class.phone-wrap--error]="isInvalid('mobile')">
-                <span class="phone-prefix">
-                  <span class="phone-flag">🇮🇳</span>
-                  +91
-                </span>
-                <input id="mobile" formControlName="mobile" type="tel"
-                  class="phone-input"
-                  [class.input-error]="isInvalid('mobile')"
-                  autocomplete="tel" placeholder="98765 43210"
-                  maxlength="10" inputmode="numeric"
-                  (input)="onMobileChange()" />
-                @if (isValidTouched('mobile')) {
-                  <i class="ti ti-circle-check phone-valid-icon" aria-hidden="true"></i>
-                }
+                <span class="phone-prefix"><span class="phone-flag">🇮🇳</span> +91</span>
+                <input id="mobile" formControlName="mobile" type="tel" class="phone-input"
+                  [class.input-error]="isInvalid('mobile')" autocomplete="tel" placeholder="98765 43210"
+                  maxlength="10" inputmode="numeric" (input)="onMobileChange()" />
+                @if (isValidTouched('mobile')) { <i class="ti ti-circle-check phone-valid-icon" aria-hidden="true"></i> }
               </div>
               @if (isInvalid('mobile')) {
-                <span class="err-msg" role="alert">
-                  <i class="ti ti-alert-circle"></i> Valid 10-digit number required
-                </span>
+                <span class="err-msg" role="alert"><i class="ti ti-alert-circle"></i> Valid 10-digit number required</span>
               } @else if (isValidTouched('mobile')) {
-                <span class="ok-msg">
-                  <i class="ti ti-circle-check"></i> Mobile number looks valid
-                </span>
-              } @else {
-                <span class="helper-text">Used for SMS reports and appointment reminders</span>
-              }
+                <span class="ok-msg"><i class="ti ti-circle-check"></i> Mobile number looks valid</span>
+              } @else { <span class="helper-text">Used for SMS reports and appointment reminders</span> }
             </div>
-
-            <!-- Email -->
             <div class="lis-field">
               <label for="email">Email <span class="opt-label">(Optional)</span></label>
-              <input id="email" formControlName="email" type="email"
-                autocomplete="email" placeholder="name@email.com" />
+              <input id="email" formControlName="email" type="email" autocomplete="email" placeholder="name@email.com" />
               <span class="helper-text">Optional — used to email lab reports</span>
             </div>
-          </div>
-        </div>
-
-        <!-- Address group -->
-        <div class="field-group">
-          <div class="field-group__title"><i class="ti ti-map-pin" aria-hidden="true"></i> Address</div>
-          <div class="form-grid">
-            <!-- Address — full width -->
             <div class="lis-field form-full">
               <label for="address">Address <span class="opt-label">(Optional)</span></label>
-              <textarea id="address" formControlName="address" rows="2"
-                class="auto-expand" [maxlength]="addressMaxLen" (input)="autoResize($event)"
+              <textarea id="address" formControlName="address" rows="2" class="auto-expand"
+                [maxlength]="addressMaxLen" (input)="autoResize($event)"
                 placeholder="e.g. 12, MG Road, Indiranagar, Bengaluru"></textarea>
               <span class="char-counter" [class.char-counter--near-limit]="addressLength() >= addressMaxLen - 20">
                 {{ addressLength() }} / {{ addressMaxLen }} characters
