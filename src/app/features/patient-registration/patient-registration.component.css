@@ -966,3 +966,35 @@
 @media (max-width: 560px) {
   .contact-address-group .form-grid--contact-address { grid-template-columns: 1fr; }
 }
+
+
+/* Search-first patient identification states — use existing LIS theme tokens. */
+.patient-search-state { margin-top: 12px; }
+.patient-search-state__heading { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; color: var(--text-primary); font-size: 12px; }
+.patient-search-state__heading span { color: var(--text-secondary); font-size: 11px; }
+.patient-search-result--selected {
+  border-color: var(--lis-primary, #1D9E75);
+  background: var(--lis-primary-xlight, #E1F5EE);
+  box-shadow: inset 0 0 0 1px var(--lis-primary-mid, #5DCAA5);
+}
+.patient-search-empty {
+  display: flex; align-items: center; gap: 11px; margin-top: 10px; padding: 12px;
+  border: 1px dashed var(--border-color); border-radius: 9px; background: var(--body-bg);
+}
+.patient-search-empty__copy { display: grid; gap: 3px; flex: 1; min-width: 0; }
+.patient-search-empty__copy strong { color: var(--text-primary); font-size: 12px; }
+.patient-search-empty__copy span { color: var(--text-secondary); font-size: 11px; line-height: 1.4; }
+.patient-search-selected--card {
+  align-items: center; padding: 12px; border: 1px solid var(--lis-primary-mid, #5DCAA5);
+  background: linear-gradient(120deg, var(--lis-primary-xlight, #E1F5EE), var(--card-bg) 78%);
+}
+.patient-search-selected__details { display: grid; gap: 4px; flex: 1; min-width: 0; }
+.patient-search-selected__details strong { color: var(--text-primary); font-size: 13px; }
+.patient-search-selected__details small { color: var(--text-secondary); font-size: 11px; }
+@media (max-width: 680px) {
+  .patient-search-state__heading { align-items: flex-start; flex-direction: column; gap: 3px; }
+  .patient-search-empty { align-items: flex-start; flex-wrap: wrap; }
+  .patient-search-empty__copy { flex-basis: calc(100% - 52px); }
+  .patient-search-selected--card { align-items: flex-start; flex-wrap: wrap; }
+  .patient-search-selected__details { flex-basis: 100%; }
+}
