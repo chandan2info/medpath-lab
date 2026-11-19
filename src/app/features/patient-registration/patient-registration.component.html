@@ -471,15 +471,19 @@
 
         <!-- Patient identity summary -->
         <section class="patient-recap" aria-label="Patient information">
-          <div class="patient-recap__identity">
+          <div class="patient-recap__main">
             <div class="recap-av" aria-hidden="true">
               {{ (form.value.firstName?.[0] || 'P') }}{{ (form.value.lastName?.[0] || '') }}
             </div>
             <div class="recap-info">
-              <span class="patient-recap__eyebrow"><i class="ti ti-user-check" aria-hidden="true"></i> Patient details</span>
+              <span class="patient-recap__eyebrow"><i class="ti ti-user-check" aria-hidden="true"></i> PATIENT PROFILE</span>
               <div class="recap-name">{{ form.value.firstName }} {{ form.value.lastName }}</div>
-              <span class="patient-recap__caption">Review patient information before continuing</span>
+              <span class="patient-recap__caption">Patient information confirmed for this visit</span>
             </div>
+            <button type="button" class="recap-edit lis-btn lis-btn--secondary lis-btn--sm"
+              (click)="editPatientFromClinical()">
+              <i class="ti ti-edit" aria-hidden="true"></i> Edit details
+            </button>
           </div>
           <div class="patient-recap__details">
             <div class="patient-recap__detail">
@@ -499,10 +503,6 @@
               <span><small>Mobile number</small><strong>{{ form.value.mobile || '—' }}</strong></span>
             </div>
           </div>
-          <button type="button" class="recap-edit lis-btn lis-btn--secondary lis-btn--sm"
-            (click)="editPatientFromClinical()">
-            <i class="ti ti-edit" aria-hidden="true"></i> Edit details
-          </button>
         </section>
 
         <!-- Visit details group -->
@@ -537,7 +537,7 @@
               <div class="lis-seg lis-seg--lg lis-seg--spaced" role="group" aria-labelledby="visit-label">
                 <button type="button" class="lis-seg__opt"
                   [class.lis-seg__opt--active]="form.value.visitType === 'Walk-in'"
-                  (click)="form.patchValue({visitType: 'Walk-in'})"
+                  (click)="setVisitType('Walk-in')"
                   [attr.aria-pressed]="form.value.visitType === 'Walk-in'">
                   <i class="ti ti-building-hospital" aria-hidden="true"></i> Walk-in
                 </button>
