@@ -111,8 +111,8 @@
               </div>
             </div>
             <div class="dup-banner__actions">
-              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm">
-                <i class="ti ti-search" aria-hidden="true"></i> View existing
+              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="dismissDuplicateWarning()">
+                <i class="ti ti-search" aria-hidden="true"></i> Review details
               </button>
               <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="dismissDuplicateWarning()">
                 Continue anyway
@@ -428,11 +428,11 @@
                  binding; error state now lives on the wrapper since the
                  select itself is borderless inside it. -->
             <div class="lis-field">
-              <label for="refDoctor">Referring doctor <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
+              <label for="refDoctor">Referring doctor <span class="opt-label">(Optional)</span></label>
               <div class="ref-select-wrap" [class.ref-select-wrap--error]="isInvalid('refDoctor')">
                 <i class="ti ti-stethoscope ref-select-wrap__icon" aria-hidden="true"></i>
                 <select id="refDoctor" formControlName="refDoctor" class="ref-select-wrap__select">
-                  <option value="">— Select doctor —</option>
+                  <option value="Self / Walk-in">Self / Walk-in</option>
                   @for (d of flow.doctors; track d) {
                     <option [value]="d">{{ d }}</option>
                   }
@@ -441,7 +441,7 @@
                 <i class="ti ti-chevron-down ref-select-wrap__chevron" aria-hidden="true"></i>
               </div>
               @if (isInvalid('refDoctor')) {
-                <span class="err-msg" role="alert">Please select a referring doctor</span>
+                <span class="helper-text">Choose a referring doctor, or keep Self / Walk-in for self-referred patients.</span>
               }
             </div>
 
@@ -496,33 +496,12 @@
           </div>
         </div>
 
-        <!-- Preparation group -->
+        <!-- Preparation is test-specific and is confirmed during Test Order. -->
         <div class="field-group">
-          <div class="field-group__title"><i class="ti ti-clipboard-list" aria-hidden="true"></i> Preparation</div>
+          <div class="field-group__title"><i class="ti ti-clipboard-list" aria-hidden="true"></i> Clinical Context</div>
           <div class="form-grid form-grid--visit">
-            <!-- Fasting status -->
-            <div class="lis-field fasting-field fasting-field--full">
-              <label id="fasting-label">Fasting status</label>
-              <div class="lis-seg lis-seg--lg lis-seg--spaced" role="group" aria-labelledby="fasting-label">
-                <button type="button" class="lis-seg__opt"
-                  [class.lis-seg__opt--active]="form.value.fasting === 'Fasting'"
-                  (click)="form.patchValue({fasting: 'Fasting'})"
-                  [attr.aria-pressed]="form.value.fasting === 'Fasting'">
-                  <i class="ti ti-tools-kitchen-2" aria-hidden="true"></i> Fasting
-                </button>
-                <button type="button" class="lis-seg__opt"
-                  [class.lis-seg__opt--active]="form.value.fasting === 'Non-fasting'"
-                  (click)="form.patchValue({fasting: 'Non-fasting'})"
-                  [attr.aria-pressed]="form.value.fasting === 'Non-fasting'">
-                  <i class="ti ti-coffee" aria-hidden="true"></i> Non-fasting
-                </button>
-                <button type="button" class="lis-seg__opt"
-                  [class.lis-seg__opt--active]="form.value.fasting === 'Unknown'"
-                  (click)="form.patchValue({fasting: 'Unknown'})"
-                  [attr.aria-pressed]="form.value.fasting === 'Unknown'">
-                  <i class="ti ti-help" aria-hidden="true"></i> Unknown
-                </button>
-              </div>
+            <div class="lis-field form-full">
+              <span class="helper-text">Preparation requirements such as fasting duration are determined by the selected tests. Confirm actual fasting status and duration during Test Order / sample collection.</span>
             </div>
 
             <!-- Clinical notes -->
