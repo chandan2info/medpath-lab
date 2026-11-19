@@ -100,71 +100,86 @@
           </span>
         </div>
 
-        <!-- Existing-patient lookup — compact panel styled with the LIS theme tokens. -->
-        <section class="patient-search-panel" aria-label="Find existing patient">
+        <!-- Patient identification: search first, then choose an explicit outcome. -->
+        <section class="patient-search-panel" aria-label="Find patient">
           <div class="patient-search-panel__intro">
             <span class="patient-search-panel__icon"><i class="ti ti-search" aria-hidden="true"></i></span>
             <div class="patient-search-panel__copy">
-              <h3>Find Existing Patient</h3>
-              <p>Search by Patient ID, mobile number or name to avoid duplicate registration.</p>
+              <h3>Find Patient</h3>
+              <p>Search by Patient ID, mobile number or name before creating a new profile.</p>
             </div>
             <div class="patient-search-panel__input">
               <input id="patientSearch" type="search" [value]="patientSearchQuery()"
                 (input)="searchExistingPatients($any($event.target).value)"
-                placeholder="Search by patient ID, mobile number or name"
+                placeholder="Enter patient ID, mobile number or name"
                 aria-label="Search by patient ID, mobile number or name" />
             </div>
           </div>
-          @if (patientSearchResults().length) {
-            <div class="patient-search-results" aria-label="Matching patients">
-              @for (patient of patientSearchResults(); track patient.id) {
-                <button type="button" class="patient-search-result"
-                  (click)="selectExistingPatient(patient)">
-                  <span class="patient-search-result__identity">
-                    <span class="patient-search-result__tag">Possible match</span>
-                    <strong>{{ patient.id }} · {{ patient.name }}</strong>
-                    <small>+91 {{ patient.mobile }}</small>
-                  </span>
-                  <span class="patient-search-result__action">Use this patient <i class="ti ti-arrow-right"></i></span>
-                </button>
-              }
-            </div>
-          }
-          @if (selectedExistingPatientId()) {
-            <div class="patient-search-selected" role="status">
-              <i class="ti ti-circle-check" aria-hidden="true"></i>
-              Existing patient selected: <strong>{{ selectedExistingPatientId() }}</strong>
-              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="clearExistingPatientSelection()">Clear</button>
-            </div>
-          }
-          <div class="patient-search-panel__note">
-            <i class="ti ti-info-circle" aria-hidden="true"></i>
-            Existing patients are linked to a new visit — no duplicate profile is created.
-            <span class="patient-search-panel__demo">Demo directory until patient API integration.</span>
-          </div>
-        </section>
 
-        <!-- Duplicate patient warning -->
-        @if (duplicateMatch() && !duplicateDismissed()) {
-          <div class="dup-banner" role="alert">
-            <i class="ti ti-alert-triangle dup-banner__icon" aria-hidden="true"></i>
-            <div class="dup-banner__body">
-              <div class="dup-banner__title">Possible existing patient</div>
-              <div class="dup-banner__meta">
-                {{ duplicateMatch()?.name }} · +91 {{ duplicateMatch()?.mobile }} · {{ duplicateMatch()?.registeredLabel }}
+          @if (patientSearchResults().length > 0) {
+            <div class="patient-search-state">
+              <div class="patient-search-state__heading">
+                <strong>{{ patientSearchResults().length }} matching patient{{ patientSearchResults().length === 1 ? '' : 's' }}</strong>
+                <span>Select the correct record to continue.</span>
+              </div>
+              <div class="patient-search-results" aria-label="Matching patients">
+                @for (patient of patientSearchResults(); track patient.id) {
+                  <button type="button" class="patient-search-result"
+                    [class.patient-search-result--selected]="selectedExistingPatientId() === patient.id"
+                    (click)="selectExistingPatient(patient)">
+                    <span class="patient-search-result__identity">
+                      <span class="patient-search-result__tag">Existing patient</span>
+                      <strong>{{ patient.name }}</strong>
+                      <small>{{ patient.id }}</small>
+                      <small>{{ patient.dob | date:'dd MMM yyyy' }} · {{ patient.gender }} · +91 {{ patient.mobile }}</small>
+                    </span>
+                    <span class="patient-search-result__action">
+                      {{ selectedExistingPatientId() === patient.id ? 'Selected' : 'Select patient' }}
+                      <i class="ti ti-arrow-right" aria-hidden="true"></i>
+                    </span>
+                  </button>
+                }
               </div>
             </div>
-            <div class="dup-banner__actions">
-              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="dismissDuplicateWarning()">
-                <i class="ti ti-search" aria-hidden="true"></i> Review details
-              </button>
-              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="dismissDuplicateWarning()">
-                Continue anyway
-              </button>
+          } @else if (searchAttempted() && patientSearchQuery().trim().length >= 2) {
+            <div class="patient-search-empty" role="status">
+              <span class="patient-search-panel__icon"><i class="ti ti-user-x" aria-hidden="true"></i></span>
+              <div class="patient-search-empty__copy">
+                <strong>No patient found</strong>
+                <span>No matching record was found. Verify the search or register a new patient.</span>
+              </div>
+              <button type="button" class="lis-btn lis-btn--primary lis-btn--sm"
+                (click)="startNewPatientRegistration()">Register New Patient</button>
             </div>
-          </div>
-        }
+          } @else if (selectedExistingPatient(); as patient) {
+            <div class="patient-search-selected patient-search-selected--card" role="status">
+              <div class="patient-search-selected__details">
+                <span class="patient-search-result__tag">Existing patient selected</span>
+                <strong>{{ patient.name }}</strong>
+                <small>{{ patient.id }} · {{ patient.dob | date:'dd MMM yyyy' }} · {{ patient.gender }} · +91 {{ patient.mobile }}</small>
+              </div>
+              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm"
+                (click)="clearExistingPatientSelection()">Change patient</button>
+              <button type="button" class="lis-btn lis-btn--primary lis-btn--sm"
+                (click)="nextStep()">Continue to Clinical <i class="ti ti-arrow-right"></i></button>
+            </div>
+          } @else if (showNewPatientForm()) {
+            <div class="patient-search-selected" role="status">
+              <i class="ti ti-user-plus" aria-hidden="true"></i>
+              Registering a new patient
+              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm"
+                (click)="clearExistingPatientSelection()">Back to search</button>
+            </div>
+          } @else {
+            <div class="patient-search-panel__note">
+              <i class="ti ti-info-circle" aria-hidden="true"></i>
+              Search the patient directory. If no record exists, you can register a new patient.
+              <span class="patient-search-panel__demo">Demo directory until patient API integration.</span>
+            </div>
+          }
+        </section>
 
+        @if (showNewPatientForm()) {
         <!-- Identity group -->
         <div class="field-group">
           <div class="field-group__title"><i class="ti ti-user" aria-hidden="true"></i> Identity</div>
@@ -390,6 +405,8 @@
         </div>
       </div>
 
+        }
+      @if (showNewPatientForm()) {
       <!-- Step 1 actions — sticky so they stay reachable on smaller screens -->
       <div class="form-actions form-actions--sticky">
         <button type="button" class="lis-btn lis-btn--secondary" (click)="goBack()" title="Esc">
@@ -399,6 +416,7 @@
           Continue to Clinical <i class="ti ti-arrow-right" aria-hidden="true"></i>
         </button>
       </div>
+      }
     }
 
     <!-- ── Step 2: Clinical Information ─────────────────── -->
