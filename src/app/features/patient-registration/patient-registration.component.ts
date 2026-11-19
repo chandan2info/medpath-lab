@@ -96,9 +96,9 @@ export class PatientRegistrationComponent implements OnInit {
       email:        [''],
       address:      [''],
       // Step 2 — Clinical
-      refDoctor:    ['', Validators.required],
+      refDoctor:    ['Self / Walk-in'],
       visitType:    ['Walk-in'],
-      fasting:      ['Fasting'],
+      fasting:      ['Unknown'],
       collection:   ['At lab counter'],
       clinicalNotes:[''],
       medications:  [''],
@@ -134,19 +134,8 @@ export class PatientRegistrationComponent implements OnInit {
     this.updateStep1Progress();
     this.form.valueChanges.subscribe(() => this.updateStep1Progress());
 
-    // Keep "Visit type" and "Sample collection" from silently contradicting
-    // each other (e.g. Walk-in + Home collection). We auto-derive a sane
-    // default rather than raising a validation error, since this form's
-    // whole pattern is fast, low-friction data entry — the operator can
-    // still override the derived value afterwards.
-    this.form.get('visitType')?.valueChanges.subscribe((visitType) => {
-      const collectionCtrl = this.form.get('collection');
-      if (visitType === 'Home visit') {
-        collectionCtrl?.setValue('Home collection', { emitEvent: false });
-      } else if (visitType === 'Walk-in' && collectionCtrl?.value === 'Home collection') {
-        collectionCtrl.setValue('At lab counter', { emitEvent: false });
-      }
-    });
+    // Visit type and collection method are independent workflow dimensions.
+    // Do not silently rewrite one when the other changes.
   }
 
   // "2008-07-04" → "04 Jul 2008", used in the Age card's helper
@@ -292,9 +281,7 @@ export class PatientRegistrationComponent implements OnInit {
 
   saveAndContinue(): void {
     // Validate step 2 fields
-    const step2 = ['refDoctor'];
-    step2.forEach(f => this.form.get(f)?.markAsTouched());
-    if (!this.form.get('refDoctor')?.valid) return;
+    // Referring doctor is optional: self-referred and walk-in patients are valid.
 
     this.saving.set(true);
 
@@ -311,7 +298,7 @@ export class PatientRegistrationComponent implements OnInit {
         mobile:       v.mobile,
         email:        v.email,
         address:      v.address,
-        refDoctor:    v.refDoctor,
+        refDoctor:    v.refDoctor || 'Self / Walk-in',
         visitType:    v.visitType,
         fasting:      v.fasting,
         collection:   v.collection,
