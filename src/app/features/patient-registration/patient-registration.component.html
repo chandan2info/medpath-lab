@@ -42,7 +42,7 @@
 @if (step1Saved()) {
   <div class="step-saved-toast" role="status" aria-live="polite">
     <i class="ti ti-circle-check" aria-hidden="true"></i>
-    Personal details saved
+    {{ selectedExistingPatient() ? 'Patient details confirmed' : 'Personal details saved' }}
   </div>
 }
 
@@ -82,7 +82,7 @@
       <div class="lis-card reg-card" aria-label="Personal details">
         <div class="lis-card__header">
           <i class="ti ti-user lis-card-icon" aria-hidden="true"></i>
-          <h2 class="lis-card__title">Personal Details</h2>
+          <h2 class="lis-card__title">{{ isEditingExistingPatient() ? 'Edit Patient Details' : (showNewPatientForm() ? 'Personal Details' : 'Find Patient') }}</h2>
           <div class="mini-steps" aria-label="Form sub-steps">
             <span class="mini-step mini-step--active">Personal</span>
             <span class="mini-step">Clinical</span>
@@ -90,6 +90,7 @@
         </div>
 
         <!-- Registration progress summary — required-fields readout -->
+        @if (showNewPatientForm()) {
         <div class="reg-progress" aria-live="polite">
           <div class="reg-progress__bar">
             <div class="reg-progress__fill" [style.width.%]="step1ProgressPct()"></div>
@@ -99,28 +100,118 @@
             {{ step1FilledCount() }} of {{ step1Total }} required fields complete
           </span>
         </div>
+        }
 
-        <!-- Duplicate patient warning -->
+        <!-- Patient identification: search first, then choose an explicit outcome. -->
+        <section class="patient-search-panel" aria-label="Find patient">
+          <div class="patient-search-panel__intro">
+            <span class="patient-search-panel__icon"><i class="ti ti-search" aria-hidden="true"></i></span>
+            <div class="patient-search-panel__copy">
+              <h3>Find Patient</h3>
+              <p>Search by Patient ID, mobile number or name before creating a new profile.</p>
+            </div>
+            <div class="patient-search-panel__input">
+              <input id="patientSearch" type="search" [value]="patientSearchQuery()"
+                (input)="searchExistingPatients($any($event.target).value)"
+                placeholder="Enter patient ID, mobile number or name"
+                aria-label="Search by patient ID, mobile number or name" />
+            </div>
+          </div>
+
+          @if (patientSearchResults().length > 0) {
+            <div class="patient-search-state">
+              <div class="patient-search-state__heading">
+                <strong>{{ patientSearchResults().length }} matching patient{{ patientSearchResults().length === 1 ? '' : 's' }}</strong>
+                <span>Select the correct record to continue.</span>
+              </div>
+              <div class="patient-search-results" aria-label="Matching patients">
+                @for (patient of patientSearchResults(); track patient.id) {
+                  <button type="button" class="patient-search-result"
+                    [class.patient-search-result--selected]="selectedExistingPatientId() === patient.id"
+                    (click)="selectExistingPatient(patient)">
+                    <span class="patient-search-result__identity">
+                      <span class="patient-search-result__tag">Existing patient</span>
+                      <strong>{{ patient.name }}</strong>
+                      <small>{{ patient.id }}</small>
+                      <small>{{ patient.dob | date:'dd MMM yyyy' }} · {{ patient.gender }} · +91 {{ patient.mobile }}</small>
+                    </span>
+                    <span class="patient-search-result__action">
+                      {{ selectedExistingPatientId() === patient.id ? 'Selected' : 'Select patient' }}
+                      <i class="ti ti-arrow-right" aria-hidden="true"></i>
+                    </span>
+                  </button>
+                }
+              </div>
+            </div>
+          } @else if (!selectedExistingPatient() && searchAttempted() && patientSearchQuery().trim().length >= 2) {
+            <div class="patient-search-empty" role="status">
+              <span class="patient-search-panel__icon"><i class="ti ti-user-x" aria-hidden="true"></i></span>
+              <div class="patient-search-empty__copy">
+                <strong>No patient found</strong>
+                <span>No matching record was found. Verify the search or register a new patient.</span>
+              </div>
+              <button type="button" class="lis-btn lis-btn--primary lis-btn--sm"
+                (click)="startNewPatientRegistration()">Register New Patient</button>
+            </div>
+          } @else if (selectedExistingPatient()) {
+            @if (selectedExistingPatient(); as patient) {
+            <div class="patient-identity-card" role="status">
+              <div class="patient-identity-card__top">
+                <div class="patient-identity-card__avatar" aria-hidden="true">
+                  {{ patient.firstName.charAt(0) }}{{ patient.lastName.charAt(0) }}
+                </div>
+                <div class="patient-identity-card__heading">
+                  <span class="patient-identity-card__eyebrow"><i class="ti ti-circle-check"></i> Existing patient selected</span>
+                  <strong>{{ patient.name }}</strong>
+                  <span class="patient-identity-card__id lis-mono">{{ patient.id }}</span>
+                </div>
+                <span class="patient-identity-card__status"><i class="ti ti-shield-check"></i> Verified selection</span>
+              </div>
+              <div class="patient-identity-card__facts">
+                <div class="patient-identity-card__fact"><i class="ti ti-calendar"></i><span><small>Date of birth</small><strong>{{ patient.dob | date:'dd MMM yyyy' }}</strong></span></div>
+                <div class="patient-identity-card__fact"><i class="ti ti-gender-bigender"></i><span><small>Gender</small><strong>{{ patient.gender }}</strong></span></div>
+                <div class="patient-identity-card__fact"><i class="ti ti-phone"></i><span><small>Mobile number</small><strong>+91 {{ patient.mobile }}</strong></span></div>
+                <div class="patient-identity-card__fact"><i class="ti ti-droplet"></i><span><small>Blood group</small><strong>{{ patient.bloodGroup || 'Not recorded' }}</strong></span></div>
+              </div>
+              <div class="patient-identity-card__actions">
+                <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="editSelectedPatient()"><i class="ti ti-edit" aria-hidden="true"></i> Edit details</button>
+                <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="clearExistingPatientSelection()">Change patient</button>
+                <button type="button" class="lis-btn lis-btn--primary lis-btn--sm" (click)="nextStep()">Continue to Clinical <i class="ti ti-arrow-right"></i></button>
+              </div>
+            </div>
+            }
+          } @else if (showNewPatientForm()) {
+            <div class="patient-search-selected" role="status">
+              <i class="ti ti-user-plus" aria-hidden="true"></i>
+              Registering a new patient
+              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm"
+                (click)="clearExistingPatientSelection()">Back to search</button>
+            </div>
+          } @else {
+            <div class="patient-search-panel__note">
+              <i class="ti ti-info-circle" aria-hidden="true"></i>
+              Search the patient directory. If no record exists, you can register a new patient.
+              <span class="patient-search-panel__demo">Demo directory until patient API integration.</span>
+            </div>
+          }
+        </section>
+
+        @if (showNewPatientForm()) {
         @if (duplicateMatch() && !duplicateDismissed()) {
           <div class="dup-banner" role="alert">
             <i class="ti ti-alert-triangle dup-banner__icon" aria-hidden="true"></i>
             <div class="dup-banner__body">
               <div class="dup-banner__title">Possible existing patient</div>
-              <div class="dup-banner__meta">
-                {{ duplicateMatch()?.name }} · +91 {{ duplicateMatch()?.mobile }} · {{ duplicateMatch()?.registeredLabel }}
-              </div>
+              <div class="dup-banner__meta">{{ duplicateMatch()?.name }} · {{ duplicateMatch()?.id }} · +91 {{ duplicateMatch()?.mobile }}</div>
             </div>
             <div class="dup-banner__actions">
-              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm">
-                <i class="ti ti-search" aria-hidden="true"></i> View existing
-              </button>
-              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="dismissDuplicateWarning()">
-                Continue anyway
-              </button>
+              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm"
+                (click)="selectExistingPatient(duplicateMatch()!)">Use existing record</button>
+              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm"
+                (click)="dismissDuplicateWarning()">Continue as new</button>
             </div>
           </div>
         }
-
         <!-- Identity group -->
         <div class="field-group">
           <div class="field-group__title"><i class="ti ti-user" aria-hidden="true"></i> Identity</div>
@@ -309,60 +400,34 @@
           </div>
         </div>
 
-        <!-- Contact group -->
-        <div class="field-group">
-          <div class="field-group__title"><i class="ti ti-address-book" aria-hidden="true"></i> Contact</div>
-          <div class="form-grid form-grid--contact">
-            <!-- Mobile Number — with +91 prefix -->
+        <!-- Contact and Address share one visual group to reduce unnecessary vertical separation. -->
+        <div class="field-group contact-address-group">
+          <div class="field-group__title"><i class="ti ti-address-book" aria-hidden="true"></i> Contact & Address</div>
+          <div class="form-grid form-grid--contact-address">
             <div class="lis-field">
               <label for="mobile">Mobile Number <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
               <div class="phone-wrap" [class.phone-wrap--error]="isInvalid('mobile')">
-                <span class="phone-prefix">
-                  <span class="phone-flag">🇮🇳</span>
-                  +91
-                </span>
-                <input id="mobile" formControlName="mobile" type="tel"
-                  class="phone-input"
-                  [class.input-error]="isInvalid('mobile')"
-                  autocomplete="tel" placeholder="98765 43210"
-                  maxlength="10" inputmode="numeric"
-                  (input)="onMobileChange()" />
-                @if (isValidTouched('mobile')) {
-                  <i class="ti ti-circle-check phone-valid-icon" aria-hidden="true"></i>
-                }
+                <span class="phone-prefix"><span class="phone-flag">🇮🇳</span> +91</span>
+                <input id="mobile" formControlName="mobile" type="tel" class="phone-input"
+                  [class.input-error]="isInvalid('mobile')" autocomplete="tel" placeholder="98765 43210"
+                  maxlength="10" inputmode="numeric" (input)="onMobileChange()" />
+                @if (isValidTouched('mobile')) { <i class="ti ti-circle-check phone-valid-icon" aria-hidden="true"></i> }
               </div>
               @if (isInvalid('mobile')) {
-                <span class="err-msg" role="alert">
-                  <i class="ti ti-alert-circle"></i> Valid 10-digit number required
-                </span>
+                <span class="err-msg" role="alert"><i class="ti ti-alert-circle"></i> Valid 10-digit number required</span>
               } @else if (isValidTouched('mobile')) {
-                <span class="ok-msg">
-                  <i class="ti ti-circle-check"></i> Mobile number looks valid
-                </span>
-              } @else {
-                <span class="helper-text">Used for SMS reports and appointment reminders</span>
-              }
+                <span class="ok-msg"><i class="ti ti-circle-check"></i> Mobile number looks valid</span>
+              } @else { <span class="helper-text">Used for SMS reports and appointment reminders</span> }
             </div>
-
-            <!-- Email -->
             <div class="lis-field">
               <label for="email">Email <span class="opt-label">(Optional)</span></label>
-              <input id="email" formControlName="email" type="email"
-                autocomplete="email" placeholder="name@email.com" />
+              <input id="email" formControlName="email" type="email" autocomplete="email" placeholder="name@email.com" />
               <span class="helper-text">Optional — used to email lab reports</span>
             </div>
-          </div>
-        </div>
-
-        <!-- Address group -->
-        <div class="field-group">
-          <div class="field-group__title"><i class="ti ti-map-pin" aria-hidden="true"></i> Address</div>
-          <div class="form-grid">
-            <!-- Address — full width -->
             <div class="lis-field form-full">
               <label for="address">Address <span class="opt-label">(Optional)</span></label>
-              <textarea id="address" formControlName="address" rows="2"
-                class="auto-expand" [maxlength]="addressMaxLen" (input)="autoResize($event)"
+              <textarea id="address" formControlName="address" rows="2" class="auto-expand"
+                [maxlength]="addressMaxLen" (input)="autoResize($event)"
                 placeholder="e.g. 12, MG Road, Indiranagar, Bengaluru"></textarea>
               <span class="char-counter" [class.char-counter--near-limit]="addressLength() >= addressMaxLen - 20">
                 {{ addressLength() }} / {{ addressMaxLen }} characters
@@ -370,16 +435,25 @@
             </div>
           </div>
         </div>
-      </div>
-
+        }
+      @if (showNewPatientForm()) {
       <!-- Step 1 actions — sticky so they stay reachable on smaller screens -->
       <div class="form-actions form-actions--sticky">
-        <button type="button" class="lis-btn lis-btn--secondary" (click)="goBack()" title="Esc">
-          <i class="ti ti-arrow-left" aria-hidden="true"></i> Cancel
+        <button type="button" class="lis-btn lis-btn--secondary"
+          (click)="isEditingExistingPatient() ? cancelExistingPatientEdit() : goBack()" title="Esc">
+          <i class="ti ti-arrow-left" aria-hidden="true"></i> {{ isEditingExistingPatient() ? 'Cancel edit' : 'Cancel' }}
         </button>
-        <button type="button" class="lis-btn lis-btn--primary" (click)="nextStep()" title="Ctrl+Enter">
-          Continue to Clinical <i class="ti ti-arrow-right" aria-hidden="true"></i>
-        </button>
+        @if (isEditingExistingPatient()) {
+          <button type="button" class="lis-btn lis-btn--primary" (click)="updateExistingPatient()">
+            <i class="ti ti-device-floppy" aria-hidden="true"></i> Update Patient
+          </button>
+        } @else {
+          <button type="button" class="lis-btn lis-btn--primary" (click)="nextStep()" title="Ctrl+Enter">
+            Continue to Clinical <i class="ti ti-arrow-right" aria-hidden="true"></i>
+          </button>
+        }
+      </div>
+      }
       </div>
     }
 
@@ -395,27 +469,41 @@
           </div>
         </div>
 
-        <!-- Mini patient recap -->
-        <div class="patient-recap">
-          <div class="recap-av" aria-hidden="true">
-            {{ form.value.firstName?.[0] }}{{ form.value.lastName?.[0] }}
+        <!-- Patient identity summary -->
+        <section class="patient-recap" aria-label="Patient information">
+          <div class="patient-recap__main">
+            <div class="recap-av" aria-hidden="true">
+              {{ (form.value.firstName?.[0] || 'P') }}{{ (form.value.lastName?.[0] || '') }}
+            </div>
+            <div class="recap-info">
+              <span class="patient-recap__eyebrow"><i class="ti ti-user-check" aria-hidden="true"></i> PATIENT PROFILE</span>
+              <div class="recap-name">{{ form.value.firstName }} {{ form.value.lastName }}</div>
+              <span class="patient-recap__caption">Patient information confirmed for this visit</span>
+            </div>
+            <button type="button" class="recap-edit lis-btn lis-btn--secondary lis-btn--sm"
+              (click)="editPatientFromClinical()">
+              <i class="ti ti-edit" aria-hidden="true"></i> Edit details
+            </button>
           </div>
-          <div class="recap-info">
-            <div class="recap-name">{{ form.value.firstName }} {{ form.value.lastName }}</div>
-            <div class="pat-detail-row">
-              <span class="pat-detail-item"><i class="ti ti-cake pat-detail-icon" aria-hidden="true"></i>{{ ageDisplay() || '—' }}</span>
-              <span class="pat-detail-sep" aria-hidden="true">|</span>
-              <span class="pat-detail-item"><i class="ti {{ genderIcon() }} pat-detail-icon" aria-hidden="true"></i>{{ form.value.gender || '—' }}</span>
-              <span class="pat-detail-sep" aria-hidden="true">|</span>
-              <span class="pat-details-item" ><i class="ti {{bloodGroups}} pat-detail-icon" aria-hidden="true"></i>{{ form.value.bloodGroup || '—' }}</span>
-              <span class="pat-detail-item"><i class="ti ti-phone pat-detail-icon" aria-hidden="true"></i>{{ form.value.mobile || '—' }}</span>
+          <div class="patient-recap__details">
+            <div class="patient-recap__detail">
+              <i class="ti ti-calendar" aria-hidden="true"></i>
+              <span><small>Age</small><strong>{{ ageDisplay() || '—' }}</strong></span>
+            </div>
+            <div class="patient-recap__detail">
+              <i class="ti {{ genderIcon() }}" aria-hidden="true"></i>
+              <span><small>Gender</small><strong>{{ form.value.gender || '—' }}</strong></span>
+            </div>
+            <div class="patient-recap__detail">
+              <i class="ti ti-droplet" aria-hidden="true"></i>
+              <span><small>Blood group</small><strong>{{ form.value.bloodGroup || '—' }}</strong></span>
+            </div>
+            <div class="patient-recap__detail">
+              <i class="ti ti-phone" aria-hidden="true"></i>
+              <span><small>Mobile number</small><strong>{{ form.value.mobile || '—' }}</strong></span>
             </div>
           </div>
-          <button type="button" class="recap-edit lis-btn lis-btn--secondary lis-btn--sm"
-            (click)="currentStep.set(1)">
-            <i class="ti ti-edit" aria-hidden="true"></i> Edit
-          </button>
-        </div>
+        </section>
 
         <!-- Visit details group -->
         <div class="field-group">
@@ -428,11 +516,11 @@
                  binding; error state now lives on the wrapper since the
                  select itself is borderless inside it. -->
             <div class="lis-field">
-              <label for="refDoctor">Referring doctor <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
+              <label for="refDoctor">Referring doctor <span class="opt-label">(Optional)</span></label>
               <div class="ref-select-wrap" [class.ref-select-wrap--error]="isInvalid('refDoctor')">
                 <i class="ti ti-stethoscope ref-select-wrap__icon" aria-hidden="true"></i>
                 <select id="refDoctor" formControlName="refDoctor" class="ref-select-wrap__select">
-                  <option value="">— Select doctor —</option>
+                  <option value="Self / Walk-in">Self / Walk-in</option>
                   @for (d of flow.doctors; track d) {
                     <option [value]="d">{{ d }}</option>
                   }
@@ -440,9 +528,7 @@
                 </select>
                 <i class="ti ti-chevron-down ref-select-wrap__chevron" aria-hidden="true"></i>
               </div>
-              @if (isInvalid('refDoctor')) {
-                <span class="err-msg" role="alert">Please select a referring doctor</span>
-              }
+              <span class="helper-text">Choose a referring doctor, or keep Self / Walk-in for self-referred patients.</span>
             </div>
 
             <!-- Visit type -->
@@ -451,19 +537,19 @@
               <div class="lis-seg lis-seg--lg lis-seg--spaced" role="group" aria-labelledby="visit-label">
                 <button type="button" class="lis-seg__opt"
                   [class.lis-seg__opt--active]="form.value.visitType === 'Walk-in'"
-                  (click)="form.patchValue({visitType: 'Walk-in'})"
+                  (click)="setVisitType('Walk-in')"
                   [attr.aria-pressed]="form.value.visitType === 'Walk-in'">
                   <i class="ti ti-building-hospital" aria-hidden="true"></i> Walk-in
                 </button>
                 <button type="button" class="lis-seg__opt"
                   [class.lis-seg__opt--active]="form.value.visitType === 'Appointment'"
-                  (click)="form.patchValue({visitType: 'Appointment'})"
+                  (click)="setVisitType('Appointment')"
                   [attr.aria-pressed]="form.value.visitType === 'Appointment'">
                   <i class="ti ti-calendar-event" aria-hidden="true"></i> Appointment
                 </button>
                 <button type="button" class="lis-seg__opt"
                   [class.lis-seg__opt--active]="form.value.visitType === 'Home visit'"
-                  (click)="form.patchValue({visitType: 'Home visit'})"
+                  (click)="setVisitType('Home visit')"
                   [attr.aria-pressed]="form.value.visitType === 'Home visit'">
                   <i class="ti ti-home" aria-hidden="true"></i> Home visit
                 </button>
@@ -481,48 +567,65 @@
               <div class="lis-seg lis-seg--lg lis-seg--spaced" role="group" aria-labelledby="collection-label">
                 <button type="button" class="lis-seg__opt"
                   [class.lis-seg__opt--active]="form.value.collection === 'At lab counter'"
-                  (click)="form.patchValue({collection: 'At lab counter'})"
-                  [attr.aria-pressed]="form.value.collection === 'At lab counter'">
+                  (click)="setCollectionType('At lab counter')"
+                  [attr.aria-pressed]="form.value.collection === 'At lab counter'"
+                  [disabled]="form.value.visitType === 'Home visit'">
                   <i class="ti ti-building-hospital" aria-hidden="true"></i> At lab counter
                 </button>
                 <button type="button" class="lis-seg__opt"
                   [class.lis-seg__opt--active]="form.value.collection === 'Home collection'"
-                  (click)="form.patchValue({collection: 'Home collection'})"
-                  [attr.aria-pressed]="form.value.collection === 'Home collection'">
+                  (click)="setCollectionType('Home collection')"
+                  [attr.aria-pressed]="form.value.collection === 'Home collection'"
+                  [disabled]="form.value.visitType === 'Walk-in'">
                   <i class="ti ti-home" aria-hidden="true"></i> Home collection
                 </button>
               </div>
             </div>
           </div>
+          @if (form.value.collection === 'Home collection') {
+            <div class="field-group">
+              <div class="field-group__title"><i class="ti ti-home" aria-hidden="true"></i> Home Collection Details</div>
+              <div class="form-grid form-grid--visit">
+                <div class="lis-field form-full">
+                  <label for="collectionAddress">Collection address <span class="req-ast">*</span></label>
+                  <textarea id="collectionAddress" formControlName="collectionAddress" rows="2"
+                    class="auto-expand" placeholder="House / flat, street, area, city"
+                    [class.input-error]="isInvalid('collectionAddress')"></textarea>
+                  @if (isInvalid('collectionAddress')) {
+                    <span class="err-msg" role="alert">Collection address is required for home collection.</span>
+                  }
+                </div>
+                <div class="lis-field">
+                  <label for="collectionDate">Preferred date</label>
+                  <input id="collectionDate" type="date" formControlName="collectionDate" [min]="todayISO" />
+                </div>
+                <div class="lis-field">
+                  <label for="collectionTime">Preferred time slot</label>
+                  <select id="collectionTime" formControlName="collectionTime">
+                    <option value="">Select time slot</option>
+                    <option value="07:00-09:00">07:00–09:00</option>
+                    <option value="09:00-11:00">09:00–11:00</option>
+                    <option value="11:00-13:00">11:00–13:00</option>
+                    <option value="13:00-15:00">13:00–15:00</option>
+                    <option value="15:00-17:00">15:00–17:00</option>
+                  </select>
+                </div>
+                <div class="lis-field form-full">
+                  <label for="collectionInstructions">Collection instructions <span class="opt-label">(Optional)</span></label>
+                  <textarea id="collectionInstructions" formControlName="collectionInstructions" rows="2"
+                    placeholder="Landmark, access instructions or contact person"></textarea>
+                </div>
+              </div>
+            </div>
+          }
         </div>
 
-        <!-- Preparation group -->
+        <!-- Preparation is test-specific and is confirmed during Test Order. -->
         <div class="field-group">
-          <div class="field-group__title"><i class="ti ti-clipboard-list" aria-hidden="true"></i> Preparation</div>
+          <div class="field-group__title"><i class="ti ti-clipboard-list" aria-hidden="true"></i> Clinical Context</div>
           <div class="form-grid form-grid--visit">
-            <!-- Fasting status -->
-            <div class="lis-field fasting-field fasting-field--full">
-              <label id="fasting-label">Fasting status</label>
-              <div class="lis-seg lis-seg--lg lis-seg--spaced" role="group" aria-labelledby="fasting-label">
-                <button type="button" class="lis-seg__opt"
-                  [class.lis-seg__opt--active]="form.value.fasting === 'Fasting'"
-                  (click)="form.patchValue({fasting: 'Fasting'})"
-                  [attr.aria-pressed]="form.value.fasting === 'Fasting'">
-                  <i class="ti ti-tools-kitchen-2" aria-hidden="true"></i> Fasting
-                </button>
-                <button type="button" class="lis-seg__opt"
-                  [class.lis-seg__opt--active]="form.value.fasting === 'Non-fasting'"
-                  (click)="form.patchValue({fasting: 'Non-fasting'})"
-                  [attr.aria-pressed]="form.value.fasting === 'Non-fasting'">
-                  <i class="ti ti-coffee" aria-hidden="true"></i> Non-fasting
-                </button>
-                <button type="button" class="lis-seg__opt"
-                  [class.lis-seg__opt--active]="form.value.fasting === 'Unknown'"
-                  (click)="form.patchValue({fasting: 'Unknown'})"
-                  [attr.aria-pressed]="form.value.fasting === 'Unknown'">
-                  <i class="ti ti-help" aria-hidden="true"></i> Unknown
-                </button>
-              </div>
+            <div class="lis-field form-full">
+              <span class="helper-text">Preparation requirements such as fasting duration are determined by the selected tests. Confirm actual fasting status and duration during Test Order / sample collection.</span>
             </div>
 
             <!-- Clinical notes -->
