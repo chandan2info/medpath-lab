@@ -469,27 +469,41 @@
           </div>
         </div>
 
-        <!-- Mini patient recap -->
-        <div class="patient-recap">
-          <div class="recap-av" aria-hidden="true">
-            {{ form.value.firstName?.[0] }}{{ form.value.lastName?.[0] }}
+        <!-- Patient identity summary -->
+        <section class="patient-recap" aria-label="Patient information">
+          <div class="patient-recap__identity">
+            <div class="recap-av" aria-hidden="true">
+              {{ (form.value.firstName?.[0] || 'P') }}{{ (form.value.lastName?.[0] || '') }}
+            </div>
+            <div class="recap-info">
+              <span class="patient-recap__eyebrow"><i class="ti ti-user-check" aria-hidden="true"></i> Patient details</span>
+              <div class="recap-name">{{ form.value.firstName }} {{ form.value.lastName }}</div>
+              <span class="patient-recap__caption">Review patient information before continuing</span>
+            </div>
           </div>
-          <div class="recap-info">
-            <div class="recap-name">{{ form.value.firstName }} {{ form.value.lastName }}</div>
-            <div class="pat-detail-row">
-              <span class="pat-detail-item"><i class="ti ti-cake pat-detail-icon" aria-hidden="true"></i>{{ ageDisplay() || '—' }}</span>
-              <span class="pat-detail-sep" aria-hidden="true">|</span>
-              <span class="pat-detail-item"><i class="ti {{ genderIcon() }} pat-detail-icon" aria-hidden="true"></i>{{ form.value.gender || '—' }}</span>
-              <span class="pat-detail-sep" aria-hidden="true">|</span>
-              <span class="pat-details-item" ><i class="ti {{bloodGroups}} pat-detail-icon" aria-hidden="true"></i>{{ form.value.bloodGroup || '—' }}</span>
-              <span class="pat-detail-item"><i class="ti ti-phone pat-detail-icon" aria-hidden="true"></i>{{ form.value.mobile || '—' }}</span>
+          <div class="patient-recap__details">
+            <div class="patient-recap__detail">
+              <i class="ti ti-calendar" aria-hidden="true"></i>
+              <span><small>Age</small><strong>{{ ageDisplay() || '—' }}</strong></span>
+            </div>
+            <div class="patient-recap__detail">
+              <i class="ti {{ genderIcon() }}" aria-hidden="true"></i>
+              <span><small>Gender</small><strong>{{ form.value.gender || '—' }}</strong></span>
+            </div>
+            <div class="patient-recap__detail">
+              <i class="ti ti-droplet" aria-hidden="true"></i>
+              <span><small>Blood group</small><strong>{{ form.value.bloodGroup || '—' }}</strong></span>
+            </div>
+            <div class="patient-recap__detail">
+              <i class="ti ti-phone" aria-hidden="true"></i>
+              <span><small>Mobile number</small><strong>{{ form.value.mobile || '—' }}</strong></span>
             </div>
           </div>
           <button type="button" class="recap-edit lis-btn lis-btn--secondary lis-btn--sm"
             (click)="editPatientFromClinical()">
-            <i class="ti ti-edit" aria-hidden="true"></i> Edit
+            <i class="ti ti-edit" aria-hidden="true"></i> Edit details
           </button>
-        </div>
+        </section>
 
         <!-- Visit details group -->
         <div class="field-group">
