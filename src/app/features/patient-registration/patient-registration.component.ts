@@ -59,6 +59,9 @@ export class PatientRegistrationComponent implements OnInit {
   // Duplicate-patient detection (Personal Details step)
   duplicateMatch  = signal<KnownPatientRecord | null>(null);
   duplicateDismissed = signal(false);
+  patientSearchQuery = signal('');
+  patientSearchResults = signal<KnownPatientRecord[]>([]);
+  selectedExistingPatientId = signal<string | null>(null);
 
   // Brief reassurance flash shown right before advancing to
   // Clinical Info, so the operator sees confirmation instead
@@ -102,6 +105,10 @@ export class PatientRegistrationComponent implements OnInit {
       collection:   ['At lab counter'],
       clinicalNotes:[''],
       medications:  [''],
+      collectionAddress: [''],
+      collectionDate: [''],
+      collectionTime: [''],
+      collectionInstructions: [''],
     });
 
     // The custom date picker doesn't emit a native (change) event,
@@ -246,6 +253,31 @@ export class PatientRegistrationComponent implements OnInit {
     this.duplicateDismissed.set(true);
   }
 
+  searchExistingPatients(query: string): void {
+    this.patientSearchQuery.set(query);
+    this.patientSearchResults.set(this.flow.searchPatients(query));
+  }
+
+  selectExistingPatient(patient: KnownPatientRecord): void {
+    this.selectedExistingPatientId.set(patient.id);
+    this.form.patchValue({
+      firstName: patient.firstName, lastName: patient.lastName, mobile: patient.mobile,
+      dob: patient.dob, gender: patient.gender, bloodGroup: patient.bloodGroup,
+      email: patient.email, address: patient.address
+    });
+    this.duplicateMatch.set(null);
+    this.duplicateDismissed.set(true);
+    this.patientSearchResults.set([]);
+    this.patientSearchQuery.set(patient.id + ' · ' + patient.name);
+  }
+
+  clearExistingPatientSelection(): void {
+    this.selectedExistingPatientId.set(null);
+    this.patientSearchQuery.set('');
+    this.patientSearchResults.set([]);
+    this.form.patchValue({ firstName:'', lastName:'', mobile:'', dob:'', gender:'', bloodGroup:'Unknown', email:'', address:'' });
+  }
+
   // Validate step 1 fields before advancing
   nextStep(): void {
     const step1 = ['firstName', 'lastName', 'dob', 'gender', 'mobile'];
@@ -304,7 +336,11 @@ export class PatientRegistrationComponent implements OnInit {
         collection:   v.collection,
         clinicalNotes:v.clinicalNotes,
         medications:  v.medications,
-      });
+        collectionAddress: v.collectionAddress,
+        collectionDate: v.collectionDate,
+        collectionTime: v.collectionTime,
+        collectionInstructions: v.collectionInstructions,
+      } as any, this.selectedExistingPatientId() ?? undefined);
 
       this.saving.set(false);
       this.savedPatient.set(pat);
