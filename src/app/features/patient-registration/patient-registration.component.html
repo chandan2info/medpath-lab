@@ -141,7 +141,7 @@
                 }
               </div>
             </div>
-          } @else if (searchAttempted() && patientSearchQuery().trim().length >= 2) {
+          } @else if (!selectedExistingPatient() && searchAttempted() && patientSearchQuery().trim().length >= 2) {
             <div class="patient-search-empty" role="status">
               <span class="patient-search-panel__icon"><i class="ti ti-user-x" aria-hidden="true"></i></span>
               <div class="patient-search-empty__copy">
@@ -406,6 +406,8 @@
       </div>
 
         }
+      }
+
       @if (showNewPatientForm()) {
       <!-- Step 1 actions — sticky so they stay reachable on smaller screens -->
       <div class="form-actions form-actions--sticky">
