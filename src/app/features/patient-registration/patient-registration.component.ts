@@ -62,6 +62,9 @@ export class PatientRegistrationComponent implements OnInit {
   patientSearchQuery = signal('');
   patientSearchResults = signal<KnownPatientRecord[]>([]);
   selectedExistingPatientId = signal<string | null>(null);
+  selectedExistingPatient = signal<KnownPatientRecord | null>(null);
+  showNewPatientForm = signal(false);
+  searchAttempted = signal(false);
 
   // Brief reassurance flash shown right before advancing to
   // Clinical Info, so the operator sees confirmation instead
@@ -255,11 +258,16 @@ export class PatientRegistrationComponent implements OnInit {
 
   searchExistingPatients(query: string): void {
     this.patientSearchQuery.set(query);
+    this.searchAttempted.set(query.trim().length >= 2);
+    this.selectedExistingPatient.set(null);
+    this.selectedExistingPatientId.set(null);
     this.patientSearchResults.set(this.flow.searchPatients(query));
   }
 
   selectExistingPatient(patient: KnownPatientRecord): void {
+    this.selectedExistingPatient.set(patient);
     this.selectedExistingPatientId.set(patient.id);
+    this.showNewPatientForm.set(false);
     this.form.patchValue({
       firstName: patient.firstName, lastName: patient.lastName, mobile: patient.mobile,
       dob: patient.dob, gender: patient.gender, bloodGroup: patient.bloodGroup,
@@ -268,14 +276,37 @@ export class PatientRegistrationComponent implements OnInit {
     this.duplicateMatch.set(null);
     this.duplicateDismissed.set(true);
     this.patientSearchResults.set([]);
-    this.patientSearchQuery.set(patient.id + ' · ' + patient.name);
+  }
+
+  startNewPatientRegistration(): void {
+    this.selectedExistingPatient.set(null);
+    this.selectedExistingPatientId.set(null);
+    this.patientSearchResults.set([]);
+    this.showNewPatientForm.set(true);
+    this.searchAttempted.set(false);
+    this.form.reset({
+      firstName: '', lastName: '', dob: '', gender: '', bloodGroup: 'Unknown',
+      mobile: '', email: '', address: '', refDoctor: 'Self / Walk-in',
+      visitType: 'Walk-in', fasting: 'Unknown', collection: 'At lab counter',
+      clinicalNotes: '', medications: '', collectionAddress: '',
+      collectionDate: '', collectionTime: '', collectionInstructions: ''
+    });
   }
 
   clearExistingPatientSelection(): void {
+    this.selectedExistingPatient.set(null);
     this.selectedExistingPatientId.set(null);
     this.patientSearchQuery.set('');
     this.patientSearchResults.set([]);
-    this.form.patchValue({ firstName:'', lastName:'', mobile:'', dob:'', gender:'', bloodGroup:'Unknown', email:'', address:'' });
+    this.searchAttempted.set(false);
+    this.showNewPatientForm.set(false);
+    this.form.reset({
+      firstName: '', lastName: '', dob: '', gender: '', bloodGroup: 'Unknown',
+      mobile: '', email: '', address: '', refDoctor: 'Self / Walk-in',
+      visitType: 'Walk-in', fasting: 'Unknown', collection: 'At lab counter',
+      clinicalNotes: '', medications: '', collectionAddress: '',
+      collectionDate: '', collectionTime: '', collectionInstructions: ''
+    });
   }
 
   // Validate step 1 fields before advancing
