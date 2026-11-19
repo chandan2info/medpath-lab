@@ -312,8 +312,16 @@ export class PatientRegistrationComponent implements OnInit {
   }
 
   saveAndContinue(): void {
-    // Validate step 2 fields
     // Referring doctor is optional: self-referred and walk-in patients are valid.
+    const addressControl = this.form.get('collectionAddress');
+    if (this.form.value.collection === 'Home collection' && !String(addressControl?.value ?? '').trim()) {
+      addressControl?.setValidators([Validators.required]);
+      addressControl?.markAsTouched();
+      addressControl?.updateValueAndValidity();
+      return;
+    }
+    addressControl?.clearValidators();
+    addressControl?.updateValueAndValidity();
 
     this.saving.set(true);
 
@@ -340,7 +348,7 @@ export class PatientRegistrationComponent implements OnInit {
         collectionDate: v.collectionDate,
         collectionTime: v.collectionTime,
         collectionInstructions: v.collectionInstructions,
-      } as any, this.selectedExistingPatientId() ?? undefined);
+      }, this.selectedExistingPatientId() ?? undefined);
 
       this.saving.set(false);
       this.savedPatient.set(pat);
