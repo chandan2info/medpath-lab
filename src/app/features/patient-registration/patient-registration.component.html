@@ -103,6 +103,7 @@
         <!-- Existing patient lookup: demo directory only until a patient API is connected. -->
         <div class="field-group">
           <div class="field-group__title"><i class="ti ti-search" aria-hidden="true"></i> Find Existing Patient</div>
+          <span class="helper-text">Demo patient directory only. Connect this lookup to the patient API before production use.</span>
           <div class="form-grid">
             <div class="lis-field form-full">
               <label for="patientSearch">Search by Patient ID, name or mobile</label>
@@ -470,9 +471,7 @@
                 </select>
                 <i class="ti ti-chevron-down ref-select-wrap__chevron" aria-hidden="true"></i>
               </div>
-              @if (isInvalid('refDoctor')) {
-                <span class="helper-text">Choose a referring doctor, or keep Self / Walk-in for self-referred patients.</span>
-              }
+              <span class="helper-text">Choose a referring doctor, or keep Self / Walk-in for self-referred patients.</span>
             </div>
 
             <!-- Visit type -->
@@ -531,7 +530,11 @@
                 <div class="lis-field form-full">
                   <label for="collectionAddress">Collection address <span class="req-ast">*</span></label>
                   <textarea id="collectionAddress" formControlName="collectionAddress" rows="2"
-                    class="auto-expand" placeholder="House / flat, street, area, city"></textarea>
+                    class="auto-expand" placeholder="House / flat, street, area, city"
+                    [class.input-error]="isInvalid('collectionAddress')"></textarea>
+                  @if (isInvalid('collectionAddress')) {
+                    <span class="err-msg" role="alert">Collection address is required for home collection.</span>
+                  }
                 </div>
                 <div class="lis-field">
                   <label for="collectionDate">Preferred date</label>
