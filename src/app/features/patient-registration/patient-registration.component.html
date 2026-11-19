@@ -100,6 +100,36 @@
           </span>
         </div>
 
+        <!-- Existing patient lookup: demo directory only until a patient API is connected. -->
+        <div class="field-group">
+          <div class="field-group__title"><i class="ti ti-search" aria-hidden="true"></i> Find Existing Patient</div>
+          <div class="form-grid">
+            <div class="lis-field form-full">
+              <label for="patientSearch">Search by Patient ID, name or mobile</label>
+              <input id="patientSearch" type="search" [value]="patientSearchQuery()"
+                (input)="searchExistingPatients($any($event.target).value)"
+                placeholder="e.g. PAT-2608-0101, Chandan or 9876543210" />
+              <span class="helper-text">Select an existing record to reuse its Patient ID and create a new visit.</span>
+              @if (patientSearchResults().length) {
+                <div class="dup-banner" role="list" aria-label="Matching patients">
+                  @for (patient of patientSearchResults(); track patient.id) {
+                    <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm"
+                      role="listitem" (click)="selectExistingPatient(patient)">
+                      {{ patient.name }} · {{ patient.id }} · +91 {{ patient.mobile }}
+                    </button>
+                  }
+                </div>
+              }
+              @if (selectedExistingPatientId()) {
+                <div class="ok-msg" role="status">
+                  <i class="ti ti-circle-check"></i> Existing patient selected: {{ selectedExistingPatientId() }}
+                  <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="clearExistingPatientSelection()">Clear selection</button>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
         <!-- Duplicate patient warning -->
         @if (duplicateMatch() && !duplicateDismissed()) {
           <div class="dup-banner" role="alert">
@@ -494,6 +524,38 @@
               </div>
             </div>
           </div>
+          @if (form.value.collection === 'Home collection') {
+            <div class="field-group">
+              <div class="field-group__title"><i class="ti ti-home" aria-hidden="true"></i> Home Collection Details</div>
+              <div class="form-grid form-grid--visit">
+                <div class="lis-field form-full">
+                  <label for="collectionAddress">Collection address <span class="req-ast">*</span></label>
+                  <textarea id="collectionAddress" formControlName="collectionAddress" rows="2"
+                    class="auto-expand" placeholder="House / flat, street, area, city"></textarea>
+                </div>
+                <div class="lis-field">
+                  <label for="collectionDate">Preferred date</label>
+                  <input id="collectionDate" type="date" formControlName="collectionDate" [min]="todayISO" />
+                </div>
+                <div class="lis-field">
+                  <label for="collectionTime">Preferred time slot</label>
+                  <select id="collectionTime" formControlName="collectionTime">
+                    <option value="">Select time slot</option>
+                    <option value="07:00-09:00">07:00–09:00</option>
+                    <option value="09:00-11:00">09:00–11:00</option>
+                    <option value="11:00-13:00">11:00–13:00</option>
+                    <option value="13:00-15:00">13:00–15:00</option>
+                    <option value="15:00-17:00">15:00–17:00</option>
+                  </select>
+                </div>
+                <div class="lis-field form-full">
+                  <label for="collectionInstructions">Collection instructions <span class="opt-label">(Optional)</span></label>
+                  <textarea id="collectionInstructions" formControlName="collectionInstructions" rows="2"
+                    placeholder="Landmark, access instructions or contact person"></textarea>
+                </div>
+              </div>
+            </div>
+          }
         </div>
 
         <!-- Preparation is test-specific and is confirmed during Test Order. -->
