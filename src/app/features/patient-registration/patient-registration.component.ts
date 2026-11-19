@@ -318,6 +318,13 @@ export class PatientRegistrationComponent implements OnInit {
     this.patientSearchResults.set([]);
   }
 
+  /** Return from the clinical recap to edit the selected existing patient's demographics. */
+  editPatientFromClinical(): void {
+    if (!this.selectedExistingPatient()) return;
+    this.currentStep.set(1);
+    this.editSelectedPatient();
+  }
+
   /** Open the prefilled demographics form for the selected existing patient. */
   editSelectedPatient(): void {
     const patient = this.selectedExistingPatient();
