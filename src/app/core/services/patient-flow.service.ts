@@ -24,6 +24,10 @@ export interface RegisteredPatient {
   collection: string;
   clinicalNotes: string;
   medications: string;
+  collectionAddress?: string;
+  collectionDate?: string;
+  collectionTime?: string;
+  collectionInstructions?: string;
 }
 
 export interface OrderedTest {
