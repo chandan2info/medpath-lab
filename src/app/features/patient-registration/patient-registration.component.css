@@ -1106,3 +1106,144 @@
   .reg-card .form-grid--visit { grid-template-columns: 1fr; }
   .reg-card .sample-collection-field { grid-column: auto; }
 }
+
+
+/* ── Clinical-step patient profile card: clear identity + evenly aligned metadata ── */
+.reg-card .patient-recap {
+  display: block;
+  margin: 12px 18px 18px;
+  padding: 16px 18px;
+  border: 1px solid var(--lis-primary-mid, #5DCAA5);
+  border-radius: 13px;
+  background: linear-gradient(112deg, var(--lis-primary-xlight, #E1F5EE) 0%, var(--card-bg) 72%);
+  box-shadow: 0 4px 14px rgba(8, 80, 65, .09);
+  overflow: hidden;
+}
+.patient-recap__main {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+}
+.patient-recap .recap-av {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  border-radius: 13px;
+  font-size: 15px;
+  box-shadow: 0 3px 9px rgba(29,158,117,.22);
+}
+.patient-recap .recap-info { display: grid; gap: 3px; min-width: 0; }
+.patient-recap .patient-recap__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--lis-primary, #1D9E75);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .09em;
+}
+.patient-recap .recap-name {
+  color: var(--text-primary);
+  font-size: 15px;
+  line-height: 1.25;
+  font-weight: 750;
+}
+.patient-recap .patient-recap__caption {
+  color: var(--text-secondary);
+  font-size: 10px;
+  line-height: 1.4;
+}
+.patient-recap .recap-edit {
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+.patient-recap__details {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+  margin-top: 14px;
+  padding-top: 13px;
+  border-top: 1px solid var(--border-color);
+}
+.patient-recap .patient-recap__detail {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  min-height: 48px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  background: var(--card-bg);
+}
+.patient-recap .patient-recap__detail > i {
+  flex: 0 0 auto;
+  color: var(--lis-primary, #1D9E75);
+  font-size: 16px;
+}
+.patient-recap .patient-recap__detail > span {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.patient-recap .patient-recap__detail small {
+  color: var(--text-secondary);
+  font-size: 9px;
+  line-height: 1.2;
+}
+.patient-recap .patient-recap__detail strong {
+  color: var(--text-primary);
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+/* Align the three visit controls on a common baseline and give the two
+   segmented groups enough width to avoid compressed labels. */
+.reg-card .form-grid--visit {
+  grid-template-columns: minmax(210px, .95fr) minmax(310px, 1.25fr) minmax(330px, 1.35fr);
+  align-items: start;
+  column-gap: 16px;
+  row-gap: 14px;
+}
+.reg-card .visit-type-field .lis-seg,
+.reg-card .sample-collection-field .lis-seg {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  gap: 7px;
+}
+.reg-card .visit-type-field .lis-seg__opt,
+.reg-card .sample-collection-field .lis-seg__opt {
+  flex: 1 1 0;
+  min-width: 0;
+  justify-content: center;
+  padding-inline: 8px;
+  white-space: nowrap;
+}
+.reg-card .visit-type-field .lis-seg__opt { font-size: 11px; }
+.reg-card .sample-collection-field .lis-seg__opt { font-size: 11px; }
+.reg-card .lis-field > label { display: block; margin-bottom: 7px; }
+@media (max-width: 1180px) {
+  .reg-card .form-grid--visit { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); }
+  .reg-card .sample-collection-field--tablet-full { grid-column: 1 / -1; }
+  .reg-card .sample-collection-field .lis-seg { max-width: 560px; }
+  .patient-recap__details { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 700px) {
+  .reg-card .patient-recap { margin: 10px 12px 14px; padding: 13px; }
+  .patient-recap__main { flex-wrap: wrap; }
+  .patient-recap .recap-edit { margin-left: auto; }
+  .reg-card .form-grid--visit { grid-template-columns: minmax(0, 1fr); }
+  .reg-card .sample-collection-field--tablet-full { grid-column: auto; }
+  .reg-card .sample-collection-field .lis-seg { max-width: none; }
+}
+@media (max-width: 460px) {
+  .patient-recap__details { grid-template-columns: minmax(0, 1fr); }
+  .patient-recap .recap-edit { width: 100%; justify-content: center; }
+  .reg-card .visit-type-field .lis-seg,
+  .reg-card .sample-collection-field .lis-seg { flex-wrap: wrap; }
+  .reg-card .visit-type-field .lis-seg__opt,
+  .reg-card .sample-collection-field .lis-seg__opt { flex: 1 1 100%; }
+}
