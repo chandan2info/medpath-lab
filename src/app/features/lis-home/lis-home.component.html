@@ -10,19 +10,31 @@
 <div class="welcome-band" role="region" aria-label="Day summary">
   <div class="wb-left">
     <div class="wb-greet">Good morning, {{ session.operator()?.name?.split(' ')?.[0] ?? 'Operator' }}.</div>
-    <div class="wb-sub">{{ dash.stats().samples }} samples logged today · {{ dash.kpis().at(2)?.value ?? '—' }} reports ready to dispatch · {{ statPendingCount() }} STAT pending.</div>
-    <div class="wb-pills" aria-hidden="true">
-      <span class="wb-pill"><i class="ti ti-users"></i> {{ dash.kpis()[0].value }} patients today</span>
-      <span class="wb-pill"><i class="ti ti-bolt"></i> {{ statPendingCount() }} STAT pending</span>
-      <span class="wb-pill"><i class="ti ti-certificate"></i> NABL Accredited</span>
+    <div class="wb-sub">
+      {{ dash.stats().samples }} samples logged today · {{ dash.kpis()[2]?.value ?? '—' }} reports ready to dispatch ·
+      {{ statPendingCount() }} STAT pending.
+    </div>
+    <div class="wb-pills" aria-label="Today's operational highlights">
+      <span class="wb-pill"><i class="ti ti-users" aria-hidden="true"></i> {{ dash.kpis()[0]?.value ?? '—' }} patients today</span>
+      <span class="wb-pill"><i class="ti ti-bolt" aria-hidden="true"></i> {{ statPendingCount() }} STAT pending</span>
+      <span class="wb-pill"><i class="ti ti-certificate" aria-hidden="true"></i> NABL Accredited</span>
     </div>
   </div>
   <div class="wb-stats" aria-label="Today's totals">
-    <div class="wb-stat"><div class="wb-stat-val">{{ dash.stats().revenue }}</div><div class="wb-stat-lbl">Revenue today</div></div>
+    <div class="wb-stat">
+      <div class="wb-stat-val">{{ dash.stats().revenue }}</div>
+      <div class="wb-stat-lbl">Revenue today</div>
+    </div>
     <div class="wb-divider" aria-hidden="true"></div>
-    <div class="wb-stat"><div class="wb-stat-val">{{ dash.stats().samples }}</div><div class="wb-stat-lbl">Samples logged</div></div>
+    <div class="wb-stat">
+      <div class="wb-stat-val">{{ dash.stats().samples }}</div>
+      <div class="wb-stat-lbl">Samples logged</div>
+    </div>
     <div class="wb-divider" aria-hidden="true"></div>
-    <div class="wb-stat"><div class="wb-stat-val">{{ dash.stats().reportsDone }}</div><div class="wb-stat-lbl">Reports done</div></div>
+    <div class="wb-stat">
+      <div class="wb-stat-val">{{ dash.stats().reportsDone }}</div>
+      <div class="wb-stat-lbl">Reports done</div>
+    </div>
   </div>
 </div>
 
@@ -32,75 +44,105 @@
     <lis-kpi-card [card]="kpi" />
   }
 </section>
+<p class="dashboard-metric-note">
+  Queue = samples awaiting processing or currently processing. Reports ready = completed reports awaiting dispatch.
+  Pending payments are a billing follow-up and must not independently block clinically authorized report release.
+</p>
 
 <!-- Worklist + Alerts -->
 <div class="home-row2">
   <!-- Worklist -->
-  <div class="lis-card" role="region" aria-label="Urgent worklist">
+  <section class="lis-card" aria-labelledby="urgent-worklist-title">
     <div class="lis-card__header">
       <i class="ti ti-list-check lis-card-icon lis-card-icon--danger" aria-hidden="true"></i>
-      <h2 class="lis-card__title">Urgent worklist</h2>
-      <span class="lis-badge lis-badge--danger">1 STAT · 1 critical</span>
+      <h2 class="lis-card__title" id="urgent-worklist-title">Urgent worklist</h2>
+      @if (statPendingCount() > 0 || criticalSampleCount() > 0) {
+        <span class="lis-badge lis-badge--danger">
+          {{ statPendingCount() }} STAT · {{ criticalSampleCount() }} critical
+        </span>
+      } @else {
+        <span class="lis-badge">No urgent items</span>
+      }
       <a routerLink="/dashboard/tracking" class="lis-link" aria-label="View all samples">View all →</a>
     </div>
     @if (dash.worklist().length === 0) {
-      <div class="empty-state" role="status"><i class="ti ti-check-circle"></i> No urgent samples — all clear.</div>
+      <div class="empty-state" role="status"><i class="ti ti-check-circle" aria-hidden="true"></i> No urgent samples — all clear.</div>
     } @else {
       <div class="worklist">
         @for (s of dash.worklist(); track s.id) {
-          <div class="wl-item" [class.wl-item--stat]="s.priority === 'stat'">
+          <article class="wl-item" [class.wl-item--stat]="s.priority === 'stat' || s.status === 'critical'">
             <span class="wl-dot" [class]="'wl-dot--' + s.status" aria-hidden="true"></span>
             <div class="wl-info">
               <div class="wl-name-row">
                 <span class="wl-name">{{ s.patientName }}</span>
-                <lis-status-pill [status]="s.priority === 'stat' ? 'stat' : s.status" />
+                <lis-status-pill [status]="s.status === 'critical' ? 'critical' : s.priority === 'stat' ? 'stat' : s.status" />
               </div>
               <div class="wl-tests">{{ s.tests.join(' · ') }}</div>
-              <div class="wl-sid lis-mono">{{ s.id }}</div>
+              <div class="wl-context">
+                <span class="wl-sid lis-mono">{{ s.id }}</span>
+                <span class="wl-context-sep" aria-hidden="true">·</span>
+                <span class="wl-sid">{{ s.patientId }}</span>
+                <span class="wl-context-sep" aria-hidden="true">·</span>
+                <span class="wl-sid">Collected {{ s.collectedAt }}</span>
+              </div>
             </div>
-            <div class="wl-eta" [class.wl-eta--urgent]="s.etaLabel === 'Now'">{{ s.etaLabel }}</div>
-          </div>
+            <div class="wl-eta" [class.wl-eta--urgent]="s.etaLabel === 'Now' || s.status === 'critical'">
+              {{ s.status === 'critical' ? 'Action required' : s.etaLabel }}
+            </div>
+          </article>
         }
       </div>
     }
-  </div>
+  </section>
 
   <!-- Alerts -->
-  <div class="lis-card" role="region" aria-label="Lab alerts">
+  <section class="lis-card" aria-labelledby="lab-alerts-title">
     <div class="lis-card__header">
       <i class="ti ti-bell lis-card-icon lis-card-icon--danger" aria-hidden="true"></i>
-      <h2 class="lis-card__title">Alerts</h2>
+      <h2 class="lis-card__title" id="lab-alerts-title">Alerts</h2>
+      @if (dash.alerts().length > 0) {
+        <span class="lis-badge" aria-label="Total alerts">{{ dash.alerts().length }} active</span>
+      }
     </div>
     @if (dash.alerts().length === 0) {
-      <div class="empty-state" role="status"><i class="ti ti-bell-off"></i> No alerts.</div>
+      <div class="empty-state" role="status"><i class="ti ti-bell-off" aria-hidden="true"></i> No alerts.</div>
     } @else {
       <div class="alert-list">
-        @for (a of dash.alerts(); track a.time) {
-          <div class="alert-item" role="alert" [attr.aria-live]="a.level === 'red' ? 'assertive' : 'polite'">
+        @for (a of dash.alerts(); track a.id) {
+          <article class="alert-item" [class.alert-item--critical]="a.level === 'red'">
             <span [class]="'alert-dot alert-dot--' + a.level" aria-hidden="true"></span>
-            <div>
+            <div class="alert-content">
               <div class="alert-text">{{ a.text }}</div>
               <div class="alert-time">{{ a.time }}</div>
+              @if (a.actionLabel && a.actionRoute) {
+                <a class="alert-action" [routerLink]="a.actionRoute">{{ a.actionLabel }} →</a>
+              }
+              @if (a.level === 'red' && !a.actionLabel) {
+                <span class="alert-follow-up">Acknowledgement and documented follow-up required</span>
+              }
             </div>
-          </div>
+          </article>
         }
       </div>
     }
-  </div>
+    <p class="alert-footnote">
+      Critical-value communication must be acknowledged, time-stamped and auditable. This dashboard shortcut does not replace that workflow.
+    </p>
+  </section>
 </div>
 
 <!-- Quick actions -->
-<div class="lis-card" role="region" aria-label="Quick actions">
+<section class="lis-card" aria-labelledby="quick-actions-title">
   <div class="lis-card__header">
     <i class="ti ti-apps lis-card-icon" aria-hidden="true"></i>
-    <h2 class="lis-card__title">Quick actions</h2>
+    <h2 class="lis-card__title" id="quick-actions-title">Quick actions</h2>
   </div>
   <div class="qa-grid">
     <a routerLink="/dashboard/registration" class="qa-btn"><i class="ti ti-user-plus" aria-hidden="true"></i> Register patient</a>
-    <a routerLink="/dashboard/test-order"   class="qa-btn"><i class="ti ti-test-pipe"  aria-hidden="true"></i> Order tests</a>
-    <a routerLink="/dashboard/results"      class="qa-btn"><i class="ti ti-writing"    aria-hidden="true"></i> Enter results</a>
-    <a routerLink="/dashboard/reports"      class="qa-btn"><i class="ti ti-printer"    aria-hidden="true"></i> Print report</a>
-    <a routerLink="/dashboard/tracking"     class="qa-btn"><i class="ti ti-test-pipe"  aria-hidden="true"></i> Track sample</a>
-    <a routerLink="/dashboard/history"      class="qa-btn"><i class="ti ti-history"    aria-hidden="true"></i> Patient history</a>
+    <a routerLink="/dashboard/test-order" class="qa-btn"><i class="ti ti-test-pipe" aria-hidden="true"></i> Order tests</a>
+    <a routerLink="/dashboard/results" class="qa-btn"><i class="ti ti-writing" aria-hidden="true"></i> Enter results</a>
+    <a routerLink="/dashboard/reports" class="qa-btn"><i class="ti ti-printer" aria-hidden="true"></i> Print report</a>
+    <a routerLink="/dashboard/tracking" class="qa-btn"><i class="ti ti-test-pipe" aria-hidden="true"></i> Track sample</a>
+    <a routerLink="/dashboard/history" class="qa-btn"><i class="ti ti-history" aria-hidden="true"></i> Patient history</a>
   </div>
-</div>
+</section>
