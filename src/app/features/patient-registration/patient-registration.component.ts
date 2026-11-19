@@ -1,478 +1,658 @@
-// ─────────────────────────────────────────────
-//  Screen 1 — Patient Registration
-//  Single purpose: capture patient demographics
-//  & clinical info, then navigate to Test Order.
-// ─────────────────────────────────────────────
-import {
-  Component, ChangeDetectionStrategy, signal, computed, inject, OnInit, HostListener
-} from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
-import { DatePipe, NgClass } from '@angular/common';
-import { PatientFlowService, RegisteredPatient, KnownPatientRecord } from '../../core/services/patient-flow.service';
-import { DobDatePickerComponent } from '../../shared/components/dob-date-picker/dob-date-picker.component';
-import { WorkflowStepperComponent, WorkflowStep } from '../../shared/components/workflow-stepper/workflow-stepper.component';
+<!-- ═══════════════════════════════════════════════════════════
+     Screen 1 — Patient Registration
+     Single purpose: collect patient details.
+     ═══════════════════════════════════════════════════════════ -->
 
+<!-- Success overlay -->
+@if (showSuccess()) {
+  <div class="success-overlay" role="dialog" aria-modal="true" aria-labelledby="success-title">
+    <div class="success-card">
+      <div class="success-icon" aria-hidden="true">
+        <i class="ti ti-circle-check"></i>
+      </div>
+      <h2 id="success-title" class="success-title">Patient Registered Successfully</h2>
 
-@Component({
-  selector: 'app-patient-registration',
-  standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, NgClass, DatePipe, DobDatePickerComponent, WorkflowStepperComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './patient-registration.component.html',
-  styleUrl: './patient-registration.component.css',
-})
-export class PatientRegistrationComponent implements OnInit {
-  private readonly fb     = inject(FormBuilder);
-  private readonly router = inject(Router);
-  protected readonly flow = inject(PatientFlowService);
+      <div class="success-pid-block">
+        <div class="success-pid-label">Patient ID</div>
+        <div class="success-pid lis-mono">{{ savedPatient()?.id }}</div>
+      </div>
 
-  protected readonly bloodGroups = [
-    'A+', 'A−', 'B+', 'B−', 'O+', 'O−', 'AB+', 'AB−', 'Unknown'
-  ];
+      <div class="success-meta">
+        <span class="success-name">{{ savedPatient()?.firstName }} {{ savedPatient()?.lastName }}</span>
+        <span class="success-sep">·</span>
+        <span>{{ savedPatient()?.gender }}</span>
+        <span class="success-sep">·</span>
+        <span>{{ savedPatient()?.mobile }}</span>
+      </div>
 
-  /** Shared 4-step workflow stepper (Register → Test Order → Billing → Sample). */
-  protected readonly workflowSteps: WorkflowStep[] = [
-    { label: 'Register',   icon: 'ti-user-plus' },
-    { label: 'Test Order', icon: 'ti-test-pipe' },
-    { label: 'Billing',    icon: 'ti-receipt' },
-    { label: 'Sample',     icon: 'ti-droplet' },
-  ];
-  protected readonly workflowActiveIndex = 0;
+      <div class="success-redirect" aria-live="polite">
+        Redirecting to Test Order in <strong>{{ countdown() }}s</strong>…
+      </div>
 
-  readonly todayISO = new Date().toISOString().split('T')[0];
-
-  currentStep   = signal(1);
-  ageDisplay    = signal('');
-  ageParts      = signal<{ years: number; months: number; days: number } | null>(null);
-  dobFormatted  = signal('');
-  // Flips 0/1 on every DOB change so the Age card's CSS animation
-  // (bound via [class]) restarts each time — Angular doesn't replay
-  // a keyframe just because interpolated text changed, only when a
-  // class is actually added/removed.
-  ageTick       = signal(0);
-  saving        = signal(false);
-  showSuccess   = signal(false);
-  savedPatient  = signal<RegisteredPatient | null>(null);
-  countdown     = signal(3);
-
-  // Duplicate-patient detection (Personal Details step)
-  duplicateMatch  = signal<KnownPatientRecord | null>(null);
-  duplicateDismissed = signal(false);
-  patientSearchQuery = signal('');
-  patientSearchResults = signal<KnownPatientRecord[]>([]);
-  selectedExistingPatientId = signal<string | null>(null);
-  selectedExistingPatient = signal<KnownPatientRecord | null>(null);
-  showNewPatientForm = signal(false);
-  isEditingExistingPatient = signal(false);
-  searchAttempted = signal(false);
-
-  // Brief reassurance flash shown right before advancing to
-  // Clinical Info, so the operator sees confirmation instead
-  // of an abrupt step swap.
-  step1Saved = signal(false);
-
-  // ── Registration progress summary (Priority 22) ──────────
-  // Lightweight "N of M required fields complete" readout for
-  // the Personal Details step, so the operator knows what's
-  // left without scanning the whole form.
-  private readonly step1RequiredFields = ['firstName', 'lastName', 'dob', 'gender', 'mobile'];
-  readonly step1Total = this.step1RequiredFields.length;
-  step1FilledCount = signal(0);
-  step1ProgressPct = computed(() =>
-    Math.round((this.step1FilledCount() / this.step1Total) * 100)
-  );
-
-  // ── Address character counter (Priority 10) ──────────────
-  readonly addressMaxLen = 250;
-  addressLength = signal(0);
-
-  form!: FormGroup;
-
-  private _timer?: ReturnType<typeof setInterval>;
-
-  ngOnInit(): void {
-    this.form = this.fb.group({
-      // Step 1 — Demographics
-      firstName:    ['', Validators.required],
-      lastName:     ['', Validators.required],
-      dob:          ['', Validators.required],
-      gender:       ['', Validators.required],
-      bloodGroup:   ['Unknown'],
-      mobile:       ['', [Validators.required, Validators.pattern(/^[6-9]\d{9}$/)]],
-      email:        [''],
-      address:      [''],
-      // Step 2 — Clinical
-      refDoctor:    ['Self / Walk-in'],
-      visitType:    ['Walk-in'],
-      fasting:      ['Unknown'],
-      collection:   ['At lab counter'],
-      clinicalNotes:[''],
-      medications:  [''],
-      collectionAddress: [''],
-      collectionDate: [''],
-      collectionTime: [''],
-      collectionInstructions: [''],
-    });
-
-    // The custom date picker doesn't emit a native (change) event,
-    // so recompute Age from the form control's value stream instead.
-    this.form.get('dob')?.valueChanges.subscribe((dob) => {
-      if (!dob) {
-        this.ageDisplay.set('');
-        this.ageParts.set(null);
-        this.dobFormatted.set('');
-        return;
-      }
-
-      const age = this.flow.calcAge(dob);
-      this.ageDisplay.set(`${age}`);
-      this.ageParts.set(this.flow.calcAgeParts(dob));
-      this.dobFormatted.set(this.formatDobDisplay(dob));
-      this.ageTick.update(v => v ^ 1);
-    });
-
-    // Live character count for the Address textarea (Priority 10) —
-    // keeps the operator aware of the remaining budget on a field
-    // that's otherwise just a plain, unbounded-looking textarea.
-    this.form.get('address')?.valueChanges.subscribe((val: string) => {
-      this.addressLength.set((val || '').length);
-    });
-
-    // Registration progress summary — recompute whenever any Step 1
-    // field changes, so the "N of M required fields complete" chip
-    // stays live as the operator fills the form (Priority 22).
-    this.updateStep1Progress();
-    this.form.valueChanges.subscribe(() => this.updateStep1Progress());
-
-    // Visit type and collection method are independent workflow dimensions.
-    // Do not silently rewrite one when the other changes.
-  }
-
-  // "2008-07-04" → "04 Jul 2008", used in the Age card's helper
-  // text so the operator can see exactly which DOB the value was
-  // derived from, without reformatting logic living in the template.
-  private formatDobDisplay(dob: string): string {
-    const d = new Date(dob);
-    if (isNaN(d.getTime())) return '';
-    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-  }
-
- calcAge(dob: string): string {
-  if (!dob) return '';
-
-  const birth = new Date(dob);
-  const today = new Date();
-
-  let years = today.getFullYear() - birth.getFullYear();
-  let months = today.getMonth() - birth.getMonth();
-  let days = today.getDate() - birth.getDate();
-
-  if (days < 0) {
-    const previousMonth = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      0
-    );
-
-    days += previousMonth.getDate();
-    months--;
-  }
-
-  if (months < 0) {
-    months += 12;
-    years--;
-  }
-
-  const parts: string[] = [];
-
-  if (years > 0) {
-    parts.push(`${years} ${years === 1 ? 'Year' : 'Years'}`);
-  }
-
-  if (months > 0) {
-    parts.push(`${months} ${months === 1 ? 'Month' : 'Months'}`);
-  }
-
-  if (days > 0 || parts.length === 0) {
-    parts.push(`${days} ${days === 1 ? 'Day' : 'Days'}`);
-  }
-
-  return parts.join(' ');
+      <button type="button" class="lis-btn lis-btn--primary success-cta" (click)="goToTestOrder()">
+        <i class="ti ti-test-pipe" aria-hidden="true"></i>
+        Open Test Order now
+      </button>
+      <div class="success-hint">or wait {{ countdown() }}s to continue automatically</div>
+    </div>
+  </div>
 }
 
-  // Grows a textarea to fit its content instead of showing a
-  // tall, mostly-empty box (Address / Clinical notes / Medication).
-  autoResize(evt: Event): void {
-    const el = evt.target as HTMLTextAreaElement;
-    el.style.height = 'auto';
-    el.style.height = `${el.scrollHeight}px`;
-  }
+<!-- Brief reassurance toast — Personal Details saved -->
+@if (step1Saved()) {
+  <div class="step-saved-toast" role="status" aria-live="polite">
+    <i class="ti ti-circle-check" aria-hidden="true"></i>
+    {{ selectedExistingPatient() ? 'Patient details confirmed' : 'Personal details saved' }}
+  </div>
+}
 
-  // Icon for the gender shown in the Clinical step's patient recap —
-  // mirrors the same mapping used on Billing/Test Order/Sample Collection
-  // so the icon reads identically wherever gender appears in a patient
-  // metadata row.
-  genderIcon(): string {
-    const g = (this.form.value.gender ?? '').toLowerCase();
-    if (g === 'male')   return 'ti-gender-male';
-    if (g === 'female') return 'ti-gender-female';
-    return 'ti-gender-genderless';
-  }
+<!-- ── Page header ─────────────────────────────────────────── -->
+<div class="page-header">
+  <div class="page-header__left">
+    <div class="page-header__title-row">
+      <div class="page-header__icon" aria-hidden="true">
+        <i class="ti ti-user-plus"></i>
+      </div>
+      <div>
+        <h1 class="page-title">Patient Registration</h1>
+        <nav aria-label="Breadcrumb">
+          <ol class="breadcrumb">
+            <li><a routerLink="/dashboard/home">Home</a></li>
+            <li aria-current="page">New registration</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
 
-  // Counts how many of the Step 1 required fields currently hold a
-  // non-empty value, powering the progress chip in the card header.
-  private updateStep1Progress(): void {
-    const filled = this.step1RequiredFields.filter(f => {
-      const v = this.form.get(f)?.value;
-      return v !== null && v !== undefined && String(v).trim() !== '';
-    }).length;
-    this.step1FilledCount.set(filled);
-  }
+  <!-- Workflow progress trail — single top-level indicator, standardized
+       to the shared stepper (same design used on Test Order, Billing and
+       Sample Collection). The old "Demographics/Clinical info" pill-stepper
+       that used to render below this (duplicating it) has been removed;
+       that sub-progress now lives in the card header as ".mini-steps" instead. -->
+  <lis-workflow-stepper [steps]="workflowSteps" [activeIndex]="workflowActiveIndex" />
+</div>
 
-  isInvalid(field: string): boolean {
-    const c = this.form.get(field);
-    return !!(c?.invalid && (c.dirty || c.touched));
-  }
+<!-- ── Form ──────────────────────────────────────────────── -->
+<div class="reg-form-wrap">
+  <form [formGroup]="form" novalidate>
 
-  isValidTouched(field: string): boolean {
-    const c = this.form.get(field);
-    return !!(c?.valid && (c.dirty || c.touched));
-  }
+    <!-- ── Step 1: Demographics ─────────────────────────── -->
+    @if (currentStep() === 1) {
+      <div class="lis-card reg-card" aria-label="Personal details">
+        <div class="lis-card__header">
+          <i class="ti ti-user lis-card-icon" aria-hidden="true"></i>
+          <h2 class="lis-card__title">{{ isEditingExistingPatient() ? 'Edit Patient Details' : (showNewPatientForm() ? 'Personal Details' : 'Find Patient') }}</h2>
+          <div class="mini-steps" aria-label="Form sub-steps">
+            <span class="mini-step mini-step--active">Personal</span>
+            <span class="mini-step">Clinical</span>
+          </div>
+        </div>
 
-  // Checks the mobile number against known patients and
-  // surfaces a "possible duplicate" warning before the
-  // operator proceeds to Test Order.
-  onMobileChange(): void {
-    this.duplicateDismissed.set(false);
-    const mobile = this.form.value.mobile;
-    if (this.form.get('mobile')?.valid) {
-      this.duplicateMatch.set(this.flow.findByMobile(mobile));
-    } else {
-      this.duplicateMatch.set(null);
-    }
-  }
+        <!-- Registration progress summary — required-fields readout -->
+        @if (showNewPatientForm()) {
+        <div class="reg-progress" aria-live="polite">
+          <div class="reg-progress__bar">
+            <div class="reg-progress__fill" [style.width.%]="step1ProgressPct()"></div>
+          </div>
+          <span class="reg-progress__label" [class.reg-progress__label--done]="step1FilledCount() === step1Total">
+            <i class="ti" [class.ti-circle-check]="step1FilledCount() === step1Total" [class.ti-list-check]="step1FilledCount() !== step1Total" aria-hidden="true"></i>
+            {{ step1FilledCount() }} of {{ step1Total }} required fields complete
+          </span>
+        </div>
+        }
 
-  dismissDuplicateWarning(): void {
-    this.duplicateDismissed.set(true);
-  }
+        <!-- Patient identification: search first, then choose an explicit outcome. -->
+        <section class="patient-search-panel" aria-label="Find patient">
+          <div class="patient-search-panel__intro">
+            <span class="patient-search-panel__icon"><i class="ti ti-search" aria-hidden="true"></i></span>
+            <div class="patient-search-panel__copy">
+              <h3>Find Patient</h3>
+              <p>Search by Patient ID, mobile number or name before creating a new profile.</p>
+            </div>
+            <div class="patient-search-panel__input">
+              <input id="patientSearch" type="search" [value]="patientSearchQuery()"
+                (input)="searchExistingPatients($any($event.target).value)"
+                placeholder="Enter patient ID, mobile number or name"
+                aria-label="Search by patient ID, mobile number or name" />
+            </div>
+          </div>
 
-  searchExistingPatients(query: string): void {
-    this.patientSearchQuery.set(query);
-    this.searchAttempted.set(query.trim().length >= 2);
-    this.selectedExistingPatient.set(null);
-    this.selectedExistingPatientId.set(null);
-    this.patientSearchResults.set(this.flow.searchPatients(query));
-  }
-
-  selectExistingPatient(patient: KnownPatientRecord): void {
-    this.selectedExistingPatient.set(patient);
-    this.selectedExistingPatientId.set(patient.id);
-    this.searchAttempted.set(false);
-    this.showNewPatientForm.set(false);
-    this.form.patchValue({
-      firstName: patient.firstName, lastName: patient.lastName, mobile: patient.mobile,
-      dob: patient.dob, gender: patient.gender, bloodGroup: patient.bloodGroup,
-      email: patient.email, address: patient.address
-    });
-    this.duplicateMatch.set(null);
-    this.duplicateDismissed.set(true);
-    this.patientSearchResults.set([]);
-  }
-
-  /** Return from Clinical to demographics, opening edit mode for existing patients. */
-  editPatientFromClinical(): void {
-    this.currentStep.set(1);
-    if (this.selectedExistingPatient()) {
-      this.editSelectedPatient();
-    }
-  }
-
-  /** Open the prefilled demographics form for the selected existing patient. */
-  editSelectedPatient(): void {
-    const patient = this.selectedExistingPatient();
-    if (!patient) return;
-    this.isEditingExistingPatient.set(true);
-    this.showNewPatientForm.set(true);
-    this.form.patchValue({
-      firstName: patient.firstName, lastName: patient.lastName, mobile: patient.mobile,
-      dob: patient.dob, gender: patient.gender, bloodGroup: patient.bloodGroup,
-      email: patient.email, address: patient.address
-    });
-    this.form.markAsPristine();
-  }
-
-  /** Apply edited demographic values to the selected patient summary. */
-  updateExistingPatient(): void {
-    const fields = ['firstName', 'lastName', 'dob', 'gender', 'mobile'];
-    fields.forEach(field => this.form.get(field)?.markAsTouched());
-    if (fields.some(field => this.form.get(field)?.invalid)) return;
-
-    const current = this.selectedExistingPatient();
-    if (!current) return;
-    const v = this.form.getRawValue();
-    const updated: KnownPatientRecord = {
-      ...current,
-      firstName: v.firstName,
-      lastName: v.lastName,
-      name: `${v.firstName} ${v.lastName}`.trim(),
-      mobile: v.mobile,
-      dob: v.dob,
-      gender: v.gender,
-      bloodGroup: v.bloodGroup,
-      email: v.email,
-      address: v.address
-    };
-    this.selectedExistingPatient.set(updated);
-    this.selectedExistingPatientId.set(updated.id);
-    this.isEditingExistingPatient.set(false);
-    this.showNewPatientForm.set(false);
-    this.patientSearchQuery.set(updated.id);
-    this.searchAttempted.set(false);
-  }
-
-  cancelExistingPatientEdit(): void {
-    const patient = this.selectedExistingPatient();
-    if (!patient) {
-      this.clearExistingPatientSelection();
-      return;
-    }
-    this.form.patchValue({
-      firstName: patient.firstName, lastName: patient.lastName, mobile: patient.mobile,
-      dob: patient.dob, gender: patient.gender, bloodGroup: patient.bloodGroup,
-      email: patient.email, address: patient.address
-    });
-    this.isEditingExistingPatient.set(false);
-    this.showNewPatientForm.set(false);
-  }
-
-  startNewPatientRegistration(): void {
-    this.selectedExistingPatient.set(null);
-    this.selectedExistingPatientId.set(null);
-    this.patientSearchResults.set([]);
-    this.showNewPatientForm.set(true);
-    this.isEditingExistingPatient.set(false);
-    this.searchAttempted.set(false);
-    this.form.reset({
-      firstName: '', lastName: '', dob: '', gender: '', bloodGroup: 'Unknown',
-      mobile: '', email: '', address: '', refDoctor: 'Self / Walk-in',
-      visitType: 'Walk-in', fasting: 'Unknown', collection: 'At lab counter',
-      clinicalNotes: '', medications: '', collectionAddress: '',
-      collectionDate: '', collectionTime: '', collectionInstructions: ''
-    });
-  }
-
-  clearExistingPatientSelection(): void {
-    this.selectedExistingPatient.set(null);
-    this.selectedExistingPatientId.set(null);
-    this.patientSearchQuery.set('');
-    this.patientSearchResults.set([]);
-    this.searchAttempted.set(false);
-    this.showNewPatientForm.set(false);
-    this.isEditingExistingPatient.set(false);
-    this.form.reset({
-      firstName: '', lastName: '', dob: '', gender: '', bloodGroup: 'Unknown',
-      mobile: '', email: '', address: '', refDoctor: 'Self / Walk-in',
-      visitType: 'Walk-in', fasting: 'Unknown', collection: 'At lab counter',
-      clinicalNotes: '', medications: '', collectionAddress: '',
-      collectionDate: '', collectionTime: '', collectionInstructions: ''
-    });
-  }
-
-  // Validate step 1 fields before advancing
-  nextStep(): void {
-    const step1 = ['firstName', 'lastName', 'dob', 'gender', 'mobile'];
-    step1.forEach(f => this.form.get(f)?.markAsTouched());
-    const valid = step1.every(f => this.form.get(f)?.valid ?? true);
-    if (!valid) return;
-
-    this.step1Saved.set(true);
-    setTimeout(() => {
-      this.step1Saved.set(false);
-      this.currentStep.set(2);
-    }, 550);
-  }
-
-  goBack(): void {
-    if (this.currentStep() === 2) { this.currentStep.set(1); }
-    else { this.router.navigate(['/dashboard/home']); }
-  }
-
-  // Keyboard-first navigation for high-volume receptionists:
-  // Ctrl/Cmd+Enter advances or saves, Esc goes back/cancels.
-  @HostListener('document:keydown', ['$event'])
-  handleKeyboardShortcut(evt: KeyboardEvent): void {
-    if (this.showSuccess()) return;
-    if ((evt.ctrlKey || evt.metaKey) && evt.key === 'Enter') {
-      evt.preventDefault();
-      this.currentStep() === 1 ? this.nextStep() : this.saveAndContinue();
-    } else if (evt.key === 'Escape') {
-      evt.preventDefault();
-      this.goBack();
-    }
-  }
-
-  saveAndContinue(): void {
-    // Referring doctor is optional: self-referred and walk-in patients are valid.
-    const addressControl = this.form.get('collectionAddress');
-    if (this.form.value.collection === 'Home collection' && !String(addressControl?.value ?? '').trim()) {
-      addressControl?.setValidators([Validators.required]);
-      addressControl?.markAsTouched();
-      addressControl?.updateValueAndValidity();
-      return;
-    }
-    addressControl?.clearValidators();
-    addressControl?.updateValueAndValidity();
-
-    this.saving.set(true);
-
-    // Simulate brief save delay (replace with real API call)
-    setTimeout(() => {
-      const v = this.form.value;
-      const pat = this.flow.registerPatient({
-        firstName:    v.firstName,
-        lastName:     v.lastName,
-        dob:          v.dob,
-        ageYears:     this.flow.calcAge(v.dob),
-        gender:       v.gender,
-        bloodGroup:   v.bloodGroup,
-        mobile:       v.mobile,
-        email:        v.email,
-        address:      v.address,
-        refDoctor:    v.refDoctor || 'Self / Walk-in',
-        visitType:    v.visitType,
-        fasting:      v.fasting,
-        collection:   v.collection,
-        clinicalNotes:v.clinicalNotes,
-        medications:  v.medications,
-        collectionAddress: v.collectionAddress,
-        collectionDate: v.collectionDate,
-        collectionTime: v.collectionTime,
-        collectionInstructions: v.collectionInstructions,
-      }, this.selectedExistingPatientId() ?? undefined);
-
-      this.saving.set(false);
-      this.savedPatient.set(pat);
-      this.showSuccess.set(true);
-
-      // Countdown → auto-navigate to test order
-      this._timer = setInterval(() => {
-        this.countdown.update(c => {
-          if (c <= 1) {
-            clearInterval(this._timer);
-            this.router.navigate(['/dashboard/test-order']);
-            return 0;
+          @if (patientSearchResults().length > 0) {
+            <div class="patient-search-state">
+              <div class="patient-search-state__heading">
+                <strong>{{ patientSearchResults().length }} matching patient{{ patientSearchResults().length === 1 ? '' : 's' }}</strong>
+                <span>Select the correct record to continue.</span>
+              </div>
+              <div class="patient-search-results" aria-label="Matching patients">
+                @for (patient of patientSearchResults(); track patient.id) {
+                  <button type="button" class="patient-search-result"
+                    [class.patient-search-result--selected]="selectedExistingPatientId() === patient.id"
+                    (click)="selectExistingPatient(patient)">
+                    <span class="patient-search-result__identity">
+                      <span class="patient-search-result__tag">Existing patient</span>
+                      <strong>{{ patient.name }}</strong>
+                      <small>{{ patient.id }}</small>
+                      <small>{{ patient.dob | date:'dd MMM yyyy' }} · {{ patient.gender }} · +91 {{ patient.mobile }}</small>
+                    </span>
+                    <span class="patient-search-result__action">
+                      {{ selectedExistingPatientId() === patient.id ? 'Selected' : 'Select patient' }}
+                      <i class="ti ti-arrow-right" aria-hidden="true"></i>
+                    </span>
+                  </button>
+                }
+              </div>
+            </div>
+          } @else if (!selectedExistingPatient() && searchAttempted() && patientSearchQuery().trim().length >= 2) {
+            <div class="patient-search-empty" role="status">
+              <span class="patient-search-panel__icon"><i class="ti ti-user-x" aria-hidden="true"></i></span>
+              <div class="patient-search-empty__copy">
+                <strong>No patient found</strong>
+                <span>No matching record was found. Verify the search or register a new patient.</span>
+              </div>
+              <button type="button" class="lis-btn lis-btn--primary lis-btn--sm"
+                (click)="startNewPatientRegistration()">Register New Patient</button>
+            </div>
+          } @else if (selectedExistingPatient()) {
+            @if (selectedExistingPatient(); as patient) {
+            <div class="patient-search-selected patient-search-selected--card" role="status">
+              <div class="patient-search-selected__details">
+                <span class="patient-search-result__tag">Existing patient selected</span>
+                <strong>{{ patient.name }}</strong>
+                <small>{{ patient.id }} · {{ patient.dob | date:'dd MMM yyyy' }} · {{ patient.gender }} · +91 {{ patient.mobile }}</small>
+              </div>
+              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm"
+                (click)="editSelectedPatient()"><i class="ti ti-edit" aria-hidden="true"></i> Edit</button>
+              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm"
+                (click)="clearExistingPatientSelection()">Change patient</button>
+              <button type="button" class="lis-btn lis-btn--primary lis-btn--sm"
+                (click)="nextStep()">Continue to Clinical <i class="ti ti-arrow-right"></i></button>
+            </div>
+            }
+          } @else if (showNewPatientForm()) {
+            <div class="patient-search-selected" role="status">
+              <i class="ti ti-user-plus" aria-hidden="true"></i>
+              Registering a new patient
+              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm"
+                (click)="clearExistingPatientSelection()">Back to search</button>
+            </div>
+          } @else {
+            <div class="patient-search-panel__note">
+              <i class="ti ti-info-circle" aria-hidden="true"></i>
+              Search the patient directory. If no record exists, you can register a new patient.
+              <span class="patient-search-panel__demo">Demo directory until patient API integration.</span>
+            </div>
           }
-          return c - 1;
-        });
-      }, 1000);
-    }, 600);
-  }
+        </section>
 
-  goToTestOrder(): void {
-    clearInterval(this._timer);
-    this.router.navigate(['/dashboard/test-order']);
-  }
+        @if (showNewPatientForm()) {
+        @if (duplicateMatch() && !duplicateDismissed()) {
+          <div class="dup-banner" role="alert">
+            <i class="ti ti-alert-triangle dup-banner__icon" aria-hidden="true"></i>
+            <div class="dup-banner__body">
+              <div class="dup-banner__title">Possible existing patient</div>
+              <div class="dup-banner__meta">{{ duplicateMatch()?.name }} · {{ duplicateMatch()?.id }} · +91 {{ duplicateMatch()?.mobile }}</div>
+            </div>
+            <div class="dup-banner__actions">
+              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm"
+                (click)="selectExistingPatient(duplicateMatch()!)">Use existing record</button>
+              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm"
+                (click)="dismissDuplicateWarning()">Continue as new</button>
+            </div>
+          </div>
+        }
+        <!-- Identity group -->
+        <div class="field-group">
+          <div class="field-group__title"><i class="ti ti-user" aria-hidden="true"></i> Identity</div>
+          <div class="form-grid">
+            <!-- First name -->
+            <div class="lis-field">
+              <label for="firstName">First Name <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
+              <input id="firstName" formControlName="firstName"
+                [class.input-error]="isInvalid('firstName')"
+                autocomplete="given-name" placeholder="e.g. Ananya" />
+              @if (isInvalid('firstName')) {
+                <span class="err-msg" role="alert">
+                  <i class="ti ti-alert-circle"></i> First name is required
+                </span>
+              }
+            </div>
 
-  ngOnDestroy(): void { clearInterval(this._timer); }
-}
+            <!-- Last name -->
+            <div class="lis-field">
+              <label for="lastName">Last Name <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
+              <input id="lastName" formControlName="lastName"
+                [class.input-error]="isInvalid('lastName')"
+                autocomplete="family-name" placeholder="e.g. Krishnaswamy" />
+              @if (isInvalid('lastName')) {
+                <span class="err-msg" role="alert">
+                  <i class="ti ti-alert-circle"></i> Last name is required
+                </span>
+              }
+            </div>
+
+            <!-- Date of Birth — custom themed date picker (no native OS calendar) -->
+            <div class="lis-field">
+              <label for="dob">Date of Birth <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
+              <app-dob-date-picker
+                formControlName="dob"
+                inputId="dob"
+                [invalid]="isInvalid('dob')"
+                [max]="todayISO">
+              </app-dob-date-picker>
+              @if (isInvalid('dob')) {
+                <span class="err-msg" role="alert">
+                  <i class="ti ti-alert-circle"></i> Date of birth is required
+                </span>
+              }
+            </div>
+
+            <!-- Age — auto-calculated readonly, styled as an information card -->
+            <div class="lis-field age-field">
+              <div class="age-header">
+                <label id="age-label">Age</label>
+                <span class="auto-chip">
+                  <i class="ti ti-lock" aria-hidden="true"></i> Auto
+                </span>
+              </div>
+
+              @if (ageParts(); as age) {
+                <div class="age-card" role="group" aria-labelledby="age-label"
+                  [class.age-tick-a]="ageTick() === 0" [class.age-tick-b]="ageTick() === 1"
+                  [attr.aria-label]="'Age, automatically calculated. ' + age.years + ' years, ' + age.months + ' months, ' + age.days + ' days. Read only.'">
+                  <div class="age-card__icon" aria-hidden="true">
+                    <i class="ti ti-calendar-user"></i>
+                  </div>
+
+                  <div class="age-card__body">
+                    <div class="age-card__segment">
+                      <span class="age-card__value age-card__value--years">{{ age.years }}</span>
+                      <span class="age-card__unit">Years</span>
+                    </div>
+                    <span class="age-card__divider" aria-hidden="true"></span>
+
+                    <div class="age-card__segment">
+                      <span class="age-card__value age-card__value--months">{{ age.months }}</span>
+                      <span class="age-card__unit">Months</span>
+                    </div>
+                    <span class="age-card__divider" aria-hidden="true"></span>
+
+                    <div class="age-card__segment">
+                      <span class="age-card__value age-card__value--days">{{ age.days }}</span>
+                      <span class="age-card__unit">Days</span>
+                    </div>
+                  </div>
+
+                  <span class="age-card__divider age-card__divider--lock" aria-hidden="true"></span>
+
+                  <div class="age-card__lock-section">
+                    <div class="age-card__lock"
+                      title="This field is automatically calculated from the Date of Birth and cannot be edited.">
+                      <i class="ti ti-lock" aria-hidden="true"></i>
+                    </div>
+                  </div>
+                </div>
+
+                <span class="helper-text age-card__helper">
+                  <i class="ti ti-circle-check-filled" aria-hidden="true"></i>
+                  Auto calculated from Date of Birth &bull; {{ dobFormatted() }}
+                </span>
+              } @else {
+                <div class="age-card age-card--empty" role="group" aria-labelledby="age-label"
+                  aria-label="Age will be calculated after selecting date of birth">
+                  <div class="age-card__icon" aria-hidden="true">
+                    <i class="ti ti-calendar-user"></i>
+                  </div>
+
+                  <div class="age-card__body">
+                    <div class="age-card__segment">
+                      <span class="age-card__value age-card__value--placeholder">—</span>
+                      <span class="age-card__unit">Years</span>
+                    </div>
+                    <span class="age-card__divider" aria-hidden="true"></span>
+
+                    <div class="age-card__segment">
+                      <span class="age-card__value age-card__value--placeholder">—</span>
+                      <span class="age-card__unit">Months</span>
+                    </div>
+                    <span class="age-card__divider" aria-hidden="true"></span>
+
+                    <div class="age-card__segment">
+                      <span class="age-card__value age-card__value--placeholder">—</span>
+                      <span class="age-card__unit">Days</span>
+                    </div>
+                  </div>
+
+                  <span class="age-card__divider age-card__divider--lock" aria-hidden="true"></span>
+
+                  <div class="age-card__lock-section">
+                    <div class="age-card__lock"
+                      title="This field is automatically calculated from the Date of Birth and cannot be edited.">
+                      <i class="ti ti-lock" aria-hidden="true"></i>
+                    </div>
+                  </div>
+                </div>
+
+                <span class="helper-text">Select Date of Birth to calculate age.</span>
+              }
+            </div>
+
+            <!-- Gender -->
+            <div class="lis-field">
+              <label id="gender-label">Gender <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
+              <div class="gender-cards" role="group" aria-labelledby="gender-label">
+                <button type="button" class="gender-card"
+                  [class.gender-card--active]="form.value.gender === 'Male'"
+                  (click)="form.patchValue({gender: 'Male'})"
+                  [attr.aria-pressed]="form.value.gender === 'Male'">
+                  <i class="ti ti-gender-male" aria-hidden="true"></i>
+                  <span>Male</span>
+                </button>
+                <button type="button" class="gender-card"
+                  [class.gender-card--active]="form.value.gender === 'Female'"
+                  (click)="form.patchValue({gender: 'Female'})"
+                  [attr.aria-pressed]="form.value.gender === 'Female'">
+                  <i class="ti ti-gender-female" aria-hidden="true"></i>
+                  <span>Female</span>
+                </button>
+                <button type="button" class="gender-card"
+                  [class.gender-card--active]="form.value.gender === 'Other'"
+                  (click)="form.patchValue({gender: 'Other'})"
+                  [attr.aria-pressed]="form.value.gender === 'Other'">
+                  <i class="ti ti-gender-genderless" aria-hidden="true"></i>
+                  <span>Other</span>
+                </button>
+              </div>
+              @if (isInvalid('gender')) {
+                <span class="err-msg" role="alert">
+                  <i class="ti ti-alert-circle"></i> Please select a gender
+                </span>
+              }
+            </div>
+
+            <!-- Blood Group — reverted to a native <select> (bound via
+                 formControlName, same as before) but polished with the
+                 same icon-trigger + custom chevron treatment as the DOB
+                 date picker, instead of the plain default select box. -->
+            <div class="lis-field">
+              <label for="bloodGroup">Blood Group <span class="opt-label">(Optional)</span></label>
+              <div class="bg-select-wrap">
+                <i class="ti ti-droplet-filled bg-select-wrap__icon" aria-hidden="true"></i>
+                <select id="bloodGroup" formControlName="bloodGroup" class="bg-select-wrap__select">
+                  @for (bg of bloodGroups; track bg) {
+                    <option [value]="bg">{{ bg }}</option>
+                  }
+                </select>
+                <i class="ti ti-chevron-down bg-select-wrap__chevron" aria-hidden="true"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact and Address share one visual group to reduce unnecessary vertical separation. -->
+        <div class="field-group contact-address-group">
+          <div class="field-group__title"><i class="ti ti-address-book" aria-hidden="true"></i> Contact & Address</div>
+          <div class="form-grid form-grid--contact-address">
+            <div class="lis-field">
+              <label for="mobile">Mobile Number <span class="req-ast" title="Required" aria-hidden="true">*</span><span class="sr-only">Required</span></label>
+              <div class="phone-wrap" [class.phone-wrap--error]="isInvalid('mobile')">
+                <span class="phone-prefix"><span class="phone-flag">🇮🇳</span> +91</span>
+                <input id="mobile" formControlName="mobile" type="tel" class="phone-input"
+                  [class.input-error]="isInvalid('mobile')" autocomplete="tel" placeholder="98765 43210"
+                  maxlength="10" inputmode="numeric" (input)="onMobileChange()" />
+                @if (isValidTouched('mobile')) { <i class="ti ti-circle-check phone-valid-icon" aria-hidden="true"></i> }
+              </div>
+              @if (isInvalid('mobile')) {
+                <span class="err-msg" role="alert"><i class="ti ti-alert-circle"></i> Valid 10-digit number required</span>
+              } @else if (isValidTouched('mobile')) {
+                <span class="ok-msg"><i class="ti ti-circle-check"></i> Mobile number looks valid</span>
+              } @else { <span class="helper-text">Used for SMS reports and appointment reminders</span> }
+            </div>
+            <div class="lis-field">
+              <label for="email">Email <span class="opt-label">(Optional)</span></label>
+              <input id="email" formControlName="email" type="email" autocomplete="email" placeholder="name@email.com" />
+              <span class="helper-text">Optional — used to email lab reports</span>
+            </div>
+            <div class="lis-field form-full">
+              <label for="address">Address <span class="opt-label">(Optional)</span></label>
+              <textarea id="address" formControlName="address" rows="2" class="auto-expand"
+                [maxlength]="addressMaxLen" (input)="autoResize($event)"
+                placeholder="e.g. 12, MG Road, Indiranagar, Bengaluru"></textarea>
+              <span class="char-counter" [class.char-counter--near-limit]="addressLength() >= addressMaxLen - 20">
+                {{ addressLength() }} / {{ addressMaxLen }} characters
+              </span>
+            </div>
+          </div>
+        </div>
+        }
+      @if (showNewPatientForm()) {
+      <!-- Step 1 actions — sticky so they stay reachable on smaller screens -->
+      <div class="form-actions form-actions--sticky">
+        <button type="button" class="lis-btn lis-btn--secondary"
+          (click)="isEditingExistingPatient() ? cancelExistingPatientEdit() : goBack()" title="Esc">
+          <i class="ti ti-arrow-left" aria-hidden="true"></i> {{ isEditingExistingPatient() ? 'Cancel edit' : 'Cancel' }}
+        </button>
+        @if (isEditingExistingPatient()) {
+          <button type="button" class="lis-btn lis-btn--primary" (click)="updateExistingPatient()">
+            <i class="ti ti-device-floppy" aria-hidden="true"></i> Update Patient
+          </button>
+        } @else {
+          <button type="button" class="lis-btn lis-btn--primary" (click)="nextStep()" title="Ctrl+Enter">
+            Continue to Clinical <i class="ti ti-arrow-right" aria-hidden="true"></i>
+          </button>
+        }
+      </div>
+      }
+      </div>
+    }
+
+    <!-- ── Step 2: Clinical Information ─────────────────── -->
+    @if (currentStep() === 2) {
+      <div class="lis-card reg-card" aria-label="Clinical information">
+        <div class="lis-card__header">
+          <i class="ti ti-stethoscope lis-card-icon" aria-hidden="true"></i>
+          <h2 class="lis-card__title">Clinical Information</h2>
+          <div class="mini-steps" aria-label="Form sub-steps">
+            <span class="mini-step mini-step--done">Personal</span>
+            <span class="mini-step mini-step--active">Clinical</span>
+          </div>
+        </div>
+
+        <!-- Mini patient recap -->
+        <div class="patient-recap">
+          <div class="recap-av" aria-hidden="true">
+            {{ form.value.firstName?.[0] }}{{ form.value.lastName?.[0] }}
+          </div>
+          <div class="recap-info">
+            <div class="recap-name">{{ form.value.firstName }} {{ form.value.lastName }}</div>
+            <div class="pat-detail-row">
+              <span class="pat-detail-item"><i class="ti ti-cake pat-detail-icon" aria-hidden="true"></i>{{ ageDisplay() || '—' }}</span>
+              <span class="pat-detail-sep" aria-hidden="true">|</span>
+              <span class="pat-detail-item"><i class="ti {{ genderIcon() }} pat-detail-icon" aria-hidden="true"></i>{{ form.value.gender || '—' }}</span>
+              <span class="pat-detail-sep" aria-hidden="true">|</span>
+              <span class="pat-details-item" ><i class="ti {{bloodGroups}} pat-detail-icon" aria-hidden="true"></i>{{ form.value.bloodGroup || '—' }}</span>
+              <span class="pat-detail-item"><i class="ti ti-phone pat-detail-icon" aria-hidden="true"></i>{{ form.value.mobile || '—' }}</span>
+            </div>
+          </div>
+          <button type="button" class="recap-edit lis-btn lis-btn--secondary lis-btn--sm"
+            (click)="editPatientFromClinical()">
+            <i class="ti ti-edit" aria-hidden="true"></i> Edit
+          </button>
+        </div>
+
+        <!-- Visit details group -->
+        <div class="field-group">
+          <div class="field-group__title"><i class="ti ti-stethoscope" aria-hidden="true"></i> Visit Details</div>
+          <div class="form-grid form-grid--visit">
+            <!-- Referring doctor — polished with the same icon + custom
+                 chevron + focus-ring wrap treatment as Blood Group and
+                 the DOB date picker trigger, instead of a plain select.
+                 Still a native <select> with the same formControlName
+                 binding; error state now lives on the wrapper since the
+                 select itself is borderless inside it. -->
+            <div class="lis-field">
+              <label for="refDoctor">Referring doctor <span class="opt-label">(Optional)</span></label>
+              <div class="ref-select-wrap" [class.ref-select-wrap--error]="isInvalid('refDoctor')">
+                <i class="ti ti-stethoscope ref-select-wrap__icon" aria-hidden="true"></i>
+                <select id="refDoctor" formControlName="refDoctor" class="ref-select-wrap__select">
+                  <option value="Self / Walk-in">Self / Walk-in</option>
+                  @for (d of flow.doctors; track d) {
+                    <option [value]="d">{{ d }}</option>
+                  }
+                  <option value="new">+ Add new doctor</option>
+                </select>
+                <i class="ti ti-chevron-down ref-select-wrap__chevron" aria-hidden="true"></i>
+              </div>
+              <span class="helper-text">Choose a referring doctor, or keep Self / Walk-in for self-referred patients.</span>
+            </div>
+
+            <!-- Visit type -->
+            <div class="lis-field visit-type-field">
+              <label id="visit-label">Visit type</label>
+              <div class="lis-seg lis-seg--lg lis-seg--spaced" role="group" aria-labelledby="visit-label">
+                <button type="button" class="lis-seg__opt"
+                  [class.lis-seg__opt--active]="form.value.visitType === 'Walk-in'"
+                  (click)="setVisitType('Walk-in')"
+                  [attr.aria-pressed]="form.value.visitType === 'Walk-in'">
+                  <i class="ti ti-building-hospital" aria-hidden="true"></i> Walk-in
+                </button>
+                <button type="button" class="lis-seg__opt"
+                  [class.lis-seg__opt--active]="form.value.visitType === 'Appointment'"
+                  (click)="form.patchValue({visitType: 'Appointment'})"
+                  [attr.aria-pressed]="form.value.visitType === 'Appointment'">
+                  <i class="ti ti-calendar-event" aria-hidden="true"></i> Appointment
+                </button>
+                <button type="button" class="lis-seg__opt"
+                  [class.lis-seg__opt--active]="form.value.visitType === 'Home visit'"
+                  (click)="form.patchValue({visitType: 'Home visit'})"
+                  [attr.aria-pressed]="form.value.visitType === 'Home visit'">
+                  <i class="ti ti-home" aria-hidden="true"></i> Home visit
+                </button>
+              </div>
+            </div>
+
+            <!-- Sample collection — modernized from a native <select> to
+                 the same icon segmented-control pattern used for Visit
+                 type / Fasting status just above, instead of being the
+                 one legacy dropdown on this step. Icons intentionally
+                 mirror Visit type's Walk-in/Home visit icons since the
+                 two fields are already auto-synced. -->
+            <div class="lis-field sample-collection-field sample-collection-field--tablet-full">
+              <label id="collection-label">Sample collection</label>
+              <div class="lis-seg lis-seg--lg lis-seg--spaced" role="group" aria-labelledby="collection-label">
+                <button type="button" class="lis-seg__opt"
+                  [class.lis-seg__opt--active]="form.value.collection === 'At lab counter'"
+                  (click)="form.patchValue({collection: 'At lab counter'})"
+                  [attr.aria-pressed]="form.value.collection === 'At lab counter'">
+                  <i class="ti ti-building-hospital" aria-hidden="true"></i> At lab counter
+                </button>
+                <button type="button" class="lis-seg__opt"
+                  [class.lis-seg__opt--active]="form.value.collection === 'Home collection'"
+                  (click)="form.patchValue({collection: 'Home collection'})"
+                  [attr.aria-pressed]="form.value.collection === 'Home collection'">
+                  <i class="ti ti-home" aria-hidden="true"></i> Home collection
+                </button>
+              </div>
+            </div>
+          </div>
+          @if (form.value.collection === 'Home collection') {
+            <div class="field-group">
+              <div class="field-group__title"><i class="ti ti-home" aria-hidden="true"></i> Home Collection Details</div>
+              <div class="form-grid form-grid--visit">
+                <div class="lis-field form-full">
+                  <label for="collectionAddress">Collection address <span class="req-ast">*</span></label>
+                  <textarea id="collectionAddress" formControlName="collectionAddress" rows="2"
+                    class="auto-expand" placeholder="House / flat, street, area, city"
+                    [class.input-error]="isInvalid('collectionAddress')"></textarea>
+                  @if (isInvalid('collectionAddress')) {
+                    <span class="err-msg" role="alert">Collection address is required for home collection.</span>
+                  }
+                </div>
+                <div class="lis-field">
+                  <label for="collectionDate">Preferred date</label>
+                  <input id="collectionDate" type="date" formControlName="collectionDate" [min]="todayISO" />
+                </div>
+                <div class="lis-field">
+                  <label for="collectionTime">Preferred time slot</label>
+                  <select id="collectionTime" formControlName="collectionTime">
+                    <option value="">Select time slot</option>
+                    <option value="07:00-09:00">07:00–09:00</option>
+                    <option value="09:00-11:00">09:00–11:00</option>
+                    <option value="11:00-13:00">11:00–13:00</option>
+                    <option value="13:00-15:00">13:00–15:00</option>
+                    <option value="15:00-17:00">15:00–17:00</option>
+                  </select>
+                </div>
+                <div class="lis-field form-full">
+                  <label for="collectionInstructions">Collection instructions <span class="opt-label">(Optional)</span></label>
+                  <textarea id="collectionInstructions" formControlName="collectionInstructions" rows="2"
+                    placeholder="Landmark, access instructions or contact person"></textarea>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Preparation is test-specific and is confirmed during Test Order. -->
+        <div class="field-group">
+          <div class="field-group__title"><i class="ti ti-clipboard-list" aria-hidden="true"></i> Clinical Context</div>
+          <div class="form-grid form-grid--visit">
+            <div class="lis-field form-full">
+              <span class="helper-text">Preparation requirements such as fasting duration are determined by the selected tests. Confirm actual fasting status and duration during Test Order / sample collection.</span>
+            </div>
+
+            <!-- Clinical notes -->
+            <div class="lis-field form-full">
+              <label for="clinicalNotes">
+                Clinical notes / symptoms <span class="opt-label">(optional)</span>
+              </label>
+              <textarea id="clinicalNotes" formControlName="clinicalNotes" rows="2"
+                class="auto-expand" (input)="autoResize($event)"
+                placeholder="e.g. Fever since 3 days, weight loss, PCOS follow-up"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Medication group — commented out (disabled) per request.
+             The underlying 'medications' FormControl is untouched in
+             the TS form group, so re-enabling this is just uncommenting
+             the block below; no other wiring changes needed. -->
+        <!--
+        <div class="field-group">
+          <div class="field-group__title"><i class="ti ti-pill" aria-hidden="true"></i> Medication</div>
+          <div class="form-grid">
+            <!-- Known conditions / medications --
+            <div class="lis-field form-full">
+              <label for="medications">
+                Known conditions / medications <span class="opt-label">(optional)</span>
+              </label>
+              <textarea id="medications" formControlName="medications" rows="2"
+                class="auto-expand" (input)="autoResize($event)"
+                placeholder="e.g. Type 2 diabetes, on Metformin 500 mg"></textarea>
+            </div>
+          </div>
+        </div>
+        -->
+      </div>
+
+      <!-- Step 2 actions — sticky so they stay reachable on smaller screens -->
+      <div class="form-actions form-actions--sticky">
+        <button type="button" class="lis-btn lis-btn--secondary" (click)="goBack()" title="Esc">
+          <i class="ti ti-arrow-left" aria-hidden="true"></i> Back
+        </button>
+        <button type="button" class="lis-btn lis-btn--primary save-btn"
+          (click)="saveAndContinue()"
+          [disabled]="saving()"
+          title="Ctrl+Enter">
+          @if (saving()) {
+            <i class="ti ti-loader-2 spin" aria-hidden="true"></i> Saving…
+          } @else {
+            <i class="ti ti-device-floppy" aria-hidden="true"></i>
+            Save &amp; Continue →
+          }
+        </button>
+      </div>
+    }
+
+  </form>
+</div>
