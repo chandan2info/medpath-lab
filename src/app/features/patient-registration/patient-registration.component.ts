@@ -267,6 +267,7 @@ export class PatientRegistrationComponent implements OnInit {
   selectExistingPatient(patient: KnownPatientRecord): void {
     this.selectedExistingPatient.set(patient);
     this.selectedExistingPatientId.set(patient.id);
+    this.searchAttempted.set(false);
     this.showNewPatientForm.set(false);
     this.form.patchValue({
       firstName: patient.firstName, lastName: patient.lastName, mobile: patient.mobile,
