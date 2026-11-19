@@ -1,0 +1,559 @@
+diff --git a/src/app/features/lis-home/lis-home.component.ts b/src/app/features/lis-home/lis-home.component.ts
+--- a/src/app/features/lis-home/lis-home.component.ts
++++ b/src/app/features/lis-home/lis-home.component.ts
+@@ -18,12 +18,20 @@ export class LisHomeComponent {
+   protected readonly session = inject(UserSessionService);
+ 
+   protected today = signal(
+-    new Date().toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric' })
++    new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+   );
+ 
+-  /** Derived from the live worklist instead of a hardcoded template string. */
++  /** Derived worklist counts keep the dashboard badges in sync with the actual rows. */
+   protected readonly statPendingCount = computed(
+-    () => this.dash.worklist().filter((s) => s.priority === 'stat').length
++    () => this.dash.worklist().filter((sample) => sample.priority === 'stat').length
++  );
++
++  protected readonly criticalSampleCount = computed(
++    () => this.dash.worklist().filter((sample) => sample.status === 'critical').length
++  );
++
++  protected readonly redAlertCount = computed(
++    () => this.dash.alerts().filter((alert) => alert.level === 'red').length
+   );
+ 
+   alertDotClass(level: 'red' | 'amber' | 'teal'): string {
+diff --git a/src/app/features/lis-home/lis-home.component.html b/src/app/features/lis-home/lis-home.component.html
+--- a/src/app/features/lis-home/lis-home.component.html
++++ b/src/app/features/lis-home/lis-home.component.html
+@@ -10,19 +10,31 @@ <h1 class="page-title">Home</h1>
+ <div class="welcome-band" role="region" aria-label="Day summary">
+   <div class="wb-left">
+     <div class="wb-greet">Good morning, {{ session.operator()?.name?.split(' ')?.[0] ?? 'Operator' }}.</div>
+-    <div class="wb-sub">{{ dash.stats().samples }} samples logged today · {{ dash.kpis().at(2)?.value ?? '—' }} reports ready to dispatch · {{ statPendingCount() }} STAT pending.</div>
+-    <div class="wb-pills" aria-hidden="true">
+-      <span class="wb-pill"><i class="ti ti-users"></i> {{ dash.kpis()[0].value }} patients today</span>
+-      <span class="wb-pill"><i class="ti ti-bolt"></i> {{ statPendingCount() }} STAT pending</span>
+-      <span class="wb-pill"><i class="ti ti-certificate"></i> NABL Accredited</span>
++    <div class="wb-sub">
++      {{ dash.stats().samples }} samples logged today · {{ dash.kpis()[2]?.value ?? '—' }} reports ready to dispatch ·
++      {{ statPendingCount() }} STAT pending.
++    </div>
++    <div class="wb-pills" aria-label="Today's operational highlights">
++      <span class="wb-pill"><i class="ti ti-users" aria-hidden="true"></i> {{ dash.kpis()[0]?.value ?? '—' }} patients today</span>
++      <span class="wb-pill"><i class="ti ti-bolt" aria-hidden="true"></i> {{ statPendingCount() }} STAT pending</span>
++      <span class="wb-pill"><i class="ti ti-certificate" aria-hidden="true"></i> NABL Accredited</span>
+     </div>
+   </div>
+   <div class="wb-stats" aria-label="Today's totals">
+-    <div class="wb-stat"><div class="wb-stat-val">{{ dash.stats().revenue }}</div><div class="wb-stat-lbl">Revenue today</div></div>
++    <div class="wb-stat">
++      <div class="wb-stat-val">{{ dash.stats().revenue }}</div>
++      <div class="wb-stat-lbl">Revenue today</div>
++    </div>
+     <div class="wb-divider" aria-hidden="true"></div>
+-    <div class="wb-stat"><div class="wb-stat-val">{{ dash.stats().samples }}</div><div class="wb-stat-lbl">Samples logged</div></div>
++    <div class="wb-stat">
++      <div class="wb-stat-val">{{ dash.stats().samples }}</div>
++      <div class="wb-stat-lbl">Samples logged</div>
++    </div>
+     <div class="wb-divider" aria-hidden="true"></div>
+-    <div class="wb-stat"><div class="wb-stat-val">{{ dash.stats().reportsDone }}</div><div class="wb-stat-lbl">Reports done</div></div>
++    <div class="wb-stat">
++      <div class="wb-stat-val">{{ dash.stats().reportsDone }}</div>
++      <div class="wb-stat-lbl">Reports done</div>
++    </div>
+   </div>
+ </div>
+ 
+@@ -32,75 +44,105 @@ <h1 class="page-title">Home</h1>
+     <lis-kpi-card [card]="kpi" />
+   }
+ </section>
++<p class="dashboard-metric-note">
++  Queue = samples awaiting processing or currently processing. Reports ready = completed reports awaiting dispatch.
++  Pending payments are a billing follow-up and must not independently block clinically authorized report release.
++</p>
+ 
+ <!-- Worklist + Alerts -->
+ <div class="home-row2">
+   <!-- Worklist -->
+-  <div class="lis-card" role="region" aria-label="Urgent worklist">
++  <section class="lis-card" aria-labelledby="urgent-worklist-title">
+     <div class="lis-card__header">
+       <i class="ti ti-list-check lis-card-icon lis-card-icon--danger" aria-hidden="true"></i>
+-      <h2 class="lis-card__title">Urgent worklist</h2>
+-      <span class="lis-badge lis-badge--danger">1 STAT · 1 critical</span>
++      <h2 class="lis-card__title" id="urgent-worklist-title">Urgent worklist</h2>
++      @if (statPendingCount() > 0 || criticalSampleCount() > 0) {
++        <span class="lis-badge lis-badge--danger">
++          {{ statPendingCount() }} STAT · {{ criticalSampleCount() }} critical
++        </span>
++      } @else {
++        <span class="lis-badge">No urgent items</span>
++      }
+       <a routerLink="/dashboard/tracking" class="lis-link" aria-label="View all samples">View all →</a>
+     </div>
+     @if (dash.worklist().length === 0) {
+-      <div class="empty-state" role="status"><i class="ti ti-check-circle"></i> No urgent samples — all clear.</div>
++      <div class="empty-state" role="status"><i class="ti ti-check-circle" aria-hidden="true"></i> No urgent samples — all clear.</div>
+     } @else {
+       <div class="worklist">
+         @for (s of dash.worklist(); track s.id) {
+-          <div class="wl-item" [class.wl-item--stat]="s.priority === 'stat'">
++          <article class="wl-item" [class.wl-item--stat]="s.priority === 'stat' || s.status === 'critical'">
+             <span class="wl-dot" [class]="'wl-dot--' + s.status" aria-hidden="true"></span>
+             <div class="wl-info">
+               <div class="wl-name-row">
+                 <span class="wl-name">{{ s.patientName }}</span>
+-                <lis-status-pill [status]="s.priority === 'stat' ? 'stat' : s.status" />
++                <lis-status-pill [status]="s.status === 'critical' ? 'critical' : s.priority === 'stat' ? 'stat' : s.status" />
+               </div>
+               <div class="wl-tests">{{ s.tests.join(' · ') }}</div>
+-              <div class="wl-sid lis-mono">{{ s.id }}</div>
++              <div class="wl-context">
++                <span class="wl-sid lis-mono">{{ s.id }}</span>
++                <span class="wl-context-sep" aria-hidden="true">·</span>
++                <span class="wl-sid">{{ s.patientId }}</span>
++                <span class="wl-context-sep" aria-hidden="true">·</span>
++                <span class="wl-sid">Collected {{ s.collectedAt }}</span>
++              </div>
+             </div>
+-            <div class="wl-eta" [class.wl-eta--urgent]="s.etaLabel === 'Now'">{{ s.etaLabel }}</div>
+-          </div>
++            <div class="wl-eta" [class.wl-eta--urgent]="s.etaLabel === 'Now' || s.status === 'critical'">
++              {{ s.status === 'critical' ? 'Action required' : s.etaLabel }}
++            </div>
++          </article>
+         }
+       </div>
+     }
+-  </div>
++  </section>
+ 
+   <!-- Alerts -->
+-  <div class="lis-card" role="region" aria-label="Lab alerts">
++  <section class="lis-card" aria-labelledby="lab-alerts-title">
+     <div class="lis-card__header">
+       <i class="ti ti-bell lis-card-icon lis-card-icon--danger" aria-hidden="true"></i>
+-      <h2 class="lis-card__title">Alerts</h2>
++      <h2 class="lis-card__title" id="lab-alerts-title">Alerts</h2>
++      @if (dash.alerts().length > 0) {
++        <span class="lis-badge" aria-label="Total alerts">{{ dash.alerts().length }} active</span>
++      }
+     </div>
+     @if (dash.alerts().length === 0) {
+-      <div class="empty-state" role="status"><i class="ti ti-bell-off"></i> No alerts.</div>
++      <div class="empty-state" role="status"><i class="ti ti-bell-off" aria-hidden="true"></i> No alerts.</div>
+     } @else {
+       <div class="alert-list">
+-        @for (a of dash.alerts(); track a.time) {
+-          <div class="alert-item" role="alert" [attr.aria-live]="a.level === 'red' ? 'assertive' : 'polite'">
++        @for (a of dash.alerts(); track a.id) {
++          <article class="alert-item" [class.alert-item--critical]="a.level === 'red'">
+             <span [class]="'alert-dot alert-dot--' + a.level" aria-hidden="true"></span>
+-            <div>
++            <div class="alert-content">
+               <div class="alert-text">{{ a.text }}</div>
+               <div class="alert-time">{{ a.time }}</div>
++              @if (a.actionLabel && a.actionRoute) {
++                <a class="alert-action" [routerLink]="a.actionRoute">{{ a.actionLabel }} →</a>
++              }
++              @if (a.level === 'red' && !a.actionLabel) {
++                <span class="alert-follow-up">Acknowledgement and documented follow-up required</span>
++              }
+             </div>
+-          </div>
++          </article>
+         }
+       </div>
+     }
+-  </div>
++    <p class="alert-footnote">
++      Critical-value communication must be acknowledged, time-stamped and auditable. This dashboard shortcut does not replace that workflow.
++    </p>
++  </section>
+ </div>
+ 
+ <!-- Quick actions -->
+-<div class="lis-card" role="region" aria-label="Quick actions">
++<section class="lis-card" aria-labelledby="quick-actions-title">
+   <div class="lis-card__header">
+     <i class="ti ti-apps lis-card-icon" aria-hidden="true"></i>
+-    <h2 class="lis-card__title">Quick actions</h2>
++    <h2 class="lis-card__title" id="quick-actions-title">Quick actions</h2>
+   </div>
+   <div class="qa-grid">
+     <a routerLink="/dashboard/registration" class="qa-btn"><i class="ti ti-user-plus" aria-hidden="true"></i> Register patient</a>
+-    <a routerLink="/dashboard/test-order"   class="qa-btn"><i class="ti ti-test-pipe"  aria-hidden="true"></i> Order tests</a>
+-    <a routerLink="/dashboard/results"      class="qa-btn"><i class="ti ti-writing"    aria-hidden="true"></i> Enter results</a>
+-    <a routerLink="/dashboard/reports"      class="qa-btn"><i class="ti ti-printer"    aria-hidden="true"></i> Print report</a>
+-    <a routerLink="/dashboard/tracking"     class="qa-btn"><i class="ti ti-test-pipe"  aria-hidden="true"></i> Track sample</a>
+-    <a routerLink="/dashboard/history"      class="qa-btn"><i class="ti ti-history"    aria-hidden="true"></i> Patient history</a>
++    <a routerLink="/dashboard/test-order" class="qa-btn"><i class="ti ti-test-pipe" aria-hidden="true"></i> Order tests</a>
++    <a routerLink="/dashboard/results" class="qa-btn"><i class="ti ti-writing" aria-hidden="true"></i> Enter results</a>
++    <a routerLink="/dashboard/reports" class="qa-btn"><i class="ti ti-printer" aria-hidden="true"></i> Print report</a>
++    <a routerLink="/dashboard/tracking" class="qa-btn"><i class="ti ti-test-pipe" aria-hidden="true"></i> Track sample</a>
++    <a routerLink="/dashboard/history" class="qa-btn"><i class="ti ti-history" aria-hidden="true"></i> Patient history</a>
+   </div>
+-</div>
++</section>
+diff --git a/src/app/features/lis-home/lis-home.component.css b/src/app/features/lis-home/lis-home.component.css
+--- a/src/app/features/lis-home/lis-home.component.css
++++ b/src/app/features/lis-home/lis-home.component.css
+@@ -1,121 +1,141 @@
+ :host { display: block; }
+ 
+-    .page-header { margin-bottom: 18px; }
+-    .page-title  { font-size: 20px; font-weight: 500; color: var(--text-primary); margin: 0 0 2px; }
+-    .page-sub    { font-size: 12px; color: var(--text-secondary); margin: 0; }
++.page-header { margin-bottom: 18px; }
++.page-title { font-size: 20px; font-weight: 500; color: var(--text-primary); margin: 0 0 2px; }
++.page-sub { font-size: 12px; color: var(--text-secondary); margin: 0; }
+ 
+-    /* Welcome band */
+-    .welcome-band {
+-      background: var(--lis-primary, #1D9E75);
+-      border-radius: 10px; padding: 16px 20px;
+-      display: flex; align-items: center; gap: 16px;
+-      margin-bottom: 16px; flex-wrap: wrap;
+-    }
+-    .wb-left { flex: 1; min-width: 220px; }
+-    .wb-greet { font-size: 16px; font-weight: 500; color: #fff; margin-bottom: 3px; }
+-    .wb-sub   { font-size: 12px; color: rgba(255,255,255,0.8); margin-bottom: 10px; }
+-    .wb-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+-    .wb-pill  {
+-      display: inline-flex; align-items: center; gap: 5px;
+-      background: rgba(255,255,255,0.15); border-radius: 20px;
+-      padding: 3px 10px; font-size: 11px; color: rgba(255,255,255,0.9);
+-      i { font-size: 13px; }
+-    }
+-    .wb-stats   { display: flex; align-items: center; gap: 0; }
+-    .wb-stat    { text-align: right; padding: 0 16px; }
+-    .wb-stat-val{ font-size: 22px; font-weight: 500; color: #fff; line-height: 1; }
+-    .wb-stat-lbl{ font-size: 10px; color: rgba(255,255,255,0.7); margin-top: 2px; }
+-    .wb-divider { width: 1px; height: 36px; background: rgba(255,255,255,0.2); }
++/* Welcome band */
++.welcome-band {
++  background: var(--lis-primary, #1D9E75);
++  border-radius: 10px; padding: 16px 20px;
++  display: flex; align-items: center; gap: 16px;
++  margin-bottom: 16px; flex-wrap: wrap;
++}
++.wb-left { flex: 1; min-width: 220px; }
++.wb-greet { font-size: 16px; font-weight: 500; color: #fff; margin-bottom: 3px; }
++.wb-sub { font-size: 12px; color: rgba(255,255,255,0.8); margin-bottom: 10px; }
++.wb-pills { display: flex; gap: 8px; flex-wrap: wrap; }
++.wb-pill {
++  display: inline-flex; align-items: center; gap: 5px;
++  background: rgba(255,255,255,0.15); border-radius: 20px;
++  padding: 3px 10px; font-size: 11px; color: rgba(255,255,255,0.9);
++}
++.wb-pill i { font-size: 13px; }
++.wb-stats { display: flex; align-items: center; gap: 0; }
++.wb-stat { text-align: right; padding: 0 16px; }
++.wb-stat-val { font-size: 22px; font-weight: 500; color: #fff; line-height: 1; }
++.wb-stat-lbl { font-size: 10px; color: rgba(255,255,255,0.7); margin-top: 2px; }
++.wb-divider { width: 1px; height: 36px; background: rgba(255,255,255,0.2); }
+ 
+-    /* KPI grid */
+-    .kpi-grid {
+-      display: grid;
+-      grid-template-columns: repeat(4, 1fr);
+-      gap: 10px; margin-bottom: 18px;
+-    }
+-    @media (max-width: 900px) { .kpi-grid { grid-template-columns: repeat(2,1fr); } }
+-    @media (max-width: 540px) { .kpi-grid { grid-template-columns: 1fr; } }
++/* KPI grid */
++.kpi-grid {
++  display: grid;
++  grid-template-columns: repeat(4, 1fr);
++  gap: 10px; margin-bottom: 8px;
++}
++@media (max-width: 900px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
++@media (max-width: 540px) { .kpi-grid { grid-template-columns: 1fr; } }
++.dashboard-metric-note {
++  margin: 0 0 18px;
++  padding: 0 2px;
++  color: var(--text-secondary);
++  font-size: 10px;
++  line-height: 1.5;
++}
+ 
+-    /* Row 2 */
+-    .home-row2 {
+-      display: grid; grid-template-columns: 1fr 1fr;
+-      gap: 12px; margin-bottom: 12px;
+-    }
+-    @media (max-width: 800px) { .home-row2 { grid-template-columns: 1fr; } }
++/* Worklist + alerts */
++.home-row2 {
++  display: grid; grid-template-columns: 1fr 1fr;
++  gap: 12px; margin-bottom: 12px;
++}
++@media (max-width: 800px) { .home-row2 { grid-template-columns: 1fr; } }
+ 
+-    /* Worklist */
+-    .worklist { display: flex; flex-direction: column; }
+-    .wl-item {
+-      display: flex; align-items: flex-start; gap: 9px;
+-      padding: 9px 14px; border-bottom: 0.5px solid var(--border-color);
+-      cursor: pointer; transition: background 0.1s;
+-    }
+-    .wl-item:last-child { border-bottom: none; }
+-    .wl-item:hover { background: var(--body-bg); }
+-    .wl-item--stat { border-left: 3px solid #E24B4A; }
+-    .wl-dot {
+-      width: 7px; height: 7px; border-radius: 50%;
+-      flex-shrink: 0; margin-top: 5px;
+-    }
+-    .wl-dot--critical, .wl-dot--stat { background: #E24B4A; }
+-    .wl-dot--processing          { background: #EF9F27; }
+-    .wl-dot--pending             { background: #EF9F27; }
+-    .wl-dot--ready               { background: #1D9E75; }
+-    .wl-info { flex: 1; min-width: 0; }
+-    .wl-name-row { display: flex; align-items: center; gap: 6px; }
+-    .wl-name  { font-size: 12px; font-weight: 500; color: var(--text-primary); }
+-    .wl-tests { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+-    .wl-sid   { font-size: 10px; }
+-    .wl-eta   { font-size: 10px; color: var(--text-secondary); white-space: nowrap; flex-shrink: 0; margin-left: auto; }
+-    .wl-eta--urgent { color: #E24B4A; font-weight: 500; }
++/* Worklist */
++.worklist { display: flex; flex-direction: column; }
++.wl-item {
++  display: flex; align-items: flex-start; gap: 9px;
++  padding: 9px 14px; border-bottom: 0.5px solid var(--border-color);
++}
++.wl-item:last-child { border-bottom: none; }
++.wl-item--stat { border-left: 3px solid #E24B4A; }
++.wl-dot {
++  width: 7px; height: 7px; border-radius: 50%;
++  flex-shrink: 0; margin-top: 5px;
++}
++.wl-dot--critical, .wl-dot--stat { background: #E24B4A; }
++.wl-dot--processing, .wl-dot--pending { background: #EF9F27; }
++.wl-dot--ready { background: #1D9E75; }
++.wl-info { flex: 1; min-width: 0; }
++.wl-name-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
++.wl-name { font-size: 12px; font-weight: 500; color: var(--text-primary); }
++.wl-tests { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
++.wl-context { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; margin-top: 2px; }
++.wl-sid { font-size: 10px; color: var(--text-secondary); }
++.wl-context-sep { color: var(--border-color); font-size: 10px; }
++.wl-eta { font-size: 10px; color: var(--text-secondary); white-space: nowrap; flex-shrink: 0; margin-left: auto; }
++.wl-eta--urgent { color: #E24B4A; font-weight: 500; }
+ 
+-    /* Alerts */
+-    .alert-list { display: flex; flex-direction: column; }
+-    .alert-item {
+-      display: flex; align-items: flex-start; gap: 9px;
+-      padding: 9px 14px; border-bottom: 0.5px solid var(--border-color);
+-      &:last-child { border-bottom: none; }
+-    }
+-    .alert-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+-    .alert-dot--red   { background: #E24B4A; }
+-    .alert-dot--amber { background: #EF9F27; }
+-    .alert-dot--teal  { background: #1D9E75; }
+-    .alert-text { font-size: 12px; color: var(--text-primary); line-height: 1.4; }
+-    .alert-time { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
++/* Alerts */
++.alert-list { display: flex; flex-direction: column; }
++.alert-item {
++  display: flex; align-items: flex-start; gap: 9px;
++  padding: 9px 14px; border-bottom: 0.5px solid var(--border-color);
++}
++.alert-item:last-child { border-bottom: none; }
++.alert-item--critical { background: color-mix(in srgb, var(--lis-danger, #E24B4A) 4%, transparent); }
++.alert-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
++.alert-dot--red { background: #E24B4A; }
++.alert-dot--amber { background: #EF9F27; }
++.alert-dot--teal { background: #1D9E75; }
++.alert-content { min-width: 0; flex: 1; }
++.alert-text { font-size: 12px; color: var(--text-primary); line-height: 1.4; }
++.alert-time { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
++.alert-action {
++  display: inline-block; margin-top: 4px;
++  color: var(--lis-primary, #1D9E75); font-size: 11px;
++  text-decoration: none; font-weight: 500;
++}
++.alert-action:hover { text-decoration: underline; }
++.alert-follow-up { display: block; margin-top: 4px; color: var(--text-secondary); font-size: 10px; }
++.alert-footnote {
++  margin: 0; padding: 9px 14px;
++  border-top: 0.5px solid var(--border-color);
++  color: var(--text-secondary); font-size: 10px; line-height: 1.45;
++}
+ 
+-    /* Quick actions */
+-    .qa-grid {
+-      display: grid; grid-template-columns: repeat(3, 1fr);
+-      gap: 8px; padding: 12px 14px;
+-    }
+-    @media (max-width: 640px) { .qa-grid { grid-template-columns: repeat(2,1fr); } }
+-    .qa-btn {
+-      display: flex; align-items: center; gap: 8px;
+-      padding: 9px 11px; border: 0.5px solid var(--border-color);
+-      border-radius: 8px; cursor: pointer; font-size: 12px;
+-      color: var(--text-primary); background: var(--body-bg);
+-      text-decoration: none; transition: background 0.12s;
+-      i { font-size: 15px; color: var(--lis-primary, #1D9E75); }
+-      &:hover { background: var(--border-color); }
+-    }
++/* Quick actions */
++.qa-grid {
++  display: grid; grid-template-columns: repeat(3, 1fr);
++  gap: 8px; padding: 12px 14px;
++}
++@media (max-width: 640px) { .qa-grid { grid-template-columns: repeat(2, 1fr); } }
++.qa-btn {
++  display: flex; align-items: center; gap: 8px;
++  padding: 9px 11px; border: 0.5px solid var(--border-color);
++  border-radius: 8px; cursor: pointer; font-size: 12px;
++  color: var(--text-primary); background: var(--body-bg);
++  text-decoration: none; transition: background 0.12s;
++}
++.qa-btn i { font-size: 15px; color: var(--lis-primary, #1D9E75); }
++.qa-btn:hover { background: var(--border-color); }
+ 
+-    .lis-link {
+-      font-size: 12px; color: var(--lis-primary, #1D9E75);
+-      text-decoration: none; margin-left: auto;
+-      &:hover { text-decoration: underline; }
+-    }.empty-state {
++.lis-link {
++  font-size: 12px; color: var(--lis-primary, #1D9E75);
++  text-decoration: none; margin-left: auto;
++}
++.lis-link:hover { text-decoration: underline; }
++.empty-state {
+   display: flex; align-items: center; gap: 8px; padding: 20px 14px;
+   font-size: 13px; color: var(--text-secondary);
+-  i { font-size: 16px; }
+ }
+-/* .lis-card-icon and .lis-card-icon--danger are defined globally in styles.css */
++.empty-state i { font-size: 16px; }
+ 
+-    /* Welcome band responsive — fix stat strip on narrow screens */
+-    @media (max-width: 600px) {
+-      .welcome-band { flex-direction: column; gap: 12px; }
+-      .wb-stats { flex-wrap: wrap; justify-content: flex-start; }
+-      .wb-stat  { text-align: left; padding: 0 12px; }
+-      .wb-stat:first-child { padding-left: 0; }
+-      .wb-divider { display: none; }
+-      .wb-stat-val { font-size: 18px; }
+-    }
++/* Welcome band responsive — preserve the current visual system on narrow screens. */
++@media (max-width: 600px) {
++  .welcome-band { flex-direction: column; gap: 12px; }
++  .wb-stats { flex-wrap: wrap; justify-content: flex-start; }
++  .wb-stat { text-align: left; padding: 0 12px; }
++  .wb-stat:first-child { padding-left: 0; }
++  .wb-divider { display: none; }
++  .wb-stat-val { font-size: 18px; }
++}
+diff --git a/src/app/core/services/dashboard-data.service.ts b/src/app/core/services/dashboard-data.service.ts
+--- a/src/app/core/services/dashboard-data.service.ts
++++ b/src/app/core/services/dashboard-data.service.ts
+@@ -1,48 +1,76 @@
+-import { Injectable, signal, computed } from '@angular/core';
++import { Injectable, signal } from '@angular/core';
+ import { KpiCard, Sample } from '../../shared/models/lis.models';
+ 
+ export interface DashboardAlert {
++  id: string;
+   level: 'red' | 'amber' | 'teal';
+   text: string;
+   time: string;
++  actionLabel?: string;
++  actionRoute?: string;
+ }
+ 
+ @Injectable({ providedIn: 'root' })
+ export class DashboardDataService {
+-  /** In production these would be loaded via HTTP on init */
++  /** Demo snapshot; replace with API-backed values when dashboard endpoints are connected. */
+   private readonly _kpis = signal<KpiCard[]>([
+-    { id:'patients', label:'Patients today',    value:38,       delta:'↑ 12% vs yesterday', deltaUp:true,  icon:'users',           barPct:76,  barColor:'teal' },
+-    { id:'queue',    label:'Samples in queue',  value:8,        delta:'Processing / pending',               icon:'test-pipe',       barPct:35,  barColor:'amber' },
+-    { id:'reports',  label:'Reports ready',     value:5,        delta:'Awaiting dispatch',  deltaUp:true,  icon:'file-text',       barPct:50,  barColor:'teal' },
+-    { id:'dues',     label:'Pending payments',  value:'₹4,200', delta:'3 invoices unpaid',                  icon:'currency-rupee',  barPct:28,  barColor:'red' },
++    { id: 'patients', label: 'Patients today', value: 38, delta: '↑ 12% vs yesterday', deltaUp: true, icon: 'users', barPct: 76, barColor: 'teal' },
++    { id: 'queue', label: 'Samples in queue', value: 8, delta: 'Processing / pending', icon: 'test-pipe', barPct: 35, barColor: 'amber' },
++    { id: 'reports', label: 'Reports ready', value: 5, delta: 'Awaiting dispatch', deltaUp: true, icon: 'file-text', barPct: 50, barColor: 'teal' },
++    { id: 'dues', label: 'Pending payments', value: '₹4,200', delta: '3 invoices unpaid', icon: 'currency-rupee', barPct: 28, barColor: 'red' },
+   ]);
+ 
+   private readonly _worklist = signal<(Sample & { etaLabel: string })[]>([
+-    { id:'SMP-2406-087', patientId:'PAT-0316', patientName:'Arun Pillai',   tests:['KFT','Urine R/M'], priority:'stat',    status:'critical',   collectedAt:'9:20', etaLabel:'Now',   tubes:[] },
+-    { id:'SMP-2406-084', patientId:'PAT-0318', patientName:'Kavitha Nair',  tests:['CBC','LFT'],       priority:'routine', status:'processing', collectedAt:'9:55', etaLabel:'11:30', tubes:[] },
+-    { id:'SMP-2406-085', patientId:'PAT-0317', patientName:'Suresh Menon',  tests:['HbA1c','Lipids'],  priority:'routine', status:'pending',    collectedAt:'9:41', etaLabel:'12:00', tubes:[] },
+-    { id:'SMP-2406-086', patientId:'PAT-0315', patientName:'Priya Sharma',  tests:['Thyroid panel'],   priority:'routine', status:'ready',      collectedAt:'9:30', etaLabel:'Done',  tubes:[] },
++    { id: 'SMP-2406-087', patientId: 'PAT-0316', patientName: 'Arun Pillai', tests: ['KFT', 'Urine R/M'], priority: 'stat', status: 'critical', collectedAt: '9:20', etaLabel: 'Now', tubes: [] },
++    { id: 'SMP-2406-084', patientId: 'PAT-0318', patientName: 'Kavitha Nair', tests: ['CBC', 'LFT'], priority: 'routine', status: 'processing', collectedAt: '9:55', etaLabel: '11:30', tubes: [] },
++    { id: 'SMP-2406-085', patientId: 'PAT-0317', patientName: 'Suresh Menon', tests: ['HbA1c', 'Lipids'], priority: 'routine', status: 'pending', collectedAt: '9:41', etaLabel: '12:00', tubes: [] },
++    { id: 'SMP-2406-086', patientId: 'PAT-0315', patientName: 'Priya Sharma', tests: ['Thyroid panel'], priority: 'routine', status: 'ready', collectedAt: '9:30', etaLabel: 'Done', tubes: [] },
+   ]);
+ 
+   private readonly _alerts = signal<DashboardAlert[]>([
+-    { level:'red',   text:'Critical value — Arun Pillai: K⁺ 6.8 mEq/L. Notify physician immediately.', time:'9:47 AM · SMP-2406-087' },
+-    { level:'red',   text:'5 reports pending dispatch — patients not yet notified.',                     time:'9:15 AM' },
+-    { level:'amber', text:'3 unpaid invoices totalling ₹4,200. Collect before report release.',          time:'8:30 AM' },
+-    { level:'teal',  text:'Home collection scheduled — Meena Joshi at 11:00 AM, Jayanagar.',             time:'8:00 AM' },
++    {
++      id: 'critical-value-arun-pillai',
++      level: 'red',
++      text: 'Critical value — Arun Pillai: K⁺ 6.8 mEq/L. Notify the responsible physician immediately and record acknowledgement.',
++      time: '9:47 AM · SMP-2406-087',
++      actionLabel: 'Open result',
++      actionRoute: '/dashboard/results',
++    },
++    {
++      id: 'reports-pending-dispatch',
++      level: 'red',
++      text: '5 reports are ready but still pending dispatch. Review dispatch status and patient notification.',
++      time: '9:15 AM',
++      actionLabel: 'Review reports',
++      actionRoute: '/dashboard/reports',
++    },
++    {
++      id: 'unpaid-invoices',
++      level: 'amber',
++      text: '3 unpaid invoices totalling ₹4,200. Review payment status; payment status alone must not block clinically authorized report release.',
++      time: '8:30 AM',
++      actionLabel: 'Review billing',
++      actionRoute: '/dashboard/billing',
++    },
++    {
++      id: 'home-collection-meena-joshi',
++      level: 'teal',
++      text: 'Home collection scheduled — Meena Joshi at 11:00 AM, Jayanagar.',
++      time: '8:00 AM',
++      actionLabel: 'View collection',
++      actionRoute: '/dashboard/collection',
++    },
+   ]);
+ 
+-  private readonly _stats = signal({ revenue:'₹18,450', samples:61, reportsDone:44 });
++  private readonly _stats = signal({ revenue: '₹18,450', samples: 61, reportsDone: 44 });
+ 
+-  readonly kpis      = this._kpis.asReadonly();
+-  readonly worklist  = this._worklist.asReadonly();
+-  readonly alerts    = this._alerts.asReadonly();
+-  readonly stats     = this._stats.asReadonly();
++  readonly kpis = this._kpis.asReadonly();
++  readonly worklist = this._worklist.asReadonly();
++  readonly alerts = this._alerts.asReadonly();
++  readonly stats = this._stats.asReadonly();
+ 
+-  /** Simulate a live refresh (wire to WebSocket / polling in production) */
++  /** Simulate a live refresh (wire to WebSocket / polling in production). */
+   refresh(): void {
+-    // TODO: replace with HTTP call
++    // TODO: replace with HTTP call.
+   }
+ }
+-
+-// NOTE: call dashboardData.syncBadges(navService) from AppComponent or MainLayout on init
+-// to populate live badge counts from the data snapshot.
