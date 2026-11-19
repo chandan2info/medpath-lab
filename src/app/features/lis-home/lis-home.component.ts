@@ -18,12 +18,20 @@ export class LisHomeComponent {
   protected readonly session = inject(UserSessionService);
 
   protected today = signal(
-    new Date().toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric' })
+    new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   );
 
-  /** Derived from the live worklist instead of a hardcoded template string. */
+  /** Derived worklist counts keep the dashboard badges in sync with the actual rows. */
   protected readonly statPendingCount = computed(
-    () => this.dash.worklist().filter((s) => s.priority === 'stat').length
+    () => this.dash.worklist().filter((sample) => sample.priority === 'stat').length
+  );
+
+  protected readonly criticalSampleCount = computed(
+    () => this.dash.worklist().filter((sample) => sample.status === 'critical').length
+  );
+
+  protected readonly redAlertCount = computed(
+    () => this.dash.alerts().filter((alert) => alert.level === 'red').length
   );
 
   alertDotClass(level: 'red' | 'amber' | 'teal'): string {
