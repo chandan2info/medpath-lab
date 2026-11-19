@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { NgClass } from '@angular/common';
+import { DatePipe, NgClass } from '@angular/common';
 import { PatientFlowService, RegisteredPatient, KnownPatientRecord } from '../../core/services/patient-flow.service';
 import { DobDatePickerComponent } from '../../shared/components/dob-date-picker/dob-date-picker.component';
 import { WorkflowStepperComponent, WorkflowStep } from '../../shared/components/workflow-stepper/workflow-stepper.component';
@@ -17,7 +17,7 @@ import { WorkflowStepperComponent, WorkflowStep } from '../../shared/components/
 @Component({
   selector: 'app-patient-registration',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, NgClass, DobDatePickerComponent, WorkflowStepperComponent],
+  imports: [ReactiveFormsModule, RouterLink, NgClass, DatePipe, DobDatePickerComponent, WorkflowStepperComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './patient-registration.component.html',
   styleUrl: './patient-registration.component.css',
