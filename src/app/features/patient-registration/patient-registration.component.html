@@ -82,7 +82,7 @@
       <div class="lis-card reg-card" aria-label="Personal details">
         <div class="lis-card__header">
           <i class="ti ti-user lis-card-icon" aria-hidden="true"></i>
-          <h2 class="lis-card__title">{{ showNewPatientForm() ? 'Personal Details' : 'Find Patient' }}</h2>
+          <h2 class="lis-card__title">{{ isEditingExistingPatient() ? 'Edit Patient Details' : (showNewPatientForm() ? 'Personal Details' : 'Find Patient') }}</h2>
           <div class="mini-steps" aria-label="Form sub-steps">
             <span class="mini-step mini-step--active">Personal</span>
             <span class="mini-step">Clinical</span>
@@ -161,6 +161,8 @@
                 <strong>{{ patient.name }}</strong>
                 <small>{{ patient.id }} · {{ patient.dob | date:'dd MMM yyyy' }} · {{ patient.gender }} · +91 {{ patient.mobile }}</small>
               </div>
+              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm"
+                (click)="editSelectedPatient()"><i class="ti ti-edit" aria-hidden="true"></i> Edit</button>
               <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm"
                 (click)="clearExistingPatientSelection()">Change patient</button>
               <button type="button" class="lis-btn lis-btn--primary lis-btn--sm"
@@ -426,12 +428,19 @@
       @if (showNewPatientForm()) {
       <!-- Step 1 actions — sticky so they stay reachable on smaller screens -->
       <div class="form-actions form-actions--sticky">
-        <button type="button" class="lis-btn lis-btn--secondary" (click)="goBack()" title="Esc">
-          <i class="ti ti-arrow-left" aria-hidden="true"></i> Cancel
+        <button type="button" class="lis-btn lis-btn--secondary"
+          (click)="isEditingExistingPatient() ? cancelExistingPatientEdit() : goBack()" title="Esc">
+          <i class="ti ti-arrow-left" aria-hidden="true"></i> {{ isEditingExistingPatient() ? 'Cancel edit' : 'Cancel' }}
         </button>
-        <button type="button" class="lis-btn lis-btn--primary" (click)="nextStep()" title="Ctrl+Enter">
-          Continue to Clinical <i class="ti ti-arrow-right" aria-hidden="true"></i>
-        </button>
+        @if (isEditingExistingPatient()) {
+          <button type="button" class="lis-btn lis-btn--primary" (click)="updateExistingPatient()">
+            <i class="ti ti-device-floppy" aria-hidden="true"></i> Update Patient
+          </button>
+        } @else {
+          <button type="button" class="lis-btn lis-btn--primary" (click)="nextStep()" title="Ctrl+Enter">
+            Continue to Clinical <i class="ti ti-arrow-right" aria-hidden="true"></i>
+          </button>
+        }
       </div>
       }
       </div>
@@ -466,7 +475,7 @@
             </div>
           </div>
           <button type="button" class="recap-edit lis-btn lis-btn--secondary lis-btn--sm"
-            (click)="currentStep.set(1)">
+            (click)="editPatientFromClinical()">
             <i class="ti ti-edit" aria-hidden="true"></i> Edit
           </button>
         </div>
