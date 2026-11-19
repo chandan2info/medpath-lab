@@ -153,7 +153,8 @@
               <button type="button" class="lis-btn lis-btn--primary lis-btn--sm"
                 (click)="startNewPatientRegistration()">Register New Patient</button>
             </div>
-          } @else if (selectedExistingPatient(); as patient) {
+          } @else if (selectedExistingPatient()) {
+            @if (selectedExistingPatient(); as patient) {
             <div class="patient-search-selected patient-search-selected--card" role="status">
               <div class="patient-search-selected__details">
                 <span class="patient-search-result__tag">Existing patient selected</span>
@@ -165,6 +166,7 @@
               <button type="button" class="lis-btn lis-btn--primary lis-btn--sm"
                 (click)="nextStep()">Continue to Clinical <i class="ti ti-arrow-right"></i></button>
             </div>
+            }
           } @else if (showNewPatientForm()) {
             <div class="patient-search-selected" role="status">
               <i class="ti ti-user-plus" aria-hidden="true"></i>
