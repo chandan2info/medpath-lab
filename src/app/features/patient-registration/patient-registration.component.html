@@ -82,7 +82,7 @@
       <div class="lis-card reg-card" aria-label="Personal details">
         <div class="lis-card__header">
           <i class="ti ti-user lis-card-icon" aria-hidden="true"></i>
-          <h2 class="lis-card__title">Personal Details</h2>
+          <h2 class="lis-card__title">{{ showNewPatientForm() ? 'Personal Details' : 'Find Patient' }}</h2>
           <div class="mini-steps" aria-label="Form sub-steps">
             <span class="mini-step mini-step--active">Personal</span>
             <span class="mini-step">Clinical</span>
@@ -90,6 +90,7 @@
         </div>
 
         <!-- Registration progress summary — required-fields readout -->
+        @if (showNewPatientForm()) {
         <div class="reg-progress" aria-live="polite">
           <div class="reg-progress__bar">
             <div class="reg-progress__fill" [style.width.%]="step1ProgressPct()"></div>
@@ -99,6 +100,7 @@
             {{ step1FilledCount() }} of {{ step1Total }} required fields complete
           </span>
         </div>
+        }
 
         <!-- Patient identification: search first, then choose an explicit outcome. -->
         <section class="patient-search-panel" aria-label="Find patient">
