@@ -155,18 +155,29 @@
             </div>
           } @else if (selectedExistingPatient()) {
             @if (selectedExistingPatient(); as patient) {
-            <div class="patient-search-selected patient-search-selected--card" role="status">
-              <div class="patient-search-selected__details">
-                <span class="patient-search-result__tag">Existing patient selected</span>
-                <strong>{{ patient.name }}</strong>
-                <small>{{ patient.id }} · {{ patient.dob | date:'dd MMM yyyy' }} · {{ patient.gender }} · +91 {{ patient.mobile }}</small>
+            <div class="patient-identity-card" role="status">
+              <div class="patient-identity-card__top">
+                <div class="patient-identity-card__avatar" aria-hidden="true">
+                  {{ patient.firstName.charAt(0) }}{{ patient.lastName.charAt(0) }}
+                </div>
+                <div class="patient-identity-card__heading">
+                  <span class="patient-identity-card__eyebrow"><i class="ti ti-circle-check"></i> Existing patient selected</span>
+                  <strong>{{ patient.name }}</strong>
+                  <span class="patient-identity-card__id lis-mono">{{ patient.id }}</span>
+                </div>
+                <span class="patient-identity-card__status"><i class="ti ti-shield-check"></i> Verified selection</span>
               </div>
-              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm"
-                (click)="editSelectedPatient()"><i class="ti ti-edit" aria-hidden="true"></i> Edit</button>
-              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm"
-                (click)="clearExistingPatientSelection()">Change patient</button>
-              <button type="button" class="lis-btn lis-btn--primary lis-btn--sm"
-                (click)="nextStep()">Continue to Clinical <i class="ti ti-arrow-right"></i></button>
+              <div class="patient-identity-card__facts">
+                <div class="patient-identity-card__fact"><i class="ti ti-calendar"></i><span><small>Date of birth</small><strong>{{ patient.dob | date:'dd MMM yyyy' }}</strong></span></div>
+                <div class="patient-identity-card__fact"><i class="ti ti-gender-bigender"></i><span><small>Gender</small><strong>{{ patient.gender }}</strong></span></div>
+                <div class="patient-identity-card__fact"><i class="ti ti-phone"></i><span><small>Mobile number</small><strong>+91 {{ patient.mobile }}</strong></span></div>
+                <div class="patient-identity-card__fact"><i class="ti ti-droplet"></i><span><small>Blood group</small><strong>{{ patient.bloodGroup || 'Not recorded' }}</strong></span></div>
+              </div>
+              <div class="patient-identity-card__actions">
+                <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="editSelectedPatient()"><i class="ti ti-edit" aria-hidden="true"></i> Edit details</button>
+                <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="clearExistingPatientSelection()">Change patient</button>
+                <button type="button" class="lis-btn lis-btn--primary lis-btn--sm" (click)="nextStep()">Continue to Clinical <i class="ti ti-arrow-right"></i></button>
+              </div>
             </div>
             }
           } @else if (showNewPatientForm()) {
@@ -518,13 +529,13 @@
                 </button>
                 <button type="button" class="lis-seg__opt"
                   [class.lis-seg__opt--active]="form.value.visitType === 'Appointment'"
-                  (click)="form.patchValue({visitType: 'Appointment'})"
+                  (click)="setVisitType('Appointment')"
                   [attr.aria-pressed]="form.value.visitType === 'Appointment'">
                   <i class="ti ti-calendar-event" aria-hidden="true"></i> Appointment
                 </button>
                 <button type="button" class="lis-seg__opt"
                   [class.lis-seg__opt--active]="form.value.visitType === 'Home visit'"
-                  (click)="form.patchValue({visitType: 'Home visit'})"
+                  (click)="setVisitType('Home visit')"
                   [attr.aria-pressed]="form.value.visitType === 'Home visit'">
                   <i class="ti ti-home" aria-hidden="true"></i> Home visit
                 </button>
@@ -542,14 +553,16 @@
               <div class="lis-seg lis-seg--lg lis-seg--spaced" role="group" aria-labelledby="collection-label">
                 <button type="button" class="lis-seg__opt"
                   [class.lis-seg__opt--active]="form.value.collection === 'At lab counter'"
-                  (click)="form.patchValue({collection: 'At lab counter'})"
-                  [attr.aria-pressed]="form.value.collection === 'At lab counter'">
+                  (click)="setCollectionType('At lab counter')"
+                  [attr.aria-pressed]="form.value.collection === 'At lab counter'"
+                  [disabled]="form.value.visitType === 'Home visit'">
                   <i class="ti ti-building-hospital" aria-hidden="true"></i> At lab counter
                 </button>
                 <button type="button" class="lis-seg__opt"
                   [class.lis-seg__opt--active]="form.value.collection === 'Home collection'"
-                  (click)="form.patchValue({collection: 'Home collection'})"
-                  [attr.aria-pressed]="form.value.collection === 'Home collection'">
+                  (click)="setCollectionType('Home collection')"
+                  [attr.aria-pressed]="form.value.collection === 'Home collection'"
+                  [disabled]="form.value.visitType === 'Walk-in'">
                   <i class="ti ti-home" aria-hidden="true"></i> Home collection
                 </button>
               </div>
