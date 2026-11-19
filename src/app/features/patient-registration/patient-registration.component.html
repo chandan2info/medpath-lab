@@ -182,6 +182,21 @@
         </section>
 
         @if (showNewPatientForm()) {
+        @if (duplicateMatch() && !duplicateDismissed()) {
+          <div class="dup-banner" role="alert">
+            <i class="ti ti-alert-triangle dup-banner__icon" aria-hidden="true"></i>
+            <div class="dup-banner__body">
+              <div class="dup-banner__title">Possible existing patient</div>
+              <div class="dup-banner__meta">{{ duplicateMatch()?.name }} · {{ duplicateMatch()?.id }} · +91 {{ duplicateMatch()?.mobile }}</div>
+            </div>
+            <div class="dup-banner__actions">
+              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm"
+                (click)="selectExistingPatient(duplicateMatch()!)">Use existing record</button>
+              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm"
+                (click)="dismissDuplicateWarning()">Continue as new</button>
+            </div>
+          </div>
+        }
         <!-- Identity group -->
         <div class="field-group">
           <div class="field-group__title"><i class="ti ti-user" aria-hidden="true"></i> Identity</div>
