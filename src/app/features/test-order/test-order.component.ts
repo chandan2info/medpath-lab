@@ -37,6 +37,8 @@ export class TestOrderComponent implements OnInit {
   draftSaved = signal(false);
   feedbackMessage = signal('');
   feedbackKind = signal<'warning' | 'success' | 'error'>('warning');
+  draftsOpen = signal(false);
+  autoSaveState = signal<'idle' | 'saved' | 'error'>('idle');
   highlightedIndex = signal(-1);
 
   filteredTests = computed(() => {
@@ -115,7 +117,35 @@ export class TestOrderComponent implements OnInit {
   }
 
   isSelected(id: string): boolean { return this.flow.selectedIds().has(id); }
-  toggle(test: LabTest): void { this.flow.toggleTest(test.id); }
+  toggle(test: LabTest): void {
+    try { this.flow.toggleTest(test.id); this.markAutoSaved(); }
+    catch (error) { this.autoSaveState.set('error'); this.showFeedback(error instanceof Error ? error.message : 'Autosave failed.', 'error'); }
+  }
+
+  private markAutoSaved(): void {
+    this.autoSaveState.set('saved');
+    window.setTimeout(() => this.autoSaveState.set('idle'), 2200);
+  }
+
+  restoreDraft(id: string): void {
+    const draft = this.flow.restoreOrderDraft(id);
+    if (!draft) { this.showFeedback('This draft is no longer available.', 'error'); return; }
+    this.draftsOpen.set(false);
+    this.activeView.set('catalogue');
+    this.activeCategory.set('All');
+    this.testQuery.set('');
+    this.markAutoSaved();
+    this.showFeedback('Draft restored. You can continue editing this order.', 'success');
+  }
+
+  deleteDraft(id: string): void {
+    this.flow.deleteOrderDraft(id);
+    this.showFeedback('Draft deleted.', 'success');
+  }
+
+  draftUpdatedLabel(value: string): string {
+    return new Date(value).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+  }
 
   categoryCount(category: string): number {
     return category === 'All'
@@ -134,6 +164,7 @@ export class TestOrderComponent implements OnInit {
     for (const id of pkg.testIds) {
       if (!this.flow.selectedIds().has(id)) this.flow.toggleTest(id);
     }
+    this.markAutoSaved();
   }
 
   isPackageSelected(pkg: TestPackage): boolean {
@@ -188,6 +219,7 @@ export class TestOrderComponent implements OnInit {
     try {
       this.flow.saveOrderDraft();
       this.draftSaved.set(true);
+      this.markAutoSaved();
       this.showFeedback('Order draft saved on this device. You can continue selecting tests.', 'success');
       window.setTimeout(() => this.draftSaved.set(false), 3200);
     } catch (error) {
