@@ -90,6 +90,24 @@
   </div>
 </section>
 
+@if (draftsOpen()) {
+  <section class="drafts-panel lis-card" aria-label="Saved order drafts">
+    <header class="drafts-panel-head"><div><strong>Saved drafts</strong><span>{{ flow.orderDrafts().length }} saved</span></div><button type="button" class="drafts-close" (click)="draftsOpen.set(false)" aria-label="Close drafts"><i class="ti ti-x"></i></button></header>
+    @if (flow.orderDrafts().length === 0) {
+      <div class="drafts-empty">No saved drafts yet. Your order will be saved automatically as you select tests.</div>
+    } @else {
+      <div class="drafts-list">
+        @for (draft of flow.orderDrafts(); track draft.id) {
+          <article class="draft-item">
+            <div class="draft-copy"><strong>{{ draft.patient.firstName }} {{ draft.patient.lastName }}</strong><span>{{ draft.patientId }} · {{ draft.testIds.length }} tests · ₹{{ draft.subtotal.toLocaleString('en-IN') }}</span><small>Updated {{ draftUpdatedLabel(draft.updatedAt) }}</small></div>
+            <div class="draft-actions"><button type="button" class="lis-btn lis-btn--primary lis-btn--sm" (click)="restoreDraft(draft.id)"><i class="ti ti-restore"></i> Restore</button><button type="button" class="draft-delete" (click)="deleteDraft(draft.id)" aria-label="Delete draft"><i class="ti ti-trash"></i></button></div>
+          </article>
+        }
+      </div>
+    }
+  </section>
+}
+
 @if (feedbackMessage()) {
   <div class="order-feedback" [class.order-feedback--success]="feedbackKind() === 'success'" [class.order-feedback--error]="feedbackKind() === 'error'" [class.order-feedback--warning]="feedbackKind() === 'warning'" role="status" aria-live="polite">
     <i class="ti" [class.ti-check-circle]="feedbackKind() === 'success'" [class.ti-alert-triangle]="feedbackKind() === 'warning'" [class.ti-alert-circle]="feedbackKind() === 'error'"></i>
@@ -99,8 +117,9 @@
 }
 
 <div class="selection-footer lis-card">
-  <div class="selection-count"><strong>{{ flow.selectedTests().length }} tests selected</strong><span>Subtotal · ₹{{ flow.orderTotal().toLocaleString('en-IN') }}</span></div>
+  <div class="selection-count"><strong>{{ flow.selectedTests().length }} tests selected</strong><span>Subtotal · ₹{{ flow.orderTotal().toLocaleString('en-IN') }}</span><small class="autosave-state" [class.autosave-state--saved]="autoSaveState() === 'saved'" [class.autosave-state--error]="autoSaveState() === 'error'">@if (autoSaveState() === 'saved') { <i class="ti ti-cloud-check"></i> Saved automatically } @else if (autoSaveState() === 'error') { <i class="ti ti-alert-circle"></i> Autosave issue } @else { <i class="ti ti-cloud"></i> Changes save automatically }</small></div>
   <div class="selection-actions">
+    <button type="button" class="lis-btn lis-btn--secondary drafts-toggle" (click)="draftsOpen.update(v => !v)"><i class="ti ti-folder-open"></i> Drafts <span>{{ flow.orderDrafts().length }}</span></button>
     <button type="button" class="lis-btn lis-btn--secondary" (click)="saveDraft()" [disabled]="savingDraft()"><i class="ti ti-device-floppy"></i>{{ draftSaved() ? 'Draft saved' : 'Save as draft' }}</button>
     <button type="button" class="lis-btn lis-btn--primary review-btn" (click)="goToReview()" ><i class="ti ti-clipboard-check"></i> Review Order <i class="ti ti-arrow-right"></i></button>
   </div>
