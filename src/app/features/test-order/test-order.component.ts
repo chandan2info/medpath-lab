@@ -74,6 +74,29 @@ export class TestOrderComponent implements OnInit {
   highlightedIndex = signal(-1);
   totalPulse     = signal(false);
 
+  /** Group selected tests by compatible tube/container and sample type. */
+  readonly specimenPlan = computed(() => {
+    const groups = new Map<string, { key: string; tubeType: string; sampleType: string; testNames: string[] }>();
+    for (const test of this.flow.selectedTests()) {
+      const key = `${test.tubeType}::${test.sampleType}`;
+      const group = groups.get(key) ?? { key, tubeType: test.tubeType, sampleType: test.sampleType, testNames: [] };
+      group.testNames.push(test.id);
+      groups.set(key, group);
+    }
+    return Array.from(groups.values());
+  });
+
+  /** Preparation notes are test-specific; patient fasting status is not used as a proxy. */
+  readonly preparationNotes = computed(() =>
+    Array.from(new Set(this.flow.selectedTests()
+      .map(test => test.prep.trim())
+      .filter(prep => prep && prep.toLowerCase() !== 'none')))
+  );
+
+  readonly hasFastingRequirement = computed(() =>
+    this.flow.selectedTests().some(test => /fasting required/i.test(test.prep))
+  );
+
   filteredTests = computed(() => {
     const q   = this.testQuery().toLowerCase();
     const cat = this.activeCategory();
