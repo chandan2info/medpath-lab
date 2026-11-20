@@ -127,6 +127,10 @@ export class TestOrderComponent implements OnInit {
     window.setTimeout(() => this.autoSaveState.set('idle'), 2200);
   }
 
+  toggleDrafts(): void {
+    this.draftsOpen.update(isOpen => !isOpen);
+  }
+
   restoreDraft(id: string): void {
     const draft = this.flow.restoreOrderDraft(id);
     if (!draft) { this.showFeedback('This draft is no longer available.', 'error'); return; }
