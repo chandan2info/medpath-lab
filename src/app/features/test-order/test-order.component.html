@@ -169,7 +169,7 @@
     </div>
 
     <!-- Selected tests -->
-    <div class="lis-card op-card">
+    <div class="lis-card op-card selected-tests-card">
       <div class="op-hd">
         <span><i class="ti ti-clipboard-list" aria-hidden="true"></i> Selected Tests</span>
         <div class="selected-heading-actions">
@@ -206,7 +206,7 @@
     </div>
 
     <!-- Specimen plan groups selected tests by compatible collection container. -->
-    <div class="lis-card op-card">
+    <div class="lis-card op-card specimen-plan-card">
       <div class="op-hd">
         <span><i class="ti ti-test-pipe" aria-hidden="true"></i> Specimen / Collection Plan</span>
         <span class="lis-badge">{{ specimenPlan().length }} {{ specimenPlan().length === 1 ? 'specimen group' : 'specimen groups' }}</span>
@@ -231,7 +231,7 @@
     </div>
 
     <!-- Preparation instructions come from selected tests, not patient demographics. -->
-    <div class="lis-card op-card">
+    <div class="lis-card op-card preparation-card">
       <div class="op-hd">
         <span><i class="ti ti-clipboard-check" aria-hidden="true"></i> Preparation &amp; Alerts</span>
         @if (preparationNotes().length > 0) {
@@ -256,7 +256,7 @@
     </div>
 
     <!-- Priority -->
-    <div class="lis-card op-card">
+    <div class="lis-card op-card priority-card">
       <div class="op-hd priority-heading"><span><i class="ti ti-flag" aria-hidden="true"></i> Priority <b class="required-mark">*</b></span></div>
       <div class="prio-cards priority-options" role="group" aria-label="Order priority">
         @for (p of priorities; track p) {
@@ -280,7 +280,7 @@
     </div>
 
     <!-- Summary -->
-    <div class="lis-card op-card">
+    <div class="lis-card op-card order-totals-card">
       <div class="op-label">Summary</div>
       <div class="tot-row">
         <span>Tests</span>
