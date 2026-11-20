@@ -119,7 +119,7 @@
 <div class="selection-footer lis-card">
   <div class="selection-count"><strong>{{ flow.selectedTests().length }} tests selected</strong><span>Subtotal · ₹{{ flow.orderTotal().toLocaleString('en-IN') }}</span><small class="autosave-state" [class.autosave-state--saved]="autoSaveState() === 'saved'" [class.autosave-state--error]="autoSaveState() === 'error'">@if (autoSaveState() === 'saved') { <i class="ti ti-cloud-check"></i> Saved automatically } @else if (autoSaveState() === 'error') { <i class="ti ti-alert-circle"></i> Autosave issue } @else { <i class="ti ti-cloud"></i> Changes save automatically }</small></div>
   <div class="selection-actions">
-    <button type="button" class="lis-btn lis-btn--secondary drafts-toggle" (click)="draftsOpen.update(v => !v)"><i class="ti ti-folder-open"></i> Drafts <span>{{ flow.orderDrafts().length }}</span></button>
+    <button type="button" class="lis-btn lis-btn--secondary drafts-toggle" (click)="toggleDrafts()"><i class="ti ti-folder-open"></i> Drafts <span>{{ flow.orderDrafts().length }}</span></button>
     <button type="button" class="lis-btn lis-btn--secondary" (click)="saveDraft()" [disabled]="savingDraft()"><i class="ti ti-device-floppy"></i>{{ draftSaved() ? 'Draft saved' : 'Save as draft' }}</button>
     <button type="button" class="lis-btn lis-btn--primary review-btn" (click)="goToReview()" ><i class="ti ti-clipboard-check"></i> Review Order <i class="ti ti-arrow-right"></i></button>
   </div>
