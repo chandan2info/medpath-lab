@@ -304,7 +304,7 @@
     <div class="lis-card op-card">
       <div class="op-hd">
         <span><i class="ti ti-test-pipe" aria-hidden="true"></i> Specimen / Collection Plan</span>
-        <span class="lis-badge">{{ flow.specimenPlan().length }} {{ flow.specimenPlan().length === 1 ? 'container' : 'containers' }}</span>
+        <span class="lis-badge">{{ flow.specimenPlan().length }} {{ flow.specimenPlan().length === 1 ? 'specimen group' : 'specimen groups' }}</span>
       </div>
       @if (flow.specimenPlan().length === 0) {
         <div class="no-tests-hint">Specimen requirements appear after tests are selected.</div>
@@ -317,7 +317,7 @@
                 <div class="specimen-name">{{ specimen.tubeType }}</div>
                 <div class="specimen-meta">{{ specimen.sampleType }} · {{ specimen.testNames.join(', ') }}</div>
               </div>
-              <span class="specimen-count">1 container</span>
+              <span class="specimen-count">Grouped</span>
             </div>
           }
         </div>
