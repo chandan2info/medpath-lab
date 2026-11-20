@@ -25,7 +25,11 @@
 <!-- ════════════════════════════════════════════════
      Patient summary — the visual anchor of the page
      ════════════════════════════════════════════════ -->
-@if (patient) {
+
+<!-- Main layout: test catalogue left, order summary right -->
+<div class="order-layout">
+  <div class="search-col">
+    @if (patient) {
   <section class="patient-summary lis-card" role="region" aria-label="Patient information">
     <div class="patient-summary-main">
       <div class="patient-avatar" aria-hidden="true">{{ patientInitials }}</div>
@@ -35,13 +39,18 @@
           <span class="patient-id-pill">{{ patient.id }}</span>
         </div>
         <div class="patient-demographics">
-          <span>{{ patient.gender | titlecase }}</span>
-          <span>{{ ageParts().years }} years {{ ageParts().months }} months</span>
-          <span>DOB: {{ patient.dob | date:'dd MMM yyyy' }}</span>
+          <span><i class="ti ti-user" aria-hidden="true"></i>{{ patient.gender | titlecase }}</span>
+          <span><i class="ti ti-calendar" aria-hidden="true"></i>{{ ageParts().years }} years {{ ageParts().months }} days</span>
+          <span><i class="ti ti-calendar-event" aria-hidden="true"></i>DOB: {{ patient.dob | date:'dd MMM yyyy' }}</span>
         </div>
       </div>
       <div class="patient-visit-details">
         <div class="patient-visit-item"><i class="ti ti-walk" aria-hidden="true"></i><span>{{ patient.visitType || 'Walk-in' }}</span></div>
+        <div class="patient-visit-item">
+          <i class="ti ti-tools-kitchen-2" aria-hidden="true"></i>
+          <span>Fasting</span>
+          <small>{{ hasFastingRequirement() ? 'Required' : 'Not required' }}</small>
+        </div>
         <div class="patient-visit-item"><i class="ti ti-stethoscope" aria-hidden="true"></i><span>{{ patient.refDoctor || 'Self / Walk-in' }}</span></div>
       </div>
       <a routerLink="/dashboard/registration" class="lis-btn lis-btn--secondary lis-btn--sm patient-edit-btn" aria-label="Edit patient details">
@@ -50,10 +59,6 @@
     </div>
   </section>
 }
-
-<!-- Main layout: test catalogue left, order summary right -->
-<div class="order-layout">
-  <div class="search-col">
     <section class="lis-card catalogue-workspace" aria-label="Test catalogue">
       <div class="catalogue-tabs" role="tablist" aria-label="Test selection">
         <button type="button" class="catalogue-tab" [class.catalogue-tab--active]="catalogueTab() === 'catalogue'" (click)="catalogueTab.set('catalogue')" role="tab" [attr.aria-selected]="catalogueTab() === 'catalogue'">
