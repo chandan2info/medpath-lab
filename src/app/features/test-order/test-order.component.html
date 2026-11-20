@@ -268,126 +268,17 @@
     </div>
   </div>
 
-  <!-- ── Right: Order summary, split into sections ─── -->
-  <aside class="order-panel" aria-label="Test order summary">
+</div>
 
-    <!-- Selected tests -->
-    <div class="lis-card op-card">
-      <div class="op-hd">
-        <span><i class="ti ti-clipboard-list" aria-hidden="true"></i> Selected Tests</span>
-        <span class="lis-badge">{{ flow.selectedTests().length }}</span>
-      </div>
-
-      <div class="selected-list" role="list" aria-label="Selected tests" aria-live="polite">
-        @if (flow.selectedTests().length === 0) {
-          <div class="no-tests-hint">
-            <i class="ti ti-click" aria-hidden="true"></i>
-            Click tests on the left to add them
-          </div>
-        }
-        @for (t of flow.selectedTests(); track t.id) {
-          <div class="sel-item" role="listitem">
-            <div class="sel-item-info">
-              <div class="sel-name">{{ t.name }}</div>
-              <div class="sel-cat">{{ t.category }}</div>
-            </div>
-            <div class="sel-price">₹{{ t.price }}</div>
-            <button type="button" class="sel-del"
-              (click)="toggle(t)"
-              [attr.aria-label]="'Remove ' + t.name">
-              <i class="ti ti-trash" aria-hidden="true"></i>
-            </button>
-          </div>
-        }
-      </div>
-    </div>
-
-    <!-- Priority -->
-    <div class="lis-card op-card">
-      <div class="op-label">Priority</div>
-      <div class="prio-cards" role="group" aria-label="Order priority">
-        @for (p of priorities; track p) {
-          <button type="button" class="prio-card"
-            [class.prio-card--active]="flow.priority() === p"
-            [class.prio-card--stat]="p === 'stat'"
-            [class.prio-card--stat-active]="p === 'stat' && flow.priority() === 'stat'"
-            (click)="onPriorityClick(p)"
-            [attr.aria-pressed]="flow.priority() === p">
-            <i class="ti {{ priorityInfo[p].icon }}" aria-hidden="true"></i>
-            <span class="prio-card-label">{{ priorityInfo[p].label }}</span>
-            <span class="prio-card-desc">{{ priorityInfo[p].desc }}</span>
-          </button>
-        }
-      </div>
-      @if (flow.priority() === 'stat') {
-        <div class="stat-warn" role="alert">
-          <i class="ti ti-alert-triangle" aria-hidden="true"></i>
-          STAT — process immediately
-        </div>
-      }
-    </div>
-
-    <!-- Summary -->
-    <div class="lis-card op-card">
-      <div class="op-label">Summary</div>
-      <div class="tot-row">
-        <span>Tests</span>
-        <span>{{ flow.selectedTests().length }}</span>
-      </div>
-      <div class="tot-row">
-        <span>Est. TAT</span>
-        <span>{{ flow.maxTat() }}h</span>
-      </div>
-      <div class="tot-row">
-        <span>Subtotal</span>
-        <span>₹{{ flow.orderTotal().toLocaleString('en-IN') }}</span>
-      </div>
-      <div class="tot-row">
-        <span>Discount</span>
-        <span>{{ flow.discountAmt() > 0 ? '-₹' + flow.discountAmt().toLocaleString('en-IN') : '₹0' }}</span>
-      </div>
-      <div class="tot-row">
-        <span>Tax</span>
-        <span>₹0</span>
-      </div>
-      <div class="tot-row tot-grand" [class.tot-grand--pulse]="totalPulse()" aria-label="Grand total">
-        <span>Grand Total</span>
-        <span>₹{{ flow.grandTotal().toLocaleString('en-IN') }}</span>
-      </div>
-    </div>
-
-    <!-- Actions -->
-    <div class="lis-card op-card op-actions">
-      <button type="button" class="lis-btn lis-btn--primary lis-btn--full proceed-btn"
-        (click)="proceedToBilling(); onCtaRipple($event)"
-        [disabled]="!hasTests || saving()">
-        @if (saving()) {
-          <span class="proceed-btn-main"><i class="ti ti-loader-2 spin" aria-hidden="true"></i> Saving…</span>
-        } @else {
-          <span class="proceed-btn-main">
-            <i class="ti ti-file-invoice" aria-hidden="true"></i>
-            Save &amp; Continue to Billing
-            <i class="ti ti-arrow-right proceed-arrow" aria-hidden="true"></i>
-          </span>
-          <kbd class="kbd-hint kbd-hint--on-primary">Ctrl+Enter</kbd>
-        }
-      </button>
-      <button type="button" class="draft-btn" (click)="saveDraft()" [disabled]="savingDraft()">
-        @if (savingDraft()) {
-          <i class="ti ti-loader-2 spin" aria-hidden="true"></i> Saving draft…
-        } @else if (draftSaved()) {
-          <i class="ti ti-circle-check" aria-hidden="true"></i> Draft saved
-        } @else {
-          <i class="ti ti-device-floppy" aria-hidden="true"></i> Save as draft
-          <kbd class="kbd-hint">Ctrl+S</kbd>
-        }
-      </button>
-
-      @if (!hasTests) {
-        <div class="no-tests-msg" role="status">
-          Add at least one test to continue
-        </div>
-      }
-    </div>
-  </aside>
+<!-- Compact sticky basket: selection page stays focused on finding tests. -->
+<div class="selection-basket" role="region" aria-label="Current order basket">
+  <div class="selection-basket__info">
+    <span class="selection-basket__count">{{ flow.selectedTests().length }} tests selected</span>
+    <span class="selection-basket__amount">₹{{ flow.grandTotal().toLocaleString('en-IN') }}</span>
+    <span class="selection-basket__hint">Review specimen groups and preparation before billing</span>
+  </div>
+  <button type="button" class="lis-btn lis-btn--primary selection-basket__cta"
+    (click)="proceedToReview()" [disabled]="!hasTests">
+    Review Order <i class="ti ti-arrow-right" aria-hidden="true"></i>
+  </button>
 </div>

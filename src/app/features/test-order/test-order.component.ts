@@ -149,6 +149,11 @@ export class TestOrderComponent implements OnInit {
 
   get hasTests(): boolean { return this.flow.selectedIds().size > 0; }
 
+  proceedToReview(): void {
+    if (!this.hasTests) return;
+    this.router.navigate(['/dashboard/order-review']);
+  }
+
   proceedToBilling(): void {
     if (!this.hasTests || this.saving()) return;
     this.saving.set(true);
@@ -201,7 +206,7 @@ export class TestOrderComponent implements OnInit {
     }
     if (mod && e.key === 'Enter') {
       e.preventDefault();
-      this.proceedToBilling();
+      this.proceedToReview();
       return;
     }
     if (mod && e.key.toLowerCase() === 's') {
