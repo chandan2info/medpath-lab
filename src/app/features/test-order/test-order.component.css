@@ -47,3 +47,116 @@
 @media(max-width:1000px){:host{height:auto;max-height:none;min-height:calc(100dvh - 110px);overflow:visible}.catalogue-shell{min-height:480px}.test-list{height:420px;flex:none}.selection-footer{position:sticky;bottom:8px;z-index:8}.patient-visit-meta{gap:9px;padding-left:9px}}
 @media(max-width:700px){.page-header{align-items:flex-start}.patient-summary{flex-wrap:wrap}.patient-main{flex-basis:calc(100% - 60px)}.patient-visit-meta{border-left:0;padding:7px 0 0;width:100%;border-top:1px solid var(--border-color);justify-content:space-between}.catalogue-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}.test-list{height:55vh;min-height:300px}.selection-footer{align-items:stretch;flex-direction:column}.selection-actions{justify-content:flex-end}.selection-actions button{flex:1}}
 @media(max-width:480px){.patient-meta{gap:6px 9px}.patient-visit-meta{gap:6px}.patient-visit-meta span{min-width:0}.test-meta span:nth-child(2){display:none}.test-row{gap:7px;padding:8px}.test-icon{width:36px;height:36px}.test-price{width:auto}.test-action{width:auto;padding:7px}.package-row{flex-wrap:wrap}.package-price{margin-left:auto}}
+
+
+/* ── Test-order viewport composition refinement ─────────────────────
+   Let the catalogue absorb the available viewport height. The list,
+   rather than the page, owns the vertical scroll.
+*/
+:host {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: calc(100dvh - var(--header-height, 56px) - 24px);
+  min-height: 0;
+  max-height: calc(100dvh - var(--header-height, 56px) - 24px);
+  overflow: hidden;
+  padding: 0;
+}
+
+.page-header {
+  flex: 0 0 auto;
+  min-height: 58px;
+  padding: 7px 14px;
+  margin: 0 0 8px;
+  gap: 12px;
+}
+
+.page-heading-copy { min-width: 0; }
+.page-title { line-height: 1.15; margin: 0; }
+.page-subtitle { margin: 3px 0 0; line-height: 1.25; }
+
+/* Compact patient strip: identity on the left, visit facts grouped right. */
+.patient-summary {
+  flex: 0 0 auto;
+  min-height: 58px;
+  padding: 7px 12px;
+  gap: 10px;
+  margin-bottom: 8px;
+  border-radius: 10px;
+}
+.pat-avatar {
+  width: 38px;
+  height: 38px;
+  font-size: 13px;
+}
+.patient-main { min-width: 180px; }
+.patient-name-line { gap: 7px; font-size: 12px; line-height: 1.2; }
+.patient-id { padding: 3px 7px; font-size: 9px; }
+.patient-meta {
+  gap: 5px 11px;
+  margin-top: 4px;
+  font-size: 9px;
+  line-height: 1.2;
+}
+.patient-meta i, .patient-visit-meta i { font-size: 11px; }
+.patient-visit-meta {
+  gap: 12px;
+  padding: 1px 10px;
+}
+.patient-visit-meta span { min-width: 64px; }
+.patient-visit-meta small { font-size: 8px; line-height: 1.1; }
+.patient-visit-meta strong { font-size: 9px; line-height: 1.2; }
+.patient-edit { padding: 5px 9px; font-size: 10px; }
+
+/* The catalogue card is the flexible region; footer stays at the bottom. */
+.catalogue-shell {
+  flex: 1 1 0;
+  height: 0;
+  min-height: 0;
+  margin: 0;
+}
+.catalogue-toolbar { padding: 8px 10px 0; }
+.catalogue-tabs { padding-bottom: 7px; gap: 6px; }
+.catalogue-tab { height: 35px; }
+.search-bar-wrap { height: 36px; margin-top: 7px; }
+.cat-seg { padding: 7px 0 5px; }
+.list-heading { padding: 4px 0 7px; }
+.test-list {
+  flex: 1 1 0;
+  height: auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+.test-list::-webkit-scrollbar { width: 7px; }
+.test-list::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+.test-list::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 8px;
+}
+.selection-footer {
+  flex: 0 0 auto;
+  margin: 8px 0 0;
+  padding: 9px 13px;
+  min-height: 54px;
+}
+.selection-actions .lis-btn { min-height: 36px; }
+
+@media (max-width: 1000px) {
+  :host {
+    height: auto;
+    max-height: none;
+    min-height: calc(100dvh - var(--header-height, 56px) - 24px);
+    overflow: visible;
+  }
+  .catalogue-shell { height: auto; min-height: 480px; flex: 1 1 auto; }
+  .test-list { height: min(58vh, 560px); min-height: 300px; flex: 0 0 auto; }
+}
+@media (max-width: 700px) {
+  .page-header { min-height: 0; }
+  .patient-summary { min-height: 0; }
+}
