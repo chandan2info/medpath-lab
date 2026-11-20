@@ -504,3 +504,100 @@
 @media (max-width: 600px) {
   .patient-visit-details { order: 3; width: 100%; justify-content: space-around; border-left: 0; border-top: 1px solid var(--border-color); padding: 10px 0 0; }
 }
+
+
+/* ── Stable order workspace: independently scroll selected tests and specimen groups ── */
+@media (min-width: 901px) {
+  .order-panel {
+    position: sticky;
+    top: 12px;
+    height: calc(100vh - 190px);
+    max-height: calc(100vh - 190px);
+    min-height: 560px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow: hidden;
+    padding: 0 3px 2px 0;
+    scrollbar-gutter: auto;
+  }
+
+  .order-panel > .order-summary-heading,
+  .order-panel > .priority-card,
+  .order-panel > .order-totals-card,
+  .order-panel > .op-actions {
+    flex: 0 0 auto;
+  }
+
+  .order-panel > .selected-tests-card,
+  .order-panel > .specimen-plan-card,
+  .order-panel > .preparation-card {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .order-panel > .selected-tests-card { flex: 1.25 1 0; }
+  .order-panel > .specimen-plan-card { flex: 1 1 0; }
+  .order-panel > .preparation-card { flex: 0 1 auto; max-height: 132px; }
+
+  .selected-tests-card .selected-list {
+    min-height: 0;
+    max-height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    padding-right: 4px;
+  }
+
+  .specimen-plan-card .specimen-list {
+    min-height: 0;
+    max-height: clamp(88px, 16vh, 170px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    padding-right: 4px;
+  }
+
+  .specimen-plan-card .specimen-footnote { flex: 0 0 auto; }
+  .preparation-card .prep-list {
+    max-height: 62px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .preparation-card .prep-warning {
+    max-height: 42px;
+    overflow-y: auto;
+  }
+
+  .order-panel .priority-card { padding-top: 10px; padding-bottom: 10px; }
+  .order-panel .order-totals-card { padding-top: 10px; padding-bottom: 10px; }
+  .order-panel .op-actions { padding: 10px 12px; }
+  .order-panel .proceed-btn { height: 44px; }
+}
+
+@media (max-height: 760px) and (min-width: 901px) {
+  .order-panel { height: calc(100vh - 160px); max-height: calc(100vh - 160px); min-height: 0; gap: 6px; }
+  .order-panel > .preparation-card { max-height: 104px; }
+  .order-panel .op-card { padding: 9px 10px; }
+  .order-panel .op-hd { margin-bottom: 6px; }
+  .order-panel .sel-item { padding: 5px 7px; }
+  .order-panel .specimen-item { padding: 5px 7px; }
+}
+
+@media (max-width: 900px) {
+  .order-panel {
+    position: static;
+    height: auto;
+    max-height: none;
+    min-height: 0;
+    overflow: visible;
+    padding: 0;
+  }
+  .selected-tests-card .selected-list,
+  .specimen-plan-card .specimen-list,
+  .preparation-card .prep-list {
+    max-height: 240px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
