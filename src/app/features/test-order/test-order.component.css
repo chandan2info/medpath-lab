@@ -160,3 +160,41 @@
   .page-header { min-height: 0; }
   .patient-summary { min-height: 0; }
 }
+
+
+/* Inline action feedback: visible without blocking the catalogue workflow. */
+.order-feedback {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 7px 0 0;
+  padding: 9px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  font-size: 11px;
+  line-height: 1.35;
+  box-shadow: 0 5px 16px rgba(0,0,0,.12);
+}
+.order-feedback > i { flex: none; font-size: 15px; }
+.order-feedback span { flex: 1; min-width: 0; }
+.order-feedback button {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.order-feedback--warning { border-color: #c58a35; background: rgba(197,138,53,.12); }
+.order-feedback--warning > i { color: #d69a3c; }
+.order-feedback--success { border-color: var(--lis-primary); background: var(--lis-primary-xlight,#e1f5ee); }
+.order-feedback--success > i { color: var(--lis-primary); }
+.order-feedback--error { border-color: #c65a5a; background: rgba(198,90,90,.12); }
+.order-feedback--error > i { color: #df7777; }
