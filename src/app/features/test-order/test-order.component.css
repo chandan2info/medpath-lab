@@ -477,3 +477,30 @@
   .patient-edit-btn { margin-left: auto; }
   .prio-cards.priority-options { grid-template-columns: 1fr; }
 }
+
+
+/* Patient context sits above the catalogue in the left column; summary remains top-aligned right. */
+.order-layout { grid-template-columns: minmax(0, 1.55fr) minmax(390px, 1fr); gap: 14px; align-items: start; }
+.search-col { gap: 12px; }
+.patient-summary { width: 100%; margin: 0; padding: 13px 15px; }
+.patient-summary-main { gap: 12px; }
+.patient-identity { flex: 1 1 180px; }
+.patient-demographics { align-items: center; gap: 8px 12px; }
+.patient-demographics span { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.patient-demographics span + span::before { content: none; }
+.patient-demographics i { color: var(--lis-primary, #1D9E75); font-size: 12px; }
+.patient-visit-details { flex: 0 0 auto; gap: 13px; padding: 0 12px; }
+.patient-visit-item { min-width: 55px; }
+.patient-visit-item small { color: var(--text-secondary); font-size: 9px; line-height: 1.1; }
+.order-panel { top: 12px; }
+@media (max-width: 1100px) {
+  .order-layout { grid-template-columns: minmax(0, 1.2fr) minmax(330px, 1fr); }
+  .patient-visit-details { gap: 8px; padding: 0 8px; }
+}
+@media (max-width: 900px) {
+  .order-layout { grid-template-columns: 1fr; }
+  .patient-summary { order: 0; }
+}
+@media (max-width: 600px) {
+  .patient-visit-details { order: 3; width: 100%; justify-content: space-around; border-left: 0; border-top: 1px solid var(--border-color); padding: 10px 0 0; }
+}
