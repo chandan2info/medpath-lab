@@ -185,6 +185,31 @@ export class PatientFlowService {
     });
   }
 
+  /** Persist the current unfinished order locally for this browser profile. */
+  saveOrderDraft(): { savedAt: string; patientId: string; testIds: string[] } {
+    const patient = this._patient();
+    if (!patient) throw new Error('A patient must be selected before saving a draft.');
+    if (this._selected().size === 0) throw new Error('Add at least one test before saving a draft.');
+
+    const draft = {
+      version: 1,
+      patient,
+      patientId: patient.id,
+      testIds: [...this._selected()],
+      priority: this._priority(),
+      subtotal: this.orderTotal(),
+      savedAt: new Date().toISOString()
+    };
+
+    try {
+      localStorage.setItem('medpath.orderDraft.v1', JSON.stringify(draft));
+    } catch {
+      throw new Error('The draft could not be saved in this browser. Check available storage and try again.');
+    }
+
+    return { savedAt: draft.savedAt, patientId: draft.patientId, testIds: draft.testIds };
+  }
+
   setPriority(p: Priority): void { this._priority.set(p); }
   setDiscount(pct: number): void { this._discountPct.set(pct); }
   setPayMode(m: PaymentMode): void { this._payMode.set(m); }
