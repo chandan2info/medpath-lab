@@ -17,7 +17,7 @@ import {
   OnInit, ElementRef, ViewChild, HostListener
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { TitleCasePipe, DatePipe } from '@angular/common';
+import { TitleCasePipe, DatePipe, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
 import { LabTest, TestPackage } from '../../shared/models/lis.models';
@@ -40,7 +40,7 @@ const PRIORITY_INFO: Record<'routine' | 'urgent' | 'stat', { label: string; desc
 @Component({
   selector: 'app-test-order',
   standalone: true,
-  imports: [RouterLink, FormsModule, TitleCasePipe, DatePipe, WorkflowStepperComponent],
+  imports: [RouterLink, FormsModule, TitleCasePipe, DatePipe, NgClass, WorkflowStepperComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './test-order.component.html',
   styleUrl: './test-order.component.css',
