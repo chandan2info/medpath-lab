@@ -73,3 +73,41 @@
 .wfs-timeline--dense .wfs-dot { width: 24px; height: 24px; font-size: 11px; }
 .wfs-timeline--dense .wfs-label { font-size: 9.5px; }
 .wfs-timeline--dense .wfs-track { top: 10.5px; left: 34px; right: 34px; }
+
+
+/* Dense stepper geometry correction.
+   Dot center = 6px top padding + 14px half-dot = 20px.
+   Track now crosses the exact centre and spans dot-centre to dot-centre. */
+.wfs-timeline--dense {
+  align-items: flex-start;
+  overflow: visible;
+  min-width: max-content;
+}
+.wfs-timeline--dense .wfs-step {
+  width: 78px;
+  padding-top: 6px;
+  gap: 5px;
+}
+.wfs-timeline--dense .wfs-dot {
+  width: 28px;
+  height: 28px;
+  font-size: 12px;
+  border-width: 1.5px;
+}
+.wfs-timeline--dense .wfs-label {
+  font-size: 10px;
+  line-height: 1.2;
+}
+.wfs-timeline--dense .wfs-track {
+  top: 19.5px;
+  left: 39px;
+  right: 39px;
+  height: 2px;
+}
+.wfs-timeline--dense .wfs-step--active .wfs-dot {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--wfs-c, var(--lis-primary, #1D9E75)) 17%, transparent);
+  animation: none;
+}
+@media (max-width: 900px) {
+  .wfs-timeline--dense { max-width: 100%; overflow-x: auto; }
+}

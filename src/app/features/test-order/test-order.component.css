@@ -331,3 +331,768 @@
 /* Spinner */
 @keyframes spin { to { transform: rotate(360deg); } }
 .spin { display: inline-block; animation: spin 0.8s linear infinite; }
+/* ── Specimen plan and test preparation ─────────────────────── */
+.specimen-list { display: flex; flex-direction: column; gap: 7px; }
+.specimen-item { display: flex; align-items: center; gap: 9px; min-width: 0; padding: 8px 9px; border: 1px solid var(--border-color); border-radius: 9px; background: var(--body-bg); }
+.specimen-icon { width: 30px; height: 30px; flex: 0 0 30px; display: grid; place-items: center; border-radius: 8px; color: var(--lis-primary, #1D9E75); background: var(--lis-primary-xlight, #E1F5EE); font-size: 16px; }
+.specimen-info { flex: 1; min-width: 0; }
+.specimen-name { font-size: 11.5px; font-weight: 700; color: var(--text-primary); }
+.specimen-meta { margin-top: 2px; font-size: 10px; line-height: 1.4; color: var(--text-secondary); overflow-wrap: anywhere; }
+.specimen-count { flex: 0 0 auto; font-size: 10px; font-weight: 600; color: var(--text-secondary); padding: 4px 7px; border-radius: 20px; background: var(--card-bg); border: 1px solid var(--border-color); }
+.specimen-footnote { margin: 8px 0 0; font-size: 10px; line-height: 1.45; color: var(--text-secondary); }
+.prep-clear { display: flex; align-items: center; gap: 7px; font-size: 11px; color: var(--text-secondary); }
+.prep-clear i { color: var(--lis-primary, #1D9E75); font-size: 14px; }
+.prep-list { margin: 0; padding: 9px 12px 9px 27px; border-radius: 9px; background: #FAEEDA; color: #633806; }
+.prep-list li { font-size: 10.5px; line-height: 1.5; padding: 2px 0; }
+.prep-warning { display: flex; align-items: flex-start; gap: 7px; margin-top: 8px; padding: 8px 9px; border-radius: 8px; font-size: 10.5px; line-height: 1.45; color: #791F1F; background: #FCEBEB; }
+.prep-warning i { flex: 0 0 auto; margin-top: 1px; }
+@media (max-width: 600px) { .specimen-item { align-items: flex-start; flex-wrap: wrap; } .specimen-count { margin-left: 39px; } }
+
+/* Selection actions — reuse existing typography, borders and theme colours. */
+.selected-heading-actions { display: inline-flex; align-items: center; gap: 8px; }
+.clear-selection-btn {
+  border: 0; background: transparent; color: var(--lis-primary, #1D9E75);
+  font: inherit; font-size: 10.5px; font-weight: 600; cursor: pointer;
+  padding: 3px 5px; border-radius: 5px;
+}
+.clear-selection-btn:hover { background: var(--lis-primary-xlight, #E1F5EE); }
+.clear-selection-btn:focus-visible { outline: 2px solid var(--lis-primary, #1D9E75); outline-offset: 2px; }
+
+
+/* ── Reference-aligned Test Order layout (existing MedPath theme) ── */
+.catalogue-workspace { padding: 12px; overflow: hidden; }
+.catalogue-tabs { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 5px; padding: 0 0 12px; border-bottom: 1px solid var(--border-color); }
+.catalogue-tab { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 42px; padding: 0 9px; border: 1px solid transparent; border-radius: 9px; background: var(--body-bg); color: var(--text-primary); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; transition: background .15s,border-color .15s,color .15s; }
+.catalogue-tab:hover { border-color: var(--lis-primary-mid, #5DCAA5); }
+.catalogue-tab--active { color: var(--lis-primary-deep, #085041); background: var(--lis-primary-xlight, #E1F5EE); border-color: var(--lis-primary-mid, #5DCAA5); box-shadow: inset 0 -2px 0 var(--lis-primary, #1D9E75); }
+.catalogue-tab i { font-size: 15px; }
+.catalogue-search { margin: 12px 0 6px; border: 1px solid var(--border-color); border-radius: 9px; background: var(--card-bg); }
+.catalogue-categories { padding: 9px 0 12px; gap: 8px; }
+.category-chip { display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 0 13px; border: 1px solid var(--border-color); border-radius: 20px; background: var(--body-bg); color: var(--text-primary); font: inherit; font-size: 11.5px; cursor: pointer; }
+.category-chip span { font-size: 10px; color: var(--text-secondary); }
+.category-chip--active { color: var(--lis-primary-deep, #085041); border-color: var(--lis-primary, #1D9E75); background: var(--lis-primary-xlight, #E1F5EE); }
+.catalogue-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0 10px; }
+.catalogue-section-heading h2 { margin: 0; font-size: 13px; font-weight: 700; color: var(--text-primary); }
+.sort-control { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-secondary); }
+.sort-control select { border: 0; background: transparent; color: var(--text-primary); font: inherit; font-size: 11px; outline-offset: 2px; }
+.reference-test-list { gap: 8px; }
+.reference-test-row { display: flex; align-items: center; gap: 10px; padding: 10px; min-width: 0; border: 1px solid var(--border-color); border-radius: 10px; background: var(--card-bg); transition: border-color .15s,background .15s,box-shadow .15s; }
+.reference-test-row:hover { border-color: var(--lis-primary-mid, #5DCAA5); background: var(--body-bg); }
+.reference-test-row--selected { border-color: var(--lis-primary, #1D9E75); background: var(--lis-primary-xlight, #E1F5EE); box-shadow: inset 0 0 0 1px var(--lis-primary-mid, #5DCAA5); }
+.reference-test-select { width: 22px; height: 22px; flex: 0 0 22px; display: grid; place-items: center; border: 1.5px solid var(--border-color); border-radius: 5px; background: var(--card-bg); color: var(--lis-primary-deep, #085041); cursor: pointer; }
+.reference-test-row--selected .reference-test-select { color: #fff; background: var(--lis-primary, #1D9E75); border-color: var(--lis-primary, #1D9E75); }
+.reference-test-icon { width: 40px; height: 40px; flex: 0 0 40px; display: grid; place-items: center; border-radius: 9px; background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary, #1D9E75); font-size: 19px; }
+.reference-test-info { flex: 1; min-width: 0; }
+.reference-test-title { font-size: 12.5px; font-weight: 700; color: var(--text-primary); }
+.reference-test-title span { margin-left: 7px; font-size: 10px; font-weight: 400; color: var(--text-secondary); }
+.reference-test-description { margin-top: 3px; font-size: 10.5px; color: var(--text-secondary); }
+.reference-test-meta { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
+.reference-test-meta span { display: inline-flex; align-items: center; gap: 4px; padding: 4px 7px; border: 1px solid var(--border-color); border-radius: 7px; background: var(--body-bg); color: var(--text-secondary); font-size: 9.5px; }
+.reference-test-meta i { color: var(--lis-primary, #1D9E75); font-size: 11px; }
+.reference-test-action { display: flex; flex: 0 0 auto; flex-direction: column; align-items: flex-end; gap: 8px; }
+.reference-test-action strong { font-size: 14px; color: var(--text-primary); }
+.reference-test-action .lis-btn { min-width: 94px; justify-content: center; }
+.catalogue-package-grid { padding: 4px 0 0; }
+@media (max-width: 900px) { .catalogue-tabs { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media (max-width: 600px) {
+  .reference-test-row { flex-wrap: wrap; }
+  .reference-test-info { flex-basis: calc(100% - 100px); }
+  .reference-test-action { margin-left: auto; }
+  .reference-test-meta { gap: 4px; }
+  .catalogue-tab { font-size: 11px; }
+}
+
+
+/* Reference screen header and order summary cap; retain the shared LIS typography and palette. */
+.page-title { display: flex; align-items: center; gap: 10px; }
+.page-title > i { color: var(--lis-primary, #1D9E75); font-size: 25px; font-weight: 400; }
+.page-subtitle { margin: 2px 0 7px; color: var(--text-secondary); font-size: 12px; }
+.order-summary-heading { display: flex; align-items: center; justify-content: space-between; padding: 13px 14px; font-size: 14px; font-weight: 700; color: var(--text-primary); }
+.order-summary-heading > span:first-child { display: inline-flex; align-items: center; gap: 9px; }
+.order-summary-heading > span:first-child i { color: var(--lis-primary, #1D9E75); font-size: 19px; }
+
+
+/* ── Reference-aligned corrections: patient, summary, specimens, priority and scrolling ── */
+.patient-summary { position: relative; top: auto; z-index: 1; padding: 13px 15px; margin-bottom: 16px; }
+.patient-summary-main { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.patient-avatar { width: 52px; height: 52px; flex: 0 0 52px; display: grid; place-items: center; border-radius: 50%; color: var(--lis-primary, #1D9E75); background: var(--lis-primary-xlight, #E1F5EE); font-size: 19px; font-weight: 700; }
+.patient-identity { flex: 1; min-width: 0; }
+.patient-name-line { display: flex; align-items: center; flex-wrap: wrap; gap: 9px; }
+.patient-name-line strong { color: var(--text-primary); font-size: 15px; font-weight: 700; }
+.patient-id-pill { padding: 4px 9px; border-radius: 16px; background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); font-size: 10px; font-weight: 700; }
+.patient-demographics { display: flex; flex-wrap: wrap; gap: 0; margin-top: 6px; color: var(--text-secondary); font-size: 11px; }
+.patient-demographics span + span::before { content: '|'; margin: 0 9px; color: var(--border-color); }
+.patient-visit-details { display: flex; align-items: center; gap: 18px; padding: 0 16px; border-left: 1px solid var(--border-color); }
+.patient-visit-item { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 58px; color: var(--text-secondary); font-size: 10.5px; text-align: center; }
+.patient-visit-item i { color: var(--lis-primary, #1D9E75); font-size: 17px; }
+.patient-edit-btn { flex: 0 0 auto; }
+.order-layout { grid-template-columns: minmax(0, 1fr) minmax(340px, 36%); align-items: start; }
+.search-col { min-height: 0; }
+.catalogue-workspace { display: flex; flex-direction: column; max-height: calc(100vh - 335px); min-height: 360px; overflow: hidden; }
+.catalogue-workspace > .catalogue-tabs,
+.catalogue-workspace > .catalogue-search,
+.catalogue-workspace > .catalogue-categories,
+.catalogue-workspace > .catalogue-section-heading { flex: 0 0 auto; }
+.catalogue-workspace > .test-list,
+.catalogue-workspace > .package-grid { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; padding-right: 5px; }
+.reference-test-list { max-height: none; }
+.reference-test-list::-webkit-scrollbar,
+.catalogue-package-grid::-webkit-scrollbar { width: 7px; }
+.reference-test-list::-webkit-scrollbar-thumb,
+.catalogue-package-grid::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 8px; }
+.order-panel { position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow-y: auto; overscroll-behavior: contain; padding-right: 3px; scrollbar-gutter: stable; }
+.order-panel::-webkit-scrollbar { width: 6px; }
+.order-panel::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 8px; }
+.sel-item { gap: 9px; padding: 7px 8px; }
+.sel-test-icon { width: 34px; height: 34px; flex: 0 0 34px; display: grid; place-items: center; border-radius: 8px; font-size: 17px; }
+.sel-test-icon--blood { color: #D83B45; background: #FCE8E9; }
+.sel-test-icon--chemistry { color: #8752C7; background: #F1E8FC; }
+.sel-test-icon--hormone { color: #D97706; background: #FFF0DE; }
+.sel-test-icon--urine { color: #168A74; background: #E2F5EF; }
+.specimen-item { padding: 7px 8px; border-radius: 8px; }
+.specimen-icon { width: 28px; height: 34px; flex: 0 0 28px; border-radius: 7px; font-size: 16px; }
+.specimen-icon--purple { color: #8B42C6; background: #F1E6FC; }
+.specimen-icon--gold { color: #D97706; background: #FFF0DE; }
+.specimen-icon--grey { color: #64748B; background: #EEF1F5; }
+.specimen-icon--blue { color: #2876C7; background: #E5F0FC; }
+.specimen-icon--default { color: var(--lis-primary, #1D9E75); background: var(--lis-primary-xlight, #E1F5EE); }
+.priority-heading { margin-bottom: 8px; }
+.required-mark { color: #E24B4A; font-weight: 700; }
+.prio-cards.priority-options { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 7px; }
+.priority-options .prio-card { justify-content: flex-start; gap: 7px; min-width: 0; min-height: 39px; padding: 7px 8px; border: 1px solid var(--border-color); border-radius: 8px; }
+.priority-options .prio-card-label { font-size: 11px; white-space: nowrap; }
+.priority-radio { width: 15px; height: 15px; flex: 0 0 15px; display: grid; place-items: center; border: 1.5px solid var(--border-color); border-radius: 50%; font-size: 9px; color: transparent; }
+.priority-options .prio-card--active .priority-radio { border-color: var(--lis-primary, #1D9E75); color: #fff; background: var(--lis-primary, #1D9E75); }
+.priority-options .prio-card--stat { border-color: #F1C5C5; }
+.priority-options .prio-card--stat-active { border-color: #E24B4A; background: #FCEBEB; box-shadow: none; }
+.priority-options .prio-card--stat-active .priority-radio { border-color: #E24B4A; background: #E24B4A; color: #fff; }
+@media (max-width: 900px) {
+  .order-layout { grid-template-columns: 1fr; }
+  .catalogue-workspace { max-height: 65vh; }
+  .order-panel { position: static; max-height: none; overflow: visible; }
+}
+@media (max-width: 600px) {
+  .patient-summary-main { flex-wrap: wrap; }
+  .patient-visit-details { order: 3; width: 100%; justify-content: space-around; border-left: 0; border-top: 1px solid var(--border-color); padding: 10px 0 0; }
+  .patient-edit-btn { margin-left: auto; }
+  .prio-cards.priority-options { grid-template-columns: 1fr; }
+}
+
+
+/* Patient context sits above the catalogue in the left column; summary remains top-aligned right. */
+.order-layout { grid-template-columns: minmax(0, 1.55fr) minmax(390px, 1fr); gap: 14px; align-items: start; }
+.search-col { gap: 12px; }
+.patient-summary { width: 100%; margin: 0; padding: 13px 15px; }
+.patient-summary-main { gap: 12px; }
+.patient-identity { flex: 1 1 180px; }
+.patient-demographics { align-items: center; gap: 8px 12px; }
+.patient-demographics span { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.patient-demographics span + span::before { content: none; }
+.patient-demographics i { color: var(--lis-primary, #1D9E75); font-size: 12px; }
+.patient-visit-details { flex: 0 0 auto; gap: 13px; padding: 0 12px; }
+.patient-visit-item { min-width: 55px; }
+.patient-visit-item small { color: var(--text-secondary); font-size: 9px; line-height: 1.1; }
+.order-panel { top: 12px; }
+@media (max-width: 1100px) {
+  .order-layout { grid-template-columns: minmax(0, 1.2fr) minmax(330px, 1fr); }
+  .patient-visit-details { gap: 8px; padding: 0 8px; }
+}
+@media (max-width: 900px) {
+  .order-layout { grid-template-columns: 1fr; }
+  .patient-summary { order: 0; }
+}
+@media (max-width: 600px) {
+  .patient-visit-details { order: 3; width: 100%; justify-content: space-around; border-left: 0; border-top: 1px solid var(--border-color); padding: 10px 0 0; }
+}
+
+
+/* ── Stable order workspace: independently scroll selected tests and specimen groups ── */
+@media (min-width: 901px) {
+  .order-panel {
+    position: sticky;
+    top: 12px;
+    height: calc(100vh - 190px);
+    max-height: calc(100vh - 190px);
+    min-height: 560px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow: hidden;
+    padding: 0 3px 2px 0;
+    scrollbar-gutter: auto;
+  }
+
+  .order-panel > .order-summary-heading,
+  .order-panel > .priority-card,
+  .order-panel > .order-totals-card,
+  .order-panel > .op-actions {
+    flex: 0 0 auto;
+  }
+
+  .order-panel > .selected-tests-card,
+  .order-panel > .specimen-plan-card,
+  .order-panel > .preparation-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .selected-tests-card > .op-hd,
+  .specimen-plan-card > .op-hd,
+  .preparation-card > .op-hd { flex: 0 0 auto; }
+
+  .order-panel > .selected-tests-card { flex: 1.25 1 0; }
+  .order-panel > .specimen-plan-card { flex: 1 1 0; }
+  .order-panel > .preparation-card { flex: 0 1 auto; max-height: 132px; }
+
+  .selected-tests-card .selected-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    padding-right: 4px;
+  }
+
+  .specimen-plan-card .specimen-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: clamp(88px, 16vh, 170px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    padding-right: 4px;
+  }
+
+  .specimen-plan-card .specimen-footnote { flex: 0 0 auto; }
+  .preparation-card .prep-list {
+    max-height: 62px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .preparation-card .prep-warning {
+    max-height: 42px;
+    overflow-y: auto;
+  }
+
+  .order-panel .priority-card { padding-top: 10px; padding-bottom: 10px; }
+  .order-panel .order-totals-card { padding-top: 10px; padding-bottom: 10px; }
+  .order-panel .op-actions { padding: 10px 12px; }
+  .order-panel .proceed-btn { height: 44px; }
+}
+
+@media (max-height: 760px) and (min-width: 901px) {
+  .order-panel { height: calc(100vh - 160px); max-height: calc(100vh - 160px); min-height: 0; gap: 6px; }
+  .order-panel > .preparation-card { max-height: 104px; }
+  .order-panel .op-card { padding: 9px 10px; }
+  .order-panel .op-hd { margin-bottom: 6px; }
+  .order-panel .sel-item { padding: 5px 7px; }
+  .order-panel .specimen-item { padding: 5px 7px; }
+}
+
+@media (max-width: 900px) {
+  .order-panel {
+    position: static;
+    height: auto;
+    max-height: none;
+    min-height: 0;
+    overflow: visible;
+    padding: 0;
+  }
+  .selected-tests-card .selected-list,
+  .specimen-plan-card .specimen-list,
+  .preparation-card .prep-list {
+    max-height: 240px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+
+
+/* ── Order summary: one predictable scroll region + pinned checkout area ── */
+@media (min-width: 901px) {
+  .order-panel {
+    position: sticky;
+    top: 12px;
+    height: calc(100vh - 190px);
+    max-height: calc(100vh - 190px);
+    min-height: 540px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow: hidden;
+    padding: 0 3px 2px 0;
+  }
+
+  .order-panel > .order-summary-heading {
+    flex: 0 0 auto;
+  }
+
+  .order-panel-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    padding-right: 4px;
+  }
+
+  .order-panel-body > .op-card {
+    flex: 0 0 auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .order-panel-body .selected-list,
+  .order-panel-body .specimen-list,
+  .order-panel-body .prep-list {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .order-panel-body .sel-item {
+    min-height: 54px;
+  }
+
+  .order-panel-body .specimen-item {
+    min-height: 58px;
+  }
+
+  .order-panel-footer {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-color);
+    background: var(--surface, var(--card-bg));
+  }
+
+  .order-panel-footer > .order-totals-card,
+  .order-panel-footer > .op-actions {
+    flex: 0 0 auto;
+    margin: 0;
+  }
+
+  .order-panel-footer .order-totals-card {
+    padding: 10px 12px;
+  }
+
+  .order-panel-footer .tot-row {
+    padding: 3px 0;
+  }
+
+  .order-panel-footer .tot-row:not(.tot-grand) {
+    font-size: 11px;
+  }
+
+  .order-panel-footer .tot-grand {
+    margin-top: 5px;
+    padding-top: 8px;
+  }
+
+  .order-panel-footer .op-actions {
+    padding: 9px 10px;
+    gap: 5px;
+  }
+
+  .order-panel-footer .proceed-btn {
+    min-height: 42px;
+  }
+
+  .order-panel-footer .draft-btn {
+    min-height: 28px;
+  }
+}
+
+@media (max-height: 800px) and (min-width: 901px) {
+  .order-panel {
+    height: calc(100vh - 165px);
+    max-height: calc(100vh - 165px);
+    min-height: 0;
+    gap: 7px;
+  }
+  .order-panel-body { gap: 7px; }
+  .order-panel-body .op-card { padding: 10px 11px; }
+  .order-panel-body .op-hd { margin-bottom: 7px; }
+  .order-panel-body .sel-item { min-height: 46px; padding: 6px 8px; }
+  .order-panel-body .specimen-item { min-height: 48px; padding: 6px 8px; }
+}
+
+@media (max-width: 900px) {
+  .order-panel {
+    position: static;
+    height: auto;
+    max-height: none;
+    min-height: 0;
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
+  }
+  .order-panel-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow: visible;
+  }
+  .order-panel-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+
+/* ── Compact top area: reclaim vertical space for the catalogue ── */
+.page-header {
+  align-items: center;
+  gap: 10px 20px;
+  margin-bottom: 10px;
+}
+.page-title {
+  font-size: 20px;
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+.page-subtitle {
+  margin: 2px 0 5px;
+  font-size: 11.5px;
+  line-height: 1.35;
+}
+.breadcrumb {
+  font-size: 10.5px;
+  gap: 5px;
+}
+.page-header lis-workflow-stepper {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+/* Patient card: compact single-row presentation without removing information. */
+.patient-summary {
+  margin-bottom: 10px;
+  padding: 0;
+}
+.patient-summary-main {
+  gap: 11px;
+  min-height: 68px;
+  padding: 9px 12px;
+}
+.patient-avatar {
+  width: 42px;
+  height: 42px;
+  flex-basis: 42px;
+  font-size: 16px;
+}
+.patient-name-line strong { font-size: 14px; }
+.patient-id-pill { padding: 3px 7px; font-size: 9.5px; }
+.patient-demographics {
+  margin-top: 4px;
+  font-size: 10.5px;
+}
+.patient-demographics span + span::before { margin: 0 7px; }
+.patient-visit-details {
+  gap: 12px;
+  padding: 0 11px;
+}
+.patient-visit-item {
+  min-width: 50px;
+  gap: 2px;
+  font-size: 10px;
+}
+.patient-visit-item i { font-size: 15px; }
+.patient-edit-btn { white-space: nowrap; }
+
+@media (max-width: 900px) {
+  .page-header { align-items: flex-start; }
+  .page-header lis-workflow-stepper {
+    margin-left: 0;
+    max-width: 100%;
+  }
+  .patient-summary-main {
+    flex-wrap: wrap;
+  }
+  .patient-visit-details {
+    border-left: 0;
+    padding: 5px 0 0 53px;
+    flex: 1 1 100%;
+    justify-content: flex-start;
+  }
+}
+
+
+/* ── Final alignment pass: compact patient context + balanced page header ── */
+.page-header {
+  min-height: 72px;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 18px;
+  margin-bottom: 10px;
+}
+.page-header > div:first-child {
+  min-width: 210px;
+}
+.page-title {
+  gap: 8px;
+  font-size: 19px;
+  line-height: 1.2;
+}
+.page-title > i { font-size: 22px; }
+.page-subtitle {
+  margin: 2px 0 5px;
+  line-height: 1.25;
+}
+.page-header lis-workflow-stepper {
+  margin-left: auto;
+  flex: 0 0 auto;
+  min-width: 300px;
+}
+
+/* Keep the patient card as a single compact, aligned information row. */
+.patient-summary {
+  padding: 8px 11px;
+  margin: 0;
+  min-height: 60px;
+}
+.patient-summary-main {
+  display: grid;
+  grid-template-columns: 40px minmax(180px, 1fr) auto auto;
+  align-items: center;
+  column-gap: 10px;
+  min-height: 42px;
+  padding: 0;
+}
+.patient-avatar {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  font-size: 15px;
+}
+.patient-identity {
+  min-width: 0;
+  flex: initial;
+}
+.patient-name-line {
+  gap: 7px;
+  flex-wrap: nowrap;
+}
+.patient-name-line strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+.patient-id-pill {
+  flex: 0 0 auto;
+  font-size: 9px;
+  padding: 3px 6px;
+}
+.patient-demographics {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 9px;
+  margin-top: 4px;
+  font-size: 9.5px;
+  white-space: nowrap;
+}
+.patient-demographics span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.patient-demographics span + span::before { content: none; }
+.patient-demographics i { font-size: 11px; }
+.patient-visit-details {
+  gap: 10px;
+  padding: 0 10px;
+  white-space: nowrap;
+}
+.patient-visit-item {
+  min-width: 48px;
+  gap: 2px;
+  font-size: 9.5px;
+}
+.patient-visit-item i { font-size: 14px; }
+.patient-visit-item small { font-size: 8.5px; }
+.patient-edit-btn { align-self: center; padding-inline: 9px; }
+
+@media (max-width: 1200px) {
+  .patient-summary-main {
+    grid-template-columns: 38px minmax(150px, 1fr) auto;
+  }
+  .patient-visit-details {
+    grid-column: 2 / 4;
+    border-left: 0;
+    border-top: 1px solid var(--border-color);
+    padding: 6px 0 0;
+    justify-content: flex-start;
+  }
+  .patient-edit-btn {
+    grid-column: 3;
+    grid-row: 1;
+  }
+}
+@media (max-width: 900px) {
+  .page-header { flex-wrap: wrap; }
+  .page-header lis-workflow-stepper { margin-left: 0; min-width: 0; }
+  .patient-summary-main { display: flex; flex-wrap: wrap; }
+  .patient-visit-details {
+    width: 100%;
+    border-top: 1px solid var(--border-color);
+    padding: 7px 0 0;
+    justify-content: space-around;
+  }
+  .patient-demographics { flex-wrap: wrap; white-space: normal; }
+}
+
+
+/* ── Order summary v2: all operational sections remain visible ──
+   The summary body is a bounded grid. Each long collection has its own
+   scroll region; priority, totals and checkout stay pinned below it. */
+@media (min-width: 901px) {
+  .order-panel {
+    height: calc(100vh - 270px);
+    max-height: calc(100vh - 270px);
+    min-height: 500px;
+    gap: 8px;
+  }
+
+  .order-panel-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: grid;
+    grid-template-rows: minmax(120px, 1.15fr) minmax(105px, 1fr) minmax(76px, .72fr);
+    gap: 8px;
+    overflow: hidden;
+    padding: 0 4px 0 0;
+  }
+
+  .order-panel-body > .op-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    padding: 10px 11px;
+  }
+
+  .order-panel-body > .op-card > .op-hd {
+    flex: 0 0 auto;
+    margin-bottom: 7px;
+  }
+
+  .order-panel-body .selected-list,
+  .order-panel-body .specimen-list,
+  .order-panel-body .prep-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    padding-right: 4px;
+  }
+
+  .order-panel-body .sel-item {
+    min-height: 44px;
+    padding: 5px 7px;
+  }
+
+  .order-panel-body .specimen-item {
+    min-height: 46px;
+    padding: 5px 7px;
+  }
+
+  .order-panel-body .specimen-footnote {
+    flex: 0 0 auto;
+    margin-top: 5px;
+  }
+
+  .order-panel-body .prep-warning {
+    flex: 0 0 auto;
+    max-height: 38px;
+    overflow-y: auto;
+  }
+
+  .order-panel-footer {
+    flex: 0 0 auto;
+    gap: 7px;
+    padding-top: 7px;
+  }
+
+  .order-panel-footer .priority-card {
+    padding: 8px 10px;
+  }
+
+  .order-panel-footer .priority-card .op-hd {
+    margin-bottom: 6px;
+  }
+
+  .order-panel-footer .order-totals-card {
+    padding: 8px 11px;
+  }
+
+  .order-panel-footer .tot-row {
+    padding: 2px 0;
+  }
+
+  .order-panel-footer .tot-grand {
+    margin-top: 4px;
+    padding-top: 6px;
+  }
+
+  .order-panel-footer .op-actions {
+    padding: 8px 9px;
+  }
+
+  .order-panel-footer .proceed-btn {
+    min-height: 40px;
+  }
+
+  .order-panel-footer .draft-btn {
+    min-height: 25px;
+  }
+}
+
+@media (min-width: 901px) and (max-height: 820px) {
+  .order-panel {
+    height: calc(100vh - 250px);
+    max-height: calc(100vh - 250px);
+    min-height: 440px;
+  }
+  .order-panel-body {
+    grid-template-rows: minmax(105px, 1.1fr) minmax(90px, .9fr) minmax(66px, .65fr);
+    gap: 6px;
+  }
+  .order-panel-body > .op-card { padding: 8px 9px; }
+  .order-panel-footer { gap: 5px; }
+  .order-panel-footer .order-totals-card { padding: 6px 9px; }
+  .order-panel-footer .op-actions { padding: 6px 8px; }
+}
+
+@media (max-width: 900px) {
+  .order-panel-body {
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+  }
+  .order-panel-body > .op-card {
+    display: flex;
+    flex-direction: column;
+    min-height: auto;
+    overflow: visible;
+  }
+  .order-panel-body .selected-list,
+  .order-panel-body .specimen-list,
+  .order-panel-body .prep-list {
+    max-height: 220px;
+    overflow-y: auto;
+  }
+}

@@ -17,7 +17,7 @@ import {
   OnInit, ElementRef, ViewChild, HostListener
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { TitleCasePipe, DatePipe } from '@angular/common';
+import { TitleCasePipe, DatePipe, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
 import { LabTest, TestPackage } from '../../shared/models/lis.models';
@@ -40,7 +40,7 @@ const PRIORITY_INFO: Record<'routine' | 'urgent' | 'stat', { label: string; desc
 @Component({
   selector: 'app-test-order',
   standalone: true,
-  imports: [RouterLink, FormsModule, TitleCasePipe, DatePipe, WorkflowStepperComponent],
+  imports: [RouterLink, FormsModule, TitleCasePipe, DatePipe, NgClass, WorkflowStepperComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './test-order.component.html',
   styleUrl: './test-order.component.css',
@@ -64,6 +64,8 @@ export class TestOrderComponent implements OnInit {
   protected readonly priorityInfo  = PRIORITY_INFO;
   protected readonly priorities: ('routine' | 'urgent' | 'stat')[] = ['routine', 'urgent', 'stat'];
 
+  catalogueTab = signal<'catalogue' | 'packages' | 'recent' | 'favorites'>('catalogue');
+  sortOrder = signal<'popular' | 'name' | 'price-low' | 'tat'>('popular');
   testQuery      = signal('');
   activeCategory = signal('All');
   popularVisible  = signal(false);
@@ -74,6 +76,33 @@ export class TestOrderComponent implements OnInit {
   highlightedIndex = signal(-1);
   totalPulse     = signal(false);
 
+  /** Group selected tests by compatible tube/container and sample type. */
+  readonly specimenPlan = computed(() => {
+    const groups = new Map<string, { key: string; tubeType: string; sampleType: string; testNames: string[] }>();
+    for (const test of this.flow.selectedTests()) {
+      const key = `${test.tubeType}::${test.sampleType}`;
+      const group = groups.get(key) ?? { key, tubeType: test.tubeType, sampleType: test.sampleType, testNames: [] };
+      group.testNames.push(test.name);
+      groups.set(key, group);
+    }
+    return Array.from(groups.values());
+  });
+
+  /** Keep each preparation instruction attached to the test that requires it. */
+  readonly preparationNotes = computed(() =>
+    this.flow.selectedTests()
+      .filter(test => test.prep.trim() && test.prep.trim().toLowerCase() !== 'none')
+      .map(test => ({
+        testName: test.name,
+        instruction: test.prep.trim(),
+        fastingRequired: /fasting required/i.test(test.prep)
+      }))
+  );
+
+  readonly hasFastingRequirement = computed(() =>
+    this.preparationNotes().some(note => note.fastingRequired)
+  );
+
   filteredTests = computed(() => {
     const q   = this.testQuery().toLowerCase();
     const cat = this.activeCategory();
@@ -81,6 +110,25 @@ export class TestOrderComponent implements OnInit {
       (cat === 'All' || t.category === cat) &&
       (t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q) || t.category.toLowerCase().includes(q))
     );
+  });
+
+  categoryCount(category: string): number {
+    return category === 'All' ? this.flow.allTests.length : this.flow.allTests.filter(test => test.category === category).length;
+  }
+
+  readonly visibleTests = computed(() => {
+    const tab = this.catalogueTab();
+    let tests = tab === 'recent' ? this.flow.recentTests
+      : tab === 'favorites' ? this.flow.popularTests
+      : this.filteredTests();
+    if (tab === 'catalogue') {
+      const sort = this.sortOrder();
+      tests = [...tests];
+      if (sort === 'name') tests.sort((a, b) => a.name.localeCompare(b.name));
+      if (sort === 'price-low') tests.sort((a, b) => a.price - b.price);
+      if (sort === 'tat') tests.sort((a, b) => a.tatHours - b.tatHours);
+    }
+    return tests;
   });
 
   // "Patients also order" — union of related tests for everything selected,
@@ -118,8 +166,40 @@ export class TestOrderComponent implements OnInit {
     }
   }
 
+  testIcon(test: LabTest): string {
+    const id = test.id.toLowerCase();
+    const name = test.name.toLowerCase();
+    if (id.includes('cbc') || name.includes('blood count')) return 'ti-droplet';
+    if (id.includes('kft') || name.includes('kidney')) return 'ti-brand-wechat';
+    if (id.includes('lft') || name.includes('liver')) return 'ti-activity';
+    if (name.includes('urine')) return 'ti-droplet-half-2';
+    if (name.includes('thyroid') || name.includes('tsh')) return 'ti-test-pipe';
+    return test.category.toLowerCase() === 'haematology' ? 'ti-droplet'
+      : test.category.toLowerCase() === 'endocrinology' ? 'ti-activity'
+      : test.category.toLowerCase() === 'urine' ? 'ti-droplet-half-2' : 'ti-flask-2';
+  }
+
+  testIconClass(test: LabTest): string {
+    const category = test.category.toLowerCase();
+    return category === 'haematology' ? 'sel-test-icon--blood'
+      : category === 'endocrinology' ? 'sel-test-icon--hormone'
+      : category === 'urine' ? 'sel-test-icon--urine' : 'sel-test-icon--chemistry';
+  }
+
+  specimenIconClass(tubeType: string): string {
+    const tube = tubeType.toLowerCase();
+    return tube.includes('purple') ? 'specimen-icon--purple'
+      : tube.includes('gold') || tube.includes('red') || tube.includes('sst') ? 'specimen-icon--gold'
+      : tube.includes('grey') ? 'specimen-icon--grey'
+      : tube.includes('blue') ? 'specimen-icon--blue' : 'specimen-icon--default';
+  }
+
   isSelected(id: string): boolean { return this.flow.selectedIds().has(id); }
   toggle(t: LabTest): void { this.flow.toggleTest(t.id); }
+
+  clearSelectedTests(): void {
+    for (const id of Array.from(this.flow.selectedIds())) this.flow.toggleTest(id);
+  }
   setPriority(p: 'routine' | 'urgent' | 'stat'): void { this.flow.setPriority(p); }
   onPriorityClick(p: string): void { this.flow.setPriority(p as 'routine' | 'urgent' | 'stat'); }
 
