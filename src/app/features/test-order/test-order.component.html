@@ -6,7 +6,8 @@
 <!-- Page header -->
 <div class="page-header">
   <div>
-    <h1 class="page-title">Test Order</h1>
+    <h1 class="page-title"><i class="ti ti-flask-2" aria-hidden="true"></i> Test Order</h1>
+    <p class="page-subtitle">Select tests for the patient and create a lab order</p>
     <nav aria-label="Breadcrumb">
       <ol class="breadcrumb">
         <li><a routerLink="/dashboard/home">Home</a></li>
@@ -171,6 +172,10 @@
 
   <!-- ── Right: Order summary, split into sections ─── -->
   <aside class="order-panel" aria-label="Test order summary">
+    <div class="lis-card order-summary-heading">
+      <span><i class="ti ti-shopping-cart" aria-hidden="true"></i> Order Summary</span>
+      <span class="lis-badge">{{ flow.selectedTests().length }} {{ flow.selectedTests().length === 1 ? 'Test' : 'Tests' }}</span>
+    </div>
 
     <!-- Selected tests -->
     <div class="lis-card op-card">
