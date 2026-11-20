@@ -80,21 +80,25 @@ export class TestOrderComponent implements OnInit {
     for (const test of this.flow.selectedTests()) {
       const key = `${test.tubeType}::${test.sampleType}`;
       const group = groups.get(key) ?? { key, tubeType: test.tubeType, sampleType: test.sampleType, testNames: [] };
-      group.testNames.push(test.id);
+      group.testNames.push(test.name);
       groups.set(key, group);
     }
     return Array.from(groups.values());
   });
 
-  /** Preparation notes are test-specific; patient fasting status is not used as a proxy. */
+  /** Keep each preparation instruction attached to the test that requires it. */
   readonly preparationNotes = computed(() =>
-    Array.from(new Set(this.flow.selectedTests()
-      .map(test => test.prep.trim())
-      .filter(prep => prep && prep.toLowerCase() !== 'none')))
+    this.flow.selectedTests()
+      .filter(test => test.prep.trim() && test.prep.trim().toLowerCase() !== 'none')
+      .map(test => ({
+        testName: test.name,
+        instruction: test.prep.trim(),
+        fastingRequired: /fasting required/i.test(test.prep)
+      }))
   );
 
   readonly hasFastingRequirement = computed(() =>
-    this.flow.selectedTests().some(test => /fasting required/i.test(test.prep))
+    this.preparationNotes().some(note => note.fastingRequired)
   );
 
   filteredTests = computed(() => {
@@ -143,6 +147,10 @@ export class TestOrderComponent implements OnInit {
 
   isSelected(id: string): boolean { return this.flow.selectedIds().has(id); }
   toggle(t: LabTest): void { this.flow.toggleTest(t.id); }
+
+  clearSelectedTests(): void {
+    for (const id of Array.from(this.flow.selectedIds())) this.flow.toggleTest(id);
+  }
   setPriority(p: 'routine' | 'urgent' | 'stat'): void { this.flow.setPriority(p); }
   onPriorityClick(p: string): void { this.flow.setPriority(p as 'routine' | 'urgent' | 'stat'); }
 
