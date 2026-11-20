@@ -361,3 +361,76 @@
   .priority-alert-row .priority-options button span{font-size:9px}
   .priority-alert-row .alert-popover{right:50px;width:calc(100vw - 72px)}
 }
+
+
+/* Final viewport fit: keep the billing action visible without page scrolling. */
+@media (min-width: 761px) {
+  :host {
+    height: calc(100dvh - 190px);
+    min-height: 0;
+    max-height: calc(100dvh - 190px);
+    overflow: hidden;
+    gap: 9px;
+    padding-bottom: 0;
+    box-sizing: border-box;
+  }
+
+  .page-header,
+  .patient-summary,
+  .priority-alert-row,
+  .order-bottom-bar {
+    flex: 0 0 auto;
+  }
+
+  .priority-alert-row {
+    grid-template-columns: minmax(0, 1fr) 52px;
+    align-items: center;
+  }
+
+  .priority-alert-row .priority-card {
+    height: 58px;
+    min-height: 58px;
+    padding: 7px 11px;
+  }
+
+  .priority-alert-row .priority-options button {
+    height: 36px;
+    min-height: 36px;
+  }
+
+  .review-columns {
+    flex: 1 1 0;
+    min-height: 0;
+    height: auto;
+    align-items: stretch;
+  }
+
+  .selected-panel,
+  .right-review-column,
+  .specimen-panel {
+    min-height: 0;
+    height: 100%;
+  }
+
+  .selected-test-list,
+  .specimen-list {
+    flex: 1 1 0;
+    min-height: 0;
+    max-height: none;
+    overflow-y: auto;
+  }
+
+  .order-bottom-bar {
+    margin-top: 0;
+    min-height: 58px;
+  }
+}
+
+@media (max-width: 760px) {
+  :host {
+    height: auto;
+    max-height: none;
+    min-height: 0;
+    overflow: visible;
+  }
+}
