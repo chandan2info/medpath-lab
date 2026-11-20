@@ -434,3 +434,64 @@
     overflow: visible;
   }
 }
+
+
+/* Give both review tables more usable space and make each list independently scrollable. */
+@media (min-width: 761px) {
+  :host {
+    height: calc(100dvh - 172px);
+    max-height: calc(100dvh - 172px);
+  }
+
+  .review-columns {
+    min-height: 420px;
+  }
+
+  .selected-panel,
+  .specimen-panel {
+    min-height: 420px;
+  }
+
+  .selected-test-list,
+  .specimen-list {
+    display: block;
+    flex: 1 1 0;
+    height: 100%;
+    min-height: 0;
+    max-height: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    scrollbar-gutter: stable;
+  }
+
+  .review-test-row {
+    padding-top: 11px;
+    padding-bottom: 11px;
+  }
+
+  .specimen-row {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .selected-test-list::-webkit-scrollbar,
+  .specimen-list::-webkit-scrollbar {
+    width: 7px;
+  }
+
+  .selected-test-list::-webkit-scrollbar-thumb,
+  .specimen-list::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 8px;
+  }
+}
+
+@media (max-width: 760px) {
+  .selected-test-list,
+  .specimen-list {
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+}
