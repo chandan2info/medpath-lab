@@ -347,3 +347,13 @@
 .prep-warning { display: flex; align-items: flex-start; gap: 7px; margin-top: 8px; padding: 8px 9px; border-radius: 8px; font-size: 10.5px; line-height: 1.45; color: #791F1F; background: #FCEBEB; }
 .prep-warning i { flex: 0 0 auto; margin-top: 1px; }
 @media (max-width: 600px) { .specimen-item { align-items: flex-start; flex-wrap: wrap; } .specimen-count { margin-left: 39px; } }
+
+/* Selection actions — reuse existing typography, borders and theme colours. */
+.selected-heading-actions { display: inline-flex; align-items: center; gap: 8px; }
+.clear-selection-btn {
+  border: 0; background: transparent; color: var(--lis-primary, #1D9E75);
+  font: inherit; font-size: 10.5px; font-weight: 600; cursor: pointer;
+  padding: 3px 5px; border-radius: 5px;
+}
+.clear-selection-btn:hover { background: var(--lis-primary-xlight, #E1F5EE); }
+.clear-selection-btn:focus-visible { outline: 2px solid var(--lis-primary, #1D9E75); outline-offset: 2px; }
