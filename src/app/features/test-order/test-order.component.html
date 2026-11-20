@@ -1,393 +1,92 @@
-<!-- ═══════════════════════════════════════════════════════════
-     Screen 2 — Test Order
-     Full-width: search workspace left, order summary right.
-     ═══════════════════════════════════════════════════════════ -->
-
-<!-- Page header -->
+<!-- Test selection page: catalogue first, review on a dedicated route. -->
 <div class="page-header">
   <div>
     <h1 class="page-title">Test Order</h1>
-    <nav aria-label="Breadcrumb">
-      <ol class="breadcrumb">
-        <li><a routerLink="/dashboard/home">Home</a></li>
-        <li><a routerLink="/dashboard/registration">Registration</a></li>
-        <li aria-current="page">Test Order</li>
-      </ol>
-    </nav>
+    <p class="page-subtitle">Select investigations for the registered patient.</p>
+    <nav aria-label="Breadcrumb"><ol class="breadcrumb">
+      <li><a routerLink="/dashboard/home">Home</a></li><li><a routerLink="/dashboard/registration">Registration</a></li><li aria-current="page">Test Order</li>
+    </ol></nav>
   </div>
-
-  <!-- Workflow progress trail — standardized via the shared stepper
-       component (same design used on Registration, Billing, Sample). -->
   <lis-workflow-stepper [steps]="workflowSteps" [activeIndex]="workflowActiveIndex" />
 </div>
 
-<!-- ════════════════════════════════════════════════
-     Patient summary — the visual anchor of the page
-     ════════════════════════════════════════════════ -->
 @if (patient) {
-  <div class="patient-summary lis-card" role="region" aria-label="Patient information">
-    <div class="pat-info-row">
-      <div class="pat-av" aria-hidden="true">{{ patientInitials }}</div>
-      <div class="pat-id-main">
-        <div class="pat-name-row">
-          <div class="pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
-          <span class="pill pill--routine">
-            <i class="ti ti-circle-check" aria-hidden="true"></i>Registered
-          </span>
-          <span class="pill pill--visit">
-            <i class="ti ti-calendar-event" aria-hidden="true"></i>{{ patient.visitType | titlecase }}
-          </span>
-        </div>
-        <div class="pat-detail-row">
-          <span class="pat-detail-item"><i class="ti ti-id-badge-2 pat-detail-icon" aria-hidden="true"></i><span class="lis-mono">{{ patient.id }}</span></span>
-          <span class="pat-detail-sep" aria-hidden="true">|</span>
-          <span class="pat-detail-item age-inline" [title]="patientAgeBreakdown()">
-            <i class="ti ti-cake pat-detail-icon" aria-hidden="true"></i><span class="age-inline__y">{{ ageParts().years }}y</span><span class="age-inline__sep"> · </span><span class="age-inline__m">{{ ageParts().months }}m</span><span class="age-inline__sep"> · </span><span class="age-inline__d">{{ ageParts().days }}d</span>
-          </span>
-          <span class="pat-detail-sep" aria-hidden="true">|</span>
-          <span class="pat-detail-item"><i class="ti ti-calendar-event pat-detail-icon" aria-hidden="true"></i>DOB {{ patient.dob | date:'dd MMM yyyy' }}</span>
-          <span class="pat-detail-sep" aria-hidden="true">|</span>
-          <span class="pat-detail-item"><i class="ti {{ genderIcon() }} pat-detail-icon" aria-hidden="true"></i>{{ patient.gender | titlecase }}</span>
-        </div>
-        <div class="pat-detail-row">
-          <span class="pat-detail-item"><i class="ti ti-phone pat-detail-icon" aria-hidden="true"></i>{{ patient.mobile }}</span>
-          <span class="pat-detail-sep" aria-hidden="true">|</span>
-          <span class="pat-detail-item"><i class="ti ti-stethoscope pat-detail-icon" aria-hidden="true"></i>{{ patient.refDoctor }}</span>
-          <span class="pat-detail-sep" aria-hidden="true">|</span>
-          <span class="pat-detail-item"><i class="ti ti-droplet-half-2 pat-detail-icon" aria-hidden="true"></i>{{ patient.fasting }}</span>
-          <span class="pat-detail-sep" aria-hidden="true">|</span>
-          <span class="pat-detail-item"><i class="ti ti-heartbeat pat-detail-icon" aria-hidden="true"></i>{{ patient.bloodGroup || '—' }}</span>
-        </div>
+  <section class="patient-summary lis-card" aria-label="Patient information">
+    <div class="pat-avatar" aria-hidden="true">{{ patientInitials }}</div>
+    <div class="patient-main">
+      <div class="patient-name-line"><strong>{{ patient.firstName }} {{ patient.lastName }}</strong><span class="patient-id">{{ patient.id }}</span></div>
+      <div class="patient-meta">
+        <span><i class="ti ti-user" aria-hidden="true"></i>{{ patient.gender | titlecase }}</span>
+        <span><i class="ti ti-cake" aria-hidden="true"></i>{{ patientAgeBreakdown() }}</span>
+        <span><i class="ti ti-calendar" aria-hidden="true"></i>DOB: {{ patient.dob | date:'dd MMM yyyy' }}</span>
+        <span><i class="ti ti-phone" aria-hidden="true"></i>{{ patient.mobile }}</span>
       </div>
-      <a routerLink="/dashboard/registration" class="lis-btn lis-btn--secondary lis-btn--sm" aria-label="Edit patient details">
-        <i class="ti ti-edit" aria-hidden="true"></i> Edit Patient
-      </a>
     </div>
-  </div>
+    <div class="patient-visit-meta">
+      <span><i class="ti ti-walk" aria-hidden="true"></i>{{ patient.visitType | titlecase }}</span>
+      <span><i class="ti ti-stethoscope" aria-hidden="true"></i>{{ patient.refDoctor || 'Self / Walk-in' }}</span>
+      <span><i class="ti ti-droplet" aria-hidden="true"></i>{{ patient.fasting || 'Fasting not specified' }}</span>
+    </div>
+    <a routerLink="/dashboard/registration" class="lis-btn lis-btn--secondary lis-btn--sm"><i class="ti ti-edit"></i> Edit</a>
+  </section>
 }
 
-<!-- Main layout: search left, order panel right -->
-<div class="order-layout">
-
-  <!-- ── Left: Test search workspace ──────────── -->
-  <div class="search-col">
-
-    <!-- Search bar -->
-    <div class="lis-card search-card">
-      <div class="search-bar-wrap">
-        <i class="ti ti-search search-ico" aria-hidden="true"></i>
-        <input
-          #searchInput
-          type="search"
-          class="search-input"
-          placeholder="Search by test name, code, or department…"
-          [value]="testQuery()"
-          (input)="testQuery.set($any($event.target).value); highlightedIndex.set(-1)"
-          aria-label="Search tests"
-          autofocus />
-        @if (testQuery()) {
-          <button type="button" class="search-clear" (click)="clearSearch()" aria-label="Clear search">
-            <i class="ti ti-x" aria-hidden="true"></i>
-          </button>
-        }
-        <kbd class="kbd-hint">Ctrl+F</kbd>
-      </div>
-
-      <!-- Category segmented control -->
-      <div class="cat-seg" role="group" aria-label="Test categories">
-        @for (cat of flow.categories; track cat) {
-          <button type="button" class="cat-seg-btn"
-            [class.cat-seg-btn--active]="activeCategory() === cat"
-            (click)="activeCategory.set(cat)"
-            [attr.aria-pressed]="activeCategory() === cat">
-            <i class="ti {{ categoryIcon[cat] }}" aria-hidden="true"></i> {{ cat }}
-          </button>
-        }
-      </div>
+<section class="catalogue-shell lis-card">
+  <div class="catalogue-toolbar">
+    <div class="catalogue-tabs" role="group" aria-label="Test catalogue sections">
+      <span class="catalogue-tab catalogue-tab--active"><i class="ti ti-apps"></i> Test Catalogue</span>
+      <button type="button" class="catalogue-tab" (click)="packagesVisible.set(!packagesVisible())" [attr.aria-expanded]="packagesVisible()"><i class="ti ti-stack-2"></i> Packages</button>
+      <button type="button" class="catalogue-tab" (click)="showRecent.set(!showRecent())" [attr.aria-expanded]="showRecent()"><i class="ti ti-history"></i> Recently Ordered</button>
+      <button type="button" class="catalogue-tab" (click)="showFavorites.set(!showFavorites())" [attr.aria-expanded]="showFavorites()"><i class="ti ti-heart"></i> Favorites</button>
     </div>
-
-    <!-- Recently ordered (shown when no query) -->
-    @if (!testQuery() && flow.recentTests.length > 0) {
-      <div class="recent-row" aria-label="Recently ordered tests">
-        <span class="recent-label"><i class="ti ti-history" aria-hidden="true"></i> Recently Ordered</span>
-        @for (t of flow.recentTests; track t.id) {
-          <button type="button" class="recent-chip"
-            [class.recent-chip--sel]="isSelected(t.id)"
-            (click)="toggle(t)"
-            [attr.aria-pressed]="isSelected(t.id)">
-            {{ t.id }}
-            @if (isSelected(t.id)) { <i class="ti ti-check" aria-hidden="true"></i> }
-          </button>
-        }
-      </div>
-    }
-
-    <!-- Popular tests as action cards — collapsed by default -->
-    @if (!testQuery()) {
-      <div class="lis-card popular-card">
-        <div class="lis-card__header">
-          <i class="ti ti-star lis-card-icon" aria-hidden="true"></i>
-          <h2 class="lis-card__title">Popular Tests</h2>
-          <span class="lis-badge">Quick pick</span>
-          <button type="button" class="section-toggle-btn"
-            (click)="popularVisible.set(!popularVisible())"
-            [attr.aria-expanded]="popularVisible()">
-            {{ popularVisible() ? 'Hide' : 'Show' }}
-            <i class="ti" [class.ti-chevron-up]="popularVisible()" [class.ti-chevron-down]="!popularVisible()" aria-hidden="true"></i>
-          </button>
-        </div>
-        @if (popularVisible()) {
-          <div class="popular-grid" role="list" aria-label="Popular tests">
-            @for (t of flow.popularTests; track t.id) {
-              <button type="button" class="popular-card2"
-                [class.popular-card2--sel]="isSelected(t.id)"
-                (click)="toggle(t)"
-                role="listitem"
-                [attr.aria-pressed]="isSelected(t.id)"
-                [attr.aria-label]="t.name + ', ₹' + t.price">
-                <div class="pc2-top">
-                  <span class="pc2-name">{{ t.id }}</span>
-                  @if (isSelected(t.id)) {
-                    <i class="ti ti-check pc2-check" aria-hidden="true"></i>
-                  } @else {
-                    <i class="ti ti-plus pc2-plus" aria-hidden="true"></i>
-                  }
-                </div>
-                <span class="pc2-price">₹{{ t.price }}</span>
-                <span class="pc2-badge"><i class="ti ti-flame" aria-hidden="true"></i> Frequently Ordered</span>
-                <span class="pc2-hover-cta">Add Test</span>
-              </button>
-            }
-          </div>
-        }
-      </div>
-    }
-
-    <!-- Frequently ordered packages — collapsed by default, fills the space
-         between Popular and All Tests once opened -->
-    @if (!testQuery()) {
-      <div class="lis-card package-card">
-        <div class="lis-card__header">
-          <i class="ti ti-package lis-card-icon" aria-hidden="true"></i>
-          <h2 class="lis-card__title">Frequently Ordered Packages</h2>
-          <button type="button" class="section-toggle-btn"
-            (click)="packagesVisible.set(!packagesVisible())"
-            [attr.aria-expanded]="packagesVisible()">
-            {{ packagesVisible() ? 'Hide' : 'Show' }}
-            <i class="ti" [class.ti-chevron-up]="packagesVisible()" [class.ti-chevron-down]="!packagesVisible()" aria-hidden="true"></i>
-          </button>
-        </div>
-        @if (packagesVisible()) {
-          <div class="package-grid" role="list" aria-label="Test packages">
-            @for (pkg of flow.testPackages; track pkg.id) {
-              <div class="package-item" role="listitem">
-                <div class="pkg-info">
-                  <div class="pkg-name">{{ pkg.name }}</div>
-                  <div class="pkg-tests">{{ packageTestNames(pkg) }}</div>
-                </div>
-                <div class="pkg-side">
-                  <span class="pkg-price">₹{{ packagePrice(pkg) }}</span>
-                  <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="addPackage(pkg)">
-                    <i class="ti ti-plus" aria-hidden="true"></i> Add all
-                  </button>
-                </div>
-              </div>
-            }
-          </div>
-        }
-      </div>
-    }
-
-    <!-- Smart suggestions — "patients also order" -->
-    <!-- @if (suggestions().length > 0) {
-      <div class="lis-card suggest-card">
-        <div class="lis-card__header">
-          <i class="ti ti-bulb lis-card-icon" aria-hidden="true"></i>
-          <h2 class="lis-card__title">Patients Also Order</h2>
-        </div>
-        <div class="suggest-row" role="list" aria-label="Suggested tests">
-          @for (t of suggestions(); track t.id) {
-            <button type="button" class="suggest-chip" (click)="toggle(t)">
-              <i class="ti ti-plus" aria-hidden="true"></i> {{ t.id }} · ₹{{ t.price }}
-            </button>
-          }
-        </div>
-      </div>
-    } -->
-
-    <!-- Test catalogue list -->
-    <div class="lis-card catalogue-card">
-      <div class="lis-card__header">
-        <i class="ti ti-list lis-card-icon" aria-hidden="true"></i>
-        <h2 class="lis-card__title">
-          {{ testQuery() ? 'Search results' : 'All Tests' }}
-        </h2>
-        <span class="lis-badge">{{ filteredTests().length }} tests</span>
-      </div>
-
-      <div class="test-list" role="list" aria-label="Test catalogue">
-        @if (filteredTests().length === 0) {
-          <div class="empty-tests" role="status">
-            <i class="ti ti-search-off" aria-hidden="true"></i>
-            No tests match "{{ testQuery() }}"
-          </div>
-        }
-        @for (t of filteredTests(); track t.id; let i = $index) {
-          <div class="test-row"
-            role="listitem"
-            [class.test-row--selected]="isSelected(t.id)"
-            [class.test-row--highlighted]="highlightedIndex() === i"
-            (click)="toggle(t)"
-            [attr.aria-pressed]="isSelected(t.id)"
-            [attr.aria-label]="t.name + ', ' + t.category + ', ₹' + t.price + (isSelected(t.id) ? ', selected' : '')">
-            <div class="test-tog"
-              [class.test-tog--on]="isSelected(t.id)"
-              aria-hidden="true">
-              @if (isSelected(t.id)) {
-                <i class="ti ti-check"></i>
-              } @else {
-                <i class="ti ti-plus"></i>
-              }
-            </div>
-            <div class="test-info">
-              <div class="test-name">{{ t.name }}</div>
-              <div class="test-meta">
-                <span class="meta-chip">{{ t.category }}</span>
-                <span class="meta-chip"><i class="ti ti-flask-2" aria-hidden="true"></i> {{ t.tubeType }}</span>
-                <span class="meta-chip">{{ t.sampleType }}</span>
-                <span class="meta-chip meta-chip--tat"><i class="ti ti-clock" aria-hidden="true"></i> {{ t.tatHours }}h TAT</span>
-                @if (t.prep !== 'None') {
-                  <span class="meta-chip meta-chip--prep"><i class="ti ti-alert-circle" aria-hidden="true"></i> {{ t.prep }}</span>
-                }
-              </div>
-            </div>
-            <div class="test-price">₹{{ t.price }}</div>
-          </div>
-        }
-      </div>
+    <div class="search-bar-wrap">
+      <i class="ti ti-search search-ico" aria-hidden="true"></i>
+      <input #searchInput type="search" class="search-input" placeholder="Search tests by name, code or keyword (e.g. CBC, KFT, TSH…)" [value]="testQuery()" (input)="testQuery.set($any($event.target).value); highlightedIndex.set(-1)" aria-label="Search tests" />
+      @if (testQuery()) { <button type="button" class="search-clear" (click)="clearSearch()" aria-label="Clear search"><i class="ti ti-x"></i></button> }
+      <kbd class="kbd-hint">Ctrl+F</kbd>
     </div>
+    <div class="cat-seg" role="group" aria-label="Test categories">
+      @for (cat of flow.categories; track cat) {
+        <button type="button" class="cat-seg-btn" [class.cat-seg-btn--active]="activeCategory() === cat" (click)="activeCategory.set(cat)" [attr.aria-pressed]="activeCategory() === cat">{{ cat }} <span>{{ categoryCount(cat) }}</span></button>
+      }
+    </div>
+    @if (packagesVisible()) {
+      <div class="quick-panel">
+        @for (pkg of flow.testPackages; track pkg.id) {
+          <div class="quick-package"><div><strong>{{ pkg.name }}</strong><small>{{ packageTestNames(pkg) }}</small></div><button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="addPackage(pkg)">Add package · ₹{{ packagePrice(pkg) }}</button></div>
+        }
+      </div>
+    }
+    @if (showRecent() || showFavorites()) {
+      <div class="quick-panel quick-chips">
+        @for (t of (showFavorites() ? flow.popularTests : flow.recentTests); track t.id) {
+          <button type="button" class="recent-chip" [class.recent-chip--sel]="isSelected(t.id)" (click)="toggle(t)">{{ t.id }} · {{ t.name }} <span>₹{{ t.price }}</span></button>
+        }
+      </div>
+    }
+    <div class="list-heading"><strong>{{ testQuery() ? 'Search results' : 'All Tests' }}</strong><span>{{ filteredTests().length }} tests</span></div>
   </div>
 
-  <!-- ── Right: Order summary, split into sections ─── -->
-  <aside class="order-panel" aria-label="Test order summary">
-
-    <!-- Selected tests -->
-    <div class="lis-card op-card">
-      <div class="op-hd">
-        <span><i class="ti ti-clipboard-list" aria-hidden="true"></i> Selected Tests</span>
-        <span class="lis-badge">{{ flow.selectedTests().length }}</span>
-      </div>
-
-      <div class="selected-list" role="list" aria-label="Selected tests" aria-live="polite">
-        @if (flow.selectedTests().length === 0) {
-          <div class="no-tests-hint">
-            <i class="ti ti-click" aria-hidden="true"></i>
-            Click tests on the left to add them
-          </div>
-        }
-        @for (t of flow.selectedTests(); track t.id) {
-          <div class="sel-item" role="listitem">
-            <div class="sel-item-info">
-              <div class="sel-name">{{ t.name }}</div>
-              <div class="sel-cat">{{ t.category }}</div>
-            </div>
-            <div class="sel-price">₹{{ t.price }}</div>
-            <button type="button" class="sel-del"
-              (click)="toggle(t)"
-              [attr.aria-label]="'Remove ' + t.name">
-              <i class="ti ti-trash" aria-hidden="true"></i>
-            </button>
-          </div>
-        }
-      </div>
-    </div>
-
-    <!-- Priority -->
-    <div class="lis-card op-card">
-      <div class="op-label">Priority</div>
-      <div class="prio-cards" role="group" aria-label="Order priority">
-        @for (p of priorities; track p) {
-          <button type="button" class="prio-card"
-            [class.prio-card--active]="flow.priority() === p"
-            [class.prio-card--stat]="p === 'stat'"
-            [class.prio-card--stat-active]="p === 'stat' && flow.priority() === 'stat'"
-            (click)="onPriorityClick(p)"
-            [attr.aria-pressed]="flow.priority() === p">
-            <i class="ti {{ priorityInfo[p].icon }}" aria-hidden="true"></i>
-            <span class="prio-card-label">{{ priorityInfo[p].label }}</span>
-            <span class="prio-card-desc">{{ priorityInfo[p].desc }}</span>
-          </button>
-        }
-      </div>
-      @if (flow.priority() === 'stat') {
-        <div class="stat-warn" role="alert">
-          <i class="ti ti-alert-triangle" aria-hidden="true"></i>
-          STAT — process immediately
-        </div>
-      }
-    </div>
-
-    <!-- Summary -->
-    <div class="lis-card op-card">
-      <div class="op-label">Summary</div>
-      <div class="tot-row">
-        <span>Tests</span>
-        <span>{{ flow.selectedTests().length }}</span>
-      </div>
-      <div class="tot-row">
-        <span>Est. TAT</span>
-        <span>{{ flow.maxTat() }}h</span>
-      </div>
-      <div class="tot-row">
-        <span>Subtotal</span>
-        <span>₹{{ flow.orderTotal().toLocaleString('en-IN') }}</span>
-      </div>
-      <div class="tot-row">
-        <span>Discount</span>
-        <span>{{ flow.discountAmt() > 0 ? '-₹' + flow.discountAmt().toLocaleString('en-IN') : '₹0' }}</span>
-      </div>
-      <div class="tot-row">
-        <span>Tax</span>
-        <span>₹0</span>
-      </div>
-      <div class="tot-row tot-grand" [class.tot-grand--pulse]="totalPulse()" aria-label="Grand total">
-        <span>Grand Total</span>
-        <span>₹{{ flow.grandTotal().toLocaleString('en-IN') }}</span>
-      </div>
-    </div>
-
-    <!-- Actions -->
-    <div class="lis-card op-card op-actions">
-      <button type="button" class="lis-btn lis-btn--primary lis-btn--full proceed-btn"
-        (click)="proceedToBilling(); onCtaRipple($event)"
-        [disabled]="!hasTests || saving()">
-        @if (saving()) {
-          <span class="proceed-btn-main"><i class="ti ti-loader-2 spin" aria-hidden="true"></i> Saving…</span>
-        } @else {
-          <span class="proceed-btn-main">
-            <i class="ti ti-file-invoice" aria-hidden="true"></i>
-            Save &amp; Continue to Billing
-            <i class="ti ti-arrow-right proceed-arrow" aria-hidden="true"></i>
-          </span>
-          <kbd class="kbd-hint kbd-hint--on-primary">Ctrl+Enter</kbd>
-        }
+  <div class="test-list" role="list" aria-label="Available tests">
+    @if (filteredTests().length === 0) {
+      <div class="empty-tests"><i class="ti ti-search-off"></i>No tests match “{{ testQuery() }}”</div>
+    }
+    @for (t of filteredTests(); track t.id; let i = $index) {
+      <button type="button" class="test-row" role="listitem" [class.test-row--selected]="isSelected(t.id)" [class.test-row--highlighted]="highlightedIndex() === i" (click)="toggle(t)" [attr.aria-pressed]="isSelected(t.id)">
+        <span class="test-check" aria-hidden="true"><i class="ti" [class.ti-check]="isSelected(t.id)" [class.ti-plus]="!isSelected(t.id)"></i></span>
+        <span class="test-icon" aria-hidden="true"><i class="ti {{ testIcon(t) }}"></i></span>
+        <span class="test-info"><span class="test-title">{{ t.name }} <small>{{ t.id }}</small></span><span class="test-description">{{ t.category }} · {{ t.sampleType }}</span><span class="test-meta"><span><i class="ti ti-test-pipe"></i> Specimen: {{ t.sampleType }}</span><span><i class="ti ti-flask-2"></i> Container: {{ t.tubeType }}</span><span><i class="ti ti-clock"></i> TAT: {{ t.tatHours }} hours</span></span></span>
+        <span class="test-price">₹{{ t.price }}</span>
+        <span class="test-action">{{ isSelected(t.id) ? '✓ Selected' : '+ Add Test' }}</span>
       </button>
-      <button type="button" class="draft-btn" (click)="saveDraft()" [disabled]="savingDraft()">
-        @if (savingDraft()) {
-          <i class="ti ti-loader-2 spin" aria-hidden="true"></i> Saving draft…
-        } @else if (draftSaved()) {
-          <i class="ti ti-circle-check" aria-hidden="true"></i> Draft saved
-        } @else {
-          <i class="ti ti-device-floppy" aria-hidden="true"></i> Save as draft
-          <kbd class="kbd-hint">Ctrl+S</kbd>
-        }
-      </button>
+    }
+  </div>
+</section>
 
-      @if (!hasTests) {
-        <div class="no-tests-msg" role="status">
-          Add at least one test to continue
-        </div>
-      }
-    </div>
-  </aside>
+<div class="selection-footer lis-card">
+  <div class="selection-count"><strong>{{ flow.selectedTests().length }} tests selected</strong><span>Subtotal · ₹{{ flow.orderTotal().toLocaleString('en-IN') }}</span></div>
+  <div class="selection-actions">
+    <button type="button" class="lis-btn lis-btn--secondary" (click)="saveDraft()" [disabled]="savingDraft()"><i class="ti ti-device-floppy"></i>{{ draftSaved() ? 'Draft saved' : 'Save as draft' }}</button>
+    <button type="button" class="lis-btn lis-btn--primary review-btn" (click)="goToReview()" [disabled]="!hasTests"><i class="ti ti-clipboard-check"></i> Review Order <i class="ti ti-arrow-right"></i></button>
+  </div>
 </div>
