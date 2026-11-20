@@ -273,7 +273,12 @@
     <div class="lis-card op-card">
       <div class="op-hd">
         <span><i class="ti ti-clipboard-list" aria-hidden="true"></i> Selected Tests</span>
-        <span class="lis-badge">{{ flow.selectedTests().length }}</span>
+        <div class="selected-heading-actions">
+          <span class="lis-badge">{{ flow.selectedTests().length }}</span>
+          @if (hasTests) {
+            <button type="button" class="clear-selection-btn" (click)="clearSelectedTests()">Clear all</button>
+          }
+        </div>
       </div>
 
       <div class="selected-list" role="list" aria-label="Selected tests" aria-live="polite">
@@ -317,7 +322,7 @@
                 <div class="specimen-name">{{ specimen.tubeType }}</div>
                 <div class="specimen-meta">{{ specimen.sampleType }} · {{ specimen.testNames.join(', ') }}</div>
               </div>
-              <span class="specimen-count">Grouped</span>
+              <span class="specimen-count">{{ specimen.testNames.length }} {{ specimen.testNames.length === 1 ? 'test' : 'tests' }}</span>
             </div>
           }
         </div>
@@ -338,14 +343,14 @@
       } @else {
         <ul class="prep-list">
           @for (note of flow.preparationNotes(); track note) {
-            <li>{{ note }}</li>
+            <li><strong>{{ note.testName }}:</strong> {{ note.instruction }}</li>
           }
         </ul>
       }
       @if (flow.hasFastingRequirement()) {
         <div class="prep-warning" role="note">
           <i class="ti ti-alert-triangle" aria-hidden="true"></i>
-          Confirm fasting status with the patient before sample collection. One or more selected tests require fasting.
+          Confirm fasting status with the patient before collection. Fasting is required for at least one selected test.
         </div>
       }
     </div>
