@@ -746,3 +746,81 @@
     gap: 10px;
   }
 }
+
+
+/* ── Compact top area: reclaim vertical space for the catalogue ── */
+.page-header {
+  align-items: center;
+  gap: 10px 20px;
+  margin-bottom: 10px;
+}
+.page-title {
+  font-size: 20px;
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+.page-subtitle {
+  margin: 2px 0 5px;
+  font-size: 11.5px;
+  line-height: 1.35;
+}
+.breadcrumb {
+  font-size: 10.5px;
+  gap: 5px;
+}
+.page-header lis-workflow-stepper {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+/* Patient card: compact single-row presentation without removing information. */
+.patient-summary {
+  margin-bottom: 10px;
+  padding: 0;
+}
+.patient-summary-main {
+  gap: 11px;
+  min-height: 68px;
+  padding: 9px 12px;
+}
+.patient-avatar {
+  width: 42px;
+  height: 42px;
+  flex-basis: 42px;
+  font-size: 16px;
+}
+.patient-name-line strong { font-size: 14px; }
+.patient-id-pill { padding: 3px 7px; font-size: 9.5px; }
+.patient-demographics {
+  margin-top: 4px;
+  font-size: 10.5px;
+}
+.patient-demographics span + span::before { margin: 0 7px; }
+.patient-visit-details {
+  gap: 12px;
+  padding: 0 11px;
+}
+.patient-visit-item {
+  min-width: 50px;
+  gap: 2px;
+  font-size: 10px;
+}
+.patient-visit-item i { font-size: 15px; }
+.patient-edit-btn { white-space: nowrap; }
+
+@media (max-width: 900px) {
+  .page-header { align-items: flex-start; }
+  .page-header lis-workflow-stepper {
+    margin-left: 0;
+    max-width: 100%;
+  }
+  .patient-summary-main {
+    flex-wrap: wrap;
+  }
+  .patient-visit-details {
+    border-left: 0;
+    padding: 5px 0 0 53px;
+    flex: 1 1 100%;
+    justify-content: flex-start;
+  }
+}
