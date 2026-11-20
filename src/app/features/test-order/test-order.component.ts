@@ -64,6 +64,8 @@ export class TestOrderComponent implements OnInit {
   protected readonly priorityInfo  = PRIORITY_INFO;
   protected readonly priorities: ('routine' | 'urgent' | 'stat')[] = ['routine', 'urgent', 'stat'];
 
+  catalogueTab = signal<'catalogue' | 'packages' | 'recent' | 'favorites'>('catalogue');
+  sortOrder = signal<'popular' | 'name' | 'price-low' | 'tat'>('popular');
   testQuery      = signal('');
   activeCategory = signal('All');
   popularVisible  = signal(false);
@@ -108,6 +110,25 @@ export class TestOrderComponent implements OnInit {
       (cat === 'All' || t.category === cat) &&
       (t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q) || t.category.toLowerCase().includes(q))
     );
+  });
+
+  categoryCount(category: string): number {
+    return category === 'All' ? this.flow.allTests.length : this.flow.allTests.filter(test => test.category === category).length;
+  }
+
+  readonly visibleTests = computed(() => {
+    const tab = this.catalogueTab();
+    let tests = tab === 'recent' ? this.flow.recentTests
+      : tab === 'favorites' ? this.flow.popularTests
+      : this.filteredTests();
+    if (tab === 'catalogue') {
+      const sort = this.sortOrder();
+      tests = [...tests];
+      if (sort === 'name') tests.sort((a, b) => a.name.localeCompare(b.name));
+      if (sort === 'price-low') tests.sort((a, b) => a.price - b.price);
+      if (sort === 'tat') tests.sort((a, b) => a.tatHours - b.tatHours);
+    }
+    return tests;
   });
 
   // "Patients also order" — union of related tests for everything selected,
