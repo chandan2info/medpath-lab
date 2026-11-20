@@ -83,7 +83,7 @@
             <div class="specimen-group__body">
               <strong>{{ group.tubeType }}</strong>
               <span>{{ group.sampleType }}</span>
-              <small>Tests: {{ group.tests.map(t => t.id).join(', ') }}</small>
+              <small>Tests: {{ group.testsLabel }}</small>
             </div>
             <span class="lis-badge">{{ group.tests.length }} {{ group.tests.length === 1 ? 'test' : 'tests' }}</span>
           </article>
