@@ -32,7 +32,7 @@ export class TestOrderComponent implements OnInit {
   testIcon(t:LabTest):string{switch(t.category){case 'Haematology':return 'ti-droplet';case 'Biochemistry':return 'ti-flask-2';case 'Endocrinology':return 'ti-activity';case 'Urine':return 'ti-test-pipe';default:return 'ti-microscope';}}
   goToReview():void{if(this.hasTests)this.router.navigate(['/dashboard/review-order']);}
   saveDraft():void{if(this.savingDraft())return;this.savingDraft.set(true);this.draftSaved.set(false);setTimeout(()=>{this.savingDraft.set(false);this.draftSaved.set(true);setTimeout(()=>this.draftSaved.set(false),1800);},350);}
-  patientInitials:string{const p=this.patient;return p?(p.firstName[0]+p.lastName[0]).toUpperCase():'?';}
+  get patientInitials():string{const p=this.patient;return p?(p.firstName[0]+p.lastName[0]).toUpperCase():'?';}
   patientAgeBreakdown():string{return this.patient?this.flow.formatAgeBreakdown(this.patient.dob):'';}
   @HostListener('document:keydown',['$event']) onKeydown(e:KeyboardEvent):void{
     const target=e.target as HTMLElement;const typing=!!target&&['INPUT','TEXTAREA','SELECT'].includes(target.tagName);const mod=e.ctrlKey||e.metaKey;
