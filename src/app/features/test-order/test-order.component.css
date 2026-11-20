@@ -532,17 +532,24 @@
   .order-panel > .selected-tests-card,
   .order-panel > .specimen-plan-card,
   .order-panel > .preparation-card {
+    display: flex;
+    flex-direction: column;
     min-height: 0;
     overflow: hidden;
   }
+
+  .selected-tests-card > .op-hd,
+  .specimen-plan-card > .op-hd,
+  .preparation-card > .op-hd { flex: 0 0 auto; }
 
   .order-panel > .selected-tests-card { flex: 1.25 1 0; }
   .order-panel > .specimen-plan-card { flex: 1 1 0; }
   .order-panel > .preparation-card { flex: 0 1 auto; max-height: 132px; }
 
   .selected-tests-card .selected-list {
+    flex: 1 1 auto;
     min-height: 0;
-    max-height: 100%;
+    max-height: none;
     overflow-y: auto;
     overscroll-behavior: contain;
     scrollbar-gutter: stable;
@@ -550,6 +557,7 @@
   }
 
   .specimen-plan-card .specimen-list {
+    flex: 1 1 auto;
     min-height: 0;
     max-height: clamp(88px, 16vh, 170px);
     overflow-y: auto;
