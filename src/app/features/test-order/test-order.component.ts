@@ -166,6 +166,34 @@ export class TestOrderComponent implements OnInit {
     }
   }
 
+  testIcon(test: LabTest): string {
+    const id = test.id.toLowerCase();
+    const name = test.name.toLowerCase();
+    if (id.includes('cbc') || name.includes('blood count')) return 'ti-droplet';
+    if (id.includes('kft') || name.includes('kidney')) return 'ti-brand-wechat';
+    if (id.includes('lft') || name.includes('liver')) return 'ti-activity';
+    if (name.includes('urine')) return 'ti-droplet-half-2';
+    if (name.includes('thyroid') || name.includes('tsh')) return 'ti-test-pipe';
+    return test.category.toLowerCase() === 'haematology' ? 'ti-droplet'
+      : test.category.toLowerCase() === 'endocrinology' ? 'ti-activity'
+      : test.category.toLowerCase() === 'urine' ? 'ti-droplet-half-2' : 'ti-flask-2';
+  }
+
+  testIconClass(test: LabTest): string {
+    const category = test.category.toLowerCase();
+    return category === 'haematology' ? 'sel-test-icon--blood'
+      : category === 'endocrinology' ? 'sel-test-icon--hormone'
+      : category === 'urine' ? 'sel-test-icon--urine' : 'sel-test-icon--chemistry';
+  }
+
+  specimenIconClass(tubeType: string): string {
+    const tube = tubeType.toLowerCase();
+    return tube.includes('purple') ? 'specimen-icon--purple'
+      : tube.includes('gold') || tube.includes('red') || tube.includes('sst') ? 'specimen-icon--gold'
+      : tube.includes('grey') ? 'specimen-icon--grey'
+      : tube.includes('blue') ? 'specimen-icon--blue' : 'specimen-icon--default';
+  }
+
   isSelected(id: string): boolean { return this.flow.selectedIds().has(id); }
   toggle(t: LabTest): void { this.flow.toggleTest(t.id); }
 
