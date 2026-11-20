@@ -401,3 +401,12 @@
   .reference-test-meta { gap: 4px; }
   .catalogue-tab { font-size: 11px; }
 }
+
+
+/* Reference screen header and order summary cap; retain the shared LIS typography and palette. */
+.page-title { display: flex; align-items: center; gap: 10px; }
+.page-title > i { color: var(--lis-primary, #1D9E75); font-size: 25px; font-weight: 400; }
+.page-subtitle { margin: 2px 0 7px; color: var(--text-secondary); font-size: 12px; }
+.order-summary-heading { display: flex; align-items: center; justify-content: space-between; padding: 13px 14px; font-size: 14px; font-weight: 700; color: var(--text-primary); }
+.order-summary-heading > span:first-child { display: inline-flex; align-items: center; gap: 9px; }
+.order-summary-heading > span:first-child i { color: var(--lis-primary, #1D9E75); font-size: 19px; }
