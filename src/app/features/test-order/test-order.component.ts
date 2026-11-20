@@ -1,4 +1,4 @@
-// Test selection page. Review and final confirmation live on a separate screen.
+// Test selection page. Each catalogue tab switches the content shown in the list.
 import { Component, ChangeDetectionStrategy, signal, computed, inject, OnInit, ElementRef, ViewChild, HostListener } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TitleCasePipe, DatePipe } from '@angular/common';
@@ -7,41 +7,221 @@ import { PatientFlowService } from '../../core/services/patient-flow.service';
 import { LabTest, TestPackage } from '../../shared/models/lis.models';
 import { WorkflowStepperComponent, WorkflowStep } from '../../shared/components/workflow-stepper/workflow-stepper.component';
 
-const CATEGORY_ICON: Record<string,string> = { All:'ti-apps', Haematology:'ti-droplet', Biochemistry:'ti-flask', Endocrinology:'ti-activity', Urine:'ti-droplet-half-2' };
-@Component({selector:'app-test-order',standalone:true,imports:[RouterLink,FormsModule,TitleCasePipe,DatePipe,WorkflowStepperComponent],changeDetection:ChangeDetectionStrategy.OnPush,templateUrl:'./test-order.component.html',styleUrl:'./test-order.component.css'})
+type CatalogueView = 'catalogue' | 'packages' | 'recent' | 'favorites';
+
+@Component({
+  selector: 'app-test-order',
+  standalone: true,
+  imports: [RouterLink, FormsModule, TitleCasePipe, DatePipe, WorkflowStepperComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './test-order.component.html',
+  styleUrl: './test-order.component.css'
+})
 export class TestOrderComponent implements OnInit {
-  protected readonly flow=inject(PatientFlowService);
-  private readonly router=inject(Router);
-  @ViewChild('searchInput') searchInputRef?:ElementRef<HTMLInputElement>;
-  protected readonly workflowSteps:WorkflowStep[]=[{label:'Register',icon:'ti-user-plus'},{label:'Test Order',icon:'ti-test-pipe'},{label:'Review Order',icon:'ti-clipboard-check'},{label:'Billing',icon:'ti-receipt'}];
-  protected readonly workflowActiveIndex=1;
-  protected readonly categoryIcon=CATEGORY_ICON;
-  testQuery=signal(''); activeCategory=signal('All'); packagesVisible=signal(false); showRecent=signal(false); showFavorites=signal(false);
-  savingDraft=signal(false); draftSaved=signal(false); highlightedIndex=signal(-1);
-  filteredTests=computed(()=>{const q=this.testQuery().toLowerCase();const c=this.activeCategory();return this.flow.allTests.filter(t=>(c==='All'||t.category===c)&&(t.name.toLowerCase().includes(q)||t.id.toLowerCase().includes(q)||t.category.toLowerCase().includes(q)));});
-  get patient(){return this.flow.patient();}
-  ngOnInit():void{if(!this.flow.patient())this.router.navigate(['/dashboard/registration']);}
-  get hasTests():boolean{return this.flow.selectedIds().size>0;}
-  isSelected(id:string):boolean{return this.flow.selectedIds().has(id);}
-  toggle(t:LabTest):void{this.flow.toggleTest(t.id);}
-  categoryCount(cat:string):number{return cat==='All'?this.flow.allTests.length:this.flow.allTests.filter(t=>t.category===cat).length;}
-  clearSearch():void{this.testQuery.set('');this.highlightedIndex.set(-1);}
-  addPackage(pkg:TestPackage):void{for(const id of pkg.testIds)if(!this.flow.selectedIds().has(id))this.flow.toggleTest(id);}
-  packagePrice(pkg:TestPackage):number{return pkg.testIds.reduce((s,id)=>s+(this.flow.allTests.find(t=>t.id===id)?.price??0),0);}
-  packageTestNames(pkg:TestPackage):string{return pkg.testIds.map(id=>this.flow.allTests.find(t=>t.id===id)?.id??id).join(' + ');}
-  testIcon(t:LabTest):string{switch(t.category){case 'Haematology':return 'ti-droplet';case 'Biochemistry':return 'ti-flask-2';case 'Endocrinology':return 'ti-activity';case 'Urine':return 'ti-test-pipe';default:return 'ti-microscope';}}
-  goToReview():void{if(this.hasTests)this.router.navigate(['/dashboard/review-order']);}
-  saveDraft():void{if(this.savingDraft())return;this.savingDraft.set(true);this.draftSaved.set(false);setTimeout(()=>{this.savingDraft.set(false);this.draftSaved.set(true);setTimeout(()=>this.draftSaved.set(false),1800);},350);}
-  get patientInitials():string{const p=this.patient;return p?(p.firstName[0]+p.lastName[0]).toUpperCase():'?';}
-  patientAgeBreakdown():string{return this.patient?this.flow.formatAgeBreakdown(this.patient.dob):'';}
-  @HostListener('document:keydown',['$event']) onKeydown(e:KeyboardEvent):void{
-    const target=e.target as HTMLElement;const typing=!!target&&['INPUT','TEXTAREA','SELECT'].includes(target.tagName);const mod=e.ctrlKey||e.metaKey;
-    if(mod&&e.key.toLowerCase()==='f'){e.preventDefault();this.searchInputRef?.nativeElement.focus();return;}
-    if(mod&&e.key.toLowerCase()==='s'){e.preventDefault();this.saveDraft();return;}
-    if(mod&&e.key==='Enter'){e.preventDefault();this.goToReview();return;}
-    if(e.key==='ArrowDown'){e.preventDefault();this.highlightedIndex.update(i=>Math.min(i+1,this.filteredTests().length-1));return;}
-    if(e.key==='ArrowUp'){e.preventDefault();this.highlightedIndex.update(i=>Math.max(i-1,0));return;}
-    if(e.key==='Enter'&&!typing){const t=this.filteredTests()[this.highlightedIndex()];if(t){e.preventDefault();this.toggle(t);}}
-    if(e.key==='Escape'&&typing)this.clearSearch();
+  protected readonly flow = inject(PatientFlowService);
+  private readonly router = inject(Router);
+  @ViewChild('searchInput') searchInputRef?: ElementRef<HTMLInputElement>;
+
+  protected readonly workflowSteps: WorkflowStep[] = [
+    { label: 'Register', icon: 'ti-user-plus' },
+    { label: 'Test Order', icon: 'ti-test-pipe' },
+    { label: 'Review Order', icon: 'ti-clipboard-check' },
+    { label: 'Billing', icon: 'ti-receipt' }
+  ];
+  protected readonly workflowActiveIndex = 1;
+
+  activeView = signal<CatalogueView>('catalogue');
+  testQuery = signal('');
+  activeCategory = signal('All');
+  savingDraft = signal(false);
+  draftSaved = signal(false);
+  highlightedIndex = signal(-1);
+
+  filteredTests = computed(() => {
+    const q = this.testQuery().trim().toLowerCase();
+    const category = this.activeCategory();
+    return this.flow.allTests.filter(test =>
+      (category === 'All' || test.category === category) &&
+      this.matchesTest(test, q)
+    );
+  });
+
+  filteredPackages = computed(() => {
+    const q = this.testQuery().trim().toLowerCase();
+    return this.flow.testPackages.filter(pkg =>
+      !q || pkg.name.toLowerCase().includes(q) ||
+      pkg.id.toLowerCase().includes(q) ||
+      pkg.testIds.some(id => {
+        const test = this.flow.allTests.find(item => item.id === id);
+        return id.toLowerCase().includes(q) || !!test?.name.toLowerCase().includes(q);
+      })
+    );
+  });
+
+  visibleTests = computed(() => {
+    const view = this.activeView();
+    const q = this.testQuery().trim().toLowerCase();
+    let source: LabTest[];
+    switch (view) {
+      case 'recent': source = this.flow.recentTests; break;
+      case 'favorites': source = this.flow.popularTests; break;
+      case 'catalogue':
+      default: return this.filteredTests();
+    }
+    return source.filter(test => this.matchesTest(test, q));
+  });
+
+  get patient() { return this.flow.patient(); }
+  get hasTests(): boolean { return this.flow.selectedIds().size > 0; }
+
+  ngOnInit(): void {
+    if (!this.flow.patient()) this.router.navigate(['/dashboard/registration']);
+  }
+
+  setView(view: CatalogueView): void {
+    this.activeView.set(view);
+    this.testQuery.set('');
+    this.activeCategory.set('All');
+    this.highlightedIndex.set(-1);
+  }
+
+  viewHeading(): string {
+    switch (this.activeView()) {
+      case 'packages': return 'Available Packages';
+      case 'recent': return 'Recently Ordered Tests';
+      case 'favorites': return 'Frequently Used Tests';
+      default: return 'All Tests';
+    }
+  }
+
+  searchPlaceholder(): string {
+    switch (this.activeView()) {
+      case 'packages': return 'Search packages by name or included test…';
+      case 'recent': return 'Search recently ordered tests…';
+      case 'favorites': return 'Search frequently used tests…';
+      default: return 'Search tests by name, code or keyword (e.g. CBC, KFT, TSH…)';
+    }
+  }
+
+  private matchesTest(test: LabTest, query: string): boolean {
+    return !query ||
+      test.name.toLowerCase().includes(query) ||
+      test.id.toLowerCase().includes(query) ||
+      test.category.toLowerCase().includes(query) ||
+      test.sampleType.toLowerCase().includes(query) ||
+      test.tubeType.toLowerCase().includes(query);
+  }
+
+  isSelected(id: string): boolean { return this.flow.selectedIds().has(id); }
+  toggle(test: LabTest): void { this.flow.toggleTest(test.id); }
+
+  categoryCount(category: string): number {
+    return category === 'All'
+      ? this.flow.allTests.length
+      : this.flow.allTests.filter(test => test.category === category).length;
+  }
+
+  clearSearch(): void {
+    this.testQuery.set('');
+    this.highlightedIndex.set(-1);
+    this.searchInputRef?.nativeElement.focus();
+  }
+
+  addPackage(pkg: TestPackage): void {
+    // Add only missing package tests; do not toggle already-selected tests off.
+    for (const id of pkg.testIds) {
+      if (!this.flow.selectedIds().has(id)) this.flow.toggleTest(id);
+    }
+  }
+
+  isPackageSelected(pkg: TestPackage): boolean {
+    return pkg.testIds.every(id => this.flow.selectedIds().has(id));
+  }
+
+  packagePrice(pkg: TestPackage): number {
+    return pkg.testIds.reduce((sum, id) =>
+      sum + (this.flow.allTests.find(test => test.id === id)?.price ?? 0), 0
+    );
+  }
+
+  packageTestNames(pkg: TestPackage): string {
+    return pkg.testIds.map(id => this.flow.allTests.find(test => test.id === id)?.name ?? id).join(' · ');
+  }
+
+  testIcon(test: LabTest): string {
+    switch (test.category) {
+      case 'Haematology': return 'ti-droplet';
+      case 'Biochemistry': return 'ti-flask-2';
+      case 'Endocrinology': return 'ti-activity';
+      case 'Urine': return 'ti-test-pipe';
+      default: return 'ti-microscope';
+    }
+  }
+
+  goToReview(): void {
+    if (this.hasTests) this.router.navigate(['/dashboard/review-order']);
+  }
+
+  saveDraft(): void {
+    if (this.savingDraft()) return;
+    this.savingDraft.set(true);
+    this.draftSaved.set(false);
+    setTimeout(() => {
+      this.savingDraft.set(false);
+      this.draftSaved.set(true);
+      setTimeout(() => this.draftSaved.set(false), 1800);
+    }, 350);
+  }
+
+  get patientInitials(): string {
+    const patient = this.patient;
+    return patient ? (patient.firstName[0] + patient.lastName[0]).toUpperCase() : '?';
+  }
+
+  patientAgeBreakdown(): string {
+    return this.patient ? this.flow.formatAgeBreakdown(this.patient.dob) : '';
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onKeydown(event: KeyboardEvent): void {
+    const target = event.target as HTMLElement;
+    const typing = !!target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
+    const modifier = event.ctrlKey || event.metaKey;
+
+    if (modifier && event.key.toLowerCase() === 'f') {
+      event.preventDefault();
+      this.searchInputRef?.nativeElement.focus();
+      return;
+    }
+    if (modifier && event.key.toLowerCase() === 's') {
+      event.preventDefault();
+      this.saveDraft();
+      return;
+    }
+    if (modifier && event.key === 'Enter') {
+      event.preventDefault();
+      this.goToReview();
+      return;
+    }
+    if (this.activeView() !== 'packages' && (this.activeView() === 'catalogue' || this.activeView() === 'recent' || this.activeView() === 'favorites')) {
+      if (event.key === 'ArrowDown' && !typing) {
+        event.preventDefault();
+        this.highlightedIndex.update(index => Math.min(index + 1, this.visibleTests().length - 1));
+        return;
+      }
+      if (event.key === 'ArrowUp' && !typing) {
+        event.preventDefault();
+        this.highlightedIndex.update(index => Math.max(index - 1, 0));
+        return;
+      }
+      if (event.key === 'Enter' && !typing) {
+        const test = this.visibleTests()[this.highlightedIndex()];
+        if (test) {
+          event.preventDefault();
+          this.toggle(test);
+        }
+      }
+    }
+    if (event.key === 'Escape' && typing) this.clearSearch();
   }
 }
