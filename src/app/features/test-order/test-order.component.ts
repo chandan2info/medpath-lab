@@ -35,6 +35,8 @@ export class TestOrderComponent implements OnInit {
   activeCategory = signal('All');
   savingDraft = signal(false);
   draftSaved = signal(false);
+  feedbackMessage = signal('');
+  feedbackKind = signal<'warning' | 'success' | 'error'>('warning');
   highlightedIndex = signal(-1);
 
   filteredTests = computed(() => {
@@ -158,19 +160,41 @@ export class TestOrderComponent implements OnInit {
     }
   }
 
+  private showFeedback(message: string, kind: 'warning' | 'success' | 'error'): void {
+    this.feedbackKind.set(kind);
+    this.feedbackMessage.set(message);
+    window.setTimeout(() => {
+      if (this.feedbackMessage() === message) this.feedbackMessage.set('');
+    }, 3200);
+  }
+
   goToReview(): void {
-    if (this.hasTests) this.router.navigate(['/dashboard/review-order']);
+    if (!this.hasTests) {
+      this.showFeedback('Please add at least one test before reviewing the order.', 'warning');
+      return;
+    }
+    this.router.navigate(['/dashboard/review-order']);
   }
 
   saveDraft(): void {
     if (this.savingDraft()) return;
+    if (!this.hasTests) {
+      this.showFeedback('No tests added. Add at least one test before saving this order as a draft.', 'warning');
+      return;
+    }
+
     this.savingDraft.set(true);
     this.draftSaved.set(false);
-    setTimeout(() => {
-      this.savingDraft.set(false);
+    try {
+      this.flow.saveOrderDraft();
       this.draftSaved.set(true);
-      setTimeout(() => this.draftSaved.set(false), 1800);
-    }, 350);
+      this.showFeedback('Order draft saved on this device. You can continue selecting tests.', 'success');
+      window.setTimeout(() => this.draftSaved.set(false), 3200);
+    } catch (error) {
+      this.showFeedback(error instanceof Error ? error.message : 'Unable to save the draft. Please try again.', 'error');
+    } finally {
+      this.savingDraft.set(false);
+    }
   }
 
   get patientInitials(): string {
