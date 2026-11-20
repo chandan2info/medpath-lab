@@ -172,8 +172,22 @@ export class PatientFlowService {
     try {
       if (typeof localStorage === 'undefined') return [];
       const raw = localStorage.getItem(this.draftsStorageKey);
-      const parsed = raw ? JSON.parse(raw) : [];
-      return Array.isArray(parsed) ? parsed : [];
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (Array.isArray(parsed)) return parsed;
+      // One-time migration from the previous single-draft key.
+      const legacyRaw = localStorage.getItem('medpath.orderDraft.v1');
+      if (!legacyRaw) return [];
+      const legacy = JSON.parse(legacyRaw);
+      if (!legacy?.patient || !Array.isArray(legacy.testIds)) return [];
+      const now = legacy.savedAt ?? new Date().toISOString();
+      const migrated: OrderDraft = {
+        id: `legacy-${legacy.patientId ?? legacy.patient.id}-${Date.now()}`,
+        patient: legacy.patient, patientId: legacy.patientId ?? legacy.patient.id,
+        testIds: legacy.testIds, priority: legacy.priority ?? 'routine',
+        subtotal: Number(legacy.subtotal ?? 0), createdAt: now, updatedAt: now
+      };
+      localStorage.setItem(this.draftsStorageKey, JSON.stringify([migrated]));
+      return [migrated];
     } catch { return []; }
   }
 
@@ -188,7 +202,7 @@ export class PatientFlowService {
 
   private persistActiveDraft(): void {
     const patient = this._patient();
-    if (!patient || this._selected().size === 0) return;
+    if (!patient || (this._selected().size === 0 && !this.activeDraftId())) return;
     const now = new Date().toISOString();
     const id = this.activeDraftId() ?? (globalThis.crypto?.randomUUID?.() ?? `draft-${Date.now()}-${Math.random().toString(36).slice(2,8)}`);
     const existing = this.orderDrafts().find(d => d.id === id);
