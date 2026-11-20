@@ -40,7 +40,7 @@
         </div>
         <div class="patient-demographics">
           <span><i class="ti ti-user" aria-hidden="true"></i>{{ patient.gender | titlecase }}</span>
-          <span><i class="ti ti-calendar" aria-hidden="true"></i>{{ ageParts().years }} years {{ ageParts().months }} days</span>
+          <span><i class="ti ti-calendar" aria-hidden="true"></i>{{ ageParts().years }} years {{ ageParts().months }} months</span>
           <span><i class="ti ti-calendar-event" aria-hidden="true"></i>DOB: {{ patient.dob | date:'dd MMM yyyy' }}</span>
         </div>
       </div>
