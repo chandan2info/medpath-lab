@@ -309,13 +309,13 @@
     <div class="lis-card op-card">
       <div class="op-hd">
         <span><i class="ti ti-test-pipe" aria-hidden="true"></i> Specimen / Collection Plan</span>
-        <span class="lis-badge">{{ flow.specimenPlan().length }} {{ flow.specimenPlan().length === 1 ? 'specimen group' : 'specimen groups' }}</span>
+        <span class="lis-badge">{{ specimenPlan().length }} {{ specimenPlan().length === 1 ? 'specimen group' : 'specimen groups' }}</span>
       </div>
-      @if (flow.specimenPlan().length === 0) {
+      @if (specimenPlan().length === 0) {
         <div class="no-tests-hint">Specimen requirements appear after tests are selected.</div>
       } @else {
         <div class="specimen-list" role="list" aria-label="Specimen collection plan">
-          @for (specimen of flow.specimenPlan(); track specimen.key) {
+          @for (specimen of specimenPlan(); track specimen.key) {
             <div class="specimen-item" role="listitem">
               <div class="specimen-icon" aria-hidden="true"><i class="ti ti-test-pipe"></i></div>
               <div class="specimen-info">
@@ -334,20 +334,20 @@
     <div class="lis-card op-card">
       <div class="op-hd">
         <span><i class="ti ti-clipboard-check" aria-hidden="true"></i> Preparation &amp; Alerts</span>
-        @if (flow.preparationNotes().length > 0) {
-          <span class="lis-badge">{{ flow.preparationNotes().length }} notes</span>
+        @if (preparationNotes().length > 0) {
+          <span class="lis-badge">{{ preparationNotes().length }} notes</span>
         }
       </div>
-      @if (flow.preparationNotes().length === 0) {
+      @if (preparationNotes().length === 0) {
         <div class="prep-clear"><i class="ti ti-circle-check" aria-hidden="true"></i> No special preparation recorded for selected tests.</div>
       } @else {
         <ul class="prep-list">
-          @for (note of flow.preparationNotes(); track note) {
+          @for (note of preparationNotes(); track note) {
             <li><strong>{{ note.testName }}:</strong> {{ note.instruction }}</li>
           }
         </ul>
       }
-      @if (flow.hasFastingRequirement()) {
+      @if (hasFastingRequirement()) {
         <div class="prep-warning" role="note">
           <i class="ti ti-alert-triangle" aria-hidden="true"></i>
           Confirm fasting status with the patient before collection. Fasting is required for at least one selected test.
