@@ -198,3 +198,19 @@
 .order-feedback--success > i { color: var(--lis-primary); }
 .order-feedback--error { border-color: #c65a5a; background: rgba(198,90,90,.12); }
 .order-feedback--error > i { color: #df7777; }
+
+
+/* Real-time multi-draft workspace */
+.selection-count .autosave-state{display:flex;align-items:center;gap:5px;margin-top:4px;font-size:9px;color:var(--text-secondary)}
+.autosave-state--saved{color:var(--lis-primary)!important}.autosave-state--error{color:#d66!important}
+.drafts-toggle{display:inline-flex;align-items:center;gap:6px}.drafts-toggle span{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;border-radius:12px;background:var(--lis-primary-xlight);color:var(--lis-primary-deep);font-size:9px}
+.drafts-panel{flex:0 0 auto;margin-top:7px;padding:10px 12px;max-height:190px;overflow:hidden;display:flex;flex-direction:column;gap:7px}
+.drafts-panel-head{display:flex;align-items:center;justify-content:space-between;color:var(--text-primary);font-size:12px}
+.drafts-panel-head div{display:flex;align-items:center;gap:8px}.drafts-panel-head span{font-size:9px;color:var(--text-secondary)}
+.drafts-close,.draft-delete{display:grid;place-items:center;width:26px;height:26px;border:1px solid var(--border-color);border-radius:7px;background:var(--body-bg);color:var(--text-secondary);cursor:pointer}
+.drafts-list{overflow-y:auto;min-height:0;display:flex;flex-direction:column;gap:6px}
+.draft-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px;border:1px solid var(--border-color);border-radius:8px;background:var(--body-bg)}
+.draft-copy{display:flex;flex-direction:column;gap:2px;min-width:0}.draft-copy strong{font-size:11px;color:var(--text-primary)}.draft-copy span,.draft-copy small{font-size:9px;color:var(--text-secondary)}
+.draft-actions{display:flex;align-items:center;gap:6px;flex:none}.draft-actions .lis-btn{min-height:29px;padding:4px 9px;font-size:10px}
+.draft-delete{color:#d66}.drafts-empty{padding:12px;color:var(--text-secondary);font-size:10px}
+@media(max-width:700px){.selection-actions{flex-wrap:wrap}.drafts-toggle{order:0}.draft-item{align-items:flex-start}.draft-actions{align-self:center}}
