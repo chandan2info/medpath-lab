@@ -9,6 +9,7 @@ interface SpecimenGroup {
   tubeType: string;
   sampleType: string;
   tests: { id: string; name: string }[];
+  testsLabel: string;
 }
 
 @Component({
@@ -41,9 +42,10 @@ export class OrderReviewComponent implements OnInit {
     for (const test of this.flow.selectedTests()) {
       const key = `${test.tubeType}::${test.sampleType}`;
       const group = groups.get(key) ?? {
-        key, tubeType: test.tubeType, sampleType: test.sampleType, tests: [],
+        key, tubeType: test.tubeType, sampleType: test.sampleType, tests: [], testsLabel: '',
       };
       group.tests.push({ id: test.id, name: test.name });
+      group.testsLabel = group.tests.map(item => item.id).join(', ');
       groups.set(key, group);
     }
     return [...groups.values()];
