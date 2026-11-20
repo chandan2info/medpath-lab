@@ -824,3 +824,130 @@
     justify-content: flex-start;
   }
 }
+
+
+/* ── Final alignment pass: compact patient context + balanced page header ── */
+.page-header {
+  min-height: 72px;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 18px;
+  margin-bottom: 10px;
+}
+.page-header > div:first-child {
+  min-width: 210px;
+}
+.page-title {
+  gap: 8px;
+  font-size: 19px;
+  line-height: 1.2;
+}
+.page-title > i { font-size: 22px; }
+.page-subtitle {
+  margin: 2px 0 5px;
+  line-height: 1.25;
+}
+.page-header lis-workflow-stepper {
+  margin-left: auto;
+  flex: 0 0 auto;
+  min-width: 300px;
+}
+
+/* Keep the patient card as a single compact, aligned information row. */
+.patient-summary {
+  padding: 8px 11px;
+  margin: 0;
+  min-height: 60px;
+}
+.patient-summary-main {
+  display: grid;
+  grid-template-columns: 40px minmax(180px, 1fr) auto auto;
+  align-items: center;
+  column-gap: 10px;
+  min-height: 42px;
+  padding: 0;
+}
+.patient-avatar {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  font-size: 15px;
+}
+.patient-identity {
+  min-width: 0;
+  flex: initial;
+}
+.patient-name-line {
+  gap: 7px;
+  flex-wrap: nowrap;
+}
+.patient-name-line strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+.patient-id-pill {
+  flex: 0 0 auto;
+  font-size: 9px;
+  padding: 3px 6px;
+}
+.patient-demographics {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 9px;
+  margin-top: 4px;
+  font-size: 9.5px;
+  white-space: nowrap;
+}
+.patient-demographics span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.patient-demographics span + span::before { content: none; }
+.patient-demographics i { font-size: 11px; }
+.patient-visit-details {
+  gap: 10px;
+  padding: 0 10px;
+  white-space: nowrap;
+}
+.patient-visit-item {
+  min-width: 48px;
+  gap: 2px;
+  font-size: 9.5px;
+}
+.patient-visit-item i { font-size: 14px; }
+.patient-visit-item small { font-size: 8.5px; }
+.patient-edit-btn { align-self: center; padding-inline: 9px; }
+
+@media (max-width: 1200px) {
+  .patient-summary-main {
+    grid-template-columns: 38px minmax(150px, 1fr) auto;
+  }
+  .patient-visit-details {
+    grid-column: 2 / 4;
+    border-left: 0;
+    border-top: 1px solid var(--border-color);
+    padding: 6px 0 0;
+    justify-content: flex-start;
+  }
+  .patient-edit-btn {
+    grid-column: 3;
+    grid-row: 1;
+  }
+}
+@media (max-width: 900px) {
+  .page-header { flex-wrap: wrap; }
+  .page-header lis-workflow-stepper { margin-left: 0; min-width: 0; }
+  .patient-summary-main { display: flex; flex-wrap: wrap; }
+  .patient-visit-details {
+    width: 100%;
+    border-top: 1px solid var(--border-color);
+    padding: 7px 0 0;
+    justify-content: space-around;
+  }
+  .patient-demographics { flex-wrap: wrap; white-space: normal; }
+}
