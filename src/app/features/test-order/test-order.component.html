@@ -1,6 +1,6 @@
-<!-- Test selection page: catalogue first, review on a dedicated route. -->
+<!-- Test selection page: each catalogue tab owns its own content view. -->
 <div class="page-header">
-  <div>
+  <div class="page-heading-copy">
     <h1 class="page-title">Test Order</h1>
     <p class="page-subtitle">Select investigations for the registered patient.</p>
     <nav aria-label="Breadcrumb"><ol class="breadcrumb">
@@ -18,67 +18,77 @@
       <div class="patient-meta">
         <span><i class="ti ti-user" aria-hidden="true"></i>{{ patient.gender | titlecase }}</span>
         <span><i class="ti ti-cake" aria-hidden="true"></i>{{ patientAgeBreakdown() }}</span>
-        <span><i class="ti ti-calendar" aria-hidden="true"></i>DOB: {{ patient.dob | date:'dd MMM yyyy' }}</span>
+        <span><i class="ti ti-calendar" aria-hidden="true"></i>DOB {{ patient.dob | date:'dd MMM yyyy' }}</span>
         <span><i class="ti ti-phone" aria-hidden="true"></i>{{ patient.mobile }}</span>
       </div>
     </div>
     <div class="patient-visit-meta">
-      <span><i class="ti ti-walk" aria-hidden="true"></i>{{ patient.visitType | titlecase }}</span>
-      <span><i class="ti ti-stethoscope" aria-hidden="true"></i>{{ patient.refDoctor || 'Self / Walk-in' }}</span>
-      <span><i class="ti ti-droplet" aria-hidden="true"></i>{{ patient.fasting || 'Fasting not specified' }}</span>
+      <span><i class="ti ti-walk" aria-hidden="true"></i><small>Visit</small><strong>{{ patient.visitType | titlecase }}</strong></span>
+      <span><i class="ti ti-clipboard-heart" aria-hidden="true"></i><small>Fasting</small><strong>{{ patient.fasting || 'Not specified' }}</strong></span>
+      <span><i class="ti ti-stethoscope" aria-hidden="true"></i><small>Referred by</small><strong>{{ patient.refDoctor || 'Self / Walk-in' }}</strong></span>
     </div>
-    <a routerLink="/dashboard/registration" class="lis-btn lis-btn--secondary lis-btn--sm"><i class="ti ti-edit"></i> Edit</a>
+    <a routerLink="/dashboard/registration" class="lis-btn lis-btn--secondary lis-btn--sm patient-edit"><i class="ti ti-edit"></i> Edit</a>
   </section>
 }
 
 <section class="catalogue-shell lis-card">
   <div class="catalogue-toolbar">
-    <div class="catalogue-tabs" role="group" aria-label="Test catalogue sections">
-      <span class="catalogue-tab catalogue-tab--active"><i class="ti ti-apps"></i> Test Catalogue</span>
-      <button type="button" class="catalogue-tab" (click)="packagesVisible.set(!packagesVisible())" [attr.aria-expanded]="packagesVisible()"><i class="ti ti-stack-2"></i> Packages</button>
-      <button type="button" class="catalogue-tab" (click)="showRecent.set(!showRecent())" [attr.aria-expanded]="showRecent()"><i class="ti ti-history"></i> Recently Ordered</button>
-      <button type="button" class="catalogue-tab" (click)="showFavorites.set(!showFavorites())" [attr.aria-expanded]="showFavorites()"><i class="ti ti-heart"></i> Favorites</button>
+    <div class="catalogue-tabs" role="tablist" aria-label="Test catalogue sections">
+      <button type="button" role="tab" class="catalogue-tab" [class.catalogue-tab--active]="activeView()==='catalogue'" [attr.aria-selected]="activeView()==='catalogue'" (click)="setView('catalogue')"><i class="ti ti-apps"></i> Test Catalogue</button>
+      <button type="button" role="tab" class="catalogue-tab" [class.catalogue-tab--active]="activeView()==='packages'" [attr.aria-selected]="activeView()==='packages'" (click)="setView('packages')"><i class="ti ti-stack-2"></i> Packages</button>
+      <button type="button" role="tab" class="catalogue-tab" [class.catalogue-tab--active]="activeView()==='recent'" [attr.aria-selected]="activeView()==='recent'" (click)="setView('recent')"><i class="ti ti-history"></i> Recently Ordered</button>
+      <button type="button" role="tab" class="catalogue-tab" [class.catalogue-tab--active]="activeView()==='favorites'" [attr.aria-selected]="activeView()==='favorites'" (click)="setView('favorites')"><i class="ti ti-heart"></i> Favorites</button>
     </div>
     <div class="search-bar-wrap">
       <i class="ti ti-search search-ico" aria-hidden="true"></i>
-      <input #searchInput type="search" class="search-input" placeholder="Search tests by name, code or keyword (e.g. CBC, KFT, TSH…)" [value]="testQuery()" (input)="testQuery.set($any($event.target).value); highlightedIndex.set(-1)" aria-label="Search tests" />
+      <input #searchInput type="search" class="search-input" [placeholder]="searchPlaceholder()" [value]="testQuery()" (input)="testQuery.set($any($event.target).value); highlightedIndex.set(-1)" aria-label="Search catalogue" />
       @if (testQuery()) { <button type="button" class="search-clear" (click)="clearSearch()" aria-label="Clear search"><i class="ti ti-x"></i></button> }
       <kbd class="kbd-hint">Ctrl+F</kbd>
     </div>
-    <div class="cat-seg" role="group" aria-label="Test categories">
-      @for (cat of flow.categories; track cat) {
-        <button type="button" class="cat-seg-btn" [class.cat-seg-btn--active]="activeCategory() === cat" (click)="activeCategory.set(cat)" [attr.aria-pressed]="activeCategory() === cat">{{ cat }} <span>{{ categoryCount(cat) }}</span></button>
-      }
+
+    @if (activeView()==='catalogue') {
+      <div class="cat-seg" role="group" aria-label="Test categories">
+        @for (cat of flow.categories; track cat) {
+          <button type="button" class="cat-seg-btn" [class.cat-seg-btn--active]="activeCategory() === cat" (click)="activeCategory.set(cat)" [attr.aria-pressed]="activeCategory() === cat">{{ cat }} <span>{{ categoryCount(cat) }}</span></button>
+        }
+      </div>
+    }
+    <div class="list-heading">
+      <strong>{{ viewHeading() }}</strong>
+      <span>{{ activeView()==='packages' ? filteredPackages().length + ' packages' : visibleTests().length + ' tests' }}</span>
     </div>
-    @if (packagesVisible()) {
-      <div class="quick-panel">
-        @for (pkg of flow.testPackages; track pkg.id) {
-          <div class="quick-package"><div><strong>{{ pkg.name }}</strong><small>{{ packageTestNames(pkg) }}</small></div><button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="addPackage(pkg)">Add package · ₹{{ packagePrice(pkg) }}</button></div>
-        }
-      </div>
-    }
-    @if (showRecent() || showFavorites()) {
-      <div class="quick-panel quick-chips">
-        @for (t of (showFavorites() ? flow.popularTests : flow.recentTests); track t.id) {
-          <button type="button" class="recent-chip" [class.recent-chip--sel]="isSelected(t.id)" (click)="toggle(t)">{{ t.id }} · {{ t.name }} <span>₹{{ t.price }}</span></button>
-        }
-      </div>
-    }
-    <div class="list-heading"><strong>{{ testQuery() ? 'Search results' : 'All Tests' }}</strong><span>{{ filteredTests().length }} tests</span></div>
   </div>
 
-  <div class="test-list" role="list" aria-label="Available tests">
-    @if (filteredTests().length === 0) {
-      <div class="empty-tests"><i class="ti ti-search-off"></i>No tests match “{{ testQuery() }}”</div>
-    }
-    @for (t of filteredTests(); track t.id; let i = $index) {
-      <button type="button" class="test-row" role="listitem" [class.test-row--selected]="isSelected(t.id)" [class.test-row--highlighted]="highlightedIndex() === i" (click)="toggle(t)" [attr.aria-pressed]="isSelected(t.id)">
-        <span class="test-check" aria-hidden="true"><i class="ti" [class.ti-check]="isSelected(t.id)" [class.ti-plus]="!isSelected(t.id)"></i></span>
-        <span class="test-icon" aria-hidden="true"><i class="ti {{ testIcon(t) }}"></i></span>
-        <span class="test-info"><span class="test-title">{{ t.name }} <small>{{ t.id }}</small></span><span class="test-description">{{ t.category }} · {{ t.sampleType }}</span><span class="test-meta"><span><i class="ti ti-test-pipe"></i> Specimen: {{ t.sampleType }}</span><span><i class="ti ti-flask-2"></i> Container: {{ t.tubeType }}</span><span><i class="ti ti-clock"></i> TAT: {{ t.tatHours }} hours</span></span></span>
-        <span class="test-price">₹{{ t.price }}</span>
-        <span class="test-action">{{ isSelected(t.id) ? '✓ Selected' : '+ Add Test' }}</span>
-      </button>
+  <div class="test-list" [class.test-list--packages]="activeView()==='packages'" role="region" [attr.aria-label]="viewHeading()" tabindex="0">
+    @if (activeView()==='packages') {
+      @if (filteredPackages().length===0) {
+        <div class="empty-tests"><i class="ti ti-package-off"></i>No packages match “{{ testQuery() }}”</div>
+      }
+      @for (pkg of filteredPackages(); track pkg.id) {
+        <article class="package-row" [class.package-row--selected]="isPackageSelected(pkg)">
+          <span class="package-icon"><i class="ti ti-package"></i></span>
+          <div class="package-info">
+            <strong>{{ pkg.name }}</strong>
+            <small>{{ packageTestNames(pkg) }}</small>
+            <span>{{ pkg.testIds.length }} investigations included</span>
+          </div>
+          <div class="package-price"><strong>₹{{ packagePrice(pkg) }}</strong><small>Package total</small></div>
+          <button type="button" class="test-action" [class.test-action--added]="isPackageSelected(pkg)" (click)="addPackage(pkg)">{{ isPackageSelected(pkg) ? '✓ Added' : '+ Add Package' }}</button>
+        </article>
+      }
+    } @else {
+      @if (visibleTests().length===0) {
+        <div class="empty-tests"><i class="ti ti-search-off"></i>No tests match “{{ testQuery() }}”</div>
+      }
+      @for (t of visibleTests(); track t.id; let i = $index) {
+        <button type="button" class="test-row" role="listitem" [class.test-row--selected]="isSelected(t.id)" [class.test-row--highlighted]="highlightedIndex() === i" (click)="toggle(t)" [attr.aria-pressed]="isSelected(t.id)">
+          <span class="test-check" aria-hidden="true"><i class="ti" [class.ti-check]="isSelected(t.id)" [class.ti-plus]="!isSelected(t.id)"></i></span>
+          <span class="test-icon" aria-hidden="true"><i class="ti {{ testIcon(t) }}"></i></span>
+          <span class="test-info"><span class="test-title">{{ t.name }} <small>{{ t.id }}</small></span><span class="test-description">{{ t.category }} · {{ t.sampleType }}</span><span class="test-meta"><span><i class="ti ti-test-pipe"></i> Specimen: {{ t.sampleType }}</span><span><i class="ti ti-flask-2"></i> Container: {{ t.tubeType }}</span><span><i class="ti ti-clock"></i> TAT: {{ t.tatHours }} hours</span></span></span>
+          <span class="test-price">₹{{ t.price }}</span>
+          <span class="test-action" [class.test-action--added]="isSelected(t.id)">{{ isSelected(t.id) ? '✓ Selected' : '+ Add Test' }}</span>
+        </button>
+      }
     }
   </div>
 </section>
