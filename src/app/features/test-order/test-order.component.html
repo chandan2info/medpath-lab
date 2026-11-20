@@ -90,10 +90,18 @@
   </div>
 </section>
 
+@if (feedbackMessage()) {
+  <div class="order-feedback" [class.order-feedback--success]="feedbackKind() === 'success'" [class.order-feedback--error]="feedbackKind() === 'error'" [class.order-feedback--warning]="feedbackKind() === 'warning'" role="status" aria-live="polite">
+    <i class="ti" [class.ti-check-circle]="feedbackKind() === 'success'" [class.ti-alert-triangle]="feedbackKind() === 'warning'" [class.ti-alert-circle]="feedbackKind() === 'error'"></i>
+    <span>{{ feedbackMessage() }}</span>
+    <button type="button" (click)="feedbackMessage.set('')" aria-label="Dismiss message"><i class="ti ti-x"></i></button>
+  </div>
+}
+
 <div class="selection-footer lis-card">
   <div class="selection-count"><strong>{{ flow.selectedTests().length }} tests selected</strong><span>Subtotal · ₹{{ flow.orderTotal().toLocaleString('en-IN') }}</span></div>
   <div class="selection-actions">
     <button type="button" class="lis-btn lis-btn--secondary" (click)="saveDraft()" [disabled]="savingDraft()"><i class="ti ti-device-floppy"></i>{{ draftSaved() ? 'Draft saved' : 'Save as draft' }}</button>
-    <button type="button" class="lis-btn lis-btn--primary review-btn" (click)="goToReview()" [disabled]="!hasTests"><i class="ti ti-clipboard-check"></i> Review Order <i class="ti ti-arrow-right"></i></button>
+    <button type="button" class="lis-btn lis-btn--primary review-btn" (click)="goToReview()" ><i class="ti ti-clipboard-check"></i> Review Order <i class="ti ti-arrow-right"></i></button>
   </div>
 </div>
