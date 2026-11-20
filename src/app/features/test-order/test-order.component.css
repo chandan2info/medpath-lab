@@ -410,3 +410,70 @@
 .order-summary-heading { display: flex; align-items: center; justify-content: space-between; padding: 13px 14px; font-size: 14px; font-weight: 700; color: var(--text-primary); }
 .order-summary-heading > span:first-child { display: inline-flex; align-items: center; gap: 9px; }
 .order-summary-heading > span:first-child i { color: var(--lis-primary, #1D9E75); font-size: 19px; }
+
+
+/* ── Reference-aligned corrections: patient, summary, specimens, priority and scrolling ── */
+.patient-summary { position: relative; top: auto; z-index: 1; padding: 13px 15px; margin-bottom: 16px; }
+.patient-summary-main { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.patient-avatar { width: 52px; height: 52px; flex: 0 0 52px; display: grid; place-items: center; border-radius: 50%; color: var(--lis-primary, #1D9E75); background: var(--lis-primary-xlight, #E1F5EE); font-size: 19px; font-weight: 700; }
+.patient-identity { flex: 1; min-width: 0; }
+.patient-name-line { display: flex; align-items: center; flex-wrap: wrap; gap: 9px; }
+.patient-name-line strong { color: var(--text-primary); font-size: 15px; font-weight: 700; }
+.patient-id-pill { padding: 4px 9px; border-radius: 16px; background: var(--lis-primary-xlight, #E1F5EE); color: var(--lis-primary-deep, #085041); font-size: 10px; font-weight: 700; }
+.patient-demographics { display: flex; flex-wrap: wrap; gap: 0; margin-top: 6px; color: var(--text-secondary); font-size: 11px; }
+.patient-demographics span + span::before { content: '|'; margin: 0 9px; color: var(--border-color); }
+.patient-visit-details { display: flex; align-items: center; gap: 18px; padding: 0 16px; border-left: 1px solid var(--border-color); }
+.patient-visit-item { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 58px; color: var(--text-secondary); font-size: 10.5px; text-align: center; }
+.patient-visit-item i { color: var(--lis-primary, #1D9E75); font-size: 17px; }
+.patient-edit-btn { flex: 0 0 auto; }
+.order-layout { grid-template-columns: minmax(0, 1fr) minmax(340px, 36%); align-items: start; }
+.search-col { min-height: 0; }
+.catalogue-workspace { display: flex; flex-direction: column; max-height: calc(100vh - 335px); min-height: 360px; overflow: hidden; }
+.catalogue-workspace > .catalogue-tabs,
+.catalogue-workspace > .catalogue-search,
+.catalogue-workspace > .catalogue-categories,
+.catalogue-workspace > .catalogue-section-heading { flex: 0 0 auto; }
+.catalogue-workspace > .test-list,
+.catalogue-workspace > .package-grid { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; padding-right: 5px; }
+.reference-test-list { max-height: none; }
+.reference-test-list::-webkit-scrollbar,
+.catalogue-package-grid::-webkit-scrollbar { width: 7px; }
+.reference-test-list::-webkit-scrollbar-thumb,
+.catalogue-package-grid::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 8px; }
+.order-panel { position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow-y: auto; overscroll-behavior: contain; padding-right: 3px; scrollbar-gutter: stable; }
+.order-panel::-webkit-scrollbar { width: 6px; }
+.order-panel::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 8px; }
+.sel-item { gap: 9px; padding: 7px 8px; }
+.sel-test-icon { width: 34px; height: 34px; flex: 0 0 34px; display: grid; place-items: center; border-radius: 8px; font-size: 17px; }
+.sel-test-icon--blood { color: #D83B45; background: #FCE8E9; }
+.sel-test-icon--chemistry { color: #8752C7; background: #F1E8FC; }
+.sel-test-icon--hormone { color: #D97706; background: #FFF0DE; }
+.sel-test-icon--urine { color: #168A74; background: #E2F5EF; }
+.specimen-item { padding: 7px 8px; border-radius: 8px; }
+.specimen-icon { width: 28px; height: 34px; flex: 0 0 28px; border-radius: 7px; font-size: 16px; }
+.specimen-icon--purple { color: #8B42C6; background: #F1E6FC; }
+.specimen-icon--gold { color: #D97706; background: #FFF0DE; }
+.specimen-icon--grey { color: #64748B; background: #EEF1F5; }
+.specimen-icon--blue { color: #2876C7; background: #E5F0FC; }
+.specimen-icon--default { color: var(--lis-primary, #1D9E75); background: var(--lis-primary-xlight, #E1F5EE); }
+.priority-heading { margin-bottom: 8px; }
+.required-mark { color: #E24B4A; font-weight: 700; }
+.prio-cards.priority-options { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 7px; }
+.priority-options .prio-card { justify-content: flex-start; gap: 7px; min-width: 0; min-height: 39px; padding: 7px 8px; border: 1px solid var(--border-color); border-radius: 8px; }
+.priority-options .prio-card-label { font-size: 11px; white-space: nowrap; }
+.priority-radio { width: 15px; height: 15px; flex: 0 0 15px; display: grid; place-items: center; border: 1.5px solid var(--border-color); border-radius: 50%; font-size: 9px; color: transparent; }
+.priority-options .prio-card--active .priority-radio { border-color: var(--lis-primary, #1D9E75); color: #fff; background: var(--lis-primary, #1D9E75); }
+.priority-options .prio-card--stat { border-color: #F1C5C5; }
+.priority-options .prio-card--stat-active { border-color: #E24B4A; background: #FCEBEB; box-shadow: none; }
+.priority-options .prio-card--stat-active .priority-radio { border-color: #E24B4A; background: #E24B4A; color: #fff; }
+@media (max-width: 900px) {
+  .order-layout { grid-template-columns: 1fr; }
+  .catalogue-workspace { max-height: 65vh; }
+  .order-panel { position: static; max-height: none; overflow: visible; }
+}
+@media (max-width: 600px) {
+  .patient-summary-main { flex-wrap: wrap; }
+  .patient-visit-details { order: 3; width: 100%; justify-content: space-around; border-left: 0; border-top: 1px solid var(--border-color); padding: 10px 0 0; }
+  .patient-edit-btn { margin-left: auto; }
+  .prio-cards.priority-options { grid-template-columns: 1fr; }
+}
