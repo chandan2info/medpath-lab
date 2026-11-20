@@ -99,6 +99,26 @@ export class TestOrderComponent implements OnInit {
     return out.slice(0, 4);
   });
 
+  /** Specimen requirements are grouped by container + sample type, not by test count. */
+  specimenGroups = computed(() => {
+    const groups = new Map<string, { key: string; tubeType: string; sampleType: string; tests: string[] }>();
+    for (const test of this.flow.selectedTests()) {
+      const key = test.tubeType + '::' + test.sampleType;
+      const current = groups.get(key) ?? {
+        key,
+        tubeType: test.tubeType,
+        sampleType: test.sampleType,
+        tests: [],
+      };
+      current.tests.push(test.id);
+      groups.set(key, current);
+    }
+    return Array.from(groups.values());
+  });
+
+  /** Only selected tests with catalogue preparation instructions are shown. */
+  prepTests = computed(() => this.flow.selectedTests().filter(test => test.prep !== 'None'));
+
   constructor() {
     // Micro-interaction: briefly pulse the Grand Total when it changes,
     // instead of a silent, static number update.
