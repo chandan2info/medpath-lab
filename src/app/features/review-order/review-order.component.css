@@ -569,3 +569,46 @@
     transform: translate(28%, -28%);
   }
 }
+
+
+/* Ensure the review workspace actually stretches to the available app viewport.
+   Earlier compact-layout rules set review-columns to flex-basis:auto, which left
+   unused space below the billing bar even when the host had a viewport min-height. */
+@media (min-width: 761px) {
+  :host {
+    height: calc(100dvh - 150px) !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    display: flex !important;
+    flex-direction: column;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .review-columns {
+    flex: 1 1 0% !important;
+    min-height: 0 !important;
+    height: auto;
+    align-items: stretch;
+  }
+
+  .selected-panel,
+  .right-review-column,
+  .specimen-panel {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .selected-test-list,
+  .specimen-list {
+    flex: 1 1 0%;
+    min-height: 0;
+    max-height: none;
+    overflow-y: auto;
+  }
+
+  .order-bottom-bar {
+    flex: 0 0 auto;
+    margin-top: 0 !important;
+  }
+}
