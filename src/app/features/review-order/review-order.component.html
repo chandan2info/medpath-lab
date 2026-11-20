@@ -1,0 +1,30 @@
+<div class="page-header">
+  <div><h1 class="page-title">Review Order</h1><p class="page-subtitle">Verify selected tests, specimen requirements and order priority before billing.</p>
+    <nav aria-label="Breadcrumb"><ol class="breadcrumb"><li><a routerLink="/dashboard/home">Home</a></li><li><a routerLink="/dashboard/test-order">Test Order</a></li><li aria-current="page">Review Order</li></ol></nav>
+  </div><lis-workflow-stepper [steps]="workflowSteps" [activeIndex]="workflowActiveIndex" />
+</div>
+@if(patient){<section class="patient-summary lis-card"><div class="pat-avatar">{{patientInitials}}</div><div class="patient-main"><strong>{{patient.firstName}} {{patient.lastName}}</strong><span class="patient-id">{{patient.id}}</span><div class="patient-meta"><span><i class="ti ti-user"></i>{{patient.gender|titlecase}}</span><span><i class="ti ti-cake"></i>{{flow.formatAgeBreakdown(patient.dob)}}</span><span><i class="ti ti-phone"></i>{{patient.mobile}}</span><span><i class="ti ti-stethoscope"></i>{{patient.refDoctor||'Self / Walk-in'}}</span></div></div><a routerLink="/dashboard/registration" class="lis-btn lis-btn--secondary lis-btn--sm"><i class="ti ti-edit"></i> Edit patient</a></section>}
+@if(flow.selectedTests().length===0){<div class="lis-card empty-review"><i class="ti ti-clipboard-x"></i><h2>No tests selected</h2><p>Return to the catalogue and add at least one test.</p><a routerLink="/dashboard/test-order" class="lis-btn lis-btn--primary">Back to Test Selection</a></div>}@else{
+<div class="review-layout">
+ <main class="review-main">
+  <section class="lis-card review-card"><header class="section-head"><div><i class="ti ti-clipboard-list"></i><h2>Selected Tests</h2></div><span class="lis-badge">{{flow.selectedTests().length}} tests</span></header>
+   <div class="table-head"><span>Test / Department</span><span>Specimen & container</span><span>TAT</span><span>Price</span><span></span></div>
+   @for(t of flow.selectedTests();track t.id){<div class="review-test-row"><div><strong>{{t.name}}</strong><small>{{t.id}} · {{t.category}}</small></div><div><strong>{{t.sampleType}}</strong><small>{{t.tubeType}}</small></div><span class="tat">{{t.tatHours}}h</span><strong class="price">₹{{t.price}}</strong><button type="button" class="remove-btn" (click)="flow.toggleTest(t.id)" [attr.aria-label]="'Remove '+t.name"><i class="ti ti-trash"></i></button></div>}
+   <footer class="section-foot"><a routerLink="/dashboard/test-order"><i class="ti ti-arrow-left"></i> Back to Test Selection</a><span>{{flow.selectedTests().length}} investigations selected</span></footer>
+  </section>
+  <section class="lis-card review-card"><header class="section-head"><div><i class="ti ti-test-pipe"></i><h2>Specimen / Collection Plan</h2></div><span class="lis-badge">{{specimenGroups().length}} specimen groups</span></header>
+   @for(group of specimenGroups();track group.tube){<div class="specimen-row"><span class="tube-icon"><i class="ti ti-test-pipe"></i></span><div class="specimen-info"><strong>{{group.tube}}</strong><small>Specimen: {{group.sample}}</small><small>For: {{group.tests.join(', ')}}</small></div><span class="group-count">{{group.tests.length}} {{group.tests.length===1?'test':'tests'}}</span></div>}
+  </section>
+  <section class="lis-card review-card"><header class="section-head"><div><i class="ti ti-clipboard-check"></i><h2>Preparation & Alerts</h2></div><span class="lis-badge">{{preparationNotes().length}} notes</span></header>
+   @if(preparationNotes().length){<ul class="prep-list">@for(note of preparationNotes();track note){<li><i class="ti ti-alert-circle"></i>{{note}}</li>}</ul>}@else{<p class="no-prep">No special preparation instructions for the selected tests.</p>}
+   @if(hasFastingRequirement()){<div class="fasting-alert"><i class="ti ti-alert-triangle"></i> Confirm fasting status with the patient before sample collection.</div>}
+  </section>
+ </main>
+ <aside class="review-aside">
+  <section class="lis-card review-card priority-card"><header class="section-head"><div><i class="ti ti-flag"></i><h2>Order Priority</h2></div><span class="required">*</span></header><div class="priority-options" role="group" aria-label="Order priority">
+   @for(p of priorities;track p.value){<button type="button" [class.active]="flow.priority()===p.value" [class.stat]="p.value==='stat'" (click)="flow.setPriority(p.value)" [attr.aria-pressed]="flow.priority()===p.value"><i class="ti {{p.icon}}"></i><span>{{p.label}}</span><small>{{p.hint}}</small></button>}
+  </div>@if(flow.priority()==='stat'){<div class="stat-alert"><i class="ti ti-bolt"></i> STAT order must be processed immediately.</div>}</section>
+  <section class="lis-card review-card total-card"><h2>Order Summary</h2><div class="total-line"><span>Tests</span><strong>{{flow.selectedTests().length}}</strong></div><div class="total-line"><span>Longest estimated TAT</span><strong>Up to {{flow.maxTat()}} hours</strong></div><div class="total-line"><span>Subtotal</span><strong>₹{{flow.orderTotal().toLocaleString('en-IN')}}</strong></div><div class="total-line"><span>Discount</span><strong>₹{{flow.discountAmt().toLocaleString('en-IN')}}</strong></div><div class="grand-total"><span>Grand Total</span><strong>₹{{flow.grandTotal().toLocaleString('en-IN')}}</strong></div></section>
+  <section class="lis-card review-actions"><button type="button" class="lis-btn lis-btn--primary continue-btn" (click)="continueToBilling()" [disabled]="saving()">@if(saving()){<i class="ti ti-loader-2 spin"></i> Saving…}@else{<i class="ti ti-file-invoice"></i> Save Order & Continue to Billing <i class="ti ti-arrow-right"></i>}</button><a routerLink="/dashboard/test-order" class="edit-tests"><i class="ti ti-pencil"></i> Edit selected tests</a></section>
+ </aside>
+</div>}
