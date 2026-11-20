@@ -25,6 +25,37 @@
     </div>
     <a routerLink="/dashboard/registration" class="lis-btn lis-btn--secondary lis-btn--sm patient-edit"><i class="ti ti-edit"></i> Edit</a>
   </section>
+  <div class="alert-popover-host" #alertHost>
+    <button type="button" class="floating-alert-trigger" (click)="toggleAlerts()" [attr.aria-expanded]="alertsOpen()" aria-label="Open alerts and notices">
+      <i class="ti ti-bell"></i>
+      @if(alertItems().length){<span class="alert-count">{{alertItems().length}}</span>}
+    </button>
+    @if(alertsOpen()){
+      <section class="alert-popover lis-card" role="dialog" aria-label="Alerts and notices">
+        <header class="alert-popover-head">
+          <div><i class="ti ti-alert-triangle"></i><strong>Alerts & Notices</strong><span>{{alertItems().length}}</span></div>
+          <button type="button" (click)="closeAlerts()" aria-label="Close alerts"><i class="ti ti-x"></i></button>
+        </header>
+        <nav class="alert-filters" aria-label="Filter alerts">
+          <button type="button" [class.active]="alertFilter()==='all'" (click)="setAlertFilter('all')">All ({{alertItems().length}})</button>
+          <button type="button" [class.active]="alertFilter()==='action'" (click)="setAlertFilter('action')">Action ({{countAlerts('action')}})</button>
+          <button type="button" [class.active]="alertFilter()==='warning'" (click)="setAlertFilter('warning')">Warning ({{countAlerts('warning')}})</button>
+          <button type="button" [class.active]="alertFilter()==='info'" (click)="setAlertFilter('info')">Info ({{countAlerts('info')}})</button>
+        </nav>
+        <div class="alert-list" role="list">
+          @for(alert of filteredAlerts();track alert.id){
+            <article class="alert-item" [class.alert-item--action]="alert.severity==='action'" [class.alert-item--warning]="alert.severity==='warning'" [class.alert-item--info]="alert.severity==='info'" role="listitem">
+              <span class="alert-item-icon"><i class="ti {{alert.icon}}"></i></span>
+              <div><strong>{{alert.title}}</strong><p>{{alert.message}}</p></div>
+              <span class="alert-severity">{{alert.severity==='action'?'Action':alert.severity==='warning'?'Warning':'Info'}}</span>
+            </article>
+          } @empty {
+            <div class="alert-empty"><i class="ti ti-circle-check"></i><strong>No alerts in this category</strong></div>
+          }
+        </div>
+      </section>
+    }
+  </div>
 }
 
 @if(flow.selectedTests().length===0){
@@ -76,13 +107,7 @@
           }
         </div>
       </section>
-      <section class="lis-card review-panel prep-panel">
-        <header class="section-head"><div><i class="ti ti-clipboard-check"></i><h2>Preparation & Alerts</h2></div><span class="lis-badge">{{preparationNotes().length}} notes</span></header>
-        @if(preparationNotes().length){
-          <ul class="prep-list">@for(note of preparationNotes();track note){<li><i class="ti ti-alert-circle"></i><span>{{note}}</span></li>}</ul>
-        }@else{<p class="no-prep"><i class="ti ti-circle-check"></i> No special preparation required for selected tests.</p>}
-        @if(hasFastingRequirement()){<div class="fasting-alert"><i class="ti ti-alert-triangle"></i><span><strong>Fasting confirmation</strong> Confirm fasting status with the patient before collection.</span></div>}
-      </section>
+
     </section>
   </div>
 
