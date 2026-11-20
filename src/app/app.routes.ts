@@ -46,6 +46,11 @@ export const routes: Routes = [
         title: 'Test Order — MedPath LIS',
       },
       {
+        path: 'review-order',
+        loadComponent: () => import('./features/review-order/review-order.component').then(m => m.ReviewOrderComponent),
+        title: 'Review Order — MedPath LIS',
+      },
+      {
         path: 'billing',
         loadComponent: () =>
           import('./features/billing/billing.component').then(m => m.BillingComponent),
