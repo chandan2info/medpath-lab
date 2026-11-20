@@ -25,7 +25,6 @@
     </div>
     <a routerLink="/dashboard/registration" class="lis-btn lis-btn--secondary lis-btn--sm patient-edit"><i class="ti ti-edit"></i> Edit</a>
   </section>
->
 }
 
 @if(flow.selectedTests().length===0){
@@ -41,7 +40,6 @@
         </button>
       }
     </div>
-    @if(flow.priority()==='stat'){<div class="stat-alert"><i class="ti ti-bolt"></i> STAT order — process immediately and notify the responsible team.</div>}
   </section>
 
   <div class="alert-popover-host" #alertHost>
