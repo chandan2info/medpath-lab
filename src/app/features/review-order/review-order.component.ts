@@ -1,9 +1,9 @@
 import {Component,ChangeDetectionStrategy,computed,inject,OnInit,signal} from '@angular/core';
 import {Router,RouterLink} from '@angular/router';
-import {TitleCasePipe} from '@angular/common';
+import {DatePipe,TitleCasePipe} from '@angular/common';
 import {PatientFlowService} from '../../core/services/patient-flow.service';
 import {WorkflowStepperComponent,WorkflowStep} from '../../shared/components/workflow-stepper/workflow-stepper.component';
-@Component({selector:'app-review-order',standalone:true,imports:[RouterLink,TitleCasePipe,WorkflowStepperComponent],changeDetection:ChangeDetectionStrategy.OnPush,templateUrl:'./review-order.component.html',styleUrl:'./review-order.component.css'})
+@Component({selector:'app-review-order',standalone:true,imports:[RouterLink,TitleCasePipe,DatePipe,WorkflowStepperComponent],changeDetection:ChangeDetectionStrategy.OnPush,templateUrl:'./review-order.component.html',styleUrl:'./review-order.component.css'})
 export class ReviewOrderComponent implements OnInit{
  protected readonly flow=inject(PatientFlowService);private readonly router=inject(Router);saving=signal(false);
  protected readonly workflowSteps:WorkflowStep[]=[{label:'Register',icon:'ti-user-plus'},{label:'Test Order',icon:'ti-test-pipe'},{label:'Review Order',icon:'ti-clipboard-check'},{label:'Billing',icon:'ti-receipt'}];protected readonly workflowActiveIndex=2;
