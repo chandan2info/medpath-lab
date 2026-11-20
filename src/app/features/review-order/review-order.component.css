@@ -34,3 +34,107 @@
 .alert-filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;padding:4px;border:1px solid var(--border-color);border-radius:8px}.alert-filters button{border:0;border-radius:6px;padding:6px 3px;background:transparent;color:var(--text-secondary);font-size:9px;cursor:pointer;white-space:nowrap}.alert-filters button.active{background:var(--lis-primary-xlight);color:var(--lis-primary-deep);font-weight:700}
 .alert-list{display:flex;flex-direction:column;gap:6px;overflow-y:auto;min-height:0;padding-right:2px}.alert-item{display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:8px;padding:9px;border-radius:8px;background:var(--body-bg);border:1px solid var(--border-color)}.alert-item-icon{width:28px;height:28px;border-radius:7px;display:grid;place-items:center;background:rgba(220,75,74,.12);color:#e46b68}.alert-item--warning .alert-item-icon{background:rgba(217,155,50,.14);color:#d99b32}.alert-item--info .alert-item-icon{background:rgba(50,150,210,.14);color:#3296d2}.alert-item>div{min-width:0}.alert-item strong{display:block;font-size:10px;color:var(--text-primary)}.alert-item p{font-size:9px;line-height:1.4;color:var(--text-secondary);margin:3px 0 0}.alert-severity{font-size:8px;font-weight:700;padding:3px 6px;border-radius:20px;background:rgba(220,75,74,.12);color:#d85a58;white-space:nowrap}.alert-item--warning .alert-severity{background:rgba(217,155,50,.15);color:#b77b1e}.alert-item--info .alert-severity{background:rgba(50,150,210,.14);color:#3296d2}.alert-empty{display:flex;flex-direction:column;align-items:center;gap:5px;padding:24px;color:var(--text-secondary);font-size:10px}.alert-empty i{font-size:22px;color:var(--lis-primary)}
 @media(max-width:760px){.alert-popover-host{right:12px;top:auto;bottom:96px}.alert-popover{right:0;top:auto;bottom:58px;transform:none;width:min(360px,calc(100vw - 24px));max-height:60vh}.floating-alert-trigger{width:44px;height:44px}}
+
+
+/* Review Order — compact composition aligned with the Option 2 reference. */
+:host{
+  height:auto;
+  max-height:none;
+  min-height:0;
+  overflow:visible;
+  gap:10px;
+  padding-bottom:8px;
+  font-family:var(--font-sans, 'DM Sans', system-ui, sans-serif);
+}
+.page-header{min-height:64px;padding:9px 14px;margin:0}
+.page-title{font-size:22px;line-height:1.2;font-weight:700}
+.page-subtitle{font-size:12px;line-height:1.4}
+.patient-summary{min-height:62px;padding:8px 13px;gap:12px}
+.patient-main{font-size:13px}
+.patient-name-line{font-size:13px;font-weight:700}
+.patient-id{font-size:10px}
+.patient-meta{font-size:10px;gap:6px 12px}
+.patient-visit-meta small{font-size:9px}
+.patient-visit-meta strong{font-size:10px}
+.patient-edit{font-size:11px;font-weight:700;padding:6px 10px}
+.priority-card{min-height:58px;padding:9px 12px;gap:12px}
+.priority-label{min-width:170px}
+.priority-label strong{font-size:12px}
+.priority-label span{font-size:10px}
+.priority-options{gap:8px}
+.priority-options button{min-height:38px;padding:7px 10px}
+.priority-options button span{font-size:11px}
+.priority-options button small{font-size:10px}
+.review-columns{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(320px,.88fr);gap:10px;flex:0 0 auto;min-height:0;align-items:stretch}
+.review-panel{padding:12px}
+.section-head h2{font-size:13px}
+.section-head>div>i{font-size:16px}
+.lis-badge,.group-count{font-size:10px}
+.panel-subtitle{font-size:10px;margin-bottom:8px}
+.edit-tests{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:31px;padding:6px 11px!important;border:1px solid var(--lis-primary)!important;border-radius:7px;background:var(--lis-primary-xlight)!important;color:var(--lis-primary-deep)!important;font-size:11px!important;font-weight:800!important;letter-spacing:.1px;text-decoration:none;box-shadow:0 1px 3px rgba(0,0,0,.12);transition:background .15s,border-color .15s,transform .15s}
+.edit-tests:hover{background:var(--lis-primary)!important;color:#fff!important;border-color:var(--lis-primary)!important;transform:translateY(-1px)}
+.edit-tests i{font-size:13px}
+.selected-test-list,.specimen-list{flex:0 1 auto;min-height:0;max-height:min(42vh,360px);overflow-y:auto}
+.review-test-row{padding:9px 7px;grid-template-columns:32px minmax(0,1fr) auto 24px;gap:9px}
+.test-type-icon,.tube-icon{width:31px;height:31px;font-size:15px}
+.test-copy strong{font-size:12px}
+.test-copy small,.test-spec{font-size:10px}
+.test-values strong{font-size:12px}
+.test-values small{font-size:10px}
+.remove-btn{font-size:14px}
+.panel-foot{font-size:10px;padding-top:8px}
+.specimen-panel{flex:0 1 auto;min-height:0}
+.specimen-row{padding:10px 6px;gap:10px}
+.specimen-info strong{font-size:12px}
+.specimen-info small{font-size:10px}
+.group-count{font-size:10px;min-width:24px;text-align:center}
+.order-bottom-bar{padding:10px 13px;gap:16px}
+.order-total-inline span{font-size:9px}
+.order-total-inline strong{font-size:12px}
+.order-total-inline .grand-total strong{font-size:15px}
+.continue-btn{min-height:40px;font-size:11px;font-weight:700}
+.back-action{font-size:12px}
+.stat-alert{font-size:11px}
+
+/* Option 2: notification launcher and popover float above the page;
+   they never reserve layout width or reduce specimen-list height. */
+.alert-popover-host{position:fixed;right:24px;top:50%;transform:translateY(-50%);z-index:1200}
+.floating-alert-trigger{width:50px;height:50px;border-radius:15px;background:var(--card-bg);border:1px solid var(--lis-primary);color:var(--lis-primary);box-shadow:0 8px 26px rgba(0,0,0,.28)}
+.floating-alert-trigger>i{font-size:22px}
+.alert-popover{right:62px;top:50%;transform:translateY(-50%);width:min(410px,calc(100vw - 112px));max-height:min(560px,72vh);padding:14px;background:var(--card-bg);backdrop-filter:blur(14px);border:1px solid var(--border-color);border-radius:12px}
+.alert-popover-head strong{font-size:14px}
+.alert-popover-head>div>i{font-size:18px}
+.alert-popover-head span{font-size:10px}
+.alert-filters button{font-size:10px;padding:7px 4px}
+.alert-item{grid-template-columns:32px minmax(0,1fr) auto;padding:10px;gap:9px}
+.alert-item-icon{width:32px;height:32px}
+.alert-item strong{font-size:11px}
+.alert-item p{font-size:10px;line-height:1.45}
+.alert-severity{font-size:9px}
+.alert-count{font-size:10px}
+@media(min-width:761px){
+  :host{height:auto;max-height:none}
+  .review-columns{min-height:0}
+}
+@media(max-width:1100px){
+  .priority-label{min-width:145px}
+  .priority-label span{display:inline}
+  .priority-options button small{display:inline}
+}
+@media(max-width:760px){
+  :host{height:auto;max-height:none;min-height:0;overflow:visible}
+  .review-columns{grid-template-columns:1fr;flex:none}
+  .selected-test-list,.specimen-list{max-height:42vh;min-height:0}
+  .specimen-panel{min-height:0}
+  .alert-popover-host{right:14px;top:auto;bottom:88px;transform:none}
+  .alert-popover{right:0;top:auto;bottom:62px;transform:none;width:min(390px,calc(100vw - 28px));max-height:65vh}
+  .priority-label{min-width:0}
+}
+@media(max-width:480px){
+  .page-title{font-size:20px}
+  .page-subtitle{font-size:11px}
+  .section-head h2{font-size:12px}
+  .edit-tests{min-height:30px;padding:5px 8px!important;font-size:10px!important}
+  .order-total-inline span{font-size:9px}
+  .order-total-inline strong{font-size:11px}
+}
