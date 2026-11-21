@@ -71,6 +71,17 @@ export class BillingComponent implements OnInit {
   }
 
   setPayMode(m: PaymentMode): void { this.flow.setPayMode(m); }
+
+  onPayModeKeydown(event: KeyboardEvent, current: PaymentMode): void {
+    const keys = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'];
+    if (!keys.includes(event.key)) return;
+    event.preventDefault();
+    const index = this.payModes.findIndex(mode => mode.id === current);
+    const direction = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : -1;
+    const next = this.payModes[(index + direction + this.payModes.length) % this.payModes.length];
+    this.setPayMode(next.id);
+    queueMicrotask(() => document.querySelector<HTMLButtonElement>(`.pay-mode-btn[aria-checked="true"]`)?.focus());
+  }
   applyDiscount(value: number): void {
     const maximum = this.discountType() === 'percentage' ? 100 : this.subtotal();
     this.discountPct.set(Math.min(maximum, Math.max(0, value)));
@@ -115,7 +126,7 @@ export class BillingComponent implements OnInit {
     if (this.discountPct() > 0 && !this.discountReason()) return;
     this.saving.set(true);
     setTimeout(() => {
-      this.flow.setDiscount(this.discountPct());
+      this.flow.setDiscount(this.subtotal() > 0 ? (this.discAmt() / this.subtotal()) * 100 : 0);
       this.saving.set(false);
       this.showReceipt.set(true);
     }, 500);
