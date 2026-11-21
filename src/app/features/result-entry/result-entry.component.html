@@ -1,295 +1,155 @@
-<div class="page-header">
-  <div class="page-header__left">
-    <div class="page-header__title-row">
-      <div class="page-header__icon" aria-hidden="true">
-        <i class="ti ti-clipboard-list"></i>
-      </div>
-      <div>
-        <h1 class="page-title">Result Entry</h1>
-        <nav aria-label="Breadcrumb">
-          <ol class="breadcrumb">
+<section class="result-page">
+  <header class="page-header">
+    <div class="page-header__left">
+      <div class="page-header__title-row">
+        <div class="page-header__icon" aria-hidden="true"><i class="ti ti-microscope"></i></div>
+        <div>
+          <h1 class="page-title">Result Entry</h1>
+          <nav aria-label="Breadcrumb"><ol class="breadcrumb">
             <li><a routerLink="/dashboard/home">Home</a></li>
-            <li><a routerLink="/dashboard/tracking">Tracking</a></li>
-            @if (patient) {
-              <li aria-current="page">{{ patient.firstName }} {{ patient.lastName }} — {{ sampleLabel }}</li>
-            }
-          </ol>
-        </nav>
+            <li><a routerLink="/dashboard/tracking">Sample tracking</a></li>
+            @if (patient) { <li aria-current="page">{{ patient.firstName }} {{ patient.lastName }} · {{ sampleLabel }}</li> }
+          </ol></nav>
+        </div>
       </div>
     </div>
-  </div>
-  <div class="autosave-chip" aria-live="polite">
-    <i class="ti ti-circle-check" aria-hidden="true"></i> Autosaved {{ lastSavedAt() }}
-  </div>
-</div>
+    <div class="header-status">
+      <span class="autosave-chip"><i class="ti ti-cloud-check" aria-hidden="true"></i><span>Saved locally</span><strong>{{ lastSavedAt() }}</strong></span>
+    </div>
+  </header>
 
-<div class="re-layout">
-  <!-- Left: entry area -->
-  <div class="re-main">
-    <!-- Patient card — bound to whichever real record is in scope: the
-         Sample Tracking row the user clicked (via :sampleId), or the
-         PatientFlowService active patient when continuing straight from
-         Sample Collection. Never a fixed demo record.
-         Uses the canonical Patient Info Metadata pattern (pat-info-row /
-         pat-name-row / pat-detail-row) shared with Billing and Test Order,
-         so patient details read identically across the whole flow. The
-         referring-doctor field keeps its original "Ref: {doctor}" badge
-         treatment, just repositioned as a trailing, vertically-centered
-         element so it doesn't get lost inside a text-heavy detail row. -->
-    @if (patient) {
-      <div class="pat-info-row pat-info-row--bordered">
+  @if (patient) {
+    <section class="patient-context" aria-label="Current patient">
+      <div class="patient-identity">
         <div class="pat-av" aria-hidden="true">{{ patientInitials }}</div>
-        <div class="pat-id-main">
-          <div class="pat-name-row">
-            <div class="pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
-            @if (isStat) {
-              <span class="pill pill--stat" aria-label="STAT priority">
-                <i class="ti ti-flag-3" aria-hidden="true"></i>STAT
-              </span>
-            }
+        <div class="patient-copy">
+          <div class="patient-name-line">
+            <h2>{{ patient.firstName }} {{ patient.lastName }}</h2>
+            @if (isStat) { <span class="priority-pill"><i class="ti ti-flag-3"></i> STAT</span> }
           </div>
-          <div class="pat-detail-row">
-            <span class="pat-detail-item"><i class="ti ti-id-badge-2 pat-detail-icon" aria-hidden="true"></i><span class="lis-mono">{{ patient.id }}</span></span>
-            <span class="pat-detail-sep" aria-hidden="true">|</span>
-            <span class="pat-detail-item"><i class="ti ti-flask pat-detail-icon" aria-hidden="true"></i><span class="lis-mono">{{ sampleLabel }}</span></span>
-            <span class="pat-detail-sep" aria-hidden="true">|</span>
-            <span class="pat-detail-item age-inline" [title]="patientAgeBreakdown()">
-              <i class="ti ti-cake pat-detail-icon" aria-hidden="true"></i><span class="age-inline__y">{{ ageParts().years }}y</span><span class="age-inline__sep"> · </span><span class="age-inline__m">{{ ageParts().months }}m</span><span class="age-inline__sep"> · </span><span class="age-inline__d">{{ ageParts().days }}d</span>
-            </span>
-            <span class="pat-detail-sep" aria-hidden="true">|</span>
-            <span class="pat-detail-item"><i class="ti {{ genderIcon() }} pat-detail-icon" aria-hidden="true"></i>{{ patient.gender | titlecase }}</span>
-          </div>
-          <div class="pat-detail-row">
-            <span class="pat-detail-item"><i class="ti ti-clipboard-list pat-detail-icon" aria-hidden="true"></i>{{ orderedTestsLabel }}</span>
+          <div class="patient-meta">
+            <span><i class="ti ti-id"></i>{{ patient.id }}</span>
+            <span><i class="ti ti-flask-2"></i>{{ sampleLabel }}</span>
+            <span [title]="patientAgeBreakdown()"><i class="ti ti-calendar"></i>{{ ageParts().years }}y {{ ageParts().months }}m {{ ageParts().days }}d</span>
+            <span><i class="ti {{ genderIcon() }}"></i>{{ patient.gender | titlecase }}</span>
           </div>
         </div>
-        <div class="pat-doctor-badge">
-          <i class="ti ti-stethoscope" aria-hidden="true"></i>
-          <span>Ref: {{ patient.refDoctor }}</span>
-        </div>
       </div>
-    }
+      <div class="patient-context-right">
+        <div class="context-item"><span>Ordered tests</span><strong>{{ orderedTestsLabel }}</strong></div>
+        <div class="context-item"><span>Referring doctor</span><strong><i class="ti ti-stethoscope"></i>{{ patient.refDoctor || 'Not specified' }}</strong></div>
+      </div>
+    </section>
+  }
 
-    <!-- Tab bar -->
-    <div class="tab-bar" role="tablist" aria-label="Test tabs">
-      @for (tab of tabs; track tab.key; let i = $index) {
-        <button type="button" class="tab" role="tab"
-          [id]="'tab-' + tab.key"
-          [attr.data-tab-key]="tab.key"
-          [class.tab--active]="activeTabKey() === tab.key"
-          [attr.aria-selected]="activeTabKey() === tab.key"
-          [attr.aria-controls]="'panel-' + tab.key"
-          [attr.tabindex]="activeTabKey() === tab.key ? 0 : -1"
-          (click)="selectTab(tab.key)"
-          (keydown)="onTabKeydown($event, i)"
-        >{{ tab.label }}</button>
-      }
-    </div>
-
-    <!-- Critical banner -->
-    @if (hasCritical()) {
-      <div class="critical-banner" role="alert" aria-live="assertive">
-        <span class="critical-icon-wrap">
-          <i class="ti ti-alert-octagon" aria-hidden="true"></i>
-        </span>
-        <div class="critical-text">
-          <div class="critical-headline">
-            <span class="critical-badge">CRITICAL VALUE</span>
-            <span class="critical-param">{{ criticalParam()?.name }} — {{ criticalParam()?.value }} {{ criticalParam()?.unit }}</span>
-          </div>
-          <div class="critical-sub">Notify the referring physician before report dispatch.</div>
-        </div>
-        <button type="button" class="critical-notify-btn">
-          <i class="ti ti-phone" aria-hidden="true"></i> Notify
-        </button>
-      </div>
-    }
-
-    <!-- Result table -->
-    <div class="result-card lis-card" role="tabpanel" [id]="'panel-' + activeTabKey()" [attr.aria-labelledby]="'tab-' + activeTabKey()">
-      <div class="lis-card__header">
-        <i class="ti {{ activeTab().cardIcon }} lis-card-icon" aria-hidden="true"></i>
-        <h2 class="lis-card__title">{{ activeTab().cardTitle }}</h2>
-        <span class="lis-badge" [class]="'lis-badge--' + cardBadge().style">
-          <i class="ti {{ cardBadge().icon }} ti-xs"></i> {{ cardBadge().text }}
-        </span>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="result-tbl" role="table" [attr.aria-label]="activeTab().cardTitle + ' result entry'">
-          <thead>
-            <tr>
-              <th scope="col">Status</th>
-              <th scope="col">Parameter</th>
-              <th scope="col">Result</th>
-              <th scope="col">Unit</th>
-              <th scope="col">Reference range</th>
-              <th scope="col">Flag</th>
-              <th scope="col">Notes</th>
-              <th scope="col">Reset</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (p of params(); track p.id; let i = $index) {
-              <tr>
-                <td class="status-cell">
-                  <i class="ti {{ statusIcon(p.flag) }} status-icon status-icon--{{ p.flag }}"
-                     [attr.aria-label]="flagLabel(p.flag) + ' status'"></i>
-                </td>
-                <td class="param-name" [class.param-critical]="p.flag === 'critical'">
-                  {{ p.name }}
-                  @if (p.editedBy) {
-                    <div class="param-edited">Edited by {{ p.editedBy }} · {{ p.editedAt }}</div>
-                  }
-                </td>
-                <td>
-                  <div class="result-input-wrap">
-                    <input
-                      class="result-input"
-                      [class]="'result-input--' + p.flag"
-                      [attr.data-row-index]="i"
-                      type="number"
-                      placeholder="Enter value"
-                      [value]="p.value"
-                      (input)="updateValue(i, $any($event.target).value)"
-                      (keydown)="onResultKeydown($event, i)"
-                      [attr.aria-label]="p.name + ' result'"
-                    />
-                    @if (p.flag === 'high' || p.flag === 'critical') {
-                      <span class="arrow-up" [attr.title]="p.flag === 'critical' ? 'Critical — well above reference' : 'Above reference range'" aria-hidden="true">
-                        {{ p.flag === 'critical' ? '↑↑' : '↑' }}
-                      </span>
-                    }
-                    @if (p.flag === 'low') {
-                      <span class="arrow-dn" title="Below reference range" aria-hidden="true">↓</span>
-                    }
-                  </div>
-                </td>
-                <td class="unit-cell">{{ p.unit }}</td>
-                <td class="ref-cell">
-                  <div class="ref-label">{{ p.refLabel }}</div>
-                  <div class="range-bar" aria-hidden="true">
-                    <div class="range-bar__track"></div>
-                    <div class="range-bar__marker" [class]="'range-bar__marker--' + p.flag"
-                         [style.left.%]="rangePct(p)"></div>
-                  </div>
-                </td>
-                <td>
-                  <span class="lis-flag" [class]="'lis-flag--' + p.flag">
-                    <span class="lis-flag__dot" aria-hidden="true"></span>
-                    {{ flagLabel(p.flag) }}
-                  </span>
-                </td>
-                <td>
-                  <div class="param-row-actions">
-                    <button type="button" class="note-btn" [attr.aria-label]="'Add note for ' + p.name">
-                      <i class="ti ti-message-circle" aria-hidden="true"></i>
-                    </button>
-                  </div>
-                </td>  
-                <td>
-                  <div class="param-row-actions">
-                    <button type="button" class="reset-btn" [disabled]="!isRowEdited(p)"
-                            [attr.aria-label]="'Reset ' + p.name + ' to original value'"
-                            title="Reset to original value" (click)="resetRow(i)">
-                      <i class="ti ti-arrow-back-up" aria-hidden="true"></i>
-                    </button>
-                  </div>
-                </td>
-                
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- Right: summary -->
-  <aside class="re-side" aria-label="Entry summary">
-    <div class="lis-card side-card">
-      <div class="lis-card__header">
-        <h2 class="lis-card__title">Test summary</h2>
-      </div>
-      <div class="side-rows">
-        <div class="side-row"><span>Sample ID</span><span class="lis-mono">SMP-2406-087</span></div>
-        <div class="side-row"><span>Tests ordered</span><span>KFT · Urine R/M</span></div>
-        <div class="side-row"><span>Collected</span><span>9:20 AM</span></div>
-        <div class="side-row"><span>Priority</span><span class="stat-chip stat-chip--sm">STAT</span></div>
-      </div>
-
-      <!-- Progress ring -->
-      <div class="side-section">Progress</div>
-      <div class="progress-wrap">
-        <svg viewBox="0 0 80 80" width="112" height="112" class="progress-ring" [attr.aria-label]="enteredCount() + ' of ' + params().length + ' parameters entered'" role="img">
-          <defs>
-            <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#3DC9A8"/>
-              <stop offset="55%" stop-color="#2FB4D9"/>
-              <stop offset="100%" stop-color="#6366F1"/>
-            </linearGradient>
-          </defs>
-          <circle cx="40" cy="40" r="34" fill="none" stroke="var(--body-bg)" stroke-width="8"/>
-          <circle cx="40" cy="40" r="34" fill="none"
-            stroke="url(#ringGrad)" stroke-width="8"
-            stroke-dasharray="213.6" [attr.stroke-dashoffset]="213.6 - (213.6 * pct() / 100)"
-            stroke-linecap="round" transform="rotate(-90 40 40)"/>
-        </svg>
-        <div class="progress-ring-label">
-          <div class="progress-status">Completed</div>
-          <div class="progress-pct">{{ pct() }}%</div>
-          <div class="progress-caption">{{ enteredCount() }} / {{ params().length }} parameters</div>
-        </div>
-      </div>
-
-      <!-- Flag summary -->
-      <div class="side-section">Flags</div>
-      <div class="flag-stat-grid">
-        <div class="flag-stat flag-stat--normal">
-          <span class="flag-stat__dot" aria-hidden="true"></span>
-          <span class="flag-stat__count">{{ normalCount() }}</span>
-          <span class="flag-stat__label">Normal</span>
-        </div>
-        <div class="flag-stat flag-stat--high">
-          <span class="flag-stat__dot" aria-hidden="true"></span>
-          <span class="flag-stat__count">{{ abnCount() }}</span>
-          <span class="flag-stat__label">Abnormal</span>
-        </div>
-        <div class="flag-stat flag-stat--critical">
-          <span class="flag-stat__dot" aria-hidden="true"></span>
-          <span class="flag-stat__count">{{ critCount() }}</span>
-          <span class="flag-stat__label">Critical</span>
-        </div>
-      </div>
-
-      <!-- Notify box -->
-      @if (hasCritical()) {
-        <div class="side-section">Action needed</div>
-        <div class="notify-box" role="status">
-          <i class="ti ti-phone" aria-hidden="true"></i>
+  <div class="re-layout">
+    <main class="re-main">
+      <section class="work-panel">
+        <div class="work-panel-heading">
           <div>
-            <div class="notify-title">Notify Dr. Suresh Menon</div>
-            <div class="notify-sub">Critical {{ criticalParam()?.name }} — required before dispatch</div>
+            <span class="eyebrow">LABORATORY WORKSPACE</span>
+            <h2>Enter investigation results</h2>
+            <p>Review each parameter, enter measured values and verify flags before finalising.</p>
+          </div>
+          <div class="entry-progress" aria-label="Entry progress">
+            <div class="entry-progress-copy"><strong>{{ enteredCount() }} <span>/ {{ params().length }}</span></strong><small>values entered</small></div>
+            <div class="entry-progress-track"><span [style.width.%]="pct()"></span></div>
           </div>
         </div>
-      }
 
-      <div class="side-actions">
-        <button type="button" class="lis-btn lis-btn--primary lis-btn--full" (click)="navigateToPreview()" title="Ctrl+Enter">
-          <i class="ti ti-file-text" aria-hidden="true"></i> Finalise &amp; generate report
-        </button>
-        <button type="button" class="lis-btn lis-btn--secondary lis-btn--full" (click)="saveDraft()" title="Ctrl+S">
-          <i class="ti ti-device-floppy" aria-hidden="true"></i> Save draft
-        </button>
-        <button type="button" class="lis-btn lis-btn--ghost lis-btn--full" (click)="resetAll()" [disabled]="!anyEdited()"
-                title="Reset all values on this tab to their original entries">
-          <i class="ti ti-refresh-alert" aria-hidden="true"></i> Reset this section
-        </button>
-        <div class="kbd-hint">
-          <span><kbd>Enter</kbd> next row</span>
-          <span><kbd>Ctrl</kbd>+<kbd>S</kbd> save</span>
-          <span><kbd>Ctrl</kbd>+<kbd>↵</kbd> report</span>
+        <div class="tab-bar" role="tablist" aria-label="Test panels">
+          @for (tab of tabs; track tab.key; let i = $index) {
+            <button type="button" class="tab" role="tab" [id]="'tab-' + tab.key"
+              [attr.data-tab-key]="tab.key" [class.tab--active]="activeTabKey() === tab.key"
+              [attr.aria-selected]="activeTabKey() === tab.key" [attr.aria-controls]="'panel-' + tab.key"
+              [attr.tabindex]="activeTabKey() === tab.key ? 0 : -1"
+              (click)="selectTab(tab.key)" (keydown)="onTabKeydown($event, i)">
+              <span>{{ tab.label }}</span>
+              @if (activeTabKey() === tab.key) { <i class="ti ti-chevron-down" aria-hidden="true"></i> }
+            </button>
+          }
         </div>
-      </div>
-    </div>
-  </aside>
-</div>
+
+        @if (hasCritical()) {
+          <div class="critical-banner" role="alert" aria-live="assertive">
+            <span class="critical-icon-wrap"><i class="ti ti-alert-triangle"></i></span>
+            <div class="critical-text">
+              <div class="critical-headline"><strong>Critical result detected</strong><span>{{ criticalParam()?.name }} · {{ criticalParam()?.value }} {{ criticalParam()?.unit }}</span></div>
+              <p>Review this value and follow the laboratory's critical-result notification protocol before dispatch.</p>
+            </div>
+            <span class="critical-badge">ACTION REQUIRED</span>
+          </div>
+        }
+
+        <section class="result-card" role="tabpanel" [id]="'panel-' + activeTabKey()" [attr.aria-labelledby]="'tab-' + activeTabKey()">
+          <div class="result-section-heading">
+            <div class="section-icon"><i class="ti {{ activeTab().cardIcon }}"></i></div>
+            <div><h3>{{ activeTab().cardTitle }}</h3><p>{{ params().length }} reportable parameters</p></div>
+            <span class="lis-badge" [class]="'lis-badge--' + cardBadge().style"><i class="ti {{ cardBadge().icon }}"></i>{{ cardBadge().text }}</span>
+          </div>
+          <div class="table-scroll">
+            <table class="result-tbl" [attr.aria-label]="activeTab().cardTitle + ' result entry'">
+              <thead><tr>
+                <th class="status-heading">Status</th><th>Investigation / parameter</th><th>Result value</th><th>Unit</th><th>Biological reference interval</th><th>Interpretation</th><th class="action-heading">Reset</th>
+              </tr></thead>
+              <tbody>
+                @for (p of params(); track p.id; let i = $index) {
+                  <tr [class.row-critical]="p.flag === 'critical'">
+                    <td class="status-cell"><span class="status-mark" [class]="'status-mark--' + p.flag" [attr.aria-label]="flagLabel(p.flag) + ' status"><i class="ti {{ statusIcon(p.flag) }}"></i></span></td>
+                    <td class="param-cell"><strong>{{ p.name }}</strong>@if (p.editedBy) { <small>Edited by {{ p.editedBy }} · {{ p.editedAt }}</small> }</td>
+                    <td><div class="result-input-wrap">
+                      <input class="result-input" [class]="'result-input--' + p.flag" [attr.data-row-index]="i"
+                        type="number" inputmode="decimal" placeholder="Enter result" [value]="p.value"
+                        (input)="updateValue(i, $any($event.target).value)" (keydown)="onResultKeydown($event, i)"
+                        [attr.aria-label]="p.name + ' result'" />
+                      @if (p.flag === 'high' || p.flag === 'critical') { <span class="value-direction value-direction--high" aria-hidden="true">{{ p.flag === 'critical' ? '↑↑' : '↑' }}</span> }
+                      @if (p.flag === 'low') { <span class="value-direction value-direction--low" aria-hidden="true">↓</span> }
+                    </div></td>
+                    <td class="unit-cell">{{ p.unit || '—' }}</td>
+                    <td class="reference-cell"><strong>{{ p.refLabel }}</strong><div class="range-bar" aria-hidden="true"><span class="range-bar__track"></span><span class="range-bar__marker" [class]="'range-bar__marker--' + p.flag" [style.left.%]="rangePct(p)"></span></div></td>
+                    <td><span class="lis-flag" [class]="'lis-flag--' + p.flag"><span class="lis-flag__dot"></span>{{ flagLabel(p.flag) }}</span></td>
+                    <td><button type="button" class="reset-btn" [disabled]="!isRowEdited(p)" [attr.aria-label]="'Reset ' + p.name + ' to original value'" title="Reset value" (click)="resetRow(i)"><i class="ti ti-restore"></i></button></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <footer class="table-footer"><span><i class="ti ti-info-circle"></i> Use the Enter key to move to the next result field.</span><span>{{ enteredCount() }} of {{ params().length }} completed</span></footer>
+        </section>
+      </section>
+    </main>
+
+    <aside class="re-side" aria-label="Result review summary">
+      <section class="summary-card">
+        <div class="summary-heading"><div><span class="eyebrow">REVIEW PANEL</span><h2>Entry summary</h2></div><span class="summary-icon"><i class="ti ti-clipboard-check"></i></span></div>
+        <div class="summary-progress">
+          <div class="progress-ring-wrap">
+            <svg viewBox="0 0 80 80" class="progress-ring" role="img" [attr.aria-label]="enteredCount() + ' of ' + params().length + ' parameters entered'">
+              <circle cx="40" cy="40" r="34" class="ring-track"></circle>
+              <circle cx="40" cy="40" r="34" class="ring-value" [attr.stroke-dashoffset]="213.6 - (213.6 * pct() / 100)"></circle>
+            </svg>
+            <div class="progress-ring-label"><strong>{{ pct() }}%</strong><span>complete</span></div>
+          </div>
+          <div class="progress-detail"><strong>{{ enteredCount() }} / {{ params().length }}</strong><span>Parameters entered</span><small>{{ params().length - enteredCount() }} remaining in this panel</small></div>
+        </div>
+        <div class="summary-divider"></div>
+        <h3 class="summary-section-title">Result distribution</h3>
+        <div class="flag-stat-grid">
+          <div class="flag-stat flag-stat--normal"><span class="flag-stat__count">{{ normalCount() }}</span><span class="flag-stat__label">Normal</span></div>
+          <div class="flag-stat flag-stat--high"><span class="flag-stat__count">{{ abnCount() }}</span><span class="flag-stat__label">Abnormal</span></div>
+          <div class="flag-stat flag-stat--critical"><span class="flag-stat__count">{{ critCount() }}</span><span class="flag-stat__label">Critical</span></div>
+        </div>
+        @if (hasCritical()) {
+          <div class="notify-box"><i class="ti ti-alert-circle"></i><div><strong>Critical review required</strong><span>{{ criticalParam()?.name }} is outside the critical threshold. Follow lab protocol before releasing the report.</span></div></div>
+        }
+        <div class="summary-divider"></div>
+        <div class="summary-actions">
+          <button type="button" class="lis-btn lis-btn--primary lis-btn--full" (click)="navigateToPreview()" title="Ctrl+Enter"><i class="ti ti-file-check"></i> Review &amp; generate report</button>
+          <button type="button" class="lis-btn lis-btn--secondary lis-btn--full" (click)="saveDraft()" title="Ctrl+S"><i class="ti ti-device-floppy"></i> Save draft</button>
+          <button type="button" class="lis-btn lis-btn--ghost lis-btn--full" (click)="resetAll()" [disabled]="!anyEdited()"><i class="ti ti-refresh"></i> Reset this panel</button>
+        </div>
+        <div class="keyboard-hints"><span><kbd>Enter</kbd> Next field</span><span><kbd>Ctrl</kbd> + <kbd>S</kbd> Save</span><span><kbd>Ctrl</kbd> + <kbd>↵</kbd> Preview</span></div>
+      </section>
+    </aside>
+  </div>
+</section>
