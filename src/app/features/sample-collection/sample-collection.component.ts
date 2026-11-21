@@ -92,6 +92,10 @@ export class SampleCollectionComponent {
   collectedAt = signal('');
   notes       = signal('');
   collectionDateTime = signal(this.toDateTimeLocal(new Date()));
+  datePickerOpen = signal(false);
+  collectionDatePart = signal(this.toDateTimeLocal(new Date()).slice(0, 10));
+  collectionTimePart = signal(this.toDateTimeLocal(new Date()).slice(11, 16));
+  readonly todayDate = this.toDateTimeLocal(new Date()).slice(0, 10);
   collectionSite = signal('');
   patientCondition = signal('Not recorded');
   protected readonly patientConditionOptions = [
@@ -100,11 +104,11 @@ export class SampleCollectionComponent {
     { value: 'Post-meal', label: 'Post meal' },
     { value: 'Not recorded', label: 'Not recorded' },
   ];
-  protected readonly collectorName = 'Current operator';
+  collectorName = signal('Ravi Anand');
   collectionFormValid = computed(() =>
     !!this.collectionDateTime() &&
     !Number.isNaN(new Date(this.collectionDateTime()).getTime()) &&
-    !!this.collectorName.trim()
+    !!this.collectorName().trim()
   );
 
   private _checked = signal<Set<string>>(new Set());
@@ -150,6 +154,27 @@ export class SampleCollectionComponent {
   private toDateTimeLocal(date: Date): string {
     const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
     return local.toISOString().slice(0, 16);
+  }
+
+  toggleDatePicker(): void {
+    if (this.collected()) return;
+    this.datePickerOpen.update(open => !open);
+  }
+
+  updateCollectionDate(value: string): void {
+    this.collectionDatePart.set(value);
+    this.syncCollectionDateTime();
+  }
+
+  updateCollectionTime(value: string): void {
+    this.collectionTimePart.set(value);
+    this.syncCollectionDateTime();
+  }
+
+  private syncCollectionDateTime(): void {
+    const date = this.collectionDatePart();
+    const time = this.collectionTimePart();
+    if (date && time) this.collectionDateTime.set(`${date}T${time}`);
   }
 
   isChecked(id: string): boolean { return this._checked().has(id); }
