@@ -101,6 +101,11 @@ export class SampleCollectionComponent {
     { value: 'Not recorded', label: 'Not recorded' },
   ];
   protected readonly collectorName = 'Current operator';
+  collectionFormValid = computed(() =>
+    !!this.collectionDateTime() &&
+    !Number.isNaN(new Date(this.collectionDateTime()).getTime()) &&
+    !!this.collectorName.trim()
+  );
 
   private _checked = signal<Set<string>>(new Set());
   checkedCount = computed(() => this._checked().size);
@@ -161,7 +166,7 @@ export class SampleCollectionComponent {
   }
 
   markCollected(): void {
-    if (!this.collectionDateTime()) return;
+    if (!this.collectionFormValid()) return;
     this.collectedAt.set(
       new Date(this.collectionDateTime()).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
     );
