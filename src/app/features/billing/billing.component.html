@@ -284,15 +284,6 @@
             Credit billing — collect payment before report dispatch.
           </div>
         }
-        <div class="pay-adaptive">
-          <div class="lis-field">
-            <label for="amountToReceive">Amount to receive</label>
-            <div class="currency-field settlement-currency">
-              <span class="currency-prefix">₹</span>
-              <input id="amountToReceive" type="text" [value]="outstanding().toLocaleString('en-IN')" readonly />
-            </div>
-          </div>
-        </div>
         @if (payMode() === 'upi') {
           <div class="pay-adaptive">
             <div class="lis-field">
