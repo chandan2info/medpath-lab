@@ -95,6 +95,7 @@ export class SampleCollectionComponent {
   collectionDateTime = signal(this.toDateTimeLocal(new Date()));
   datePickerOpen = signal(false);
   timePickerExpanded = signal(false);
+  readonly datePickerPosition = signal({ top: 0, left: 0, width: 320, maxHeight: 360 });
   private readonly initialCollectionDateTime = this.toDateTimeLocal(new Date());
   collectionDatePart = signal(this.initialCollectionDateTime.slice(0, 10));
   collectionTimePart = signal(this.initialCollectionDateTime.slice(11, 16));
@@ -193,6 +194,7 @@ export class SampleCollectionComponent {
   }
 
   private beginDatePickerEdit(): void {
+    this.positionDatePicker();
     const current = this.collectionDateTime();
     this.collectionDatePart.set(current.slice(0, 10));
     this.collectionTimePart.set(current.slice(11, 16));
@@ -202,6 +204,27 @@ export class SampleCollectionComponent {
     }
     this.timePickerExpanded.set(true);
     this.datePickerOpen.set(true);
+  }
+
+  private positionDatePicker(): void {
+    const trigger = this.hostRef.nativeElement.querySelector<HTMLElement>('.collection-datetime-trigger');
+    const card = this.hostRef.nativeElement.querySelector<HTMLElement>('.collect-panel');
+    if (!trigger || !card) return;
+
+    const triggerRect = trigger.getBoundingClientRect();
+    const cardRect = card.getBoundingClientRect();
+    const width = Math.max(260, Math.min(320, cardRect.width - 24));
+    const left = Math.max(cardRect.left + 12, Math.min(triggerRect.left, cardRect.right - width - 12));
+    const belowTop = triggerRect.bottom + 8;
+    const belowSpace = cardRect.bottom - belowTop - 12;
+    const aboveSpace = triggerRect.top - cardRect.top - 20;
+    const placeAbove = belowSpace < 300 && aboveSpace > belowSpace;
+    const maxHeight = Math.max(240, Math.min(390, placeAbove ? aboveSpace : belowSpace));
+    const top = placeAbove
+      ? Math.max(cardRect.top + 12, triggerRect.top - maxHeight - 8)
+      : belowTop;
+
+    this.datePickerPosition.set({ top, left, width, maxHeight });
   }
 
   cancelDatePicker(): void {
