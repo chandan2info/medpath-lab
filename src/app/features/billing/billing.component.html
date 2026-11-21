@@ -143,16 +143,7 @@
       <div class="inv-meta lis-mono">{{ invoiceId }}</div>
     </div>
 
-    <!-- Line items -->
-    <div class="inv-items" role="list" aria-label="Invoice line items">
-      @for (t of flow.selectedTests(); track t.id) {
-        <div class="inv-item" role="listitem">
-          <span class="inv-iname">{{ t.name }}</span>
-          <span class="inv-iprice">₹{{ t.price.toLocaleString('en-IN') }}</span>
-        </div>
-      }
-    </div>
-
+    <!-- Financial summary only; test names are already shown in the table. -->
     <!-- Totals -->
     <div class="inv-totals">
       <div class="tot-row"><span>Subtotal</span><span>₹{{ subtotal().toLocaleString('en-IN') }}</span></div>
@@ -188,17 +179,18 @@
   <section class="settlement-card lis-card" aria-label="Adjustments and payment">
     <div class="settlement-header">
       <i class="ti ti-adjustments-horizontal" aria-hidden="true"></i>
-      <div>
-        <h2>Adjustments &amp; Payment</h2>
-        <p>Apply discounts or advance, then record how the patient pays</p>
+      <div class="settlement-heading-copy">
+        <h2>Billing &amp; Payment</h2>
+        <p>Apply an eligible discount, account for advance, and collect the balance</p>
       </div>
+      <span class="settlement-policy-note"><i class="ti ti-shield-check" aria-hidden="true"></i> Discounts follow lab policy</span>
     </div>
     <div class="settlement-grid">
       <section class="settlement-section discount-section" aria-label="Discounts and adjustments">
-        <div class="settlement-section-title"><i class="ti ti-tag" aria-hidden="true"></i> Discounts &amp; Adjustments</div>
+        <div class="settlement-section-title"><i class="ti ti-tag" aria-hidden="true"></i> Discounts</div>
         <div class="discount-input-grid">
-          <div class="lis-field">
-            <label for="discPct">Discount (%)</label>
+          <div class="lis-field discount-rate-field">
+            <label for="discPct">Discount percentage</label>
             <div class="stepper-field settlement-stepper">
               <button type="button" class="stepper-btn" (click)="incrementDiscount(-1)" aria-label="Decrease discount">−</button>
               <input id="discPct" type="text" inputmode="numeric" pattern="[0-9]*" min="0" max="100" class="stepper-input"
@@ -207,23 +199,48 @@
                 (input)="applyDiscount(sanitizeNumericInput($event))"
                 placeholder="0" />
               <button type="button" class="stepper-btn" (click)="incrementDiscount(1)" aria-label="Increase discount">+</button>
+              <span class="stepper-suffix">%</span>
             </div>
           </div>
           <div class="lis-field">
             <label>Discount amount</label>
             <div class="settlement-value"><span>₹</span><strong>{{ discAmt().toLocaleString('en-IN', { minimumFractionDigits: 2 }) }}</strong></div>
           </div>
-          <div class="lis-field advance-field">
-            <label for="advance">Advance received</label>
-            <div class="currency-field settlement-currency">
-              <span class="currency-prefix">₹</span>
-              <input id="advance" type="text" inputmode="numeric" pattern="[0-9]*"
-                [value]="advance()"
-                (keydown)="allowNumericKeysOnly($event)"
-                (input)="advance.set(sanitizeNumericInput($event))"
-                placeholder="0.00" />
-            </div>
+          <div class="lis-field discount-reason-field">
+            <label for="discountReason">Reason for discount <span class="required-mark">*</span></label>
+            <select id="discountReason" class="settlement-input" [value]="discountReason()" (change)="setDiscountReason($event)">
+              <option value="">Select a reason</option>
+              <option value="Promotional offer">Promotional offer</option>
+              <option value="Staff discount">Staff discount</option>
+              <option value="Senior citizen">Senior citizen</option>
+              <option value="Referral discount">Referral discount</option>
+              <option value="Special approval">Special approval</option>
+              <option value="Other">Other</option>
+            </select>
           </div>
+        </div>
+        @if (discountPct() > 0 && !discountReason()) {
+          <p class="field-hint field-hint--warning"><i class="ti ti-alert-circle" aria-hidden="true"></i> Select a reason before confirming the invoice.</p>
+        }
+      </section>
+
+      <section class="settlement-section advance-section" aria-label="Advance received">
+        <div class="settlement-section-title"><i class="ti ti-wallet" aria-hidden="true"></i> Advance</div>
+        <div class="lis-field">
+          <label for="advance">Advance received</label>
+          <div class="currency-field settlement-currency">
+            <span class="currency-prefix">₹</span>
+            <input id="advance" type="text" inputmode="numeric" pattern="[0-9]*"
+              [value]="advance()"
+              (keydown)="allowNumericKeysOnly($event)"
+              (input)="advance.set(sanitizeNumericInput($event))"
+              placeholder="0" />
+          </div>
+          <span class="field-hint">Deducted from the payable balance.</span>
+        </div>
+        <div class="advance-impact">
+          <span>Balance to collect</span>
+          <strong>₹{{ outstanding().toLocaleString('en-IN') }}</strong>
         </div>
       </section>
 
@@ -278,7 +295,7 @@
 
       <section class="settlement-actions" aria-label="Billing actions">
         <div class="settlement-priority">
-          <span>Processing priority</span>
+          <span>Order priority</span>
           <span class="prio-tag" [class.prio-tag--stat]="flow.priority() === 'stat'">{{ flow.priority() | titlecase }}</span>
         </div>
         <button type="button" class="lis-link receipt-preview-link" (click)="showReceipt.set(true)">
