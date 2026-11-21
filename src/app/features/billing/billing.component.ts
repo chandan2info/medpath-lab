@@ -41,6 +41,7 @@ export class BillingComponent implements OnInit {
 
   readonly today  = new Date();
   discountPct     = signal(0);
+  discountReason  = signal('');
   couponCode      = signal('');
   referralCode    = signal('');
   advance         = signal(0);
@@ -66,6 +67,10 @@ export class BillingComponent implements OnInit {
 
   setPayMode(m: PaymentMode): void { this.flow.setPayMode(m); }
   applyDiscount(pct: number): void { this.discountPct.set(Math.min(100, Math.max(0, pct))); }
+
+  setDiscountReason(event: Event): void {
+    this.discountReason.set((event.target as HTMLSelectElement).value);
+  }
 
   /**
    * Blocks any non-numeric keystroke at the source, so the Discount % and
@@ -100,6 +105,7 @@ export class BillingComponent implements OnInit {
   }
 
   confirmPayment(): void {
+    if (this.discountPct() > 0 && !this.discountReason()) return;
     this.saving.set(true);
     setTimeout(() => {
       this.flow.setDiscount(this.discountPct());
