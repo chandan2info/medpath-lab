@@ -612,3 +612,18 @@
     margin-top: 0 !important;
   }
 }
+
+
+/* Allocate 20% of the priority row to its label; processing options use the remaining width. */
+@media (min-width: 761px) {
+  .priority-alert-row .priority-label {
+    flex: 0 0 20%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .priority-alert-row .priority-options {
+    flex: 1 1 0%;
+    min-width: 0;
+  }
+}
