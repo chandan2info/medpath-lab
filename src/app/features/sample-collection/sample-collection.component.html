@@ -4,8 +4,8 @@
      ═══════════════════════════════════════════════════════════ -->
 
 <section class="sample-top-card lis-card" aria-label="Sample collection workflow">
-  <div class="sample-top-heading">
-    <div>
+  <div class="sample-top-layout">
+    <div class="sample-top-heading">
       <h1 class="page-title">Sample Collection</h1>
       <nav aria-label="Breadcrumb">
         <ol class="breadcrumb">
@@ -15,10 +15,9 @@
         </ol>
       </nav>
     </div>
-    <span class="sample-top-context">Patient workflow</span>
-  </div>
-  <div class="timeline-card">
-    <lis-workflow-stepper [steps]="timelineSteps" [activeIndex]="timelineActiveIndex()" [ariaLabel]="'Sample lifecycle progress'" />
+    <div class="timeline-card">
+      <lis-workflow-stepper [steps]="timelineSteps" [activeIndex]="timelineActiveIndex()" [ariaLabel]="'Sample lifecycle progress'" />
+    </div>
   </div>
 </section>
 
