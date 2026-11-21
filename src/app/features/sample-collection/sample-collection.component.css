@@ -2640,3 +2640,154 @@
   .collect-panel .collection-datetime-popover { left: 0; right: auto; width: min(430px, calc(100vw - 32px)); }
   .collect-panel .collection-time-picker { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(96px, .9fr); gap: 6px; }
 }
+
+
+/* ── Collection date/time picker: keep the popup inside the details card ──
+   The form/grid is scrollable, so an absolutely positioned child gets clipped.
+   Use a measured fixed position (from the component) and constrain it to the
+   Collection Details card instead. */
+.collect-panel .collection-datetime-control {
+  position: relative;
+  z-index: 100;
+}
+.collect-panel .collection-datetime-popover {
+  position: fixed !important;
+  inset: auto !important;
+  box-sizing: border-box;
+  width: 320px;
+  max-width: calc(100vw - 24px);
+  min-width: 0;
+  padding: 10px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  z-index: 1200;
+  background: #172337;
+  border: 1px solid #52647b;
+  border-radius: 12px;
+  box-shadow: 0 18px 42px rgb(0 0 0 / 48%);
+}
+.collect-panel .collection-datetime-popover__selected-date {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 36px;
+  margin: 0 0 8px;
+  padding: 0 9px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+.collect-panel .collection-datetime-popover__selected-date strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.collect-panel .collection-calendar {
+  padding: 0 0 7px;
+}
+.collect-panel .collection-calendar__header {
+  grid-template-columns: 30px minmax(0, 1fr) 30px;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.collect-panel .collection-calendar__header button {
+  width: 30px;
+  height: 30px;
+}
+.collect-panel .collection-calendar__weekdays,
+.collect-panel .collection-calendar__days {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+}
+.collect-panel .collection-calendar__days button,
+.collect-panel .collection-calendar__days > span {
+  height: 27px;
+  font-size: 10.5px;
+}
+.collect-panel .collection-calendar__time {
+  display: block !important;
+  visibility: visible !important;
+  margin: 8px 0 0;
+  padding: 0;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--body-bg) 76%, transparent);
+}
+.collect-panel .collection-calendar__time-toggle {
+  display: flex;
+  width: 100%;
+  min-height: 34px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+}
+.collect-panel .collection-calendar__time-toggle > span {
+  font-size: 11px;
+}
+.collect-panel .collection-calendar__time-toggle strong {
+  margin-left: auto;
+  font-size: 11px;
+}
+.collect-panel .collection-time-picker {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(88px, .9fr);
+  align-items: end;
+  gap: 6px;
+  margin: 0;
+  padding: 0 8px 8px;
+}
+.collect-panel .collection-time-picker__unit {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 3px;
+}
+.collect-panel .collection-time-picker__unit span {
+  font-size: 10px;
+}
+.collect-panel .collection-time-picker__unit select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+  min-height: 32px;
+  padding: 0 6px;
+  font-size: 11px;
+}
+.collect-panel .collection-time-picker__period {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+  min-height: 32px;
+  align-self: end;
+  padding: 2px;
+  gap: 2px;
+}
+.collect-panel .collection-time-picker__period button {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 26px;
+  padding: 0 4px;
+  font-size: 10px;
+}
+.collect-panel .collection-datetime-popover__actions {
+  position: sticky;
+  bottom: -10px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+  margin: 8px -10px -10px;
+  padding: 8px 10px 10px;
+  background: #172337;
+}
+.collect-panel .collection-datetime-popover__actions .lis-btn {
+  min-width: 0;
+  min-height: 34px;
+  padding: 0 8px;
+  font-size: 11px;
+}
+@media (max-width: 520px) {
+  .collect-panel .collection-datetime-popover {
+    max-width: calc(100vw - 24px);
+  }
+}
