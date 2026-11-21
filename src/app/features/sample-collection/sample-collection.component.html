@@ -110,23 +110,49 @@
         <div class="collection-field-grid">
           <div class="lis-field collection-field--wide">
             <label for="collection-date-time">Collection date &amp; time <span class="required-mark">*</span></label>
-            <div class="collection-input-icon">
-              <i class="ti ti-calendar-event" aria-hidden="true"></i>
-              <input id="collection-date-time" type="datetime-local" required [value]="collectionDateTime()"
-                (input)="collectionDateTime.set($any($event.target).value)" [disabled]="collected()" />
+            <div class="collection-datetime-control">
+              <button type="button" class="collection-datetime-trigger" id="collection-date-time"
+                [class.collection-datetime-trigger--open]="datePickerOpen()"
+                [attr.aria-expanded]="datePickerOpen()" aria-haspopup="dialog"
+                (click)="toggleDatePicker()" [disabled]="collected()">
+                <i class="ti ti-calendar-event" aria-hidden="true"></i>
+                <span>{{ collectionDateTime() | date:'dd MMM yyyy, hh:mm a' }}</span>
+                <i class="ti ti-calendar-month collection-datetime-end-icon" aria-hidden="true"></i>
+              </button>
+              @if (datePickerOpen()) {
+                <div class="collection-datetime-popover" role="dialog" aria-label="Choose collection date and time">
+                  <div class="collection-datetime-popover__heading">Collection date &amp; time</div>
+                  <div class="collection-datetime-popover__fields">
+                    <div>
+                      <label for="collection-date">Date</label>
+                      <input id="collection-date" type="date" [value]="collectionDatePart()"
+                        (change)="updateCollectionDate($any($event.target).value)" [max]="todayDate" />
+                    </div>
+                    <div>
+                      <label for="collection-time">Time</label>
+                      <input id="collection-time" type="time" [value]="collectionTimePart()"
+                        (change)="updateCollectionTime($any($event.target).value)" />
+                    </div>
+                  </div>
+                  <div class="collection-datetime-popover__actions">
+                    <button type="button" class="lis-btn lis-btn--secondary" (click)="datePickerOpen.set(false)">Cancel</button>
+                    <button type="button" class="lis-btn lis-btn--primary" (click)="datePickerOpen.set(false)">Apply</button>
+                  </div>
+                </div>
+              }
             </div>
           </div>
 
           <div class="lis-field">
             <label for="collection-collector">Collector <span class="required-mark">*</span></label>
-            <input id="collection-collector" [value]="collectorName" readonly required aria-describedby="collector-help" />
+            <input id="collection-collector" [value]="collectorName()" (input)="collectorName.set($any($event.target).value)" required [disabled]="collected()" placeholder="Enter collector name" />
           </div>
           <div class="lis-field">
             <label for="collection-sample-type">
               Specimen type
               <i class="ti ti-info-circle field-info" title="Automatically derived from the tests and required specimen tubes." aria-label="Derived from ordered tests"></i>
             </label>
-            <input id="collection-sample-type" [value]="sampleType()" readonly />
+            <input id="collection-sample-type" [value]="sampleType()" readonly aria-readonly="true" title="Automatically determined from the ordered tests and their required specimen tubes" />
           </div>
 
           <div class="lis-field collection-field--wide">
