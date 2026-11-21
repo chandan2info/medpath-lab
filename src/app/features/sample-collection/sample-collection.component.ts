@@ -212,7 +212,7 @@ export class SampleCollectionComponent {
   }
 
   applyDatePicker(): void {
-    if (!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(this.collectionTimePart())) return;
+    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(this.collectionTimePart())) return;
     this.syncCollectionDateTime();
     this.datePickerOpen.set(false);
   }
