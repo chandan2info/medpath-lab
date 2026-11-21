@@ -41,6 +41,7 @@ export class BillingComponent implements OnInit {
 
   readonly today  = new Date();
   discountPct     = signal(0);
+  discountType    = signal<'percentage' | 'fixed'>('percentage');
   discountReason  = signal('');
   couponCode      = signal('');
   referralCode    = signal('');
@@ -50,9 +51,13 @@ export class BillingComponent implements OnInit {
   invoiceId       = this.flow.generateInvoiceId();
 
   subtotal    = this.flow.orderTotal;
-  discAmt     = computed(() => Math.round(this.subtotal() * this.discountPct() / 100));
+  discAmt     = computed(() => this.discountType() === 'percentage'
+    ? Math.min(this.subtotal(), Math.round(this.subtotal() * this.discountPct() / 100))
+    : Math.min(this.subtotal(), Math.round(this.discountPct() * 100) / 100));
   grandTotal  = computed(() => this.subtotal() - this.discAmt());
   outstanding = computed(() => Math.max(0, this.grandTotal() - this.advance()));
+  paidPercentage = computed(() => this.grandTotal() > 0
+    ? Math.min(100, Math.round((this.advance() / this.grandTotal()) * 100)) : 0);
   payMode     = this.flow.payMode;
 
   get patient() { return this.flow.patient(); }
@@ -66,42 +71,44 @@ export class BillingComponent implements OnInit {
   }
 
   setPayMode(m: PaymentMode): void { this.flow.setPayMode(m); }
-  applyDiscount(pct: number): void { this.discountPct.set(Math.min(100, Math.max(0, pct))); }
+  applyDiscount(value: number): void {
+    const maximum = this.discountType() === 'percentage' ? 100 : this.subtotal();
+    this.discountPct.set(Math.min(maximum, Math.max(0, value)));
+  }
+
+  setDiscountType(event: Event): void {
+    const type = (event.target as HTMLSelectElement).value as 'percentage' | 'fixed';
+    this.discountType.set(type);
+    this.discountPct.set(0);
+  }
 
   setDiscountReason(event: Event): void {
     this.discountReason.set((event.target as HTMLSelectElement).value);
   }
 
-  /**
-   * Blocks any non-numeric keystroke at the source, so the Discount % and
-   * Advance received fields — now `type="text"` (see task: numeric-only
-   * validation done in TS rather than relying on `type="number"`'s native,
-   * inconsistent-across-browsers spinner/validation behaviour) — never let
-   * a non-digit character land in the input in the first place.
-   * Navigation, editing and copy/paste shortcut keys are always allowed.
-   */
-  allowNumericKeysOnly(event: KeyboardEvent): void {
+  /** Allow digits, one decimal separator and normal editing/shortcut keys. */
+  allowDecimalKeysOnly(event: KeyboardEvent): void {
     const allowedKeys = [
       'Backspace', 'Delete', 'Tab', 'Escape', 'Enter',
       'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End',
     ];
-    if (allowedKeys.includes(event.key)) return;
-    if (event.ctrlKey || event.metaKey) return; // allow Ctrl/Cmd+A/C/V/X etc.
-    if (!/^[0-9]$/.test(event.key)) {
-      event.preventDefault();
-    }
+    if (allowedKeys.includes(event.key) || event.ctrlKey || event.metaKey) return;
+    const input = event.target as HTMLInputElement;
+    if (/^[0-9]$/.test(event.key)) return;
+    if (event.key === '.' && !input.value.includes('.')) return;
+    event.preventDefault();
   }
 
-  /**
-   * Strips any non-digit characters that slip through (e.g. via paste) and
-   * returns a clamped numeric value, keeping the underlying signal a clean
-   * number even though the field itself is `type="text"`.
-   */
-  sanitizeNumericInput(event: Event): number {
+  /** Sanitize typed/pasted numeric values and preserve up to two decimal places. */
+  sanitizeDecimalInput(event: Event): number {
     const input = event.target as HTMLInputElement;
-    const digitsOnly = input.value.replace(/[^0-9]/g, '');
-    input.value = digitsOnly;
-    return digitsOnly === '' ? 0 : Number(digitsOnly);
+    let value = input.value.replace(/[^0-9.]/g, '');
+    const dot = value.indexOf('.');
+    if (dot >= 0) value = value.slice(0, dot + 1) + value.slice(dot + 1).replace(/\./g, '');
+    const [whole, fraction] = value.split('.');
+    value = fraction === undefined ? whole : whole + '.' + fraction.slice(0, 2);
+    input.value = value;
+    return value === '' || value === '.' ? 0 : Number(value);
   }
 
   confirmPayment(): void {
