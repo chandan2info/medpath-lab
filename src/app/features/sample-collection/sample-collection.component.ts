@@ -92,7 +92,7 @@ export class SampleCollectionComponent {
   collectedAt = signal('');
   notes       = signal('');
   collectionDateTime = signal(this.toDateTimeLocal(new Date()));
-  datePickerOpen = signal(false);
+  datePickerOpen = signal(false);\n  timePickerExpanded = signal(false);
   collectionDatePart = signal(this.toDateTimeLocal(new Date()).slice(0, 10));
   collectionTimePart = signal(this.toDateTimeLocal(new Date()).slice(11, 16));
   readonly timeHours = Array.from({ length: 12 }, (_, index) => String(index + 1).padStart(2, '0'));
