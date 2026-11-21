@@ -627,3 +627,18 @@
     min-width: 0;
   }
 }
+
+
+/* Give the Order Priority label more room and slightly constrain the speed choices. */
+@media (min-width: 761px) {
+  .priority-alert-row .priority-label {
+    flex: 0 0 25%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .priority-alert-row .priority-options {
+    flex: 1 1 0%;
+    min-width: 0;
+  }
+}
