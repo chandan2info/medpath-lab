@@ -95,6 +95,14 @@ export class SampleCollectionComponent {
   datePickerOpen = signal(false);
   collectionDatePart = signal(this.toDateTimeLocal(new Date()).slice(0, 10));
   collectionTimePart = signal(this.toDateTimeLocal(new Date()).slice(11, 16));
+  readonly timeHours = Array.from({ length: 12 }, (_, index) => String(index + 1).padStart(2, '0'));
+  readonly timeMinutes = Array.from({ length: 60 }, (_, index) => String(index).padStart(2, '0'));
+  timeHour = computed(() => {
+    const [hours] = this.collectionTimePart().split(':').map(Number);
+    return String((hours % 12) || 12).padStart(2, '0');
+  });
+  timeMinute = computed(() => this.collectionTimePart().split(':')[1] ?? '00');
+  timePeriod = computed(() => Number(this.collectionTimePart().slice(0, 2)) >= 12 ? 'PM' : 'AM');
   calendarMonth = signal(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   readonly calendarWeekdays = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
   calendarMonthLabel = computed(() => this.calendarMonth().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }));
@@ -193,6 +201,13 @@ export class SampleCollectionComponent {
 
   updateCollectionTime(value: string): void {
     this.collectionTimePart.set(value.replace(/[^0-9:]/g, '').slice(0, 5));
+    this.syncCollectionDateTime();
+  }
+  updateTimeSelection(hourValue: string, minuteValue: string, period: 'AM' | 'PM'): void {
+    let hours = Number(hourValue) % 12;
+    if (period === 'PM') hours += 12;
+    const time = `${String(hours).padStart(2, '0')}:${String(Number(minuteValue)).padStart(2, '0')}`;
+    this.collectionTimePart.set(time);
     this.syncCollectionDateTime();
   }
 
