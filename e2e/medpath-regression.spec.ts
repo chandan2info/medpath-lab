@@ -8,7 +8,7 @@ async function signIn(page: Page) {
   await page.locator('#lp-user').fill(DEMO_USERNAME);
   await page.locator('#lp-pass').fill(DEMO_PASSWORD);
   await page.getByRole('button', { name: /sign in to dashboard/i }).click();
-  await expect(page).toHaveURL(/\\/dashboard\\/home$/);
+  await expect(page).toHaveURL(/\/dashboard\/home$/);
   await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
 }
 
@@ -28,7 +28,7 @@ test.describe('Public login and access control', () => {
     await page.getByRole('button', { name: /sign in to dashboard/i }).click();
     await expect(page.getByText('Please enter your username')).toBeVisible();
     await expect(page.getByText('Please enter your password')).toBeVisible();
-    await expect(page).toHaveURL(/\\/lis-home$/);
+    await expect(page).toHaveURL(/\/lis-home$/);
   });
 
   test('invalid credentials show an accessible error and do not sign in', async ({ page }) => {
@@ -37,7 +37,7 @@ test.describe('Public login and access control', () => {
     await page.locator('#lp-pass').fill('not-the-password');
     await page.getByRole('button', { name: /sign in to dashboard/i }).click();
     await expect(page.getByRole('alert').filter({ hasText: 'Invalid username or password.' })).toBeVisible();
-    await expect(page).toHaveURL(/\\/lis-home$/);
+    await expect(page).toHaveURL(/\/lis-home$/);
   });
 
   test('password visibility toggle changes the input type', async ({ page }) => {
@@ -61,7 +61,7 @@ test.describe('Public login and access control', () => {
 
   test('protected dashboard redirects unauthenticated users to login', async ({ page }) => {
     await page.goto('/dashboard/registration');
-    await expect(page).toHaveURL(/\\/lis-home$/);
+    await expect(page).toHaveURL(/\/lis-home$/);
     await expect(page.getByRole('region', { name: 'Operator login' })).toBeVisible();
   });
 
@@ -71,7 +71,7 @@ test.describe('Public login and access control', () => {
     await page.locator('#lp-pass').fill(DEMO_PASSWORD);
     await page.getByLabel('Remember me').check();
     await page.getByRole('button', { name: /sign in to dashboard/i }).click();
-    await expect(page).toHaveURL(/\\/dashboard\\/home$/);
+    await expect(page).toHaveURL(/\/dashboard\/home$/);
     await page.evaluate(() => localStorage.removeItem('medpath.lis.session'));
     await page.goto('/lis-home');
     await expect(page.locator('#lp-user')).toHaveValue(DEMO_USERNAME);
