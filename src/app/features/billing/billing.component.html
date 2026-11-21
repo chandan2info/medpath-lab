@@ -29,7 +29,7 @@
         </div>
         <div class="rcpt-row rcpt-total">
           <span>Paid</span>
-          <span>₹{{ grandTotal().toLocaleString('en-IN') }}</span>
+          <span>₹{{ outstanding().toLocaleString('en-IN') }}</span>
         </div>
       </div>
 
@@ -155,21 +155,25 @@
       }
       @if (advance() > 0) {
         <div class="tot-row tot-disc">
-          <span>Advance paid</span>
+          <span>Advance received</span>
           <span>−₹{{ advance().toLocaleString('en-IN') }}</span>
         </div>
       }
       <div class="tot-row"><span>GST</span><span>Exempt</span></div>
-      <div class="tot-row tot-grand">
-        <span>Total Payable</span>
-        <span class="tot-grand-amt">₹{{ grandTotal().toLocaleString('en-IN') }}</span>
+      <div class="tot-row">
+        <span>Invoice Total</span>
+        <strong>₹{{ grandTotal().toLocaleString('en-IN') }}</strong>
       </div>
       @if (advance() > 0) {
-        <div class="tot-row tot-outstanding">
-          <span>Outstanding</span>
-          <span>₹{{ outstanding().toLocaleString('en-IN') }}</span>
+        <div class="tot-row tot-disc">
+          <span>Advance received</span>
+          <span>−₹{{ advance().toLocaleString('en-IN') }}</span>
         </div>
       }
+      <div class="tot-row tot-grand">
+        <span>Balance Due</span>
+        <span class="tot-grand-amt">₹{{ outstanding().toLocaleString('en-IN') }}</span>
+      </div>
     </div>
 
 
