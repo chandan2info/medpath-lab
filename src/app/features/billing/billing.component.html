@@ -216,11 +216,12 @@
               <span class="settlement-number-suffix">{{ discountType() === 'percentage' ? '%' : '₹' }}</span>
             </div>
           </div>
-          <div class="lis-field">
-            <label>Calculated discount</label>
-            <div class="settlement-value"><span>₹</span><strong>{{ discAmt().toLocaleString('en-IN', { minimumFractionDigits: 2 }) }}</strong></div>
-          </div>
-          <div class="lis-field discount-reason-field">
+          <div class="discount-calculation-column">
+            <div class="lis-field">
+              <label>Calculated discount</label>
+              <div class="settlement-value"><span>₹</span><strong>{{ discAmt().toLocaleString('en-IN', { minimumFractionDigits: 2 }) }}</strong></div>
+            </div>
+            <div class="lis-field discount-reason-field">
             <label for="discountReason">Reason for discount <span class="required-mark">*</span></label>
             <select id="discountReason" class="settlement-input" [value]="discountReason()" (change)="setDiscountReason($event)">
               <option value="">Select a reason</option>
@@ -231,6 +232,7 @@
               <option value="Special approval">Special approval</option>
               <option value="Other">Other</option>
             </select>
+            </div>
           </div>
         </div>
         @if (discountPct() > 0 && !discountReason()) {
