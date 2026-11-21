@@ -35,6 +35,17 @@ export interface OrderedTest {
   priority: Priority;
 }
 
+export interface OrderDraft {
+  id: string;
+  patient: RegisteredPatient;
+  patientId: string;
+  testIds: string[];
+  priority: Priority;
+  subtotal: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface BillingSummary {
   subtotal: number;
   discountPct: number;
@@ -152,6 +163,87 @@ export class PatientFlowService {
     this.selectedTests().reduce((m, t) => Math.max(m, t.tatHours), 0)
   );
 
+  // ── Local order drafts (multi-draft + autosave) ──
+  private readonly draftsStorageKey = 'medpath.orderDrafts.v2';
+  readonly orderDrafts = signal<OrderDraft[]>(this.readOrderDrafts());
+  readonly activeDraftId = signal<string | null>(null);
+
+  private readOrderDrafts(): OrderDraft[] {
+    try {
+      if (typeof localStorage === 'undefined') return [];
+      const raw = localStorage.getItem(this.draftsStorageKey);
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (Array.isArray(parsed)) return parsed;
+      // One-time migration from the previous single-draft key.
+      const legacyRaw = localStorage.getItem('medpath.orderDraft.v1');
+      if (!legacyRaw) return [];
+      const legacy = JSON.parse(legacyRaw);
+      if (!legacy?.patient || !Array.isArray(legacy.testIds)) return [];
+      const now = legacy.savedAt ?? new Date().toISOString();
+      const migrated: OrderDraft = {
+        id: `legacy-${legacy.patientId ?? legacy.patient.id}-${Date.now()}`,
+        patient: legacy.patient, patientId: legacy.patientId ?? legacy.patient.id,
+        testIds: legacy.testIds, priority: legacy.priority ?? 'routine',
+        subtotal: Number(legacy.subtotal ?? 0), createdAt: now, updatedAt: now
+      };
+      localStorage.setItem(this.draftsStorageKey, JSON.stringify([migrated]));
+      return [migrated];
+    } catch { return []; }
+  }
+
+  private writeOrderDrafts(drafts: OrderDraft[]): void {
+    try {
+      localStorage.setItem(this.draftsStorageKey, JSON.stringify(drafts));
+      this.orderDrafts.set(drafts);
+    } catch {
+      throw new Error('Draft autosave failed. Browser storage may be full or unavailable.');
+    }
+  }
+
+  private persistActiveDraft(): void {
+    const patient = this._patient();
+    if (!patient || (this._selected().size === 0 && !this.activeDraftId())) return;
+    const now = new Date().toISOString();
+    const id = this.activeDraftId() ?? (globalThis.crypto?.randomUUID?.() ?? `draft-${Date.now()}-${Math.random().toString(36).slice(2,8)}`);
+    const existing = this.orderDrafts().find(d => d.id === id);
+    const draft: OrderDraft = {
+      id, patient: { ...patient }, patientId: patient.id,
+      testIds: [...this._selected()], priority: this._priority(),
+      subtotal: this.orderTotal(), createdAt: existing?.createdAt ?? now, updatedAt: now
+    };
+    const drafts = [draft, ...this.orderDrafts().filter(d => d.id !== id)];
+    this.writeOrderDrafts(drafts);
+    this.activeDraftId.set(id);
+  }
+
+  saveOrderDraft(): OrderDraft {
+    const patient = this._patient();
+    if (!patient) throw new Error('A patient must be selected before saving a draft.');
+    if (this._selected().size === 0) throw new Error('Add at least one test before saving a draft.');
+    this.persistActiveDraft();
+    const saved = this.orderDrafts().find(d => d.id === this.activeDraftId());
+    if (!saved) throw new Error('The draft could not be saved. Please try again.');
+    return saved;
+  }
+
+  restoreOrderDraft(id: string): OrderDraft | null {
+    const draft = this.orderDrafts().find(d => d.id === id);
+    if (!draft) return null;
+    this._patient.set({ ...draft.patient });
+    this._selected.set(new Set(draft.testIds.filter(testId => this.allTests.some(t => t.id === testId))));
+    this._priority.set(draft.priority);
+    this._discountPct.set(0);
+    this.activeDraftId.set(draft.id);
+    return draft;
+  }
+
+  deleteOrderDraft(id: string): void {
+    this.writeOrderDrafts(this.orderDrafts().filter(d => d.id !== id));
+    if (this.activeDraftId() === id) this.activeDraftId.set(null);
+  }
+
+  clearActiveDraft(): void { this.activeDraftId.set(null); }
+
   // ── Billing ───────────────────────────────
   private _discountPct  = signal(0);
   private _payMode      = signal<PaymentMode>('cash');
@@ -172,6 +264,7 @@ export class PatientFlowService {
     const pat: RegisteredPatient = { ...data, id: existingPatientId ?? `PAT-${yy}${mm}-0${seq}` };
     this._patient.set(pat);
     this._selected.set(new Set());          // reset tests for new patient
+    this.activeDraftId.set(null);
     this._discountPct.set(0);
     this._payMode.set('cash');
     return pat;
@@ -183,9 +276,10 @@ export class PatientFlowService {
       n.has(id) ? n.delete(id) : n.add(id);
       return n;
     });
+    this.persistActiveDraft();
   }
 
-  setPriority(p: Priority): void { this._priority.set(p); }
+  setPriority(p: Priority): void { this._priority.set(p); this.persistActiveDraft(); }
   setDiscount(pct: number): void { this._discountPct.set(pct); }
   setPayMode(m: PaymentMode): void { this._payMode.set(m); }
 

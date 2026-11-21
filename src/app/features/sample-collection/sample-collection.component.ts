@@ -14,7 +14,7 @@
 //  (For the lab-wide operations view, see
 //  Screen 4b — Sample Tracking.)
 // ─────────────────────────────────────────────
-import { Component, signal, computed, inject, ChangeDetectionStrategy, HostListener } from '@angular/core';
+import { Component, signal, computed, inject, ChangeDetectionStrategy, HostListener, ElementRef } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DatePipe, TitleCasePipe } from '@angular/common';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
@@ -83,15 +83,61 @@ const TIMELINE_STEPS: WorkflowStep[] = [
   styleUrl: './sample-collection.component.css',
 })
 export class SampleCollectionComponent {
+  private readonly hostRef = inject(ElementRef<HTMLElement>);
   protected readonly flow          = inject(PatientFlowService);
   protected readonly barcodeWidths = [2,1,3,1,2,1,1,2,3,1,2,1,2,3,1];
-  protected readonly now           = new Date();
   protected readonly checklistItems = CHECKLIST_ITEMS;
   protected readonly timelineSteps  = TIMELINE_STEPS;
 
   collected   = signal(false);
   collectedAt = signal('');
   notes       = signal('');
+  collectionDateTime = signal(this.toDateTimeLocal(new Date()));
+  datePickerOpen = signal(false);
+  timePickerExpanded = signal(false);
+  readonly datePickerPosition = signal({ top: 0, left: 0, width: 320, maxHeight: 360 });
+  private readonly initialCollectionDateTime = this.toDateTimeLocal(new Date());
+  collectionDatePart = signal(this.initialCollectionDateTime.slice(0, 10));
+  collectionTimePart = signal(this.initialCollectionDateTime.slice(11, 16));
+  readonly draftCollectionDateTime = computed(() => `${this.collectionDatePart()}T${this.collectionTimePart()}`);
+  readonly timeHours = Array.from({ length: 12 }, (_, index) => String(index + 1).padStart(2, '0'));
+  readonly timeMinutes = Array.from({ length: 60 }, (_, index) => String(index).padStart(2, '0'));
+  timeHour = computed(() => {
+    const [hours] = this.collectionTimePart().split(':').map(Number);
+    return String((hours % 12) || 12).padStart(2, '0');
+  });
+  timeMinute = computed(() => this.collectionTimePart().split(':')[1] ?? '00');
+  timePeriod = computed(() => Number(this.collectionTimePart().slice(0, 2)) >= 12 ? 'PM' : 'AM');
+  calendarMonth = signal(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  readonly calendarWeekdays = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+  calendarMonthLabel = computed(() => this.calendarMonth().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }));
+  calendarDays = computed(() => {
+    const month = this.calendarMonth();
+    const firstDay = new Date(month.getFullYear(), month.getMonth(), 1).getDay();
+    const count = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+    const today = this.toDateTimeLocal(new Date()).slice(0, 10);
+    return [
+      ...Array.from({ length: firstDay }, () => null),
+      ...Array.from({ length: count }, (_, index) => {
+        const date = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}-${String(index + 1).padStart(2, '0')}`;
+        return { day: index + 1, date, isToday: date === today, isFuture: date > today };
+      })
+    ];
+  });
+  collectionSite = signal('');
+  patientCondition = signal('Not recorded');
+  protected readonly patientConditionOptions = [
+    { value: 'Fasting', label: 'Fasting' },
+    { value: 'Non-fasting', label: 'Non-fasting' },
+    { value: 'Post-meal', label: 'Post meal' },
+    { value: 'Not recorded', label: 'Not recorded' },
+  ];
+  collectorName = signal('Ravi Anand');
+  collectionFormValid = computed(() =>
+    !!this.collectionDateTime() &&
+    !Number.isNaN(new Date(this.collectionDateTime()).getTime()) &&
+    !!this.collectorName().trim()
+  );
 
   private _checked = signal<Set<string>>(new Set());
   checkedCount = computed(() => this._checked().size);
@@ -118,8 +164,112 @@ export class SampleCollectionComponent {
     }));
   });
 
+  // Derive specimen type from the tubes generated for the ordered tests.
+  // This is a display-only summary; each tube remains separately identified.
+  sampleType = computed(() => {
+    const tubes = this.currentPatientTubes();
+    if (tubes.length === 0) return 'Not determined';
+    const hasUrine = tubes.some(t => t.label.toLowerCase().includes('urine'));
+    const hasBlood = tubes.some(t => !t.label.toLowerCase().includes('urine'));
+    if (hasUrine && hasBlood) return 'Blood + urine specimens';
+    if (hasUrine) return 'Urine specimen';
+    return 'Blood specimen';
+  });
+
   // 2 = Collection is the 3rd step (index 2) of TIMELINE_STEPS
   timelineActiveIndex = computed(() => (this.collected() ? 3 : 2));
+
+  private toDateTimeLocal(date: Date): string {
+    const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+    return local.toISOString().slice(0, 16);
+  }
+
+  toggleDatePicker(): void {
+    if (this.collected()) return;
+    if (this.datePickerOpen()) {
+      this.cancelDatePicker();
+      return;
+    }
+    this.beginDatePickerEdit();
+  }
+
+  private beginDatePickerEdit(): void {
+    this.positionDatePicker();
+    const current = this.collectionDateTime();
+    this.collectionDatePart.set(current.slice(0, 10));
+    this.collectionTimePart.set(current.slice(11, 16));
+    const selected = new Date(`${current.slice(0, 10)}T00:00:00`);
+    if (!Number.isNaN(selected.getTime())) {
+      this.calendarMonth.set(new Date(selected.getFullYear(), selected.getMonth(), 1));
+    }
+    this.timePickerExpanded.set(true);
+    this.datePickerOpen.set(true);
+  }
+
+  private positionDatePicker(): void {
+    const hostElement = this.hostRef.nativeElement as HTMLElement;
+    const trigger = hostElement.querySelector('.collection-datetime-trigger') as HTMLElement | null;
+    const card = hostElement.querySelector('.collect-panel') as HTMLElement | null;
+    if (!trigger || !card) return;
+
+    const triggerRect = trigger.getBoundingClientRect();
+    const cardRect = card.getBoundingClientRect();
+    const width = Math.max(260, Math.min(320, cardRect.width - 24));
+    const left = Math.max(cardRect.left + 12, Math.min(triggerRect.left, cardRect.right - width - 12));
+    const belowTop = triggerRect.bottom + 8;
+    const belowSpace = cardRect.bottom - belowTop - 12;
+    const aboveSpace = triggerRect.top - cardRect.top - 20;
+    const placeAbove = belowSpace < 300 && aboveSpace > belowSpace;
+    const maxHeight = Math.max(240, Math.min(390, placeAbove ? aboveSpace : belowSpace));
+    const top = placeAbove
+      ? Math.max(cardRect.top + 12, triggerRect.top - maxHeight - 8)
+      : belowTop;
+
+    this.datePickerPosition.set({ top, left, width, maxHeight });
+  }
+
+  cancelDatePicker(): void {
+    const current = this.collectionDateTime();
+    this.collectionDatePart.set(current.slice(0, 10));
+    this.collectionTimePart.set(current.slice(11, 16));
+    this.datePickerOpen.set(false);
+  }
+
+  changeCalendarMonth(offset: number): void {
+    const current = this.calendarMonth();
+    const next = new Date(current.getFullYear(), current.getMonth() + offset, 1);
+    const today = new Date();
+    if (next.getTime() > new Date(today.getFullYear(), today.getMonth(), 1).getTime()) return;
+    this.calendarMonth.set(next);
+  }
+
+  updateCollectionDate(value: string): void {
+    this.collectionDatePart.set(value);
+    const parsed = new Date(`${value}T00:00:00`);
+    if (!Number.isNaN(parsed.getTime())) this.calendarMonth.set(new Date(parsed.getFullYear(), parsed.getMonth(), 1));
+  }
+
+  toggleTimePicker(): void {
+    this.timePickerExpanded.update(expanded => !expanded);
+  }
+
+  updateCollectionTime(value: string): void {
+    this.collectionTimePart.set(value.replace(/[^0-9:]/g, '').slice(0, 5));
+  }
+  updateTimeSelection(hourValue: string, minuteValue: string, period: 'AM' | 'PM'): void {
+    let hours = Number(hourValue) % 12;
+    if (period === 'PM') hours += 12;
+    const time = `${String(hours).padStart(2, '0')}:${String(Number(minuteValue)).padStart(2, '0')}`;
+    this.collectionTimePart.set(time);
+  }
+
+  applyDatePicker(): void {
+    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(this.collectionTimePart())) return;
+    const date = this.collectionDatePart();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+    this.collectionDateTime.set(`${date}T${this.collectionTimePart()}`);
+    this.datePickerOpen.set(false);
+  }
 
   isChecked(id: string): boolean { return this._checked().has(id); }
   toggleChecklist(id: string): void {
@@ -135,11 +285,19 @@ export class SampleCollectionComponent {
   }
 
   markCollected(): void {
-    const now = new Date();
+    if (!this.collectionFormValid()) return;
     this.collectedAt.set(
-      now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+      new Date(this.collectionDateTime()).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
     );
     this.collected.set(true);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.datePickerOpen()) return;
+    const target = event.target as Node | null;
+    const control = this.hostRef.nativeElement.querySelector('.collection-datetime-control');
+    if (target && control && !control.contains(target)) this.cancelDatePicker();
   }
 
   // ── Keyboard shortcuts ────────────────────────────────────────
@@ -148,6 +306,11 @@ export class SampleCollectionComponent {
 
   @HostListener('document:keydown', ['$event'])
   onKeydown(e: KeyboardEvent): void {
+    if (e.key === 'Escape' && this.datePickerOpen()) {
+      e.preventDefault();
+      this.cancelDatePicker();
+      return;
+    }
     const target = e.target as HTMLElement;
     const typing = target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
 

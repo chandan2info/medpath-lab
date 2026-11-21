@@ -1,0 +1,130 @@
+<div class="page-header">
+  <div class="page-heading-copy">
+    <h1 class="page-title">Review Order</h1>
+    <p class="page-subtitle">Verify investigations, specimen requirements and order details.</p>
+  </div>
+  <lis-workflow-stepper [steps]="workflowSteps" [activeIndex]="workflowActiveIndex" />
+</div>
+
+@if(patient){
+  <section class="patient-summary lis-card" aria-label="Patient information">
+    <div class="pat-avatar" aria-hidden="true">{{patientInitials}}</div>
+    <div class="patient-main">
+      <div class="patient-name-line"><strong>{{patient.firstName}} {{patient.lastName}}</strong><span class="patient-id">{{patient.id}}</span></div>
+      <div class="patient-meta">
+        <span><i class="ti ti-user"></i>{{patient.gender|titlecase}}</span>
+        <span><i class="ti ti-cake"></i>{{flow.formatAgeBreakdown(patient.dob)}}</span>
+        <span><i class="ti ti-calendar"></i>DOB {{patient.dob|date:'dd MMM yyyy'}}</span>
+        <span><i class="ti ti-phone"></i>{{patient.mobile}}</span>
+      </div>
+    </div>
+    <div class="patient-visit-meta">
+      <span><i class="ti ti-walk"></i><small>Visit</small><strong>{{patient.visitType|titlecase}}</strong></span>
+      <span><i class="ti ti-clipboard-heart"></i><small>Fasting</small><strong>{{patient.fasting||'Not specified'}}</strong></span>
+      <span><i class="ti ti-stethoscope"></i><small>Referred by</small><strong>{{patient.refDoctor||'Self / Walk-in'}}</strong></span>
+    </div>
+    <a routerLink="/dashboard/registration" class="lis-btn lis-btn--secondary lis-btn--sm patient-edit"><i class="ti ti-edit"></i> Edit</a>
+  </section>
+}
+
+@if(flow.selectedTests().length===0){
+  <div class="lis-card empty-review"><i class="ti ti-clipboard-x"></i><h2>No tests selected</h2><p>Return to the catalogue and add at least one test.</p><a routerLink="/dashboard/test-order" class="lis-btn lis-btn--primary">Back to Test Selection</a></div>
+}@else{
+  <div class="priority-alert-row">
+  <section class="lis-card priority-card">
+    <div class="priority-label"><i class="ti ti-flag"></i><strong>Order Priority</strong><span>Choose processing speed</span></div>
+    <div class="priority-options" role="group" aria-label="Order priority">
+      @for(p of priorities;track p.value){
+        <button type="button" [class.active]="flow.priority()===p.value" [class.stat]="p.value==='stat'" (click)="flow.setPriority(p.value)" [attr.aria-pressed]="flow.priority()===p.value">
+          <i class="ti {{p.icon}}"></i><span>{{p.label}}</span><small>{{p.hint}}</small>
+        </button>
+      }
+    </div>
+  </section>
+
+  <div class="alert-popover-host" #alertHost>
+    <button type="button" class="floating-alert-trigger" (click)="toggleAlerts()" [attr.aria-expanded]="alertsOpen()" aria-label="Open alerts and notices">
+      <i class="ti ti-bell"></i>
+      @if(alertItems().length){<span class="alert-count">{{alertItems().length}}</span>}
+    </button>
+    @if(alertsOpen()){
+      <section class="alert-popover lis-card" role="dialog" aria-label="Alerts and notices">
+        <header class="alert-popover-head">
+          <div><i class="ti ti-alert-triangle"></i><strong>Alerts & Notices</strong><span>{{alertItems().length}}</span></div>
+          <button type="button" (click)="closeAlerts()" aria-label="Close alerts"><i class="ti ti-x"></i></button>
+        </header>
+        <nav class="alert-filters" aria-label="Filter alerts">
+          <button type="button" [class.active]="alertFilter()==='all'" (click)="setAlertFilter('all')">All ({{alertItems().length}})</button>
+          <button type="button" [class.active]="alertFilter()==='action'" (click)="setAlertFilter('action')">Action ({{countAlerts('action')}})</button>
+          <button type="button" [class.active]="alertFilter()==='warning'" (click)="setAlertFilter('warning')">Warning ({{countAlerts('warning')}})</button>
+          <button type="button" [class.active]="alertFilter()==='info'" (click)="setAlertFilter('info')">Info ({{countAlerts('info')}})</button>
+        </nav>
+        <div class="alert-list" role="list">
+          @for(alert of filteredAlerts();track alert.id){
+            <article class="alert-item" [class.alert-item--action]="alert.severity==='action'" [class.alert-item--warning]="alert.severity==='warning'" [class.alert-item--info]="alert.severity==='info'" role="listitem">
+              <span class="alert-item-icon"><i class="ti {{alert.icon}}"></i></span>
+              <div><strong>{{alert.title}}</strong><p>{{alert.message}}</p></div>
+              <span class="alert-severity">{{alert.severity==='action'?'Action':alert.severity==='warning'?'Warning':'Info'}}</span>
+            </article>
+          } @empty {
+            <div class="alert-empty"><i class="ti ti-circle-check"></i><strong>No alerts in this category</strong></div>
+          }
+        </div>
+      </section>
+    }
+  </div>
+  </div>
+  <div class="review-columns">
+    <section class="lis-card review-panel selected-panel">
+      <header class="section-head">
+        <div><i class="ti ti-clipboard-list"></i><h2>Selected Tests</h2></div>
+        <div class="section-actions"><span class="lis-badge">{{flow.selectedTests().length}} tests</span><a routerLink="/dashboard/test-order" class="lis-btn lis-btn--secondary lis-btn--sm edit-tests"><i class="ti ti-edit"></i> Edit Selection</a></div>
+      </header>
+      <div class="panel-subtitle">Confirm each investigation, sample type and price.</div>
+      <div class="selected-test-list" role="list" aria-label="Selected tests">
+        @for(t of flow.selectedTests();track t.id){
+          <article class="review-test-row" role="listitem">
+            <span class="test-type-icon"><i class="ti ti-microscope"></i></span>
+            <div class="test-copy"><strong>{{t.name}}</strong><small>{{t.id}} · {{t.category}}</small><span class="test-spec">{{t.sampleType}} · {{t.tubeType}}</span></div>
+            <div class="test-values"><strong>₹{{t.price}}</strong><small>{{t.tatHours}}h TAT</small></div>
+            <button type="button" class="remove-btn" (click)="flow.toggleTest(t.id)" [attr.aria-label]="'Remove '+t.name"><i class="ti ti-trash"></i></button>
+          </article>
+        }
+      </div>
+      <footer class="panel-foot"><a routerLink="/dashboard/test-order"><i class="ti ti-arrow-left"></i> Back to catalogue</a><span>{{flow.selectedTests().length}} investigations</span></footer>
+    </section>
+
+    <section class="right-review-column">
+      <section class="lis-card review-panel specimen-panel">
+        <header class="section-head"><div><i class="ti ti-test-pipe"></i><h2>Specimen Plan</h2></div><span class="lis-badge">{{specimenGroups().length}} groups</span></header>
+        <p class="panel-subtitle">Collection requirements grouped by tube/container.</p>
+        <div class="specimen-list" role="list" aria-label="Specimen groups">
+          @for(group of specimenGroups();track group.tube){
+            <article class="specimen-row" role="listitem">
+              <span class="tube-icon"><i class="ti ti-test-pipe"></i></span>
+              <div class="specimen-info"><strong>{{group.tube}}</strong><small>{{group.sample}}</small><small>Tests: {{group.tests.join(', ')}}</small></div>
+              <span class="group-count">{{group.tests.length}}</span>
+            </article>
+          }
+        </div>
+      </section>
+
+    </section>
+  </div>
+
+  <section class="lis-card order-bottom-bar">
+    <div class="order-total-inline">
+      <div><span>Tests</span><strong>{{flow.selectedTests().length}}</strong></div>
+      <div><span>Estimated TAT</span><strong>Up to {{flow.maxTat()}}h</strong></div>
+      <div><span>Subtotal</span><strong>₹{{flow.orderTotal().toLocaleString('en-IN')}}</strong></div>
+      <div><span>Discount</span><strong>₹{{flow.discountAmt().toLocaleString('en-IN')}}</strong></div>
+      <div class="grand-total"><span>Grand Total</span><strong>₹{{flow.grandTotal().toLocaleString('en-IN')}}</strong></div>
+    </div>
+    <div class="review-actions">
+      <a routerLink="/dashboard/test-order" class="back-action"><i class="ti ti-arrow-left"></i> Back</a>
+      <button type="button" class="lis-btn lis-btn--primary continue-btn" (click)="continueToBilling()" [disabled]="saving()">
+        @if(saving()){<i class="ti ti-loader-2 spin"></i> Saving…}@else{<i class="ti ti-file-invoice"></i> Save Order & Continue to Billing <i class="ti ti-arrow-right"></i>}
+      </button>
+    </div>
+  </section>
+}

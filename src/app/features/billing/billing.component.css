@@ -161,3 +161,2993 @@
 .spin { display: inline-block; animation: spin 0.8s linear infinite; }
 
 /* .lis-card-icon is defined globally in styles.css */
+
+
+/* Billing page refinement — balanced workspace, readable test list and focused invoice. */
+.page-header {
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+}
+.page-header__right {
+  gap: 6px;
+}
+.bill-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(330px, 360px);
+  gap: 14px;
+  align-items: start;
+}
+.bill-main {
+  min-width: 0;
+  gap: 12px;
+}
+.bill-main > .lis-card,
+.invoice-panel {
+  min-width: 0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.bill-main > .lis-card__header,
+.bill-main .lis-card__header {
+  min-height: 44px;
+  padding: 10px 14px;
+}
+.pat-info-row {
+  padding: 12px 14px;
+  gap: 12px;
+}
+.pat-id-main {
+  min-width: 0;
+  flex: 1;
+}
+.pat-detail-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin-top: 6px;
+}
+.pat-detail-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.pat-detail-icon {
+  flex: 0 0 auto;
+}
+.tests-list {
+  max-height: 340px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+.bill-test-row {
+  min-height: 49px;
+  padding: 8px 14px;
+  gap: 12px;
+}
+.bt-info {
+  min-width: 0;
+}
+.bt-name {
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+.bt-tat-badge {
+  flex: 0 0 auto;
+}
+.bt-price {
+  flex: 0 0 64px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.disc-groups-row {
+  gap: 0;
+}
+.disc-groups-row .disc-group {
+  min-width: 0;
+  padding: 5px 16px 14px;
+}
+.disc-group__label {
+  margin-top: 8px;
+}
+.pay-modes {
+  gap: 10px;
+  padding: 12px 14px 14px;
+}
+.pay-mode-btn {
+  min-height: 78px;
+  justify-content: center;
+  font-weight: 650;
+}
+.pay-mode-btn i {
+  font-size: 22px;
+}
+.pay-adaptive {
+  padding-top: 0;
+}
+.invoice-panel {
+  position: sticky;
+  top: 16px;
+  max-height: calc(100dvh - 112px);
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+.inv-hd {
+  padding: 14px 15px 12px;
+}
+.inv-title {
+  font-size: 15px;
+  font-weight: 750;
+}
+.inv-pat {
+  padding: 11px 15px;
+}
+.inv-items {
+  max-height: 300px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+.inv-item {
+  min-height: 34px;
+  padding: 7px 15px;
+  gap: 10px;
+}
+.inv-iname {
+  min-width: 0;
+  white-space: normal;
+  line-height: 1.35;
+}
+.inv-iprice {
+  flex: 0 0 auto;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.inv-totals {
+  padding: 12px 15px;
+}
+.tot-row {
+  font-size: 12px;
+  padding: 4px 0;
+}
+.tot-grand {
+  font-size: 14px;
+  padding-top: 9px;
+}
+.tot-grand-amt {
+  font-size: 23px;
+  font-weight: 800;
+}
+.inv-priority {
+  padding: 10px 15px;
+}
+.inv-actions {
+  padding: 12px 15px 15px;
+  gap: 8px;
+}
+.inv-actions .lis-btn {
+  min-height: 38px;
+  justify-content: center;
+  font-weight: 650;
+}
+.tests-list::-webkit-scrollbar,
+.inv-items::-webkit-scrollbar,
+.invoice-panel::-webkit-scrollbar {
+  width: 6px;
+}
+.tests-list::-webkit-scrollbar-thumb,
+.inv-items::-webkit-scrollbar-thumb,
+.invoice-panel::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 8px;
+}
+
+@media (max-width: 1100px) {
+  .bill-layout {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 12px;
+  }
+}
+@media (max-width: 900px) {
+  .bill-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .invoice-panel {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+  .inv-items {
+    max-height: none;
+  }
+}
+@media (max-width: 600px) {
+  .page-header {
+    align-items: flex-start;
+  }
+  .page-header__right {
+    width: 100%;
+    align-items: flex-start;
+  }
+  .page-title {
+    font-size: 21px;
+  }
+  .bill-main {
+    gap: 10px;
+  }
+  .pat-info-row {
+    align-items: flex-start;
+  }
+  .pat-detail-row {
+    gap: 6px 8px;
+  }
+  .pat-detail-sep {
+    display: none;
+  }
+  .disc-groups-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .disc-groups-row .disc-group:first-child {
+    border-right: 0;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .pay-modes {
+    gap: 6px;
+    padding-inline: 10px;
+  }
+  .pay-mode-btn {
+    min-height: 68px;
+    padding: 9px 3px;
+    font-size: 10px;
+  }
+  .pay-mode-btn i {
+    font-size: 20px;
+  }
+  .bill-test-row {
+    gap: 8px;
+    padding-inline: 11px;
+  }
+  .bt-tat-badge {
+    padding-inline: 6px;
+  }
+  .bt-price {
+    flex-basis: 54px;
+    font-size: 12px;
+  }
+}
+
+
+/* Full-width workflow header and patient identity card, shared visual rhythm with Test Order. */
+.page-header {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--lis-card-radius, 10px);
+}
+.bill-layout {
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr) minmax(330px, 360px);
+}
+.bill-main {
+  display: contents;
+}
+.pat-card {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 12px;
+}
+.billing-controls-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: stretch;
+}
+.billing-controls-grid > .lis-card {
+  min-width: 0;
+  height: 100%;
+}
+.billing-controls-grid .disc-groups-row {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+.billing-controls-grid .pay-modes {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+@media (max-width: 1100px) {
+  .billing-controls-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .billing-controls-grid > .lis-card {
+    height: auto;
+  }
+}
+@media (max-width: 900px) {
+  .bill-main {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .bill-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .page-header {
+    padding: 10px 12px;
+  }
+  .billing-controls-grid .disc-groups-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .billing-controls-grid .pay-modes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+/* Keep the main billing stack as a single left-column grid item. */
+.bill-main {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+
+/* Billing header and patient strip mirror the Test Order page structure. */
+.page-header {
+  width: 100%;
+  min-height: 88px;
+  box-sizing: border-box;
+  align-items: center;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  gap: 16px;
+}
+.page-heading-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 2px;
+}
+.page-header .page-title {
+  font-size: 22px;
+  line-height: 1.25;
+  font-weight: 600;
+  margin: 0 0 2px;
+}
+.page-header .page-subtitle {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+.billing-header-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 5px;
+}
+.billing-header-meta .inv-id-badge {
+  padding: 2px 8px;
+  font-size: 10px;
+}
+.billing-header-meta .prio-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.billing-header-meta .inv-date-top {
+  font-size: 10px;
+  color: var(--text-secondary);
+  padding-left: 4px;
+}
+.page-header > lis-workflow-stepper {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+.patient-summary {
+  width: 100%;
+  min-height: 80px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  margin: 0 0 12px;
+  flex: none;
+}
+.patient-summary .pat-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--lis-primary-xlight, #e1f5ee);
+  color: var(--lis-primary, #1d9e75);
+  font-weight: 700;
+  flex: none;
+  font-size: 14px;
+}
+.patient-summary .patient-main {
+  min-width: 220px;
+  flex: 1;
+}
+.patient-summary .patient-name-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+  font-size: 13px;
+}
+.patient-summary .patient-id {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 20px;
+  background: var(--lis-primary-xlight, #e1f5ee);
+  color: var(--lis-primary-deep, #085041);
+}
+.patient-summary .patient-meta {
+  display: flex;
+  align-items: center;
+  gap: 7px 14px;
+  flex-wrap: wrap;
+  margin-top: 5px;
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+.patient-summary .patient-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.patient-summary .patient-meta i,
+.patient-summary .patient-visit-meta i {
+  color: var(--lis-primary, #1d9e75);
+  font-size: 12px;
+}
+.patient-summary .patient-visit-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-left: 1px solid var(--border-color);
+  padding: 2px 12px;
+  flex: none;
+}
+.patient-summary .patient-visit-meta span {
+  display: grid;
+  grid-template-columns: 15px auto;
+  column-gap: 6px;
+  align-items: center;
+  min-width: 70px;
+}
+.patient-summary .patient-visit-meta i {
+  grid-row: span 2;
+  font-size: 15px;
+}
+.patient-summary .patient-visit-meta small {
+  font-size: 9px;
+  color: var(--text-secondary);
+}
+.patient-summary .patient-visit-meta strong {
+  font-size: 10px;
+  color: var(--text-primary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.patient-summary .patient-edit {
+  flex: none;
+}
+@media (max-width: 1100px) {
+  .patient-summary {
+    flex-wrap: wrap;
+  }
+  .patient-summary .patient-visit-meta {
+    flex: 1 1 100%;
+    border-left: 0;
+    border-top: 1px solid var(--border-color);
+    padding: 9px 0 0;
+  }
+}
+@media (max-width: 760px) {
+  .page-header {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .page-header > lis-workflow-stepper {
+    width: 100%;
+    margin-left: 0;
+  }
+  .patient-summary {
+    gap: 10px;
+    padding: 10px 12px;
+  }
+  .patient-summary .patient-main {
+    min-width: 0;
+    flex-basis: calc(100% - 60px);
+  }
+  .patient-summary .patient-visit-meta {
+    flex-wrap: wrap;
+    gap: 10px 14px;
+  }
+}
+
+
+/* Compact billing workspace: invoice metadata beside title, compact controls, less page scrolling. */
+.billing-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+}
+.billing-title-row .page-title {
+  margin: 0;
+  flex: 0 0 auto;
+}
+.billing-title-row .billing-header-meta {
+  margin: 0;
+  gap: 8px;
+}
+.billing-title-row .inv-id-badge {
+  font-size: 11px;
+  padding: 4px 9px;
+}
+.billing-title-row .prio-tag {
+  padding: 4px 9px;
+  font-size: 10px;
+}
+.billing-title-row .inv-date-top {
+  font-size: 11px;
+  white-space: nowrap;
+  padding-left: 2px;
+}
+.page-heading-copy {
+  gap: 4px;
+}
+.page-header .page-subtitle {
+  margin: 0;
+}
+
+/* Patient details are already visible in the full-width patient card.
+   Keep the invoice focused on billable items and payment status. */
+.invoice-panel .inv-pat {
+  display: none !important;
+}
+
+/* Use a shorter test list viewport so discounts and payment remain visible sooner. */
+.tests-list {
+  max-height: 228px;
+  overflow-y: auto;
+}
+.inv-items {
+  max-height: 220px;
+}
+
+/* Discounts & adjustments: two compact, clearly separated input groups. */
+.billing-controls-grid {
+  align-items: stretch;
+  gap: 12px;
+}
+.billing-controls-grid > .lis-card {
+  height: auto;
+  min-height: 0;
+}
+.billing-controls-grid .lis-card__header {
+  min-height: 42px;
+  padding: 9px 13px;
+}
+.billing-controls-grid .disc-groups-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0;
+  align-items: start;
+  padding: 10px 12px 12px;
+}
+.billing-controls-grid .disc-group {
+  min-width: 0;
+  padding: 0 10px;
+  border: 0;
+}
+.billing-controls-grid .disc-group + .disc-group {
+  border-left: 1px solid var(--border-color);
+}
+.billing-controls-grid .disc-group__label {
+  margin: 0 0 8px;
+  font-size: 10px;
+  letter-spacing: .06em;
+}
+.billing-controls-grid .lis-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+.billing-controls-grid .lis-field label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.billing-controls-grid .stepper-field,
+.billing-controls-grid .currency-field {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  min-width: 0;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--body-bg);
+  overflow: hidden;
+}
+.billing-controls-grid .stepper-btn {
+  width: 32px;
+  height: 34px;
+  flex: 0 0 32px;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.billing-controls-grid .stepper-btn:hover {
+  background: var(--lis-primary-xlight, #e1f5ee);
+  color: var(--lis-primary, #1d9e75);
+}
+.billing-controls-grid .stepper-input,
+.billing-controls-grid .currency-field input {
+  width: 100%;
+  min-width: 0;
+  height: 34px;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+  background: transparent;
+  color: var(--text-primary);
+  text-align: center;
+  font: inherit;
+  font-size: 12px;
+}
+.billing-controls-grid .currency-prefix {
+  padding-left: 11px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.billing-controls-grid .currency-field input {
+  text-align: left;
+  padding: 0 9px 0 5px;
+}
+.billing-controls-grid .stepper-field:focus-within,
+.billing-controls-grid .currency-field:focus-within {
+  border-color: var(--lis-primary, #1d9e75);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--lis-primary, #1d9e75) 15%, transparent);
+}
+
+/* Receive Payment: reduce tile height and keep conditional details compact. */
+.billing-controls-grid .pay-modes {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+  padding: 10px 12px 8px;
+}
+.billing-controls-grid .pay-mode-btn {
+  min-width: 0;
+  min-height: 56px;
+  padding: 7px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 9px;
+  font-size: 10px;
+}
+.billing-controls-grid .pay-mode-btn i {
+  font-size: 18px;
+  line-height: 1;
+}
+.billing-controls-grid .pay-adaptive {
+  padding: 2px 12px 12px;
+}
+.billing-controls-grid .pay-adaptive .lis-field {
+  gap: 4px;
+}
+.billing-controls-grid .pay-adaptive .lis-field label {
+  font-size: 10px;
+}
+.billing-controls-grid .pay-adaptive input {
+  height: 34px;
+  font-size: 12px;
+}
+.billing-controls-grid .credit-warn {
+  margin: 2px 12px 10px;
+  padding: 7px 9px;
+  font-size: 10px;
+}
+@media (max-width: 760px) {
+  .billing-title-row {
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .billing-title-row .billing-header-meta {
+    gap: 6px;
+  }
+  .billing-controls-grid .disc-groups-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+  .billing-controls-grid .disc-group {
+    padding: 0;
+  }
+  .billing-controls-grid .disc-group + .disc-group {
+    border-left: 0;
+    border-top: 1px solid var(--border-color);
+    padding-top: 10px;
+  }
+  .billing-controls-grid .pay-modes {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+
+/* ── Settlement workspace: balanced controls, aligned fields and actions ── */
+.settlement-card {
+  grid-column: 1 / -1;
+  min-width: 0;
+  overflow: hidden;
+  margin-top: 0;
+}
+.settlement-header {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+.settlement-header > i {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--lis-primary-xlight, #e1f5ee);
+  color: var(--lis-primary, #1d9e75);
+  font-size: 19px;
+  flex: none;
+}
+.settlement-header h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 700;
+}
+.settlement-header p {
+  margin: 3px 0 0;
+  color: var(--text-secondary);
+  font-size: 10px;
+}
+.settlement-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr) minmax(220px, .78fr);
+  align-items: stretch;
+  min-width: 0;
+}
+.settlement-section {
+  min-width: 0;
+  padding: 14px 16px 16px;
+}
+.settlement-section + .settlement-section,
+.settlement-actions {
+  border-left: 1px solid var(--border-color);
+}
+.settlement-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 13px;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 700;
+}
+.settlement-section-title i {
+  color: var(--lis-primary, #1d9e75);
+  font-size: 16px;
+}
+.discount-input-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px 10px;
+  align-items: end;
+}
+.discount-input-grid .lis-field,
+.settlement-section .lis-field {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.discount-input-grid .lis-field label,
+.settlement-section .lis-field label {
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 600;
+}
+.discount-input-grid .advance-field {
+  grid-column: 1 / -1;
+}
+.settlement-stepper,
+.settlement-currency,
+.settlement-input,
+.pay-adaptive input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 40px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--body-bg);
+  color: var(--text-primary);
+}
+.settlement-stepper,
+.settlement-currency {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+.settlement-stepper .stepper-btn {
+  flex: 0 0 36px;
+  width: 36px;
+  height: 38px;
+  font-size: 17px;
+}
+.settlement-stepper .stepper-input {
+  flex: 1;
+  min-width: 0;
+  height: 38px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 650;
+}
+.settlement-currency .currency-prefix {
+  flex: none;
+  padding-left: 12px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.settlement-currency input,
+.settlement-input,
+.pay-adaptive input {
+  padding: 0 11px;
+  border: 1px solid var(--border-color);
+  outline: 0;
+  background: var(--body-bg);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 12px;
+}
+.settlement-currency input {
+  flex: 1;
+  min-width: 0;
+  height: 38px;
+  border: 0;
+  background: transparent;
+}
+.settlement-value {
+  height: 40px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 11px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--lis-primary, #1d9e75) 7%, var(--body-bg));
+  color: var(--text-primary);
+  font-size: 12px;
+}
+.settlement-value span {
+  color: var(--text-secondary);
+}
+.settlement-value strong {
+  font-size: 13px;
+  font-weight: 700;
+}
+.settlement-stepper:focus-within,
+.settlement-currency:focus-within,
+.settlement-input:focus,
+.pay-adaptive input:focus {
+  border-color: var(--lis-primary, #1d9e75);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--lis-primary, #1d9e75) 14%, transparent);
+}
+.payment-section .pay-modes {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  padding: 0;
+  margin: 0 0 13px;
+}
+.payment-section .pay-mode-btn {
+  min-width: 0;
+  min-height: 66px;
+  padding: 9px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  background: var(--body-bg);
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 650;
+}
+.payment-section .pay-mode-btn i {
+  font-size: 19px;
+}
+.payment-section .pay-mode-btn--active {
+  border-color: var(--lis-primary, #1d9e75);
+  background: var(--lis-primary-xlight, #e1f5ee);
+  color: var(--lis-primary, #1d9e75);
+  box-shadow: inset 0 0 0 1px var(--lis-primary, #1d9e75);
+}
+.payment-section .pay-mode-btn--credit {
+  border-color: #d97777;
+  background: #fff1f1;
+  color: #a32e2e;
+}
+.payment-section .pay-adaptive {
+  padding: 0;
+}
+.payment-section .credit-warn {
+  margin: 0;
+  padding: 9px 10px;
+  border-radius: 8px;
+  font-size: 10px;
+}
+.settlement-actions {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding: 15px 16px;
+}
+.settlement-priority {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 10px;
+}
+.settlement-actions .receipt-preview-link {
+  margin: 0;
+  align-self: flex-end;
+  font-size: 11px;
+}
+.settlement-actions .confirm-btn {
+  min-height: 44px;
+  justify-content: center;
+  white-space: normal;
+  line-height: 1.25;
+}
+.settlement-secondary-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+}
+.settlement-secondary-actions .lis-btn {
+  min-width: 0;
+  min-height: 38px;
+  justify-content: center;
+  padding: 7px 8px;
+  white-space: normal;
+  font-size: 10px;
+}
+@media (max-width: 1100px) {
+  .settlement-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .settlement-actions {
+    grid-column: 1 / -1;
+    border-left: 0;
+    border-top: 1px solid var(--border-color);
+    display: grid;
+    grid-template-columns: 1fr auto minmax(220px, 1.2fr);
+    align-items: center;
+  }
+  .settlement-actions .receipt-preview-link {
+    align-self: center;
+  }
+  .settlement-secondary-actions {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 700px) {
+  .settlement-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .settlement-section + .settlement-section,
+  .settlement-actions {
+    border-left: 0;
+    border-top: 1px solid var(--border-color);
+  }
+  .settlement-actions {
+    display: flex;
+  }
+  .discount-input-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .settlement-secondary-actions {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+
+/* ── Billing redesign: financial summary + four-step settlement flow ── */
+.bill-layout {
+  grid-template-columns: minmax(0, 1.65fr) minmax(300px, .85fr);
+  gap: 14px;
+  align-items: stretch;
+}
+.bill-main { min-width: 0; }
+.bill-main > .lis-card { min-width: 0; height: 100%; }
+.tests-list {
+  max-height: 390px;
+  overflow-y: auto;
+}
+.invoice-panel {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+}
+.invoice-panel .inv-hd { flex: none; }
+.invoice-panel .inv-totals {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 16px 18px;
+}
+.invoice-panel .tot-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  font-size: 12px;
+}
+.invoice-panel .tot-grand {
+  margin-top: 8px;
+  padding: 14px 12px;
+  border: 1px solid color-mix(in srgb, var(--lis-primary, #1d9e75) 35%, var(--border-color));
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--lis-primary, #1d9e75) 10%, var(--body-bg));
+  font-size: 14px;
+  font-weight: 700;
+}
+.invoice-panel .tot-grand-amt { font-size: 21px; font-weight: 800; }
+.invoice-panel .tot-outstanding {
+  color: var(--lis-primary, #1d9e75);
+  font-weight: 700;
+}
+.settlement-header {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+.settlement-heading-copy { min-width: 0; }
+.settlement-policy-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  padding: 6px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  white-space: nowrap;
+}
+.settlement-policy-note i { color: var(--lis-primary, #1d9e75); font-size: 13px; }
+.settlement-grid {
+  grid-template-columns: minmax(0, 1.12fr) minmax(170px, .72fr) minmax(0, 1.12fr) minmax(220px, .9fr);
+}
+.settlement-section { padding: 14px 14px 16px; }
+.settlement-section-title { margin-bottom: 12px; }
+.discount-input-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 11px 9px;
+}
+.discount-reason-field { grid-column: 1 / -1; }
+.discount-rate-field .settlement-stepper { position: relative; }
+.stepper-suffix {
+  flex: 0 0 30px;
+  display: grid;
+  place-items: center;
+  align-self: stretch;
+  border-left: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+.settlement-input {
+  appearance: none;
+  padding: 0 10px;
+}
+select.settlement-input {
+  cursor: pointer;
+}
+.required-mark { color: #e07878; }
+.field-hint {
+  display: block;
+  margin: 6px 0 0;
+  color: var(--text-secondary);
+  font-size: 10px;
+  line-height: 1.4;
+}
+.field-hint--warning { color: #d69a42; }
+.field-hint i { margin-right: 4px; }
+.advance-section .lis-field { margin-top: 2px; }
+.advance-impact {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 16px;
+  padding: 11px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--lis-primary, #1d9e75) 8%, var(--body-bg));
+}
+.advance-impact span { color: var(--text-secondary); font-size: 10px; }
+.advance-impact strong { color: var(--text-primary); font-size: 17px; }
+.payment-section .pay-mode-btn { min-height: 60px; }
+.settlement-actions { gap: 9px; padding: 14px; }
+.settlement-actions .confirm-btn { min-height: 42px; }
+.settlement-secondary-actions { grid-template-columns: 1fr; }
+@media (max-width: 1180px) {
+  .settlement-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .settlement-actions {
+    grid-column: 1 / -1;
+    border-left: 0;
+    border-top: 1px solid var(--border-color);
+    display: grid;
+    grid-template-columns: minmax(150px, .7fr) auto minmax(220px, 1.2fr);
+    align-items: center;
+  }
+  .settlement-secondary-actions {
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 900px) {
+  .bill-layout { grid-template-columns: minmax(0, 1fr); }
+  .invoice-panel .inv-totals { padding: 12px 16px; }
+  .invoice-panel .tot-grand-amt { font-size: 18px; }
+}
+@media (max-width: 700px) {
+  .settlement-grid { grid-template-columns: minmax(0, 1fr); }
+  .settlement-section + .settlement-section,
+  .settlement-actions {
+    border-left: 0;
+    border-top: 1px solid var(--border-color);
+  }
+  .settlement-actions { display: flex; }
+  .settlement-secondary-actions { grid-template-columns: 1fr 1fr; }
+  .settlement-policy-note { margin-left: 0; }
+  .tests-list { max-height: 300px; }
+}
+
+
+/* Final responsive corrections: keep the four settlement panels readable
+   on medium screens and avoid narrow columns when the workspace collapses. */
+@media (min-width: 1181px) {
+  .settlement-grid {
+    grid-template-columns: minmax(0, 1.12fr) minmax(170px, .72fr) minmax(0, 1.12fr) minmax(220px, .9fr);
+  }
+}
+@media (min-width: 761px) and (max-width: 1180px) {
+  .settlement-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .settlement-section:nth-child(3) {
+    border-left: 0;
+    border-top: 1px solid var(--border-color);
+  }
+  .settlement-actions {
+    grid-column: 1 / -1;
+    border-left: 0;
+    border-top: 1px solid var(--border-color);
+    display: grid;
+    grid-template-columns: minmax(150px, .7fr) auto minmax(220px, 1.2fr);
+    align-items: center;
+  }
+  .settlement-secondary-actions {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 760px) {
+  .settlement-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .settlement-section + .settlement-section,
+  .settlement-actions {
+    border-left: 0;
+    border-top: 1px solid var(--border-color);
+  }
+  .settlement-actions {
+    display: flex;
+    grid-column: auto;
+  }
+  .settlement-policy-note {
+    margin-left: 0;
+    white-space: normal;
+  }
+  .discount-input-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .discount-reason-field {
+    grid-column: auto;
+  }
+  .settlement-secondary-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+/* Billing controls refinement: direct numeric entry and clear single-choice payment modes. */
+.discount-input-grid {
+  grid-template-columns: minmax(120px, .9fr) minmax(120px, .9fr) minmax(130px, 1fr);
+  gap: 10px;
+}
+.discount-reason-field { grid-column: 1 / -1; }
+.settlement-number-field {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  height: 40px;
+  box-sizing: border-box;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--body-bg);
+}
+.settlement-number-field:focus-within {
+  border-color: var(--lis-primary, #1d9e75);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--lis-primary, #1d9e75) 14%, transparent);
+}
+.settlement-number-field input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0 11px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.settlement-number-suffix {
+  display: grid;
+  place-items: center;
+  align-self: stretch;
+  min-width: 34px;
+  padding: 0 9px;
+  border-left: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+.payment-section .pay-modes { role: radiogroup; }
+.payment-section .pay-mode-btn {
+  position: relative;
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease, color .15s ease, box-shadow .15s ease;
+}
+.payment-section .pay-mode-btn:focus-visible {
+  outline: 2px solid var(--lis-primary, #1d9e75);
+  outline-offset: 2px;
+}
+.payment-section .pay-mode-btn--active {
+  border: 1.5px solid var(--lis-primary, #1d9e75);
+  background: color-mix(in srgb, var(--lis-primary, #1d9e75) 14%, var(--body-bg));
+  color: var(--lis-primary, #1d9e75);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--lis-primary, #1d9e75) 30%, transparent);
+}
+.payment-section .pay-mode-btn--active::after {
+  content: '✓';
+  position: absolute;
+  top: -7px;
+  right: -6px;
+  display: grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: var(--lis-primary, #1d9e75);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+}
+.payment-section .pay-mode-btn--credit.pay-mode-btn--active {
+  border-color: #d97777;
+  background: #fff1f1;
+  color: #a32e2e;
+}
+.invoice-payment-progress { margin-top: 10px; padding-top: 8px; }
+.invoice-payment-progress__labels {
+  display: flex; justify-content: space-between; gap: 10px;
+  color: var(--text-secondary); font-size: 10px; font-weight: 600;
+}
+.invoice-payment-progress__track {
+  height: 7px; margin-top: 7px; overflow: hidden;
+  border-radius: 20px; background: var(--body-bg);
+}
+.invoice-payment-progress__track span {
+  display: block; height: 100%; border-radius: inherit;
+  background: var(--lis-primary, #1d9e75); transition: width .2s ease;
+}
+@media (max-width: 760px) {
+  .discount-input-grid { grid-template-columns: minmax(0, 1fr); }
+  .discount-reason-field { grid-column: auto; }
+  .invoice-payment-progress__labels { flex-wrap: wrap; }
+}
+
+
+/* Billing page layout: tests and invoice on the left, payment workspace on the right. */
+@media (min-width: 1051px) {
+  .bill-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(330px, 380px);
+    align-items: start;
+    gap: 14px;
+  }
+  .bill-main {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .bill-main > .lis-card {
+    height: auto;
+    min-width: 0;
+  }
+  .bill-main > .lis-card[aria-label="Ordered tests"] {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .bill-main .tests-list {
+    max-height: min(390px, 42dvh);
+    overflow-y: auto;
+  }
+  .invoice-panel {
+    min-width: 0;
+    display: block;
+    align-self: stretch;
+  }
+  .invoice-panel .inv-totals {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px 16px 16px;
+  }
+  .invoice-panel .tot-row {
+    padding: 7px 0;
+  }
+  .invoice-panel .tot-grand {
+    margin-top: 5px;
+    padding: 12px;
+  }
+  .billing-sidebar {
+    min-width: 0;
+    align-self: start;
+    position: sticky;
+    top: 12px;
+  }
+  .billing-sidebar .settlement-card {
+    height: auto;
+    min-width: 0;
+  }
+  .billing-sidebar .settlement-header {
+    align-items: flex-start;
+    padding: 14px 15px;
+  }
+  .billing-sidebar .settlement-heading-copy p {
+    line-height: 1.4;
+  }
+  .billing-sidebar .settlement-policy-note {
+    margin: 8px 0 0;
+    white-space: normal;
+  }
+  .billing-sidebar .settlement-grid {
+    display: flex;
+    flex-direction: column;
+  }
+  .billing-sidebar .settlement-section,
+  .billing-sidebar .settlement-actions {
+    min-width: 0;
+    padding: 13px 15px;
+    border-left: 0;
+    border-top: 1px solid var(--border-color);
+  }
+  .billing-sidebar .settlement-section:first-child {
+    border-top: 0;
+  }
+  .billing-sidebar .discount-input-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px;
+  }
+  .billing-sidebar .discount-reason-field {
+    grid-column: 1 / -1;
+  }
+  .billing-sidebar .pay-modes {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 7px;
+  }
+  .billing-sidebar .pay-mode-btn {
+    min-width: 0;
+    min-height: 58px;
+    padding: 8px 4px;
+  }
+  .billing-sidebar .settlement-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .billing-sidebar .settlement-actions .receipt-preview-link {
+    align-self: flex-end;
+  }
+  .billing-sidebar .settlement-secondary-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 1050px) {
+  .bill-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .bill-main {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .billing-sidebar {
+    min-width: 0;
+    position: static;
+  }
+  .billing-sidebar .settlement-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .billing-sidebar .settlement-actions {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 700px) {
+  .billing-sidebar .settlement-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .billing-sidebar .discount-input-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .billing-sidebar .discount-reason-field {
+    grid-column: auto;
+  }
+}
+
+
+/* Keep the patient identity strip full-width, matching the Test Order workflow. */
+:host .patient-summary {
+  display: flex;
+  width: 100%;
+  max-width: none;
+  grid-column: 1 / -1;
+  box-sizing: border-box;
+  align-self: stretch;
+}
+:host .patient-summary .patient-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+:host .patient-summary .patient-visit-meta {
+  flex: 0 0 auto;
+}
+@media (max-width: 900px) {
+  :host .patient-summary {
+    width: 100%;
+  }
+}
+
+
+/* Final billing composition: ordered tests above invoice on the left,
+   with the complete payment workspace alongside them on the right. */
+@media (min-width: 1101px) {
+  .bill-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 400px);
+    gap: 14px;
+    align-items: start;
+  }
+
+  .bill-main {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+  }
+
+  .bill-main > [aria-label="Ordered tests"] {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .bill-main .tests-list {
+    max-height: min(430px, 48dvh);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .bill-main > .invoice-panel {
+    position: static;
+    width: 100%;
+    min-width: 0;
+    align-self: stretch;
+  }
+
+  .billing-sidebar {
+    position: sticky;
+    top: 12px;
+    min-width: 0;
+    width: 100%;
+    align-self: start;
+  }
+
+  .billing-sidebar > .settlement-card {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 1100px) {
+  .bill-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bill-main,
+  .billing-sidebar {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .billing-sidebar {
+    position: static;
+  }
+
+  .bill-main .tests-list {
+    max-height: 420px;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 760px) {
+  .bill-main .tests-list {
+    max-height: 340px;
+  }
+}
+
+
+/* Right-side Billing & Payment panel — compact vertical treatment from the approved target. */
+@media (min-width: 1101px) {
+  .bill-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(350px, 390px);
+    gap: 14px;
+    align-items: start;
+  }
+
+  .billing-sidebar {
+    min-width: 0;
+    width: 100%;
+    position: sticky;
+    top: 12px;
+  }
+
+  .billing-sidebar .settlement-card {
+    width: 100%;
+    overflow: hidden;
+    border-radius: 12px;
+  }
+
+  .billing-sidebar .settlement-header {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr);
+    align-items: center;
+    gap: 9px;
+    padding: 13px 14px;
+  }
+
+  .billing-sidebar .settlement-header > i {
+    width: 32px;
+    height: 32px;
+    font-size: 17px;
+  }
+
+  .billing-sidebar .settlement-heading-copy h2 {
+    font-size: 14px;
+    line-height: 1.25;
+  }
+
+  .billing-sidebar .settlement-heading-copy p {
+    margin-top: 3px;
+    font-size: 10px;
+    line-height: 1.35;
+  }
+
+  .billing-sidebar .settlement-policy-note {
+    grid-column: 1 / -1;
+    justify-self: start;
+    margin: 0;
+    padding: 5px 8px;
+    font-size: 9px;
+  }
+
+  .billing-sidebar .settlement-grid {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .billing-sidebar .settlement-section,
+  .billing-sidebar .settlement-actions {
+    min-width: 0;
+    padding: 12px 14px;
+    border: 0;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .billing-sidebar .settlement-section:first-child {
+    border-top: 0;
+  }
+
+  .billing-sidebar .settlement-section-title {
+    margin-bottom: 10px;
+    font-size: 12px;
+  }
+
+  .billing-sidebar .discount-input-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 9px 10px;
+    align-items: end;
+  }
+
+  .billing-sidebar .discount-reason-field {
+    grid-column: 1 / -1;
+  }
+
+  .billing-sidebar .discount-input-grid .lis-field label,
+  .billing-sidebar .settlement-section .lis-field label {
+    font-size: 10px;
+    line-height: 1.25;
+  }
+
+  .billing-sidebar .settlement-input,
+  .billing-sidebar .settlement-number-field,
+  .billing-sidebar .settlement-value,
+  .billing-sidebar .settlement-currency,
+  .billing-sidebar .pay-adaptive input {
+    min-width: 0;
+    width: 100%;
+    height: 38px;
+    box-sizing: border-box;
+  }
+
+  .billing-sidebar .settlement-number-field input {
+    min-width: 0;
+    width: 100%;
+    font-size: 12px;
+  }
+
+  .billing-sidebar .advance-section .lis-field {
+    margin: 0;
+  }
+
+  .billing-sidebar .advance-impact {
+    margin-top: 9px;
+    padding: 9px 10px;
+    gap: 3px;
+  }
+
+  .billing-sidebar .advance-impact strong {
+    font-size: 16px;
+  }
+
+  .billing-sidebar .field-hint {
+    margin-top: 5px;
+    font-size: 9px;
+  }
+
+  .billing-sidebar .payment-section .pay-modes {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+    margin: 0 0 11px;
+  }
+
+  .billing-sidebar .payment-section .pay-mode-btn {
+    min-width: 0;
+    min-height: 54px;
+    padding: 7px 3px;
+    gap: 4px;
+    font-size: 10px;
+  }
+
+  .billing-sidebar .payment-section .pay-mode-btn i {
+    font-size: 17px;
+  }
+
+  .billing-sidebar .pay-adaptive .lis-field {
+    gap: 5px;
+  }
+
+  .billing-sidebar .settlement-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 9px;
+  }
+
+  .billing-sidebar .settlement-priority {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 10px;
+  }
+
+  .billing-sidebar .settlement-actions .receipt-preview-link {
+    align-self: flex-end;
+    margin-top: -28px;
+    min-height: 24px;
+    font-size: 10px;
+  }
+
+  .billing-sidebar .settlement-actions .confirm-btn {
+    width: 100%;
+    min-height: 42px;
+    margin-top: 2px;
+    font-size: 11px;
+  }
+
+  .billing-sidebar .settlement-secondary-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .billing-sidebar .settlement-secondary-actions .lis-btn {
+    min-width: 0;
+    min-height: 38px;
+    padding: 7px 5px;
+    white-space: nowrap;
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .billing-sidebar .settlement-header {
+    flex-wrap: wrap;
+  }
+
+  .billing-sidebar .settlement-policy-note {
+    margin-left: 0;
+  }
+}
+
+
+/* Final precision pass: align the sidebar controls and action hierarchy. */
+@media (min-width: 1101px) {
+  .billing-sidebar .discount-input-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 10px;
+    row-gap: 9px;
+    align-items: end;
+  }
+
+  .billing-sidebar .discount-input-grid > .lis-field:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+
+  .billing-sidebar .discount-input-grid > .discount-reason-field {
+    grid-column: 1 / -1;
+  }
+
+  .billing-sidebar .discount-input-grid .settlement-value {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 7px;
+    padding: 0 11px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--body-bg);
+  }
+
+  .billing-sidebar .discount-input-grid .settlement-value strong {
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .billing-sidebar .discount-input-grid .settlement-input,
+  .billing-sidebar .discount-input-grid select,
+  .billing-sidebar .discount-input-grid .settlement-number-field,
+  .billing-sidebar .advance-section .settlement-currency,
+  .billing-sidebar .payment-section .settlement-currency {
+    height: 38px;
+    min-height: 38px;
+  }
+
+  .billing-sidebar .settlement-number-field {
+    display: flex;
+    align-items: stretch;
+    overflow: hidden;
+  }
+
+  .billing-sidebar .settlement-number-field input {
+    flex: 1 1 auto;
+    width: 1%;
+    min-width: 0;
+    height: 100%;
+    box-sizing: border-box;
+  }
+
+  .billing-sidebar .settlement-number-suffix {
+    flex: 0 0 34px;
+    display: grid;
+    place-items: center;
+    min-width: 34px;
+  }
+
+  .billing-sidebar .settlement-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    line-height: 1.25;
+  }
+
+  .billing-sidebar .advance-impact {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 40px;
+    box-sizing: border-box;
+  }
+
+  .billing-sidebar .settlement-action-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .billing-sidebar .settlement-priority {
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: flex-start;
+  }
+
+  .billing-sidebar .settlement-actions .receipt-preview-link {
+    flex: 0 0 auto;
+    align-self: auto;
+    margin: 0;
+    min-height: 28px;
+    white-space: nowrap;
+  }
+
+  .billing-sidebar .settlement-actions .confirm-btn {
+    min-height: 42px;
+    border-radius: 8px;
+  }
+
+  .billing-sidebar .settlement-secondary-actions .lis-btn {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+@media (max-width: 1100px) {
+  .billing-sidebar .settlement-action-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .billing-sidebar .settlement-actions .receipt-preview-link {
+    margin: 0;
+  }
+}
+
+
+/* Viewport/scroll safety pass:
+   keep billing content in normal document flow so it never slides beneath
+   the fixed application toolbar or creates overlapping sticky panels. */
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+:host *,
+:host *::before,
+:host *::after {
+  box-sizing: border-box;
+}
+
+.page-header,
+.patient-summary,
+.bill-layout {
+  position: relative;
+  z-index: auto;
+  min-width: 0;
+}
+
+.page-header {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.patient-summary {
+  margin: 0 0 12px;
+  min-width: 0;
+}
+
+.bill-layout {
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, min(36vw, 390px));
+  gap: 14px;
+  align-items: start;
+}
+
+.bill-main,
+.billing-sidebar {
+  min-width: 0;
+  width: 100%;
+}
+
+.bill-main {
+  gap: 12px;
+}
+
+.bill-main > [aria-label="Ordered tests"],
+.bill-main > .invoice-panel,
+.billing-sidebar > .settlement-card {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* No nested sticky cards: the app content area owns vertical scrolling. */
+.invoice-panel,
+.billing-sidebar {
+  position: static !important;
+  inset: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.bill-main .tests-list {
+  max-height: clamp(210px, 34vh, 340px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.invoice-panel .inv-items {
+  max-height: none;
+  overflow: visible;
+}
+
+.billing-sidebar .settlement-card {
+  height: auto;
+  max-height: none;
+  overflow: visible;
+}
+
+@media (min-width: 1101px) {
+  .bill-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(340px, min(36vw, 390px));
+  }
+
+  .billing-sidebar {
+    align-self: start;
+  }
+}
+
+@media (max-width: 1100px) {
+  .bill-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .billing-sidebar {
+    position: static !important;
+    width: 100%;
+  }
+
+  .bill-main .tests-list {
+    max-height: clamp(200px, 38vh, 360px);
+  }
+}
+
+@media (max-width: 760px) {
+  .page-header {
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .patient-summary {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 9px;
+  }
+
+  .patient-summary .patient-main {
+    flex: 1 1 calc(100% - 56px);
+    min-width: 0;
+  }
+
+  .patient-summary .patient-visit-meta {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .bill-layout {
+    gap: 10px;
+  }
+
+  .bill-main {
+    gap: 10px;
+  }
+
+  .bill-main .tests-list {
+    max-height: 300px;
+  }
+}
+
+
+/* Billing header policy indicator and aligned discount/advance field groups. */
+@media (min-width: 761px) {
+  .billing-sidebar .settlement-header {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 10px;
+    row-gap: 4px;
+  }
+
+  .billing-sidebar .settlement-policy-note {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+    align-self: center;
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .billing-sidebar .discount-input-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px;
+    align-items: start;
+  }
+
+  .billing-sidebar .discount-calculation-column {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .billing-sidebar .discount-calculation-column .lis-field {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .billing-sidebar .discount-calculation-column .settlement-value,
+  .billing-sidebar .discount-calculation-column .settlement-input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .billing-sidebar .advance-entry-column,
+  .billing-sidebar .advance-entry-column .lis-field {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .billing-sidebar .advance-entry-column .field-hint {
+    display: block;
+    margin: 0;
+    line-height: 1.4;
+  }
+}
+
+@media (max-width: 760px) {
+  .billing-sidebar .settlement-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .billing-sidebar .settlement-policy-note {
+    flex: 0 0 100%;
+    width: fit-content;
+    margin: 4px 0 0 42px;
+  }
+
+  .billing-sidebar .discount-calculation-column {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    min-width: 0;
+  }
+
+  .billing-sidebar .advance-entry-column,
+  .billing-sidebar .advance-entry-column .lis-field {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+
+/* Billing polish: give the heading and policy chip separate breathing room,
+   make the calculated discount read as output, and keep advance guidance
+   visually attached to its input. */
+@media (min-width: 761px) {
+  .billing-sidebar .settlement-header {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr);
+    align-items: center;
+    column-gap: 10px;
+    row-gap: 8px;
+  }
+
+  .billing-sidebar .settlement-heading-copy {
+    min-width: 0;
+  }
+
+  .billing-sidebar .settlement-heading-copy h2 {
+    margin: 0;
+    line-height: 1.3;
+  }
+
+  .billing-sidebar .settlement-heading-copy p {
+    max-width: none;
+    margin: 4px 0 0;
+    line-height: 1.4;
+  }
+
+  .billing-sidebar .settlement-policy-note {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: start;
+    margin: 0;
+    white-space: normal;
+    max-width: 100%;
+  }
+
+  .billing-sidebar .discount-calculation-column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+
+  .billing-sidebar .discount-calculation-column .settlement-value {
+    width: 100%;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 7px;
+    padding: 0 11px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--body-bg);
+    color: var(--text-primary);
+  }
+
+  .billing-sidebar .discount-calculation-column .settlement-value strong {
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .billing-sidebar .advance-entry-column,
+  .billing-sidebar .advance-entry-column .lis-field {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .billing-sidebar .advance-entry-column .field-hint {
+    display: block;
+    margin: 0;
+    line-height: 1.4;
+  }
+}
+
+@media (max-width: 760px) {
+  .billing-sidebar .settlement-header {
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px 9px;
+  }
+
+  .billing-sidebar .settlement-heading-copy {
+    min-width: 0;
+  }
+
+  .billing-sidebar .settlement-policy-note {
+    grid-column: 2;
+    justify-self: start;
+    max-width: 100%;
+    margin: 0;
+    white-space: normal;
+  }
+
+  .billing-sidebar .discount-calculation-column {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    min-width: 0;
+  }
+
+  .billing-sidebar .advance-entry-column,
+  .billing-sidebar .advance-entry-column .lis-field {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .billing-sidebar .advance-entry-column .field-hint {
+    margin: 0;
+    line-height: 1.4;
+  }
+}
+
+
+/* Compact horizontal field pairs in the billing sidebar. */
+@media (min-width: 761px) {
+  .billing-sidebar .discount-section .settlement-section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .billing-sidebar .discount-title-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .billing-sidebar .discount-section .settlement-policy-note {
+    margin: 0;
+    justify-self: auto;
+    white-space: nowrap;
+    flex: 0 0 auto;
+  }
+
+  .billing-sidebar .discount-calculation-column {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    align-items: end;
+    gap: 10px;
+  }
+
+  .billing-sidebar .discount-calculation-column .lis-field {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .billing-sidebar .discount-calculation-column .settlement-value,
+  .billing-sidebar .discount-calculation-column .settlement-input {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .billing-sidebar .advance-entry-column {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(110px, 0.8fr);
+    align-items: end;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .billing-sidebar .advance-entry-column .lis-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .billing-sidebar .advance-entry-column .field-hint {
+    align-self: center;
+    margin: 0 0 2px;
+    line-height: 1.4;
+  }
+}
+
+@media (max-width: 760px) {
+  .billing-sidebar .discount-section .settlement-section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+
+  .billing-sidebar .discount-title-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .billing-sidebar .discount-section .settlement-policy-note {
+    margin: 0;
+    white-space: normal;
+  }
+
+  .billing-sidebar .discount-calculation-column {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    align-items: end;
+    gap: 8px;
+  }
+
+  .billing-sidebar .discount-calculation-column .lis-field {
+    min-width: 0;
+  }
+
+  .billing-sidebar .advance-entry-column {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(105px, 0.8fr);
+    align-items: end;
+    gap: 8px;
+  }
+
+  .billing-sidebar .advance-entry-column .lis-field {
+    min-width: 0;
+  }
+
+  .billing-sidebar .advance-entry-column .field-hint {
+    margin: 0 0 2px;
+    line-height: 1.4;
+  }
+}
+
+
+/* Final field grouping: discount reason/type on row one, value/calculated
+   amount on row two. Keep advance guidance beside its input, not below it. */
+@media (min-width: 761px) {
+  .billing-sidebar .discount-input-grid--paired {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px;
+    align-items: end;
+  }
+
+  .billing-sidebar .discount-input-grid--paired > .lis-field {
+    grid-column: auto !important;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .billing-sidebar .discount-input-grid--paired .settlement-input,
+  .billing-sidebar .discount-input-grid--paired .settlement-number-field,
+  .billing-sidebar .discount-input-grid--paired .settlement-value {
+    width: 100%;
+    min-width: 0;
+    height: 38px;
+    box-sizing: border-box;
+  }
+
+  .billing-sidebar .advance-entry-column .lis-field {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 10px;
+    row-gap: 6px;
+  }
+
+  .billing-sidebar .advance-entry-column .lis-field > label {
+    grid-column: 1 / -1;
+  }
+
+  .billing-sidebar .advance-entry-column .settlement-currency {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .billing-sidebar .advance-entry-column .field-hint {
+    margin: 0;
+    max-width: 118px;
+    line-height: 1.35;
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 760px) {
+  .billing-sidebar .discount-input-grid--paired {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px;
+    align-items: end;
+  }
+
+  .billing-sidebar .discount-input-grid--paired > .lis-field {
+    grid-column: auto !important;
+    min-width: 0;
+  }
+
+  .billing-sidebar .advance-entry-column .lis-field {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 6px 8px;
+  }
+
+  .billing-sidebar .advance-entry-column .lis-field > label {
+    grid-column: 1 / -1;
+  }
+
+  .billing-sidebar .advance-entry-column .field-hint {
+    max-width: 112px;
+    margin: 0;
+    font-size: 9px;
+    line-height: 1.35;
+  }
+}
+
+
+/* Advance section: compact, single-column payment entry with a clear
+   secondary balance row. This overrides earlier experimental layouts. */
+.billing-sidebar .advance-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.billing-sidebar .advance-section .settlement-section-title {
+  margin-bottom: 0;
+}
+
+.billing-sidebar .advance-entry-column,
+.billing-sidebar .advance-entry-column .lis-field {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 7px !important;
+  width: 100%;
+  min-width: 0;
+}
+
+.billing-sidebar .advance-entry-column .lis-field > label {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.billing-sidebar .advance-entry-column .settlement-currency {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  box-sizing: border-box;
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  background: var(--body-bg);
+  overflow: hidden;
+}
+
+.billing-sidebar .advance-entry-column .settlement-currency:focus-within {
+  border-color: var(--lis-primary, #1D9E75);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--lis-primary, #1D9E75) 16%, transparent);
+}
+
+.billing-sidebar .advance-entry-column .currency-prefix {
+  flex: 0 0 auto;
+  padding: 0 0 0 12px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.billing-sidebar .advance-entry-column .settlement-currency input {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  height: 40px;
+  padding: 0 12px 0 8px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.billing-sidebar .advance-entry-column .field-hint {
+  display: flex !important;
+  align-items: center;
+  gap: 5px;
+  margin: 0 !important;
+  max-width: none !important;
+  color: var(--text-secondary);
+  font-size: 10px !important;
+  line-height: 1.35 !important;
+}
+
+.billing-sidebar .advance-entry-column .field-hint i {
+  flex: 0 0 auto;
+  color: var(--lis-primary, #1D9E75);
+  font-size: 12px;
+}
+
+.billing-sidebar .advance-impact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--lis-primary, #1D9E75) 24%, var(--border-color));
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--lis-primary, #1D9E75) 8%, var(--body-bg));
+}
+
+.billing-sidebar .advance-impact > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.billing-sidebar .advance-impact > span i {
+  color: var(--lis-primary, #1D9E75);
+  font-size: 14px;
+}
+
+.billing-sidebar .advance-impact > strong {
+  color: var(--text-primary);
+  font-size: 17px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 760px) {
+  .billing-sidebar .advance-section {
+    gap: 10px;
+  }
+
+  .billing-sidebar .advance-impact {
+    min-height: 44px;
+    padding: 9px 10px;
+  }
+
+  .billing-sidebar .advance-impact > strong {
+    font-size: 16px;
+  }
+}
+
+
+/* Final page hierarchy: patient details anchor the left column while the
+   Billing & Payment workspace starts at the same top edge on the right. */
+@media (min-width: 1101px) {
+  .bill-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(350px, 390px);
+    align-items: start;
+    gap: 14px;
+  }
+
+  .bill-main {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .bill-main > .patient-summary {
+    order: 0;
+    display: flex;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    margin: 0;
+    box-sizing: border-box;
+    align-items: center;
+  }
+
+  .bill-main > [aria-label="Ordered tests"] {
+    order: 1;
+    min-width: 0;
+  }
+
+  .bill-main > .invoice-panel {
+    order: 2;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+  }
+
+  .billing-sidebar {
+    position: sticky;
+    top: 12px;
+    align-self: start;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+  }
+}
+
+@media (max-width: 1100px) {
+  .bill-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .bill-main,
+  .billing-sidebar {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .bill-main > .patient-summary {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    box-sizing: border-box;
+  }
+
+  .billing-sidebar {
+    position: static;
+  }
+}
+
+
+/* Viewport-fit billing layout: reclaim vertical space and keep long test
+   lists scrolling inside their own card instead of scrolling the whole page. */
+@media (min-width: 1101px) and (min-height: 760px) {
+  .page-header {
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+  }
+
+  .bill-layout {
+    gap: 10px;
+  }
+
+  .bill-main {
+    gap: 10px;
+  }
+
+  .bill-main > .patient-summary {
+    min-height: 76px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .bill-main > [aria-label="Ordered tests"] {
+    min-height: 0;
+  }
+
+  .bill-main > [aria-label="Ordered tests"] .lis-card__header {
+    min-height: 40px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .bill-main > [aria-label="Ordered tests"] .tests-list {
+    max-height: clamp(190px, 29vh, 270px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+
+  .bill-main > [aria-label="Ordered tests"] .bill-test-row {
+    min-height: 42px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  .bill-main > .invoice-panel .inv-hd {
+    padding: 10px 14px;
+  }
+
+  .bill-main > .invoice-panel .inv-totals {
+    padding: 8px 14px 10px;
+  }
+
+  .bill-main > .invoice-panel .tot-row {
+    min-height: 28px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+
+  .bill-main > .invoice-panel .tot-grand {
+    min-height: 48px;
+    margin-top: 6px;
+  }
+
+  .bill-main > .invoice-panel .invoice-payment-progress {
+    margin-top: 8px;
+  }
+
+  .billing-sidebar .settlement-header {
+    padding: 10px 12px;
+    gap: 9px;
+  }
+
+  .billing-sidebar .settlement-heading-copy h2 {
+    font-size: 14px;
+    line-height: 1.25;
+  }
+
+  .billing-sidebar .settlement-heading-copy p {
+    margin-top: 2px;
+    font-size: 10px;
+    line-height: 1.3;
+  }
+
+  .billing-sidebar .settlement-section {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .billing-sidebar .settlement-section-title {
+    margin-bottom: 0;
+    font-size: 11px;
+  }
+
+  .billing-sidebar .lis-field {
+    gap: 4px;
+  }
+
+  .billing-sidebar .lis-field label {
+    font-size: 10px;
+  }
+
+  .billing-sidebar .settlement-input,
+  .billing-sidebar .settlement-number-field,
+  .billing-sidebar .settlement-currency {
+    min-height: 36px;
+  }
+
+  .billing-sidebar .settlement-number-field input,
+  .billing-sidebar .settlement-currency input {
+    height: 34px;
+    font-size: 12px;
+  }
+
+  .billing-sidebar .advance-section {
+    gap: 8px;
+  }
+
+  .billing-sidebar .advance-impact {
+    min-height: 40px;
+    padding: 7px 10px;
+  }
+
+  .billing-sidebar .advance-impact > strong {
+    font-size: 15px;
+  }
+
+  .billing-sidebar .pay-modes {
+    gap: 7px;
+  }
+
+  .billing-sidebar .pay-mode-btn {
+    min-height: 54px;
+    padding: 7px 5px;
+  }
+
+  .billing-sidebar .settlement-actions {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .billing-sidebar .confirm-btn {
+    min-height: 42px;
+  }
+
+  .billing-sidebar .settlement-secondary-actions {
+    gap: 7px;
+  }
+
+  .billing-sidebar .settlement-secondary-actions .lis-btn {
+    min-height: 36px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+  }
+}
+
+/* On shorter laptop screens, retain normal document scrolling rather than
+   clipping controls; the test list still has its own bounded scroller. */
+@media (min-width: 1101px) and (max-height: 759px) {
+  .bill-main > [aria-label="Ordered tests"] .tests-list {
+    max-height: 220px;
+    overflow-y: auto;
+  }
+
+  .bill-main,
+  .billing-sidebar {
+    min-height: 0;
+  }
+}
+
+
+/* Billing patient context is read-only here: keep the card compact and
+   give identity/visit details a balanced layout without widening the column. */
+@media (min-width: 761px) {
+  .bill-main > .patient-summary {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) minmax(220px, auto);
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 0;
+    padding: 12px 14px;
+  }
+
+  .bill-main > .patient-summary .pat-avatar {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .bill-main > .patient-summary .patient-main {
+    grid-column: 2;
+    min-width: 0;
+  }
+
+  .bill-main > .patient-summary .patient-name-line {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px 9px;
+    min-width: 0;
+  }
+
+  .bill-main > .patient-summary .patient-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px 12px;
+    min-width: 0;
+  }
+
+  .bill-main > .patient-summary .patient-visit-meta {
+    grid-column: 3;
+    grid-row: 1;
+    justify-content: flex-end;
+    gap: 10px;
+    min-width: 0;
+    padding: 2px 0 2px 12px;
+  }
+
+  .bill-main > .patient-summary .patient-visit-meta span {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .bill-main > .patient-summary .patient-visit-meta {
+    border-top: 1px solid var(--border-color);
+    padding-top: 9px;
+  }
+}
+
+
+/* Invoice summary compact header: title, invoice ID and payment status share
+   one horizontal row to preserve vertical space. */
+.invoice-panel .inv-hd {
+  padding: 8px 14px;
+}
+
+.invoice-panel .inv-hd-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+.invoice-panel .inv-heading-group {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 5px 12px;
+  min-width: 0;
+}
+
+.invoice-panel .inv-title {
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.invoice-panel .inv-meta {
+  margin: 0;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.invoice-panel .pay-status-badge {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+@media (max-width: 420px) {
+  .invoice-panel .inv-hd {
+    padding: 8px 10px;
+  }
+
+  .invoice-panel .inv-heading-group {
+    gap: 3px 7px;
+  }
+
+  .invoice-panel .inv-title {
+    font-size: 13px;
+  }
+
+  .invoice-panel .inv-meta {
+    font-size: 9px;
+  }
+}

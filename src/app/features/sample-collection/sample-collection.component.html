@@ -3,161 +3,252 @@
      Single-patient task screen, entered from Billing.
      ═══════════════════════════════════════════════════════════ -->
 
-<div class="page-header">
-  <div>
-    <h1 class="page-title">Sample Collection</h1>
-    <nav aria-label="Breadcrumb">
-      <ol class="breadcrumb">
-        <li><a routerLink="/dashboard/home">Home</a></li>
-        <li><a routerLink="/dashboard/billing">Billing</a></li>
-        <li aria-current="page">Sample Collection</li>
-      </ol>
-    </nav>
+<section class="sample-top-card lis-card" aria-label="Sample collection workflow">
+  <div class="sample-top-layout">
+    <div class="sample-top-heading">
+      <h1 class="page-title">Sample Collection</h1>
+      <nav aria-label="Breadcrumb">
+        <ol class="breadcrumb">
+          <li><a routerLink="/dashboard/home">Home</a></li>
+          <li><a routerLink="/dashboard/billing">Billing</a></li>
+          <li aria-current="page">Sample Collection</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="timeline-card">
+      <lis-workflow-stepper [steps]="timelineSteps" [activeIndex]="timelineActiveIndex()" [ariaLabel]="'Sample lifecycle progress'" />
+    </div>
   </div>
-</div>
+</section>
 
 <!-- Process timeline — the full pipeline, not just the pre-collection steps,
      so the technician always knows where this sample sits in the journey.
      Uses the shared stepper component (same design used on Registration,
      Test Order and Billing) inside a card wrapper for the timeline's
      distinct framed look. -->
-<div class="timeline-card">
-  <lis-workflow-stepper [steps]="timelineSteps" [activeIndex]="timelineActiveIndex()" [ariaLabel]="'Sample lifecycle progress'" />
-</div>
-
 @if (patient && currentPatientTubes().length > 0) {
   <!-- ════════════════════════════════════════════════
        Patient summary — identity + status dominate
        ════════════════════════════════════════════════ -->
-  <div class="patient-summary lis-card" role="region" aria-label="Current patient sample collection">
-    <div class="pat-info-row">
+  <section class="patient-summary lis-card" role="region" aria-label="Current patient sample collection">
+    <div class="patient-identity">
       <div class="ps-av-wrap" [class.ps-av-wrap--done]="collected()">
         <div class="pat-av" aria-hidden="true">{{ patientInitials }}</div>
       </div>
-      <div class="pat-id-main">
-        <div class="pat-name-row">
-          <div class="pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
-          @if (!collected()) {
-            <span class="status-chip status-chip--warn">
-              <i class="ti ti-hourglass-low" aria-hidden="true"></i> Awaiting Collection
-            </span>
-          } @else {
-            <span class="pill pill--routine">
-              <i class="ti ti-circle-check" aria-hidden="true"></i>Collected
-            </span>
-          }
-        </div>
-        <div class="pat-detail-row">
-          <span class="pat-detail-item"><i class="ti ti-id-badge-2 pat-detail-icon" aria-hidden="true"></i><span class="lis-mono">{{ patient.id }}</span></span>
-          <span class="pat-detail-sep" aria-hidden="true">|</span>
-          <span class="pat-detail-item age-inline" [title]="patientAgeBreakdown()">
-            <i class="ti ti-cake pat-detail-icon" aria-hidden="true"></i><span class="age-inline__y">{{ ageParts().years }}y</span><span class="age-inline__sep"> · </span><span class="age-inline__m">{{ ageParts().months }}m</span><span class="age-inline__sep"> · </span><span class="age-inline__d">{{ ageParts().days }}d</span>
-          </span>
-          <span class="pat-detail-sep" aria-hidden="true">|</span>
-          <span class="pat-detail-item"><i class="ti ti-calendar-event pat-detail-icon" aria-hidden="true"></i>DOB {{ patient.dob | date:'dd MMM yyyy' }}</span>
-          <span class="pat-detail-sep" aria-hidden="true">|</span>
-          <span class="pat-detail-item"><i class="ti {{ genderIcon() }} pat-detail-icon" aria-hidden="true"></i>{{ patient.gender | titlecase }}</span>
-        </div>
-        <div class="pat-detail-row">
-          <span class="pat-detail-item"><i class="ti ti-phone pat-detail-icon" aria-hidden="true"></i>{{ patient.mobile }}</span>
-          <span class="pat-detail-sep" aria-hidden="true">|</span>
-          <span class="pat-detail-item"><i class="ti ti-stethoscope pat-detail-icon" aria-hidden="true"></i>{{ patient.refDoctor }}</span>
-          <span class="pat-detail-sep" aria-hidden="true">|</span>
-          <span class="pat-detail-item"><i class="ti ti-droplet-half-2 pat-detail-icon" aria-hidden="true"></i>{{ patient.fasting }}</span>
-          <span class="pat-detail-sep" aria-hidden="true">|</span>
-          <span class="pat-detail-item">
-            <span class="prio-badge" [style.color]="priorityStyle().color" [style.background]="priorityStyle().bg"
-                  [style.border-color]="priorityStyle().color">
-              <i class="ti {{ priorityStyle().icon }}" aria-hidden="true"></i> {{ flow.priority() | titlecase }}
-            </span>
-          </span>
-        </div>
+      <div class="patient-identity__name">
+        <div class="pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
+        <span class="lis-mono patient-id">{{ patient.id }}</span>
       </div>
     </div>
-
-  </div>
+    <div class="patient-fact"><i class="ti ti-user patient-fact__icon" aria-hidden="true"></i><span class="patient-fact__label">Age</span><strong>{{ ageParts().years }}y {{ ageParts().months }}m {{ ageParts().days }}d</strong></div>
+    <div class="patient-fact"><i class="ti ti-calendar-event patient-fact__icon" aria-hidden="true"></i><span class="patient-fact__label">DOB</span><strong>{{ patient.dob | date:'dd MMM yyyy' }}</strong></div>
+    <div class="patient-fact"><i class="ti {{ genderIcon() }} patient-fact__icon" aria-hidden="true"></i><span class="patient-fact__label">Sex</span><strong>{{ patient.gender | titlecase }}</strong></div>
+    <div class="patient-fact"><i class="ti ti-phone patient-fact__icon" aria-hidden="true"></i><span class="patient-fact__label">Mobile</span><strong>{{ patient.mobile }}</strong></div>
+    <div class="patient-fact"><i class="ti ti-walk patient-fact__icon" aria-hidden="true"></i><span class="patient-fact__label">Visit</span><strong>Walk-in</strong></div>
+    <div class="patient-fact"><i class="ti ti-droplet-half-2 patient-fact__icon" aria-hidden="true"></i><span class="patient-fact__label">Fasting</span><strong>{{ patient.fasting || 'Unknown' }}</strong></div>
+    <div class="patient-fact patient-fact--priority">
+      <i class="ti ti-flag patient-fact__icon" aria-hidden="true"></i><span class="patient-fact__label">Priority</span>
+      <span class="prio-badge" [style.color]="priorityStyle().color" [style.background]="priorityStyle().bg" [style.border-color]="priorityStyle().color">{{ flow.priority() | titlecase }}</span>
+    </div>
+  </section>
 
   <!-- ════════════════════════════════════════════════
        Sample cards + Collection panel
        ════════════════════════════════════════════════ -->
   <div class="cp-layout">
     <!-- Sample cards -->
-    <div class="tube-cards" role="list" aria-label="Sample tubes">
+    <section class="specimen-panel lis-card" aria-labelledby="specimen-heading">
+      <div class="lis-card__header specimen-panel__header">
+        <i class="ti ti-test-pipe lis-card-icon" aria-hidden="true"></i>
+        <h2 class="lis-card__title" id="specimen-heading">Specimen Collection</h2>
+        <span class="specimen-count">{{ currentPatientTubes().length }}</span>
+      </div>
+      <div class="tube-cards" role="list" aria-label="Sample tubes">
       @for (tube of currentPatientTubes(); track tube.id) {
         <div class="tube-card2" role="listitem" [style.--tube-color]="tube.color">
           <div class="tc-strip" aria-hidden="true"></div>
           <div class="tc-body">
-            <div class="tc-head">
-              <div class="tc-label">{{ tube.label }}</div>
-              <span class="tc-required"><i class="ti ti-check" aria-hidden="true"></i> Required</span>
-            </div>
-            <div class="tc-tests">{{ tube.tests.join(' · ') }}</div>
-
-            <div class="tc-barcode-row">
-              <div class="tc-barcode" [attr.aria-label]="'Barcode for ' + tube.id">
-                <div class="bc-bars bc-bars--lg" aria-hidden="true">
-                  @for (w of barcodeWidths; track $index) {
-                    <div class="bc-bar" [style.width.px]="w * 1.35"></div>
-                  }
+            <div class="tc-main">
+              <div class="tc-heading">
+                <i class="ti ti-test-pipe tc-tube-icon" aria-hidden="true"></i>
+                <div class="tc-heading__copy">
+                  <div class="tc-label">{{ tube.label }}</div>
+                  <div class="tc-tests">{{ tube.tests.join(' · ') }}</div>
                 </div>
-                <div class="bc-num lis-mono">{{ tube.id }}</div>
+                <span class="tc-required"><i class="ti ti-check" aria-hidden="true"></i> Required</span>
               </div>
-              <div class="tc-actions">
-                <button type="button" class="tc-icon-btn" title="Print" aria-label="Print label" (click)="printLabels()">
-                  <i class="ti ti-printer" aria-hidden="true"></i>
-                </button>
-                <button type="button" class="tc-icon-btn" title="Preview" aria-label="Preview label">
-                  <i class="ti ti-eye" aria-hidden="true"></i>
-                </button>
-                <button type="button" class="tc-icon-btn" title="Reprint" aria-label="Reprint label">
-                  <i class="ti ti-refresh" aria-hidden="true"></i>
-                </button>
+              <div class="tc-barcode-row">
+                <div class="tc-barcode" [attr.aria-label]="'Barcode for ' + tube.id">
+                  <div class="bc-bars bc-bars--lg" aria-hidden="true">
+                    @for (w of barcodeWidths; track $index) {
+                      <div class="bc-bar" [style.width.px]="w * 1.8"></div>
+                    }
+                  </div>
+                  <div class="bc-num lis-mono">{{ tube.id }}</div>
+                </div>
+                <div class="tc-actions">
+                  <button type="button" class="tc-action-btn" title="Print label" (click)="printLabels()"><i class="ti ti-printer" aria-hidden="true"></i><span>Print Label</span></button>
+                  <button type="button" class="tc-action-btn" title="Preview label"><i class="ti ti-eye" aria-hidden="true"></i><span>Preview</span></button>
+                  <button type="button" class="tc-action-btn" title="Regenerate barcode" (click)="printLabels()"><i class="ti ti-refresh" aria-hidden="true"></i><span>Regenerate</span></button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       }
-    </div>
+      </div>
+    </section>
 
     <!-- Collection panel -->
-    <div class="collect-panel lis-card">
+    <section class="collect-panel lis-card" aria-labelledby="collection-details-heading">
       <div class="lis-card__header">
         <i class="ti ti-clipboard-list lis-card-icon" aria-hidden="true"></i>
-        <h2 class="lis-card__title">Collection</h2>
+        <h2 class="lis-card__title" id="collection-details-heading">Collection Details</h2>
       </div>
 
       <div class="cp-form">
-        <div class="lis-field">
-          <label>Collector</label>
-          <input value="Lab Technician" readonly />
-        </div>
-        <div class="lis-field">
-          <label>Collection time</label>
-          <input [value]="collected() ? collectedAt() : (now | date:'hh:mm a')" readonly />
-        </div>
-        <div class="lis-field">
-          <label>Sample type</label>
-          <input value="Venous blood" readonly />
-        </div>
-        <div class="lis-field">
-          <label>Notes</label>
-          <textarea placeholder="e.g. difficult vein, hemolysis risk, special handling…"
-            [value]="notes()" (input)="notes.set($any($event.target).value)"></textarea>
+        <div class="collection-field-grid">
+          <div class="lis-field collection-field--wide">
+            <label for="collection-date-time">Collection date &amp; time <span class="required-mark">*</span></label>
+            <div class="collection-datetime-control">
+              <button type="button" class="collection-datetime-trigger" id="collection-date-time"
+                [class.collection-datetime-trigger--open]="datePickerOpen()"
+                [attr.aria-expanded]="datePickerOpen()" aria-haspopup="dialog"
+                (click)="toggleDatePicker()" [disabled]="collected()">
+                <i class="ti ti-calendar-event" aria-hidden="true"></i>
+                <span>{{ collectionDateTime() | date:'dd MMM yyyy, hh:mm a' }}</span>
+                <i class="ti ti-calendar-month collection-datetime-end-icon" aria-hidden="true"></i>
+              </button>
+              @if (datePickerOpen()) {
+                <div class="collection-datetime-popover" role="dialog" aria-label="Choose collection date and time"
+                  [style.top.px]="datePickerPosition().top"
+                  [style.left.px]="datePickerPosition().left"
+                  [style.width.px]="datePickerPosition().width"
+                  [style.max-height.px]="datePickerPosition().maxHeight">
+                  <div class="collection-datetime-popover__selected-date">
+                    <i class="ti ti-calendar-event" aria-hidden="true"></i>
+                    <strong>{{ draftCollectionDateTime() | date:'EEE, dd MMM yyyy' }}</strong>
+                  </div>
+                  <div class="collection-calendar">
+                    <div class="collection-calendar__header">
+                      <button type="button" aria-label="Previous month" (click)="changeCalendarMonth(-1)"><i class="ti ti-chevron-left"></i></button>
+                      <strong>{{ calendarMonthLabel() }}</strong>
+                      <button type="button" aria-label="Next month" (click)="changeCalendarMonth(1)"><i class="ti ti-chevron-right"></i></button>
+                    </div>
+                    <div class="collection-calendar__weekdays">
+                      @for (day of calendarWeekdays; track day) { <span>{{ day }}</span> }
+                    </div>
+                    <div class="collection-calendar__days">
+                      @for (day of calendarDays(); track $index) {
+                        @if (day) {
+                          <button type="button" [class.is-selected]="day.date === collectionDatePart()"
+                            [class.is-today]="day.isToday" [disabled]="day.isFuture"
+                            (click)="updateCollectionDate(day.date)">{{ day.day }}</button>
+                        } @else { <span></span> }
+                      }
+                    </div>
+                  </div>
+                  <div class="collection-calendar__time">
+                    <button type="button" class="collection-calendar__time-toggle"
+                      [attr.aria-expanded]="timePickerExpanded()"
+                      (click)="toggleTimePicker()">
+                      <i class="ti ti-clock" aria-hidden="true"></i>
+                      <span>Collection time</span>
+                      <strong>{{ draftCollectionDateTime() | date:'hh:mm a' }}</strong>
+                      <i class="ti" [class.ti-chevron-down]="!timePickerExpanded()" [class.ti-chevron-up]="timePickerExpanded()" aria-hidden="true"></i>
+                    </button>
+                    @if (timePickerExpanded()) {
+                      <div class="collection-time-picker" role="group" aria-label="Choose collection time">
+                        <label class="collection-time-picker__unit">
+                          <span>Hour</span>
+                          <select aria-label="Hour" [value]="timeHour()" (change)="updateTimeSelection($any($event.target).value, timeMinute(), timePeriod())">
+                            @for (hour of timeHours; track hour) { <option [value]="hour">{{ hour }}</option> }
+                          </select>
+                        </label>
+                        <label class="collection-time-picker__unit">
+                          <span>Minute</span>
+                          <select aria-label="Minute" [value]="timeMinute()" (change)="updateTimeSelection(timeHour(), $any($event.target).value, timePeriod())">
+                            @for (minute of timeMinutes; track minute) { <option [value]="minute">{{ minute }}</option> }
+                          </select>
+                        </label>
+                        <div class="collection-time-picker__period" aria-label="AM or PM">
+                          <button type="button" [class.is-active]="timePeriod() === 'AM'" (click)="updateTimeSelection(timeHour(), timeMinute(), 'AM')">AM</button>
+                          <button type="button" [class.is-active]="timePeriod() === 'PM'" (click)="updateTimeSelection(timeHour(), timeMinute(), 'PM')">PM</button>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                  <div class="collection-datetime-popover__actions">
+                    <button type="button" class="lis-btn lis-btn--secondary" (click)="cancelDatePicker()">Cancel</button>
+                    <button type="button" class="lis-btn lis-btn--primary" (click)="applyDatePicker()">Apply</button>
+                  </div>
+                </div>     }
+            </div>
+          </div>
+
+          <div class="lis-field">
+            <label for="collection-collector">Collector <span class="required-mark">*</span></label>
+            <input id="collection-collector" [value]="collectorName()" (input)="collectorName.set($any($event.target).value)" required [disabled]="collected()" placeholder="Enter collector name" />
+          </div>
+          <div class="lis-field">
+            <label for="collection-sample-type">
+              Specimen type
+              <i class="ti ti-info-circle field-info" title="Automatically derived from the tests and required specimen tubes." aria-label="Derived from ordered tests"></i>
+            </label>
+            <input id="collection-sample-type" [value]="sampleType()" readonly aria-readonly="true" title="Automatically determined from the ordered tests and their required specimen tubes" />
+          </div>
+
+          <div class="lis-field collection-field--wide">
+            <label for="collection-site">Collection site</label>
+            <select id="collection-site" [value]="collectionSite()" (change)="collectionSite.set($any($event.target).value)" [disabled]="collected()">
+              <option value="">Select collection site</option>
+              <option value="Phlebotomy room">Phlebotomy room</option>
+              <option value="Ward / bedside">Ward / bedside</option>
+              <option value="Home collection">Home collection</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <fieldset class="lis-field collection-field--wide condition-field" [disabled]="collected()">
+            <legend>
+              Patient condition
+              <i class="ti ti-info-circle field-info" title="Record the patient's fasting or meal status at the time of collection." aria-label="Patient condition help"></i>
+            </legend>
+            <div class="condition-options">
+              @for (condition of patientConditionOptions; track condition.value) {
+                <label class="condition-option" [class.condition-option--selected]="patientCondition() === condition.value">
+                  <input type="radio" name="patient-condition" [value]="condition.value"
+                    [checked]="patientCondition() === condition.value"
+                    (change)="patientCondition.set(condition.value)" />
+                  <span>{{ condition.label }}</span>
+                </label>
+              }
+            </div>
+          </fieldset>
+
+          <div class="lis-field collection-field--wide notes-field">
+            <label for="collection-notes">Collection notes</label>
+            <textarea id="collection-notes" maxlength="250" placeholder="e.g. difficult vein, hemolysis risk, special handling..."
+              [value]="notes()" (input)="notes.set($any($event.target).value)" [disabled]="collected()"></textarea>
+            <div class="notes-counter" aria-live="polite">{{ notes().length }} / 250</div>
+          </div>
         </div>
 
         @if (!collected()) {
-          <button type="button" class="lis-btn lis-btn--secondary collect-btn print-btn"
-            [class.print-btn--flash]="printFlash()" (click)="printLabels()">
-            <i class="ti ti-printer" aria-hidden="true"></i>
-            Print Labels
-            <kbd class="kbd-hint">Ctrl+P</kbd>
-          </button>
-          <button type="button" class="lis-btn lis-btn--primary collect-btn mark-collected-btn"
-            (click)="markCollected()">
-            <i class="ti ti-check" aria-hidden="true"></i>
-            Mark as Collected
-            <kbd class="kbd-hint kbd-hint--on-primary">Enter</kbd>
-          </button>
+          <div class="collection-actions">
+            <button type="button" class="lis-btn lis-btn--secondary collect-btn print-btn"
+              [class.print-btn--flash]="printFlash()" (click)="printLabels()">
+              <i class="ti ti-printer" aria-hidden="true"></i>
+              <span>Print Labels</span>
+              <kbd class="kbd-hint">Ctrl+P</kbd>
+            </button>
+            <button type="button" class="lis-btn lis-btn--primary collect-btn mark-collected-btn"
+              (click)="markCollected()" [disabled]="!collectionFormValid()">
+              <i class="ti ti-check" aria-hidden="true"></i>
+              <span>Mark as Collected</span>
+              <kbd class="kbd-hint kbd-hint--on-primary">Enter</kbd>
+            </button>
+          </div>
         } @else {
           <div class="collected-confirm" role="status" aria-live="polite">
             <i class="ti ti-circle-check" aria-hidden="true"></i>
@@ -177,7 +268,7 @@
           </button>
         }
       </div>
-    </div>
+    </section>
   </div>
 
   <!-- ════════════════════════════════════════════════

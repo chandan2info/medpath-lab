@@ -28,8 +28,8 @@
           <span class="rcpt-cap">{{ payMode() }}</span>
         </div>
         <div class="rcpt-row rcpt-total">
-          <span>Paid</span>
-          <span>₹{{ grandTotal().toLocaleString('en-IN') }}</span>
+          <span>Collected now</span>
+          <span>₹{{ outstanding().toLocaleString('en-IN') }}</span>
         </div>
       </div>
 
@@ -47,33 +47,22 @@
   </div>
 }
 
-<!-- Page header (invoice info merged in — no separate banner strip) -->
+<!-- Page header — aligned with Test Order. -->
 <div class="page-header">
-  <div class="page-header__left">
-    <div class="page-title-row">
+  <div class="page-heading-copy">
+    <div class="billing-title-row">
       <h1 class="page-title">Billing</h1>
-      <span class="inv-id-badge lis-mono">
-        <i class="ti ti-file-invoice" aria-hidden="true"></i>{{ invoiceId }}
-      </span>
-      <span class="prio-tag" [class.prio-tag--stat]="flow.priority() === 'stat'">
-        <i class="ti ti-flag-3" aria-hidden="true"></i>{{ flow.priority() | titlecase }}
-      </span>
+      <div class="billing-header-meta">
+        <span class="inv-id-badge lis-mono"><i class="ti ti-file-invoice" aria-hidden="true"></i>{{ invoiceId }}</span>
+        <span class="prio-tag" [class.prio-tag--stat]="flow.priority() === 'stat'">
+          <i class="ti ti-flag-3" aria-hidden="true"></i>{{ flow.priority() | titlecase }}
+        </span>
+        <span class="inv-date-top">{{ today | date:'dd MMM yyyy' }}</span>
+      </div>
     </div>
-    <nav aria-label="Breadcrumb">
-      <ol class="breadcrumb">
-        <li><a routerLink="/dashboard/home">Home</a></li>
-        <li><a routerLink="/dashboard/test-order">Test Order</a></li>
-        <li aria-current="page">Billing</li>
-      </ol>
-    </nav>
+    <p class="page-subtitle">Review the invoice and collect payment for the selected tests.</p>
   </div>
-
-  <div class="page-header__right">
-    <div class="inv-date-top">{{ today | date:'dd MMM yyyy' }}</div>
-    <!-- Workflow progress trail — standardized via the shared stepper
-         component (same design used on Registration, Test Order, Sample). -->
-    <lis-workflow-stepper [steps]="workflowSteps" [activeIndex]="workflowActiveIndex" [dense]="true" />
-  </div>
+  <lis-workflow-stepper [steps]="workflowSteps" [activeIndex]="workflowActiveIndex" />
 </div>
 
 <div class="bill-layout">
@@ -81,47 +70,29 @@
   <!-- ── Left: patient + tests summary + discounts ── -->
   <div class="bill-main">
 
-    <!-- Patient card (read-only) -->
+    <!-- Patient details stay in the left content column; billing actions align beside them. -->
     @if (patient) {
-      <div class="lis-card pat-card" aria-label="Patient details">
-        <div class="lis-card__header">
-          <i class="ti ti-user lis-card-icon" aria-hidden="true"></i>
-          <h2 class="lis-card__title">Patient</h2>
-          <span class="lis-badge lis-badge--success"><i class="ti ti-check"></i> Confirmed</span>
-          <a routerLink="/dashboard/test-order" class="lis-btn lis-btn--outline lis-btn--sm edit-tests-btn"
-            aria-label="Go back to test order">
-            <i class="ti ti-pencil" aria-hidden="true"></i> Edit Tests
-          </a>
-        </div>
-        <div class="pat-info-row">
-          <div class="pat-av" aria-hidden="true">{{ patientInitials }}</div>
-          <div class="pat-id-main">
-            <div class="pat-name-row">
-              <div class="pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
-              <span class="pill pill--visit"><i class="ti {{ visitTypeIcon() }}" aria-hidden="true"></i>{{ patient.visitType | titlecase }}</span>
-              <span class="pill pill--routine" [class.pill--stat]="flow.priority() === 'stat'">
-                <i class="ti ti-flag-3" aria-hidden="true"></i>{{ flow.priority() | titlecase }}
-              </span>
-            </div>
-            <div class="pat-detail-row">
-              <span class="pat-detail-item age-inline" [title]="patientAgeBreakdown()">
-                <i class="ti ti-cake pat-detail-icon" aria-hidden="true"></i><span class="age-inline__y">{{ ageParts().years }}y</span><span class="age-inline__sep"> · </span><span class="age-inline__m">{{ ageParts().months }}m</span><span class="age-inline__sep"> · </span><span class="age-inline__d">{{ ageParts().days }}d</span>
-              </span>
-              <span class="pat-detail-sep" aria-hidden="true">|</span>
-              <span class="pat-detail-item"><i class="ti ti-calendar-event pat-detail-icon" aria-hidden="true"></i>DOB {{ patient.dob | date:'dd MMM yyyy' }}</span>
-              <span class="pat-detail-sep" aria-hidden="true">|</span>
-              <span class="pat-detail-item"><i class="ti {{ genderIcon() }} pat-detail-icon" aria-hidden="true"></i>{{ patient.gender | titlecase }}</span>
-              <span class="pat-detail-sep" aria-hidden="true">|</span>
-              <span class="pat-detail-item"><i class="ti ti-id-badge-2 pat-detail-icon" aria-hidden="true"></i><span class="lis-mono">{{ patient.id }}</span></span>
-              <span class="pat-detail-sep" aria-hidden="true">|</span>
-              <span class="pat-detail-item"><i class="ti ti-stethoscope pat-detail-icon" aria-hidden="true"></i>{{ patient.refDoctor }}</span>
-            </div>
-            <div class="pat-detail-row">
-              <span class="pat-detail-item"><i class="ti ti-phone pat-detail-icon" aria-hidden="true"></i>{{ patient.mobile }}</span>
-            </div>
+      <section class="patient-summary lis-card" aria-label="Patient information">
+        <div class="pat-avatar" aria-hidden="true">{{ patientInitials }}</div>
+        <div class="patient-main">
+          <div class="patient-name-line">
+            <strong>{{ patient.firstName }} {{ patient.lastName }}</strong>
+            <span class="patient-id">{{ patient.id }}</span>
+          </div>
+          <div class="patient-meta">
+            <span><i class="ti {{ genderIcon() }}" aria-hidden="true"></i>{{ patient.gender | titlecase }}</span>
+            <span><i class="ti ti-cake" aria-hidden="true"></i>{{ patientAgeBreakdown() }}</span>
+            <span><i class="ti ti-calendar" aria-hidden="true"></i>DOB {{ patient.dob | date:'dd MMM yyyy' }}</span>
+            <span><i class="ti ti-phone" aria-hidden="true"></i>{{ patient.mobile }}</span>
           </div>
         </div>
-      </div>
+        <div class="patient-visit-meta">
+          <span><i class="ti {{ visitTypeIcon() }}" aria-hidden="true"></i><small>Visit</small><strong>{{ patient.visitType | titlecase }}</strong></span>
+          <span><i class="ti ti-clipboard-heart" aria-hidden="true"></i><small>Fasting</small><strong>{{ patient.fasting || 'Unknown' }}</strong></span>
+          <span><i class="ti ti-stethoscope" aria-hidden="true"></i><small>Referred by</small><strong>{{ patient.refDoctor || 'Self / Walk-in' }}</strong></span>
+        </div>
+        
+      </section>
     }
 
     <!-- Ordered tests (read-only) -->
@@ -153,124 +124,14 @@
       </div>
     </div>
 
-    <!-- Discounts & adjustments -->
-    <div class="lis-card" aria-label="Discounts and adjustments">
-      <div class="lis-card__header">
-        <i class="ti ti-tag lis-card-icon" aria-hidden="true"></i>
-        <h2 class="lis-card__title">Discounts &amp; Adjustments</h2>
-      </div>
-      <div class="disc-groups-row">
-        <div class="disc-group">
-          <div class="disc-group__label">Discounts</div>
-          <div class="lis-field">
-            <label for="discPct">Discount %</label>
-            <div class="stepper-field">
-              <button type="button" class="stepper-btn" (click)="incrementDiscount(-1)" aria-label="Decrease discount">−</button>
-              <input id="discPct" type="text" inputmode="numeric" pattern="[0-9]*" min="0" max="100" class="stepper-input"
-                [value]="discountPct()"
-                (keydown)="allowNumericKeysOnly($event)"
-                (input)="applyDiscount(sanitizeNumericInput($event))"
-                placeholder="0" />
-              <button type="button" class="stepper-btn" (click)="incrementDiscount(1)" aria-label="Increase discount">+</button>
-            </div>
-          </div>
-          <!-- Coupon Code and Referral fields — disabled for now (no coupon/referral
-               program is live yet); kept in markup, commented out, so they can be
-               re-enabled quickly once that functionality ships.
-          <div class="lis-field">
-            <label for="coupon">Coupon code</label>
-            <div class="input-with-btn">
-              <input id="coupon" type="text" placeholder="Enter coupon"
-                [value]="couponCode()"
-                (input)="couponCode.set($any($event.target).value)" />
-              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="applyCoupon()">Apply</button>
-            </div>
-          </div>
-          <div class="lis-field">
-            <label for="referral">Referral code</label>
-            <input id="referral" type="text" placeholder="Referral code"
-              [value]="referralCode()"
-              (input)="referralCode.set($any($event.target).value)" />
-          </div>
-          -->
-        </div>
-
-        <div class="disc-group">
-          <div class="disc-group__label">Advance</div>
-          <div class="lis-field">
-            <label for="advance">Advance received</label>
-            <div class="currency-field">
-              <span class="currency-prefix">₹</span>
-              <input id="advance" type="text" inputmode="numeric" pattern="[0-9]*"
-                [value]="advance()"
-                (keydown)="allowNumericKeysOnly($event)"
-                (input)="advance.set(sanitizeNumericInput($event))"
-                placeholder="Enter amount" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Payment mode -->
-    <div class="lis-card" aria-label="Payment mode">
-      <div class="lis-card__header">
-        <i class="ti ti-wallet lis-card-icon" aria-hidden="true"></i>
-        <h2 class="lis-card__title">Receive Payment</h2>
-      </div>
-      <div class="pay-modes" role="group" aria-label="Select payment mode">
-        @for (m of payModes; track m.id) {
-          <button type="button" class="pay-mode-btn"
-            [class.pay-mode-btn--active]="payMode() === m.id"
-            [class.pay-mode-btn--credit]="m.id === 'credit' && payMode() === 'credit'"
-            (click)="setPayMode(m.id)"
-            [attr.aria-pressed]="payMode() === m.id">
-            <i class="ti ti-{{ m.icon }}" aria-hidden="true"></i>
-            <span>{{ m.label }}</span>
-          </button>
-        }
-      </div>
-      @if (payMode() === 'credit') {
-        <div class="credit-warn" role="alert">
-          <i class="ti ti-alert-triangle" aria-hidden="true"></i>
-          Credit billing — collect payment before report dispatch.
-        </div>
-      }
-      @if (payMode() === 'cash') {
-        <div class="pay-adaptive">
-          <div class="lis-field">
-            <label for="cashReceived">Amount received</label>
-            <div class="currency-field">
-              <span class="currency-prefix">₹</span>
-              <input id="cashReceived" type="text" placeholder="0" />
-            </div>
-          </div>
-        </div>
-      }
-      @if (payMode() === 'upi') {
-        <div class="pay-adaptive">
-          <div class="lis-field">
-            <label for="upiTxn">Transaction ID</label>
-            <input id="upiTxn" type="text" placeholder="UPI reference / transaction ID" />
-          </div>
-        </div>
-      }
-      @if (payMode() === 'card') {
-        <div class="pay-adaptive">
-          <div class="lis-field">
-            <label for="cardRef">Reference number</label>
-            <input id="cardRef" type="text" placeholder="Last 4 digits / auth code" />
-          </div>
-        </div>
-      }
-    </div>
-  </div>
-
-  <!-- ── Right: Invoice panel ─────────────────── -->
+  <!-- Invoice summary follows the full selected-test list. -->
   <aside class="invoice-panel lis-card" aria-label="Invoice summary">
     <div class="inv-hd">
       <div class="inv-hd-row">
-        <div class="inv-title">Invoice Summary</div>
+        <div class="inv-heading-group">
+          <div class="inv-title">Invoice Summary</div>
+          <div class="inv-meta lis-mono">{{ invoiceId }}</div>
+        </div>
         <span class="pay-status-badge" [class.pay-status-badge--paid]="paymentStatus() === 'paid'"
           [class.pay-status-badge--partial]="paymentStatus() === 'partial'">
           <i class="ti ti-point-filled" aria-hidden="true"></i>
@@ -281,90 +142,200 @@
           }
         </span>
       </div>
-      <div class="inv-meta lis-mono">{{ invoiceId }}</div>
     </div>
 
-    @if (patient) {
-      <div class="inv-pat">
-        <div class="inv-av" aria-hidden="true">{{ patientInitials }}</div>
-        <div>
-          <div class="inv-pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
-          <div class="inv-pat-meta">
-            {{ patientAge }} | {{ patient.gender }} | {{ patient.refDoctor }}
-          </div>
-        </div>
-      </div>
-    }
-
-    <!-- Line items -->
-    <div class="inv-items" role="list" aria-label="Invoice line items">
-      @for (t of flow.selectedTests(); track t.id) {
-        <div class="inv-item" role="listitem">
-          <span class="inv-iname">{{ t.name }}</span>
-          <span class="inv-iprice">₹{{ t.price.toLocaleString('en-IN') }}</span>
-        </div>
-      }
-    </div>
-
+    <!-- Financial summary only; test names are already shown in the table. -->
     <!-- Totals -->
     <div class="inv-totals">
-      <div class="tot-row"><span>Subtotal</span><span>₹{{ subtotal().toLocaleString('en-IN') }}</span></div>
-      @if (discountPct() > 0) {
-        <div class="tot-row tot-disc">
-          <span>Discount ({{ discountPct() }}%)</span>
-          <span>−₹{{ discAmt().toLocaleString('en-IN') }}</span>
-        </div>
-      }
-      @if (advance() > 0) {
-        <div class="tot-row tot-disc">
-          <span>Advance paid</span>
-          <span>−₹{{ advance().toLocaleString('en-IN') }}</span>
-        </div>
-      }
-      <div class="tot-row"><span>GST</span><span>Exempt</span></div>
-      <div class="tot-row tot-grand">
-        <span>Total Payable</span>
-        <span class="tot-grand-amt">₹{{ grandTotal().toLocaleString('en-IN') }}</span>
+      <div class="tot-row">
+        <span>Subtotal</span>
+        <span>₹{{ (subtotal() || 0).toLocaleString('en-IN') }}</span>
       </div>
-      @if (advance() > 0) {
-        <div class="tot-row tot-outstanding">
-          <span>Outstanding</span>
-          <span>₹{{ outstanding().toLocaleString('en-IN') }}</span>
+      <div class="tot-row tot-disc">
+        <span>
+          Discount ({{ discountType() === 'percentage' ? discountPct() + '%' : 'Fixed' }})
+          @if (discountReason()) { <small class="invoice-discount-reason">· {{ discountReason() }}</small> }
+        </span>
+        <span>−₹{{ (discAmt() || 0).toLocaleString('en-IN') }}</span>
+      </div>
+      <div class="tot-row tot-disc">
+        <span>Advance received</span>
+        <span>−₹{{ (advance() || 0).toLocaleString('en-IN') }}</span>
+      </div>
+      <div class="tot-row">
+        <span>GST</span>
+        <span>₹0 <small>(Exempt)</small></span>
+      </div>
+      <div class="tot-row">
+        <span>Invoice Total</span>
+        <strong>₹{{ (grandTotal() || 0).toLocaleString('en-IN') }}</strong>
+      </div>
+      <div class="tot-row tot-grand">
+        <span>Balance Due</span>
+        <span class="tot-grand-amt">₹{{ outstanding().toLocaleString('en-IN') }}</span>
+      </div>
+      <div class="invoice-payment-progress" aria-label="Payment progress">
+        <div class="invoice-payment-progress__labels">
+          <span>Paid: ₹{{ advance().toLocaleString('en-IN') }} ({{ paidPercentage() }}%)</span>
+          <span>Due: ₹{{ outstanding().toLocaleString('en-IN') }}</span>
         </div>
-      }
+        <div class="invoice-payment-progress__track">
+          <span [style.width.%]="paidPercentage()"></span>
+        </div>
+      </div>
     </div>
 
-    <!-- Priority badge -->
-    <div class="inv-priority">
-      Priority:
-      <span class="prio-tag" [class.prio-tag--stat]="flow.priority() === 'stat'">
-        {{ flow.priority() | titlecase }}
-      </span>
-      <button type="button" class="lis-link receipt-preview-link" (click)="showReceipt.set(true)">
-        <i class="ti ti-eye" aria-hidden="true"></i> Preview Receipt
-      </button>
-    </div>
 
-    <!-- Actions -->
-    <div class="inv-actions">
-      <button type="button" class="lis-btn lis-btn--primary lis-btn--full confirm-btn"
-        (click)="confirmPayment()"
-        [disabled]="saving() || flow.selectedTests().length === 0">
-        @if (saving()) {
-          <i class="ti ti-loader-2 spin" aria-hidden="true"></i> Processing…
-        } @else {
-          <i class="ti ti-check" aria-hidden="true"></i>
-          Confirm &amp; Print Receipt
+  </aside>
+  </div>
+
+  <!-- Right-side billing workspace: discount, advance and payment. -->
+  <aside class="billing-sidebar" aria-label="Billing and payment">
+  <section class="settlement-card lis-card" aria-label="Adjustments and payment">
+    <div class="settlement-header">
+      <i class="ti ti-adjustments-horizontal" aria-hidden="true"></i>
+      <div class="settlement-heading-copy">
+        <h2>Billing &amp; Payment</h2>
+        <p>Apply an eligible discount, account for advance, and collect the balance</p>
+      </div>
+      
+    </div>
+    <div class="settlement-grid">
+      <section class="settlement-section discount-section" aria-label="Discounts and adjustments">
+        <div class="settlement-section-title"><span class="discount-title-label"><i class="ti ti-tag" aria-hidden="true"></i> Discounts</span><span class="settlement-policy-note"><i class="ti ti-shield-check" aria-hidden="true"></i> Discounts follow lab policy</span></div>
+        <div class="discount-input-grid discount-input-grid--paired">
+          <div class="lis-field discount-reason-field">
+            <label for="discountReason">Reason for discount <span class="required-mark">*</span></label>
+            <select id="discountReason" class="settlement-input" [value]="discountReason()" (change)="setDiscountReason($event)">
+              <option value="">Select a reason</option>
+              <option value="Promotional offer">Promotional offer</option>
+              <option value="Staff discount">Staff discount</option>
+              <option value="Senior citizen">Senior citizen</option>
+              <option value="Referral discount">Referral discount</option>
+              <option value="Special approval">Special approval</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="lis-field">
+            <label for="discountType">Discount type</label>
+            <select id="discountType" class="settlement-input" [value]="discountType()" (change)="setDiscountType($event)">
+              <option value="percentage">Percentage (%)</option>
+              <option value="fixed">Fixed amount (₹)</option>
+            </select>
+          </div>
+          <div class="lis-field discount-rate-field">
+            <label for="discPct">Discount value <span class="required-mark">*</span></label>
+            <div class="settlement-number-field">
+              <input id="discPct" type="text" inputmode="decimal" autocomplete="off"
+                [value]="discountPct()"
+                (keydown)="allowDecimalKeysOnly($event)"
+                (input)="applyDiscount(sanitizeDecimalInput($event))"
+                placeholder="0.00"
+                [attr.aria-label]="discountType() === 'percentage' ? 'Discount percentage' : 'Discount amount in rupees'" />
+              <span class="settlement-number-suffix">{{ discountType() === 'percentage' ? '%' : '₹' }}</span>
+            </div>
+          </div>
+          <div class="lis-field calculated-discount-field">
+            <label>Calculated discount</label>
+            <div class="settlement-value"><span>₹</span><strong>{{ discAmt().toLocaleString('en-IN', { minimumFractionDigits: 2 }) }}</strong></div>
+          </div>
+        </div>
+        @if (discountPct() > 0 && !discountReason()) {
+          <p class="field-hint field-hint--warning"><i class="ti ti-alert-circle" aria-hidden="true"></i> Select a reason before confirming the invoice.</p>
         }
-      </button>
-      <button type="button" class="lis-btn lis-btn--secondary lis-btn--full">
-        <i class="ti ti-device-floppy" aria-hidden="true"></i> Save as draft
-      </button>
-      <button type="button" class="lis-btn lis-btn--secondary lis-btn--full"
-        (click)="proceedToSample()">
-        <i class="ti ti-test-pipe" aria-hidden="true"></i>
-        Skip to Sample Collection
-      </button>
+      </section>
+
+      <section class="settlement-section advance-section" aria-label="Advance received">
+        <div class="settlement-section-title"><i class="ti ti-wallet" aria-hidden="true"></i> Advance</div>
+        <div class="advance-entry-column">
+          <div class="lis-field">
+            <label for="advance">Advance received</label>
+            <div class="currency-field settlement-currency">
+              <span class="currency-prefix">₹</span>
+              <input id="advance" type="text" inputmode="decimal" autocomplete="off"
+                [value]="advance()"
+                (keydown)="allowDecimalKeysOnly($event)"
+                (input)="advance.set(sanitizeDecimalInput($event))"
+                placeholder="0.00"
+                aria-describedby="advance-help" />
+            </div>
+            <span class="field-hint" id="advance-help">
+              <i class="ti ti-info-circle" aria-hidden="true"></i>
+              Amount already paid by the patient
+            </span>
+          </div>
+        </div>
+        <div class="advance-impact">
+          <span><i class="ti ti-wallet" aria-hidden="true"></i> Balance to collect</span>
+          <strong>₹{{ outstanding().toLocaleString('en-IN') }}</strong>
+        </div>
+      </section>
+
+      <section class="settlement-section payment-section" aria-label="Receive payment">
+        <div class="settlement-section-title"><i class="ti ti-wallet" aria-hidden="true"></i> Receive Payment</div>
+        <div class="pay-modes" role="radiogroup" aria-label="Select payment mode">
+          @for (m of payModes; track m.id) {
+            <button type="button" role="radio" class="pay-mode-btn"
+              [class.pay-mode-btn--active]="payMode() === m.id"
+              [class.pay-mode-btn--credit]="m.id === 'credit' && payMode() === 'credit'"
+              (click)="setPayMode(m.id)"
+              (keydown)="onPayModeKeydown($event, m.id)"
+              [attr.aria-checked]="payMode() === m.id"
+              [attr.tabindex]="payMode() === m.id ? 0 : -1">
+              <i class="ti ti-{{ m.icon }}" aria-hidden="true"></i>
+              <span>{{ m.label }}</span>
+            </button>
+          }
+        </div>
+        @if (payMode() === 'credit') {
+          <div class="credit-warn" role="alert">
+            <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+            Credit billing — collect payment before report dispatch.
+          </div>
+        }
+        @if (payMode() === 'upi') {
+          <div class="pay-adaptive">
+            <div class="lis-field">
+              <label for="upiTxn">UPI transaction ID</label>
+              <input id="upiTxn" class="settlement-input" type="text" placeholder="Enter UPI reference number" />
+            </div>
+          </div>
+        }
+        @if (payMode() === 'card') {
+          <div class="pay-adaptive">
+            <div class="lis-field">
+              <label for="cardRef">Card reference</label>
+              <input id="cardRef" class="settlement-input" type="text" placeholder="Last 4 digits / authorization code" />
+            </div>
+          </div>
+        }
+      </section>
+
+      <section class="settlement-actions" aria-label="Billing actions">
+        <div class="settlement-action-meta">
+          <div class="settlement-priority">
+            <span>Order priority</span>
+            <span class="prio-tag" [class.prio-tag--stat]="flow.priority() === 'stat'">{{ flow.priority() | titlecase }}</span>
+          </div>
+          <button type="button" class="lis-link receipt-preview-link" (click)="showReceipt.set(true)">
+            <i class="ti ti-eye" aria-hidden="true"></i> Preview Receipt
+          </button>
+        </div>
+        <button type="button" class="lis-btn lis-btn--primary lis-btn--full confirm-btn"
+          (click)="confirmPayment()" [disabled]="saving() || flow.selectedTests().length === 0">
+          @if (saving()) { <i class="ti ti-loader-2 spin" aria-hidden="true"></i> Processing… }
+          @else { <i class="ti ti-check" aria-hidden="true"></i> Confirm &amp; Print Receipt }
+        </button>
+        <div class="settlement-secondary-actions">
+          <button type="button" class="lis-btn lis-btn--secondary" disabled>
+            <i class="ti ti-device-floppy" aria-hidden="true"></i> Save as draft
+          </button>
+          <button type="button" class="lis-btn lis-btn--secondary" (click)="proceedToSample()">
+            <i class="ti ti-test-pipe" aria-hidden="true"></i> Sample Collection
+          </button>
+        </div>
+      </section>
     </div>
+  </section>
   </aside>
 </div>

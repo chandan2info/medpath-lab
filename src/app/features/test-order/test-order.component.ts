@@ -1,21 +1,5 @@
-// ─────────────────────────────────────────────
-//  Screen 2 — Test Order
-//  Single purpose: search & order tests for the
-//  registered patient. Full-width layout.
-//  Redesigned per UX review (2026-07):
-//   - patient summary as a strong sticky anchor
-//   - segmented category filter + Recently Ordered
-//   - Popular Tests as action cards
-//   - Frequently Ordered Packages (fills dead space)
-//   - Smart Suggestions ("patients also order")
-//   - richer test metadata (tube/sample/prep)
-//   - summary panel split into distinct sections
-//   - full keyboard workflow
-// ─────────────────────────────────────────────
-import {
-  Component, ChangeDetectionStrategy, signal, computed, inject, effect,
-  OnInit, ElementRef, ViewChild, HostListener
-} from '@angular/core';
+// Test selection page. Each catalogue tab switches the content shown in the list.
+import { Component, ChangeDetectionStrategy, signal, computed, inject, OnInit, ElementRef, ViewChild, HostListener } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TitleCasePipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -23,19 +7,7 @@ import { PatientFlowService } from '../../core/services/patient-flow.service';
 import { LabTest, TestPackage } from '../../shared/models/lis.models';
 import { WorkflowStepperComponent, WorkflowStep } from '../../shared/components/workflow-stepper/workflow-stepper.component';
 
-const CATEGORY_ICON: Record<string, string> = {
-  'All':            'ti-apps',
-  'Haematology':    'ti-droplet',
-  'Biochemistry':   'ti-flask',
-  'Endocrinology':  'ti-activity',
-  'Urine':          'ti-droplet-half-2',
-};
-
-const PRIORITY_INFO: Record<'routine' | 'urgent' | 'stat', { label: string; desc: string; icon: string }> = {
-  routine: { label: 'Routine', desc: 'Normal queue',   icon: 'ti-list-check' },
-  urgent:  { label: 'Urgent',  desc: 'Priority queue', icon: 'ti-clock-bolt' },
-  stat:    { label: 'STAT',    desc: 'Immediate',      icon: 'ti-bolt' },
-};
+type CatalogueView = 'catalogue' | 'packages' | 'recent' | 'favorites';
 
 @Component({
   selector: 'app-test-order',
@@ -43,229 +15,273 @@ const PRIORITY_INFO: Record<'routine' | 'urgent' | 'stat', { label: string; desc
   imports: [RouterLink, FormsModule, TitleCasePipe, DatePipe, WorkflowStepperComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './test-order.component.html',
-  styleUrl: './test-order.component.css',
+  styleUrl: './test-order.component.css'
 })
 export class TestOrderComponent implements OnInit {
-  protected readonly flow   = inject(PatientFlowService);
-  private   readonly router = inject(Router);
-
+  protected readonly flow = inject(PatientFlowService);
+  private readonly router = inject(Router);
   @ViewChild('searchInput') searchInputRef?: ElementRef<HTMLInputElement>;
 
-  /** Shared 4-step workflow stepper (Register → Test Order → Billing → Sample). */
   protected readonly workflowSteps: WorkflowStep[] = [
-    { label: 'Register',   icon: 'ti-user-plus' },
+    { label: 'Register', icon: 'ti-user-plus' },
     { label: 'Test Order', icon: 'ti-test-pipe' },
-    { label: 'Billing',    icon: 'ti-receipt' },
-    { label: 'Sample',     icon: 'ti-droplet' },
+    { label: 'Review Order', icon: 'ti-clipboard-check' },
+    { label: 'Billing', icon: 'ti-receipt' }
   ];
   protected readonly workflowActiveIndex = 1;
 
-  protected readonly categoryIcon  = CATEGORY_ICON;
-  protected readonly priorityInfo  = PRIORITY_INFO;
-  protected readonly priorities: ('routine' | 'urgent' | 'stat')[] = ['routine', 'urgent', 'stat'];
-
-  testQuery      = signal('');
+  activeView = signal<CatalogueView>('catalogue');
+  testQuery = signal('');
   activeCategory = signal('All');
-  popularVisible  = signal(false);
-  packagesVisible = signal(false);
-  saving         = signal(false);
-  savingDraft    = signal(false);
-  draftSaved     = signal(false);
+  savingDraft = signal(false);
+  draftSaved = signal(false);
+  feedbackMessage = signal('');
+  feedbackKind = signal<'warning' | 'success' | 'error'>('warning');
+  draftsOpen = signal(false);
+  autoSaveState = signal<'idle' | 'saved' | 'error'>('idle');
   highlightedIndex = signal(-1);
-  totalPulse     = signal(false);
 
   filteredTests = computed(() => {
-    const q   = this.testQuery().toLowerCase();
-    const cat = this.activeCategory();
-    return this.flow.allTests.filter(t =>
-      (cat === 'All' || t.category === cat) &&
-      (t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q) || t.category.toLowerCase().includes(q))
+    const q = this.testQuery().trim().toLowerCase();
+    const category = this.activeCategory();
+    return this.flow.allTests.filter(test =>
+      (category === 'All' || test.category === category) &&
+      this.matchesTest(test, q)
     );
   });
 
-  // "Patients also order" — union of related tests for everything selected,
-  // minus anything already selected, capped to keep the panel compact.
-  suggestions = computed<LabTest[]>(() => {
-    const selected = this.flow.selectedIds();
-    const seen = new Set<string>();
-    const out: LabTest[] = [];
-    for (const t of this.flow.selectedTests()) {
-      for (const relId of this.flow.relatedTo(t.id)) {
-        if (selected.has(relId) || seen.has(relId)) continue;
-        const relTest = this.flow.allTests.find(x => x.id === relId);
-        if (relTest) { seen.add(relId); out.push(relTest); }
-      }
-    }
-    return out.slice(0, 4);
+  filteredPackages = computed(() => {
+    const q = this.testQuery().trim().toLowerCase();
+    return this.flow.testPackages.filter(pkg =>
+      !q || pkg.name.toLowerCase().includes(q) ||
+      pkg.id.toLowerCase().includes(q) ||
+      pkg.testIds.some(id => {
+        const test = this.flow.allTests.find(item => item.id === id);
+        return id.toLowerCase().includes(q) || !!test?.name.toLowerCase().includes(q);
+      })
+    );
   });
 
-  constructor() {
-    // Micro-interaction: briefly pulse the Grand Total when it changes,
-    // instead of a silent, static number update.
-    effect(() => {
-      this.flow.grandTotal();
-      this.totalPulse.set(true);
-      setTimeout(() => this.totalPulse.set(false), 350);
-    });
-  }
+  visibleTests = computed(() => {
+    const view = this.activeView();
+    const q = this.testQuery().trim().toLowerCase();
+    let source: LabTest[];
+    switch (view) {
+      case 'recent': source = this.flow.recentTests; break;
+      case 'favorites': source = this.flow.popularTests; break;
+      case 'catalogue':
+      default: return this.filteredTests();
+    }
+    return source.filter(test => this.matchesTest(test, q));
+  });
 
   get patient() { return this.flow.patient(); }
+  get hasTests(): boolean { return this.flow.selectedIds().size > 0; }
 
   ngOnInit(): void {
-    // If no registered patient, redirect to registration
-    if (!this.flow.patient()) {
-      this.router.navigate(['/dashboard/registration']);
+    if (!this.flow.patient()) this.router.navigate(['/dashboard/registration']);
+  }
+
+  setView(view: CatalogueView): void {
+    this.activeView.set(view);
+    this.testQuery.set('');
+    this.activeCategory.set('All');
+    this.highlightedIndex.set(-1);
+  }
+
+  viewHeading(): string {
+    switch (this.activeView()) {
+      case 'packages': return 'Available Packages';
+      case 'recent': return 'Recently Ordered Tests';
+      case 'favorites': return 'Frequently Used Tests';
+      default: return 'All Tests';
     }
+  }
+
+  searchPlaceholder(): string {
+    switch (this.activeView()) {
+      case 'packages': return 'Search packages by name or included test…';
+      case 'recent': return 'Search recently ordered tests…';
+      case 'favorites': return 'Search frequently used tests…';
+      default: return 'Search tests by name, code or keyword (e.g. CBC, KFT, TSH…)';
+    }
+  }
+
+  private matchesTest(test: LabTest, query: string): boolean {
+    return !query ||
+      test.name.toLowerCase().includes(query) ||
+      test.id.toLowerCase().includes(query) ||
+      test.category.toLowerCase().includes(query) ||
+      test.sampleType.toLowerCase().includes(query) ||
+      test.tubeType.toLowerCase().includes(query);
   }
 
   isSelected(id: string): boolean { return this.flow.selectedIds().has(id); }
-  toggle(t: LabTest): void { this.flow.toggleTest(t.id); }
-  setPriority(p: 'routine' | 'urgent' | 'stat'): void { this.flow.setPriority(p); }
-  onPriorityClick(p: string): void { this.flow.setPriority(p as 'routine' | 'urgent' | 'stat'); }
+  toggle(test: LabTest): void {
+    try { this.flow.toggleTest(test.id); this.markAutoSaved(); }
+    catch (error) { this.autoSaveState.set('error'); this.showFeedback(error instanceof Error ? error.message : 'Autosave failed.', 'error'); }
+  }
+
+  private markAutoSaved(): void {
+    this.autoSaveState.set('saved');
+    window.setTimeout(() => this.autoSaveState.set('idle'), 2200);
+  }
+
+  toggleDrafts(): void {
+    this.draftsOpen.update(isOpen => !isOpen);
+  }
+
+  restoreDraft(id: string): void {
+    const draft = this.flow.restoreOrderDraft(id);
+    if (!draft) { this.showFeedback('This draft is no longer available.', 'error'); return; }
+    this.draftsOpen.set(false);
+    this.activeView.set('catalogue');
+    this.activeCategory.set('All');
+    this.testQuery.set('');
+    this.markAutoSaved();
+    this.showFeedback('Draft restored. You can continue editing this order.', 'success');
+  }
+
+  deleteDraft(id: string): void {
+    this.flow.deleteOrderDraft(id);
+    this.showFeedback('Draft deleted.', 'success');
+  }
+
+  draftUpdatedLabel(value: string): string {
+    return new Date(value).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+  }
+
+  categoryCount(category: string): number {
+    return category === 'All'
+      ? this.flow.allTests.length
+      : this.flow.allTests.filter(test => test.category === category).length;
+  }
 
   clearSearch(): void {
     this.testQuery.set('');
     this.highlightedIndex.set(-1);
+    this.searchInputRef?.nativeElement.focus();
   }
 
   addPackage(pkg: TestPackage): void {
+    // Add only missing package tests; do not toggle already-selected tests off.
     for (const id of pkg.testIds) {
       if (!this.flow.selectedIds().has(id)) this.flow.toggleTest(id);
     }
+    this.markAutoSaved();
+  }
+
+  isPackageSelected(pkg: TestPackage): boolean {
+    return pkg.testIds.every(id => this.flow.selectedIds().has(id));
   }
 
   packagePrice(pkg: TestPackage): number {
-    return pkg.testIds.reduce((sum, id) => {
-      const t = this.flow.allTests.find(x => x.id === id);
-      return sum + (t?.price ?? 0);
-    }, 0);
+    return pkg.testIds.reduce((sum, id) =>
+      sum + (this.flow.allTests.find(test => test.id === id)?.price ?? 0), 0
+    );
   }
 
   packageTestNames(pkg: TestPackage): string {
-    return pkg.testIds
-      .map(id => this.flow.allTests.find(x => x.id === id)?.id ?? id)
-      .join(' + ');
+    return pkg.testIds.map(id => this.flow.allTests.find(test => test.id === id)?.name ?? id).join(' · ');
   }
 
-  get hasTests(): boolean { return this.flow.selectedIds().size > 0; }
+  testIcon(test: LabTest): string {
+    switch (test.category) {
+      case 'Haematology': return 'ti-droplet';
+      case 'Biochemistry': return 'ti-flask-2';
+      case 'Endocrinology': return 'ti-activity';
+      case 'Urine': return 'ti-test-pipe';
+      default: return 'ti-microscope';
+    }
+  }
 
-  proceedToBilling(): void {
-    if (!this.hasTests || this.saving()) return;
-    this.saving.set(true);
-    setTimeout(() => {
-      this.saving.set(false);
-      this.router.navigate(['/dashboard/billing']);
-    }, 400);
+  private showFeedback(message: string, kind: 'warning' | 'success' | 'error'): void {
+    this.feedbackKind.set(kind);
+    this.feedbackMessage.set(message);
+    window.setTimeout(() => {
+      if (this.feedbackMessage() === message) this.feedbackMessage.set('');
+    }, 3200);
+  }
+
+  goToReview(): void {
+    if (!this.hasTests) {
+      this.showFeedback('Please add at least one test before reviewing the order.', 'warning');
+      return;
+    }
+    this.router.navigate(['/dashboard/review-order']);
   }
 
   saveDraft(): void {
     if (this.savingDraft()) return;
+    if (!this.hasTests) {
+      this.showFeedback('No tests added. Add at least one test before saving this order as a draft.', 'warning');
+      return;
+    }
+
     this.savingDraft.set(true);
     this.draftSaved.set(false);
-    setTimeout(() => {
-      this.savingDraft.set(false);
+    try {
+      this.flow.saveOrderDraft();
       this.draftSaved.set(true);
-      setTimeout(() => this.draftSaved.set(false), 1800);
-    }, 350);
-  }
-
-  // ── Ripple micro-interaction for the primary CTA ──────────────
-  onCtaRipple(e: MouseEvent): void {
-    const btn = e.currentTarget as HTMLElement;
-    const rect = btn.getBoundingClientRect();
-    btn.style.setProperty('--ripple-x', `${e.clientX - rect.left}px`);
-    btn.style.setProperty('--ripple-y', `${e.clientY - rect.top}px`);
-    btn.classList.remove('is-rippling');
-    // Force reflow so the animation restarts on rapid re-clicks
-    void btn.offsetWidth;
-    btn.classList.add('is-rippling');
-  }
-
-  // ── Keyboard workflow ──────────────────────────────────────────
-  // Ctrl/Cmd+F   focus test search
-  // ↑ / ↓        navigate the test list
-  // Enter        add the highlighted test
-  // Delete       remove the most recently added test
-  // Ctrl/Cmd+S   save as draft
-  // Ctrl/Cmd+Enter  continue to billing
-  @HostListener('document:keydown', ['$event'])
-  onKeydown(e: KeyboardEvent): void {
-    const target = e.target as HTMLElement;
-    const typing = target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
-    const mod = e.ctrlKey || e.metaKey;
-
-    if (mod && e.key.toLowerCase() === 'f') {
-      e.preventDefault();
-      this.searchInputRef?.nativeElement.focus();
-      return;
-    }
-    if (mod && e.key === 'Enter') {
-      e.preventDefault();
-      this.proceedToBilling();
-      return;
-    }
-    if (mod && e.key.toLowerCase() === 's') {
-      e.preventDefault();
-      this.saveDraft();
-      return;
-    }
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      const max = this.filteredTests().length - 1;
-      this.highlightedIndex.update(i => Math.min(i + 1, max));
-      return;
-    }
-    if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      this.highlightedIndex.update(i => Math.max(i - 1, 0));
-      return;
-    }
-    if (e.key === 'Enter' && !typing) {
-      const list = this.filteredTests();
-      const i = this.highlightedIndex();
-      if (list[i]) { e.preventDefault(); this.toggle(list[i]); }
-      return;
-    }
-    if (e.key === 'Enter' && typing && this.testQuery()) {
-      // Enter from inside the search box quick-adds the first match
-      const first = this.filteredTests()[0];
-      if (first) { e.preventDefault(); this.toggle(first); }
-      return;
-    }
-    if (e.key === 'Escape' && typing) {
-      this.clearSearch();
-      (target as HTMLInputElement).blur();
-      return;
-    }
-    if (e.key === 'Delete' && !typing) {
-      const last = this.flow.selectedTests().at(-1);
-      if (last) { e.preventDefault(); this.toggle(last); }
+      this.markAutoSaved();
+      this.showFeedback('Order draft saved on this device. You can continue selecting tests.', 'success');
+      window.setTimeout(() => this.draftSaved.set(false), 3200);
+    } catch (error) {
+      this.showFeedback(error instanceof Error ? error.message : 'Unable to save the draft. Please try again.', 'error');
+    } finally {
+      this.savingDraft.set(false);
     }
   }
 
   get patientInitials(): string {
-    const p = this.patient;
-    if (!p) return '?';
-    return (p.firstName[0] + p.lastName[0]).toUpperCase();
+    const patient = this.patient;
+    return patient ? (patient.firstName[0] + patient.lastName[0]).toUpperCase() : '?';
   }
 
   patientAgeBreakdown(): string {
-    const p = this.patient;
-    if (!p) return '';
-    return this.flow.formatAgeBreakdown(p.dob);
+    return this.patient ? this.flow.formatAgeBreakdown(this.patient.dob) : '';
   }
 
-  /** Raw Y/M/D parts for the colorized inline age breakdown (see .age-inline* in styles.css). */
-  ageParts(): { years: number; months: number; days: number } {
-    const p = this.patient;
-    if (!p) return { years: 0, months: 0, days: 0 };
-    return this.flow.calcAgeParts(p.dob);
-  }
+  @HostListener('document:keydown', ['$event'])
+  onKeydown(event: KeyboardEvent): void {
+    const target = event.target as HTMLElement;
+    const typing = !!target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
+    const modifier = event.ctrlKey || event.metaKey;
 
-  genderIcon(): string {
-    const g = (this.patient?.gender ?? '').toLowerCase();
-    if (g === 'male')   return 'ti-gender-male';
-    if (g === 'female') return 'ti-gender-female';
-    return 'ti-gender-genderless';
+    if (modifier && event.key.toLowerCase() === 'f') {
+      event.preventDefault();
+      this.searchInputRef?.nativeElement.focus();
+      return;
+    }
+    if (modifier && event.key.toLowerCase() === 's') {
+      event.preventDefault();
+      this.saveDraft();
+      return;
+    }
+    if (modifier && event.key === 'Enter') {
+      event.preventDefault();
+      this.goToReview();
+      return;
+    }
+    if (this.activeView() !== 'packages' && (this.activeView() === 'catalogue' || this.activeView() === 'recent' || this.activeView() === 'favorites')) {
+      if (event.key === 'ArrowDown' && !typing) {
+        event.preventDefault();
+        this.highlightedIndex.update(index => Math.min(index + 1, this.visibleTests().length - 1));
+        return;
+      }
+      if (event.key === 'ArrowUp' && !typing) {
+        event.preventDefault();
+        this.highlightedIndex.update(index => Math.max(index - 1, 0));
+        return;
+      }
+      if (event.key === 'Enter' && !typing) {
+        const test = this.visibleTests()[this.highlightedIndex()];
+        if (test) {
+          event.preventDefault();
+          this.toggle(test);
+        }
+      }
+    }
+    if (event.key === 'Escape' && typing) this.clearSearch();
   }
 }
