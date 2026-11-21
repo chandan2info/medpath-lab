@@ -2193,3 +2193,169 @@
     width: min(100%, 340px);
   }
 }
+
+
+/* Fully custom calendar: avoid browser-native date/time picker popups. */
+.collect-panel .collection-datetime-popover {
+  width: min(100%, 340px);
+  padding: 14px;
+}
+
+.collect-panel .collection-calendar__header {
+  display: grid;
+  grid-template-columns: 32px 1fr 32px;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.collect-panel .collection-calendar__header strong {
+  font-size: 13px;
+}
+
+.collect-panel .collection-calendar__header button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--body-bg);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.collect-panel .collection-calendar__header button:hover {
+  border-color: var(--lis-primary, #1D9E75);
+  color: var(--lis-primary, #1D9E75);
+}
+
+.collect-panel .collection-calendar__weekdays,
+.collect-panel .collection-calendar__days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+  text-align: center;
+}
+
+.collect-panel .collection-calendar__weekdays span {
+  padding: 5px 0;
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.collect-panel .collection-calendar__days button,
+.collect-panel .collection-calendar__days > span {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  height: 32px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 11px;
+}
+
+.collect-panel .collection-calendar__days button {
+  cursor: pointer;
+}
+
+.collect-panel .collection-calendar__days button:hover:not(:disabled) {
+  border-color: var(--lis-primary, #1D9E75);
+  background: color-mix(in srgb, var(--lis-primary, #1D9E75) 12%, transparent);
+}
+
+.collect-panel .collection-calendar__days button.is-today {
+  border-color: color-mix(in srgb, var(--lis-primary, #1D9E75) 55%, transparent);
+}
+
+.collect-panel .collection-calendar__days button.is-selected {
+  background: var(--lis-primary, #1D9E75);
+  color: #fff;
+  font-weight: 700;
+}
+
+.collect-panel .collection-calendar__days button:disabled {
+  color: var(--text-secondary);
+  opacity: .35;
+  cursor: not-allowed;
+}
+
+.collect-panel .collection-calendar__time {
+  margin-top: 12px;
+}
+
+.collect-panel .collection-calendar__time label {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.collect-panel .collection-calendar__time input {
+  width: 100%;
+  min-height: 36px;
+}
+
+.collect-panel .condition-options {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+}
+
+.collect-panel .condition-option {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+  padding: 6px 10px !important;
+  white-space: nowrap;
+}
+
+.collect-panel .condition-option input[type="radio"] {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  display: inline-grid !important;
+  place-content: center !important;
+  flex: 0 0 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  max-width: 16px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 1.5px solid var(--text-secondary) !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.collect-panel .condition-option input[type="radio"]::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  transform: scale(0);
+  background: #fff;
+}
+
+.collect-panel .condition-option input[type="radio"]:checked {
+  border-color: var(--lis-primary, #1D9E75) !important;
+  background: var(--lis-primary, #1D9E75) !important;
+}
+
+.collect-panel .condition-option input[type="radio"]:checked::before {
+  transform: scale(1);
+}
+
+.collect-panel .condition-option span {
+  flex: 1 1 auto !important;
+  margin: 0 !important;
+  line-height: 1.25 !important;
+}
