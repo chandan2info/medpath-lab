@@ -2835,3 +2835,32 @@
     min-width: 88px;
   }
 }
+
+
+/* Keep Hour/Minute labels in place; narrow only the actual select controls. */
+.collect-panel .collection-time-picker {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(100px, 1.1fr) !important;
+  align-items: end;
+  gap: 7px;
+}
+.collect-panel .collection-time-picker__unit {
+  width: 100%;
+  min-width: 0;
+}
+.collect-panel .collection-time-picker__unit select {
+  display: block;
+  width: 68px !important;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+.collect-panel .collection-time-picker__period {
+  width: 100%;
+  min-width: 100px;
+  box-sizing: border-box;
+}
+@media (max-width: 360px) {
+  .collect-panel .collection-time-picker__unit select {
+    width: 60px !important;
+  }
+}
