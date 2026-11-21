@@ -1741,3 +1741,157 @@
     max-height: 46px;
   }
 }
+
+
+/* ── Collection workstation: final alignment and viewport fit ── */
+@media (min-width: 1101px) {
+  .cp-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(420px, 440px);
+    gap: 12px;
+    align-items: stretch;
+    margin-bottom: 10px;
+  }
+
+  .specimen-panel,
+  .collect-panel {
+    height: clamp(440px, calc(100dvh - 470px), 540px);
+    min-height: 0;
+  }
+
+  .specimen-panel {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .specimen-panel .tube-cards {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .collect-panel .cp-form {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    padding: 9px 12px 10px;
+    gap: 7px;
+  }
+
+  .collect-panel .collection-field-grid {
+    gap: 6px 10px;
+  }
+
+  .collect-panel .lis-field label,
+  .collect-panel .condition-field legend {
+    display: block;
+    margin-bottom: 3px;
+    line-height: 1.25;
+  }
+
+  .collect-panel .lis-field input,
+  .collect-panel .lis-field select {
+    height: 34px;
+    min-height: 34px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+
+  /* Keep each radio control and its caption together and evenly spaced. */
+  .collect-panel .condition-options {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 5px;
+  }
+
+  .collect-panel .condition-option {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    min-width: 0;
+    min-height: 34px;
+    padding: 5px 6px;
+    gap: 6px;
+    white-space: normal;
+    line-height: 1.2;
+    text-align: left;
+  }
+
+  .collect-panel .condition-option input {
+    appearance: none;
+    flex: 0 0 15px;
+    width: 15px;
+    height: 15px;
+    min-height: 15px;
+    margin: 0;
+    padding: 0;
+  }
+
+  .collect-panel .condition-option span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .collect-panel .notes-field textarea {
+    min-height: 46px;
+    max-height: 50px;
+    resize: none;
+    padding: 7px 9px;
+  }
+
+  .collect-panel .collection-actions {
+    flex: 0 0 auto;
+    margin-top: auto;
+    padding-top: 7px;
+    gap: 8px;
+  }
+
+  .collect-panel .collection-actions .collect-btn {
+    height: 40px;
+    min-height: 40px;
+  }
+
+  .checklist-card {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+}
+
+@media (min-width: 821px) and (max-width: 1100px) {
+  .cp-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(390px, 410px);
+    align-items: stretch;
+  }
+
+  .collect-panel .condition-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .collect-panel .condition-option {
+    justify-content: flex-start;
+    white-space: normal;
+  }
+
+  .collect-panel .collection-actions {
+    margin-top: auto;
+  }
+}
+
+@media (max-width: 820px) {
+  .collect-panel .condition-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .collect-panel .condition-option {
+    justify-content: flex-start;
+    white-space: normal;
+  }
+
+  .collect-panel .collection-actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
