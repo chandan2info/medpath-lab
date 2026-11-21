@@ -2445,3 +2445,80 @@
 .collect-panel .condition-option--selected {
   color: var(--lis-primary, #1D9E75);
 }
+
+
+/* Keep time controls immediately below the popover title, before the calendar. */
+.collect-panel .collection-calendar__time {
+  margin: 0 0 12px;
+  padding: 10px 11px;
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--body-bg) 72%, transparent);
+}
+.collect-panel .collection-calendar__time > label {
+  margin: 0 0 8px;
+  color: var(--text-primary);
+  font-size: 11px;
+  font-weight: 650;
+}
+.collect-panel .collection-time-picker {
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto;
+  gap: 7px;
+}
+.collect-panel .collection-time-picker__unit {
+  gap: 4px;
+}
+.collect-panel .collection-time-picker__unit select {
+  height: 34px;
+  min-height: 34px;
+}
+.collect-panel .collection-time-picker__separator {
+  padding-top: 14px;
+}
+.collect-panel .collection-time-picker__period {
+  height: 34px;
+  align-self: end;
+}
+.collect-panel .collection-time-picker__period button {
+  min-width: 32px;
+  padding-inline: 6px;
+}
+
+/* Keep each patient-condition radio and its label text aligned with a clear 8px gap. */
+.collect-panel .condition-options {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 12px !important;
+  row-gap: 6px !important;
+}
+.collect-panel .condition-option,
+.collect-panel .condition-option--selected {
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+  padding: 4px 2px !important;
+  margin: 0 !important;
+  min-height: 26px;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  white-space: nowrap;
+}
+.collect-panel .condition-option input[type="radio"] {
+  flex: 0 0 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  margin: 0 !important;
+}
+.collect-panel .condition-option span {
+  display: inline-block !important;
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  line-height: 1.25 !important;
+}
