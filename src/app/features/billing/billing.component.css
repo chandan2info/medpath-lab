@@ -3094,3 +3094,60 @@ select.settlement-input {
     padding-top: 9px;
   }
 }
+
+
+/* Invoice summary compact header: title, invoice ID and payment status share
+   one horizontal row to preserve vertical space. */
+.invoice-panel .inv-hd {
+  padding: 8px 14px;
+}
+
+.invoice-panel .inv-hd-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+.invoice-panel .inv-heading-group {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 5px 12px;
+  min-width: 0;
+}
+
+.invoice-panel .inv-title {
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.invoice-panel .inv-meta {
+  margin: 0;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.invoice-panel .pay-status-badge {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+@media (max-width: 420px) {
+  .invoice-panel .inv-hd {
+    padding: 8px 10px;
+  }
+
+  .invoice-panel .inv-heading-group {
+    gap: 3px 7px;
+  }
+
+  .invoice-panel .inv-title {
+    font-size: 13px;
+  }
+
+  .invoice-panel .inv-meta {
+    font-size: 9px;
+  }
+}
