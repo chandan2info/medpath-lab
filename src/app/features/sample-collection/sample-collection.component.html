@@ -100,29 +100,35 @@
     </section>
 
     <!-- Collection panel -->
-    <div class="collect-panel lis-card">
+    <section class="collect-panel lis-card" aria-labelledby="collection-details-heading">
       <div class="lis-card__header">
         <i class="ti ti-clipboard-list lis-card-icon" aria-hidden="true"></i>
-        <h2 class="lis-card__title">Collection Details</h2>
+        <h2 class="lis-card__title" id="collection-details-heading">Collection Details</h2>
       </div>
 
       <div class="cp-form">
         <div class="collection-field-grid">
           <div class="lis-field collection-field--wide">
             <label for="collection-date-time">Collection date &amp; time <span class="required-mark">*</span></label>
-            <input id="collection-date-time" type="datetime-local" required [value]="collectionDateTime()"
-              (input)="collectionDateTime.set($any($event.target).value)" [disabled]="collected()" />
+            <div class="collection-input-icon">
+              <i class="ti ti-calendar-event" aria-hidden="true"></i>
+              <input id="collection-date-time" type="datetime-local" required [value]="collectionDateTime()"
+                (input)="collectionDateTime.set($any($event.target).value)" [disabled]="collected()" />
+            </div>
+          </div>
+
+          <div class="lis-field">
+            <label for="collection-collector">Collector <span class="required-mark">*</span></label>
+            <input id="collection-collector" [value]="collectorName" readonly required aria-describedby="collector-help" />
           </div>
           <div class="lis-field">
-            <label for="collection-collector">Collector</label>
-            <input id="collection-collector" [value]="collectorName" readonly />
-            <small>Signed-in operator</small>
-          </div>
-          <div class="lis-field">
-            <label for="collection-sample-type">Specimen type</label>
+            <label for="collection-sample-type">
+              Specimen type
+              <i class="ti ti-info-circle field-info" title="Automatically derived from the tests and required specimen tubes." aria-label="Derived from ordered tests"></i>
+            </label>
             <input id="collection-sample-type" [value]="sampleType()" readonly />
-            <small>Derived from the ordered tests and required tubes</small>
           </div>
+
           <div class="lis-field collection-field--wide">
             <label for="collection-site">Collection site</label>
             <select id="collection-site" [value]="collectionSite()" (change)="collectionSite.set($any($event.target).value)" [disabled]="collected()">
@@ -133,35 +139,47 @@
               <option value="Other">Other</option>
             </select>
           </div>
-          <div class="lis-field collection-field--wide">
-            <label for="collection-condition">Patient condition</label>
-            <select id="collection-condition" [value]="patientCondition()" (change)="patientCondition.set($any($event.target).value)" [disabled]="collected()">
-              <option value="Not recorded">Not recorded</option>
-              <option value="Fasting">Fasting</option>
-              <option value="Non-fasting">Non-fasting</option>
-              <option value="Post-meal">Post-meal</option>
-            </select>
-          </div>
-          <div class="lis-field collection-field--wide">
+
+          <fieldset class="lis-field collection-field--wide condition-field" [disabled]="collected()">
+            <legend>
+              Patient condition
+              <i class="ti ti-info-circle field-info" title="Record the patient's fasting or meal status at the time of collection." aria-label="Patient condition help"></i>
+            </legend>
+            <div class="condition-options">
+              @for (condition of patientConditionOptions; track condition.value) {
+                <label class="condition-option" [class.condition-option--selected]="patientCondition() === condition.value">
+                  <input type="radio" name="patient-condition" [value]="condition.value"
+                    [checked]="patientCondition() === condition.value"
+                    (change)="patientCondition.set(condition.value)" />
+                  <span>{{ condition.label }}</span>
+                </label>
+              }
+            </div>
+          </fieldset>
+
+          <div class="lis-field collection-field--wide notes-field">
             <label for="collection-notes">Collection notes</label>
-            <textarea id="collection-notes" placeholder="e.g. difficult vein, hemolysis risk, special handling…"
+            <textarea id="collection-notes" maxlength="250" placeholder="e.g. difficult vein, hemolysis risk, special handling..."
               [value]="notes()" (input)="notes.set($any($event.target).value)" [disabled]="collected()"></textarea>
+            <div class="notes-counter" aria-live="polite">{{ notes().length }} / 250</div>
           </div>
         </div>
 
         @if (!collected()) {
-          <button type="button" class="lis-btn lis-btn--secondary collect-btn print-btn"
-            [class.print-btn--flash]="printFlash()" (click)="printLabels()">
-            <i class="ti ti-printer" aria-hidden="true"></i>
-            Print Labels
-            <kbd class="kbd-hint">Ctrl+P</kbd>
-          </button>
-          <button type="button" class="lis-btn lis-btn--primary collect-btn mark-collected-btn"
-            (click)="markCollected()">
-            <i class="ti ti-check" aria-hidden="true"></i>
-            Mark as Collected
-            <kbd class="kbd-hint kbd-hint--on-primary">Enter</kbd>
-          </button>
+          <div class="collection-actions">
+            <button type="button" class="lis-btn lis-btn--secondary collect-btn print-btn"
+              [class.print-btn--flash]="printFlash()" (click)="printLabels()">
+              <i class="ti ti-printer" aria-hidden="true"></i>
+              <span>Print Labels</span>
+              <kbd class="kbd-hint">Ctrl+P</kbd>
+            </button>
+            <button type="button" class="lis-btn lis-btn--primary collect-btn mark-collected-btn"
+              (click)="markCollected()" [disabled]="!collectionDateTime()">
+              <i class="ti ti-check" aria-hidden="true"></i>
+              <span>Mark as Collected</span>
+              <kbd class="kbd-hint kbd-hint--on-primary">Enter</kbd>
+            </button>
+          </div>
         } @else {
           <div class="collected-confirm" role="status" aria-live="polite">
             <i class="ti ti-circle-check" aria-hidden="true"></i>
@@ -181,7 +199,7 @@
           </button>
         }
       </div>
-    </div>
+    </section>
   </div>
 
   <!-- ════════════════════════════════════════════════
