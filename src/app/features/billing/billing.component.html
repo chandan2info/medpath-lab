@@ -147,23 +147,28 @@
     <!-- Financial summary only; test names are already shown in the table. -->
     <!-- Totals -->
     <div class="inv-totals">
-      <div class="tot-row"><span>Subtotal</span><span>₹{{ subtotal().toLocaleString('en-IN') }}</span></div>
-      @if (discAmt() > 0) {
-        <div class="tot-row tot-disc">
-          <span>Discount ({{ discountType() === 'percentage' ? discountPct() + '%' : 'Fixed' }})</span>
-          <span>−₹{{ discAmt().toLocaleString('en-IN') }}</span>
-        </div>
-      }
-      @if (advance() > 0) {
-        <div class="tot-row tot-disc">
-          <span>Advance received</span>
-          <span>−₹{{ advance().toLocaleString('en-IN') }}</span>
-        </div>
-      }
-      <div class="tot-row"><span>GST</span><span>Exempt</span></div>
+      <div class="tot-row">
+        <span>Subtotal</span>
+        <span>₹{{ (subtotal() || 0).toLocaleString('en-IN') }}</span>
+      </div>
+      <div class="tot-row tot-disc">
+        <span>
+          Discount ({{ discountType() === 'percentage' ? discountPct() + '%' : 'Fixed' }})
+          @if (discountReason()) { <small class="invoice-discount-reason">· {{ discountReason() }}</small> }
+        </span>
+        <span>−₹{{ (discAmt() || 0).toLocaleString('en-IN') }}</span>
+      </div>
+      <div class="tot-row tot-disc">
+        <span>Advance received</span>
+        <span>−₹{{ (advance() || 0).toLocaleString('en-IN') }}</span>
+      </div>
+      <div class="tot-row">
+        <span>GST</span>
+        <span>₹0 <small>(Exempt)</small></span>
+      </div>
       <div class="tot-row">
         <span>Invoice Total</span>
-        <strong>₹{{ grandTotal().toLocaleString('en-IN') }}</strong>
+        <strong>₹{{ (grandTotal() || 0).toLocaleString('en-IN') }}</strong>
       </div>
       <div class="tot-row tot-grand">
         <span>Balance Due</span>
