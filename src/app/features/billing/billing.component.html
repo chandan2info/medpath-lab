@@ -124,120 +124,6 @@
       </div>
     </div>
 
-    <div class="billing-controls-grid">
-    <!-- Discounts & adjustments -->
-    <div class="lis-card" aria-label="Discounts and adjustments">
-      <div class="lis-card__header">
-        <i class="ti ti-tag lis-card-icon" aria-hidden="true"></i>
-        <h2 class="lis-card__title">Discounts &amp; Adjustments</h2>
-      </div>
-      <div class="disc-groups-row">
-        <div class="disc-group">
-          <div class="disc-group__label">Discounts</div>
-          <div class="lis-field">
-            <label for="discPct">Discount %</label>
-            <div class="stepper-field">
-              <button type="button" class="stepper-btn" (click)="incrementDiscount(-1)" aria-label="Decrease discount">−</button>
-              <input id="discPct" type="text" inputmode="numeric" pattern="[0-9]*" min="0" max="100" class="stepper-input"
-                [value]="discountPct()"
-                (keydown)="allowNumericKeysOnly($event)"
-                (input)="applyDiscount(sanitizeNumericInput($event))"
-                placeholder="0" />
-              <button type="button" class="stepper-btn" (click)="incrementDiscount(1)" aria-label="Increase discount">+</button>
-            </div>
-          </div>
-          <!-- Coupon Code and Referral fields — disabled for now (no coupon/referral
-               program is live yet); kept in markup, commented out, so they can be
-               re-enabled quickly once that functionality ships.
-          <div class="lis-field">
-            <label for="coupon">Coupon code</label>
-            <div class="input-with-btn">
-              <input id="coupon" type="text" placeholder="Enter coupon"
-                [value]="couponCode()"
-                (input)="couponCode.set($any($event.target).value)" />
-              <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="applyCoupon()">Apply</button>
-            </div>
-          </div>
-          <div class="lis-field">
-            <label for="referral">Referral code</label>
-            <input id="referral" type="text" placeholder="Referral code"
-              [value]="referralCode()"
-              (input)="referralCode.set($any($event.target).value)" />
-          </div>
-          -->
-        </div>
-
-        <div class="disc-group">
-          <div class="disc-group__label">Advance</div>
-          <div class="lis-field">
-            <label for="advance">Advance received</label>
-            <div class="currency-field">
-              <span class="currency-prefix">₹</span>
-              <input id="advance" type="text" inputmode="numeric" pattern="[0-9]*"
-                [value]="advance()"
-                (keydown)="allowNumericKeysOnly($event)"
-                (input)="advance.set(sanitizeNumericInput($event))"
-                placeholder="Enter amount" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Payment mode -->
-    <div class="lis-card" aria-label="Payment mode">
-      <div class="lis-card__header">
-        <i class="ti ti-wallet lis-card-icon" aria-hidden="true"></i>
-        <h2 class="lis-card__title">Receive Payment</h2>
-      </div>
-      <div class="pay-modes" role="group" aria-label="Select payment mode">
-        @for (m of payModes; track m.id) {
-          <button type="button" class="pay-mode-btn"
-            [class.pay-mode-btn--active]="payMode() === m.id"
-            [class.pay-mode-btn--credit]="m.id === 'credit' && payMode() === 'credit'"
-            (click)="setPayMode(m.id)"
-            [attr.aria-pressed]="payMode() === m.id">
-            <i class="ti ti-{{ m.icon }}" aria-hidden="true"></i>
-            <span>{{ m.label }}</span>
-          </button>
-        }
-      </div>
-      @if (payMode() === 'credit') {
-        <div class="credit-warn" role="alert">
-          <i class="ti ti-alert-triangle" aria-hidden="true"></i>
-          Credit billing — collect payment before report dispatch.
-        </div>
-      }
-      @if (payMode() === 'cash') {
-        <div class="pay-adaptive">
-          <div class="lis-field">
-            <label for="cashReceived">Amount received</label>
-            <div class="currency-field">
-              <span class="currency-prefix">₹</span>
-              <input id="cashReceived" type="text" placeholder="0" />
-            </div>
-          </div>
-        </div>
-      }
-      @if (payMode() === 'upi') {
-        <div class="pay-adaptive">
-          <div class="lis-field">
-            <label for="upiTxn">Transaction ID</label>
-            <input id="upiTxn" type="text" placeholder="UPI reference / transaction ID" />
-          </div>
-        </div>
-      }
-      @if (payMode() === 'card') {
-        <div class="pay-adaptive">
-          <div class="lis-field">
-            <label for="cardRef">Reference number</label>
-            <input id="cardRef" type="text" placeholder="Last 4 digits / auth code" />
-          </div>
-        </div>
-      }
-    </div>
-  </div>
-    </div>
 
   <!-- ── Right: Invoice panel ─────────────────── -->
   <aside class="invoice-panel lis-card" aria-label="Invoice summary">
@@ -295,37 +181,129 @@
       }
     </div>
 
-    <!-- Priority badge -->
-    <div class="inv-priority">
-      Priority:
-      <span class="prio-tag" [class.prio-tag--stat]="flow.priority() === 'stat'">
-        {{ flow.priority() | titlecase }}
-      </span>
-      <button type="button" class="lis-link receipt-preview-link" (click)="showReceipt.set(true)">
-        <i class="ti ti-eye" aria-hidden="true"></i> Preview Receipt
-      </button>
-    </div>
 
-    <!-- Actions -->
-    <div class="inv-actions">
-      <button type="button" class="lis-btn lis-btn--primary lis-btn--full confirm-btn"
-        (click)="confirmPayment()"
-        [disabled]="saving() || flow.selectedTests().length === 0">
-        @if (saving()) {
-          <i class="ti ti-loader-2 spin" aria-hidden="true"></i> Processing…
-        } @else {
-          <i class="ti ti-check" aria-hidden="true"></i>
-          Confirm &amp; Print Receipt
-        }
-      </button>
-      <button type="button" class="lis-btn lis-btn--secondary lis-btn--full">
-        <i class="ti ti-device-floppy" aria-hidden="true"></i> Save as draft
-      </button>
-      <button type="button" class="lis-btn lis-btn--secondary lis-btn--full"
-        (click)="proceedToSample()">
-        <i class="ti ti-test-pipe" aria-hidden="true"></i>
-        Skip to Sample Collection
-      </button>
-    </div>
   </aside>
+
+  <!-- Full-width settlement workspace: discount, payment and actions. -->
+  <section class="settlement-card lis-card" aria-label="Adjustments and payment">
+    <div class="settlement-header">
+      <i class="ti ti-adjustments-horizontal" aria-hidden="true"></i>
+      <div>
+        <h2>Adjustments &amp; Payment</h2>
+        <p>Apply discounts or advance, then record how the patient pays</p>
+      </div>
+    </div>
+    <div class="settlement-grid">
+      <section class="settlement-section discount-section" aria-label="Discounts and adjustments">
+        <div class="settlement-section-title"><i class="ti ti-tag" aria-hidden="true"></i> Discounts &amp; Adjustments</div>
+        <div class="discount-input-grid">
+          <div class="lis-field">
+            <label for="discountType">Discount type</label>
+            <select id="discountType" class="settlement-input" disabled>
+              <option>Percentage (%)</option>
+            </select>
+          </div>
+          <div class="lis-field">
+            <label for="discPct">Discount (%)</label>
+            <div class="stepper-field settlement-stepper">
+              <button type="button" class="stepper-btn" (click)="incrementDiscount(-1)" aria-label="Decrease discount">−</button>
+              <input id="discPct" type="text" inputmode="numeric" pattern="[0-9]*" min="0" max="100" class="stepper-input"
+                [value]="discountPct()"
+                (keydown)="allowNumericKeysOnly($event)"
+                (input)="applyDiscount(sanitizeNumericInput($event))"
+                placeholder="0" />
+              <button type="button" class="stepper-btn" (click)="incrementDiscount(1)" aria-label="Increase discount">+</button>
+            </div>
+          </div>
+          <div class="lis-field">
+            <label>Discount amount</label>
+            <div class="settlement-value"><span>₹</span><strong>{{ discAmt().toLocaleString('en-IN', { minimumFractionDigits: 2 }) }}</strong></div>
+          </div>
+          <div class="lis-field advance-field">
+            <label for="advance">Advance received</label>
+            <div class="currency-field settlement-currency">
+              <span class="currency-prefix">₹</span>
+              <input id="advance" type="text" inputmode="numeric" pattern="[0-9]*"
+                [value]="advance()"
+                (keydown)="allowNumericKeysOnly($event)"
+                (input)="advance.set(sanitizeNumericInput($event))"
+                placeholder="0.00" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="settlement-section payment-section" aria-label="Receive payment">
+        <div class="settlement-section-title"><i class="ti ti-wallet" aria-hidden="true"></i> Receive Payment</div>
+        <div class="pay-modes" role="group" aria-label="Select payment mode">
+          @for (m of payModes; track m.id) {
+            <button type="button" class="pay-mode-btn"
+              [class.pay-mode-btn--active]="payMode() === m.id"
+              [class.pay-mode-btn--credit]="m.id === 'credit' && payMode() === 'credit'"
+              (click)="setPayMode(m.id)"
+              [attr.aria-pressed]="payMode() === m.id">
+              <i class="ti ti-{{ m.icon }}" aria-hidden="true"></i>
+              <span>{{ m.label }}</span>
+            </button>
+          }
+        </div>
+        @if (payMode() === 'credit') {
+          <div class="credit-warn" role="alert">
+            <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+            Credit billing — collect payment before report dispatch.
+          </div>
+        }
+        @if (payMode() === 'cash') {
+          <div class="pay-adaptive">
+            <div class="lis-field">
+              <label for="cashReceived">Amount received</label>
+              <div class="currency-field settlement-currency">
+                <span class="currency-prefix">₹</span>
+                <input id="cashReceived" type="text" inputmode="decimal" placeholder="Enter amount" />
+              </div>
+            </div>
+          </div>
+        }
+        @if (payMode() === 'upi') {
+          <div class="pay-adaptive">
+            <div class="lis-field">
+              <label for="upiTxn">UPI transaction ID</label>
+              <input id="upiTxn" class="settlement-input" type="text" placeholder="Enter UPI reference number" />
+            </div>
+          </div>
+        }
+        @if (payMode() === 'card') {
+          <div class="pay-adaptive">
+            <div class="lis-field">
+              <label for="cardRef">Card reference</label>
+              <input id="cardRef" class="settlement-input" type="text" placeholder="Last 4 digits / authorization code" />
+            </div>
+          </div>
+        }
+      </section>
+
+      <section class="settlement-actions" aria-label="Billing actions">
+        <div class="settlement-priority">
+          <span>Processing priority</span>
+          <span class="prio-tag" [class.prio-tag--stat]="flow.priority() === 'stat'">{{ flow.priority() | titlecase }}</span>
+        </div>
+        <button type="button" class="lis-link receipt-preview-link" (click)="showReceipt.set(true)">
+          <i class="ti ti-eye" aria-hidden="true"></i> Preview Receipt
+        </button>
+        <button type="button" class="lis-btn lis-btn--primary lis-btn--full confirm-btn"
+          (click)="confirmPayment()" [disabled]="saving() || flow.selectedTests().length === 0">
+          @if (saving()) { <i class="ti ti-loader-2 spin" aria-hidden="true"></i> Processing… }
+          @else { <i class="ti ti-check" aria-hidden="true"></i> Confirm &amp; Print Receipt }
+        </button>
+        <div class="settlement-secondary-actions">
+          <button type="button" class="lis-btn lis-btn--secondary" disabled>
+            <i class="ti ti-device-floppy" aria-hidden="true"></i> Save as draft
+          </button>
+          <button type="button" class="lis-btn lis-btn--secondary" (click)="proceedToSample()">
+            <i class="ti ti-test-pipe" aria-hidden="true"></i> Sample Collection
+          </button>
+        </div>
+      </section>
+    </div>
+  </section>
 </div>
