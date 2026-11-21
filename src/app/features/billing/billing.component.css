@@ -2231,3 +2231,98 @@ select.settlement-input {
     max-height: 300px;
   }
 }
+
+
+/* Billing header policy indicator and aligned discount/advance field groups. */
+@media (min-width: 761px) {
+  .billing-sidebar .settlement-header {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 10px;
+    row-gap: 4px;
+  }
+
+  .billing-sidebar .settlement-policy-note {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+    align-self: center;
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .billing-sidebar .discount-input-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px;
+    align-items: start;
+  }
+
+  .billing-sidebar .discount-calculation-column {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .billing-sidebar .discount-calculation-column .lis-field {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .billing-sidebar .discount-calculation-column .settlement-value,
+  .billing-sidebar .discount-calculation-column .settlement-input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .billing-sidebar .advance-entry-column,
+  .billing-sidebar .advance-entry-column .lis-field {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .billing-sidebar .advance-entry-column .field-hint {
+    display: block;
+    margin: 0;
+    line-height: 1.4;
+  }
+}
+
+@media (max-width: 760px) {
+  .billing-sidebar .settlement-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .billing-sidebar .settlement-policy-note {
+    flex: 0 0 100%;
+    width: fit-content;
+    margin: 4px 0 0 42px;
+  }
+
+  .billing-sidebar .discount-calculation-column {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    min-width: 0;
+  }
+
+  .billing-sidebar .advance-entry-column,
+  .billing-sidebar .advance-entry-column .lis-field {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+  }
+}
