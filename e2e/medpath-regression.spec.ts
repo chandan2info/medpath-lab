@@ -118,7 +118,7 @@ test.describe('End-to-end LIS workflow', () => {
 
     // 1. Patient registration — search first, then explicitly start a new profile.
     await page.goto('/dashboard/registration');
-    await page.getByRole('textbox', { name: 'Search by patient ID, mobile number or name' }).fill('QA E2E Patient 84721');
+    await page.locator('#patientSearch').fill('QA E2E Patient 84721');
     await expect(page.getByText('No patient found')).toBeVisible();
     await page.getByRole('button', { name: 'Register New Patient' }).click();
 
@@ -131,16 +131,14 @@ test.describe('End-to-end LIS workflow', () => {
     await page.locator('#dob').click();
     const dobDialog = page.getByRole('dialog', { name: 'Choose date of birth' });
     await expect(dobDialog).toBeVisible();
-    await dobDialog.getByRole('button', { name: /202\d/ }).first().click().catch(async () => {
-      await dobDialog.getByRole('button', { name: 'Jump back 10 years' }).click();
-      await dobDialog.getByRole('button', { name: '2025', exact: true }).click();
-    });
+    await dobDialog.locator('.dob-month-label').click();
+    await dobDialog.getByRole('button', { name: '2025', exact: true }).click();
     const dobDay = dobDialog.locator('.dob-day:not(:disabled)').filter({ hasText: /^15$/ }).first();
     await dobDay.click();
     await expect(page.locator('#dob')).not.toContainText('Select date of birth');
 
     await page.getByRole('button', { name: /Continue to Clinical/i }).click();
-    await expect(page.getByRole('region', { name: 'Clinical information' })).toBeVisible();
+    await expect(page.locator('.reg-card').filter({ hasText: 'Clinical Information' })).toBeVisible();
     await page.getByRole('button', { name: /Save & Continue/i }).click();
     const registeredDialog = page.getByRole('dialog', { name: /Patient Registered Successfully/i });
     await expect(registeredDialog).toBeVisible();
@@ -157,7 +155,7 @@ test.describe('End-to-end LIS workflow', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Review Order' })).toBeVisible();
     await page.getByRole('button', { name: /Save Order & Continue to Billing/i }).click();
     await expect(page.getByRole('heading', { level: 1, name: 'Billing' })).toBeVisible();
-    await expect(page.getByRole('region', { name: 'Ordered tests' })).toContainText('CBC');
+    await expect(page.locator('[aria-label="Ordered tests"]')).toContainText('CBC');
     await page.getByRole('button', { name: /Confirm & Print Receipt/i }).click();
     const receipt = page.getByRole('dialog', { name: 'Payment Received' });
     await expect(receipt).toBeVisible();
