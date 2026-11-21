@@ -122,25 +122,6 @@
               @if (datePickerOpen()) {
                 <div class="collection-datetime-popover" role="dialog" aria-label="Choose collection date and time">
                   <div class="collection-datetime-popover__heading">Collection date &amp; time</div>
-                  <div class="collection-calendar">
-                    <div class="collection-calendar__header">
-                      <button type="button" aria-label="Previous month" (click)="changeCalendarMonth(-1)"><i class="ti ti-chevron-left"></i></button>
-                      <strong>{{ calendarMonthLabel() }}</strong>
-                      <button type="button" aria-label="Next month" (click)="changeCalendarMonth(1)"><i class="ti ti-chevron-right"></i></button>
-                    </div>
-                    <div class="collection-calendar__weekdays">
-                      @for (day of calendarWeekdays; track day) { <span>{{ day }}</span> }
-                    </div>
-                    <div class="collection-calendar__days">
-                      @for (day of calendarDays(); track $index) {
-                        @if (day) {
-                          <button type="button" [class.is-selected]="day.date === collectionDatePart()"
-                            [class.is-today]="day.isToday" [disabled]="day.isFuture"
-                            (click)="updateCollectionDate(day.date)">{{ day.day }}</button>
-                        } @else { <span></span> }
-                      }
-                    </div>
-                  </div>
                   <div class="collection-calendar__time">
                     <label>Collection time</label>
                     <div class="collection-time-picker" role="group" aria-label="Choose collection time">
@@ -161,6 +142,25 @@
                         <button type="button" [class.is-active]="timePeriod() === 'AM'" (click)="updateTimeSelection(timeHour(), timeMinute(), 'AM')">AM</button>
                         <button type="button" [class.is-active]="timePeriod() === 'PM'" (click)="updateTimeSelection(timeHour(), timeMinute(), 'PM')">PM</button>
                       </div>
+                    </div>
+                  </div>
+                  <div class="collection-calendar">
+                    <div class="collection-calendar__header">
+                      <button type="button" aria-label="Previous month" (click)="changeCalendarMonth(-1)"><i class="ti ti-chevron-left"></i></button>
+                      <strong>{{ calendarMonthLabel() }}</strong>
+                      <button type="button" aria-label="Next month" (click)="changeCalendarMonth(1)"><i class="ti ti-chevron-right"></i></button>
+                    </div>
+                    <div class="collection-calendar__weekdays">
+                      @for (day of calendarWeekdays; track day) { <span>{{ day }}</span> }
+                    </div>
+                    <div class="collection-calendar__days">
+                      @for (day of calendarDays(); track $index) {
+                        @if (day) {
+                          <button type="button" [class.is-selected]="day.date === collectionDatePart()"
+                            [class.is-today]="day.isToday" [disabled]="day.isFuture"
+                            (click)="updateCollectionDate(day.date)">{{ day.day }}</button>
+                        } @else { <span></span> }
+                      }
                     </div>
                   </div>
                   <div class="collection-datetime-popover__actions">
