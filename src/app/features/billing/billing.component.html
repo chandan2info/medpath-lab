@@ -28,7 +28,7 @@
           <span class="rcpt-cap">{{ payMode() }}</span>
         </div>
         <div class="rcpt-row rcpt-total">
-          <span>Paid</span>
+          <span>Collected now</span>
           <span>₹{{ outstanding().toLocaleString('en-IN') }}</span>
         </div>
       </div>
@@ -164,12 +164,6 @@
         <span>Invoice Total</span>
         <strong>₹{{ grandTotal().toLocaleString('en-IN') }}</strong>
       </div>
-      @if (advance() > 0) {
-        <div class="tot-row tot-disc">
-          <span>Advance received</span>
-          <span>−₹{{ advance().toLocaleString('en-IN') }}</span>
-        </div>
-      }
       <div class="tot-row tot-grand">
         <span>Balance Due</span>
         <span class="tot-grand-amt">₹{{ outstanding().toLocaleString('en-IN') }}</span>
