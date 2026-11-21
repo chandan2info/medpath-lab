@@ -249,13 +249,17 @@
                 [value]="advance()"
                 (keydown)="allowDecimalKeysOnly($event)"
                 (input)="advance.set(sanitizeDecimalInput($event))"
-                placeholder="0.00" />
+                placeholder="0.00"
+                aria-describedby="advance-help" />
             </div>
-            <span class="field-hint">Deducted from the payable balance.</span>
+            <span class="field-hint" id="advance-help">
+              <i class="ti ti-info-circle" aria-hidden="true"></i>
+              Amount already paid by the patient
+            </span>
           </div>
         </div>
         <div class="advance-impact">
-          <span>Balance to collect</span>
+          <span><i class="ti ti-wallet" aria-hidden="true"></i> Balance to collect</span>
           <strong>₹{{ outstanding().toLocaleString('en-IN') }}</strong>
         </div>
       </section>
