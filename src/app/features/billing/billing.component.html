@@ -242,17 +242,19 @@
 
       <section class="settlement-section advance-section" aria-label="Advance received">
         <div class="settlement-section-title"><i class="ti ti-wallet" aria-hidden="true"></i> Advance</div>
-        <div class="lis-field">
-          <label for="advance">Advance received</label>
-          <div class="currency-field settlement-currency">
-            <span class="currency-prefix">₹</span>
-            <input id="advance" type="text" inputmode="numeric" pattern="[0-9]*"
-              [value]="advance()"
-              (keydown)="allowDecimalKeysOnly($event)"
-              (input)="advance.set(sanitizeDecimalInput($event))"
-              placeholder="0" />
+        <div class="advance-entry-column">
+          <div class="lis-field">
+            <label for="advance">Advance received</label>
+            <div class="currency-field settlement-currency">
+              <span class="currency-prefix">₹</span>
+              <input id="advance" type="text" inputmode="decimal" autocomplete="off"
+                [value]="advance()"
+                (keydown)="allowDecimalKeysOnly($event)"
+                (input)="advance.set(sanitizeDecimalInput($event))"
+                placeholder="0.00" />
+            </div>
+            <span class="field-hint">Deducted from the payable balance.</span>
           </div>
-          <span class="field-hint">Deducted from the payable balance.</span>
         </div>
         <div class="advance-impact">
           <span>Balance to collect</span>
