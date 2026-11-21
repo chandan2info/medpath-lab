@@ -94,6 +94,12 @@ export class SampleCollectionComponent {
   collectionDateTime = signal(this.toDateTimeLocal(new Date()));
   collectionSite = signal('');
   patientCondition = signal('Not recorded');
+  protected readonly patientConditionOptions = [
+    { value: 'Fasting', label: 'Fasting' },
+    { value: 'Non-fasting', label: 'Non-fasting' },
+    { value: 'Post-meal', label: 'Post meal' },
+    { value: 'Not recorded', label: 'Not recorded' },
+  ];
   protected readonly collectorName = 'Current operator';
 
   private _checked = signal<Set<string>>(new Set());
