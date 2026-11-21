@@ -161,3 +161,264 @@
 .spin { display: inline-block; animation: spin 0.8s linear infinite; }
 
 /* .lis-card-icon is defined globally in styles.css */
+
+
+/* Billing page refinement — balanced workspace, readable test list and focused invoice. */
+.page-header {
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+}
+.page-header__right {
+  gap: 6px;
+}
+.bill-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(330px, 360px);
+  gap: 14px;
+  align-items: start;
+}
+.bill-main {
+  min-width: 0;
+  gap: 12px;
+}
+.bill-main > .lis-card,
+.invoice-panel {
+  min-width: 0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.bill-main > .lis-card__header,
+.bill-main .lis-card__header {
+  min-height: 44px;
+  padding: 10px 14px;
+}
+.pat-info-row {
+  padding: 12px 14px;
+  gap: 12px;
+}
+.pat-id-main {
+  min-width: 0;
+  flex: 1;
+}
+.pat-detail-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin-top: 6px;
+}
+.pat-detail-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.pat-detail-icon {
+  flex: 0 0 auto;
+}
+.tests-list {
+  max-height: 340px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+.bill-test-row {
+  min-height: 49px;
+  padding: 8px 14px;
+  gap: 12px;
+}
+.bt-info {
+  min-width: 0;
+}
+.bt-name {
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+.bt-tat-badge {
+  flex: 0 0 auto;
+}
+.bt-price {
+  flex: 0 0 64px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.disc-groups-row {
+  gap: 0;
+}
+.disc-groups-row .disc-group {
+  min-width: 0;
+  padding: 5px 16px 14px;
+}
+.disc-group__label {
+  margin-top: 8px;
+}
+.pay-modes {
+  gap: 10px;
+  padding: 12px 14px 14px;
+}
+.pay-mode-btn {
+  min-height: 78px;
+  justify-content: center;
+  font-weight: 650;
+}
+.pay-mode-btn i {
+  font-size: 22px;
+}
+.pay-adaptive {
+  padding-top: 0;
+}
+.invoice-panel {
+  position: sticky;
+  top: 16px;
+  max-height: calc(100dvh - 112px);
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+.inv-hd {
+  padding: 14px 15px 12px;
+}
+.inv-title {
+  font-size: 15px;
+  font-weight: 750;
+}
+.inv-pat {
+  padding: 11px 15px;
+}
+.inv-items {
+  max-height: 300px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+.inv-item {
+  min-height: 34px;
+  padding: 7px 15px;
+  gap: 10px;
+}
+.inv-iname {
+  min-width: 0;
+  white-space: normal;
+  line-height: 1.35;
+}
+.inv-iprice {
+  flex: 0 0 auto;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.inv-totals {
+  padding: 12px 15px;
+}
+.tot-row {
+  font-size: 12px;
+  padding: 4px 0;
+}
+.tot-grand {
+  font-size: 14px;
+  padding-top: 9px;
+}
+.tot-grand-amt {
+  font-size: 23px;
+  font-weight: 800;
+}
+.inv-priority {
+  padding: 10px 15px;
+}
+.inv-actions {
+  padding: 12px 15px 15px;
+  gap: 8px;
+}
+.inv-actions .lis-btn {
+  min-height: 38px;
+  justify-content: center;
+  font-weight: 650;
+}
+.tests-list::-webkit-scrollbar,
+.inv-items::-webkit-scrollbar,
+.invoice-panel::-webkit-scrollbar {
+  width: 6px;
+}
+.tests-list::-webkit-scrollbar-thumb,
+.inv-items::-webkit-scrollbar-thumb,
+.invoice-panel::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 8px;
+}
+
+@media (max-width: 1100px) {
+  .bill-layout {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 12px;
+  }
+}
+@media (max-width: 900px) {
+  .bill-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .invoice-panel {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+  .inv-items {
+    max-height: none;
+  }
+}
+@media (max-width: 600px) {
+  .page-header {
+    align-items: flex-start;
+  }
+  .page-header__right {
+    width: 100%;
+    align-items: flex-start;
+  }
+  .page-title {
+    font-size: 21px;
+  }
+  .bill-main {
+    gap: 10px;
+  }
+  .pat-info-row {
+    align-items: flex-start;
+  }
+  .pat-detail-row {
+    gap: 6px 8px;
+  }
+  .pat-detail-sep {
+    display: none;
+  }
+  .disc-groups-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .disc-groups-row .disc-group:first-child {
+    border-right: 0;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .pay-modes {
+    gap: 6px;
+    padding-inline: 10px;
+  }
+  .pay-mode-btn {
+    min-height: 68px;
+    padding: 9px 3px;
+    font-size: 10px;
+  }
+  .pay-mode-btn i {
+    font-size: 20px;
+  }
+  .bill-test-row {
+    gap: 8px;
+    padding-inline: 11px;
+  }
+  .bt-tat-badge {
+    padding-inline: 6px;
+  }
+  .bt-price {
+    flex-basis: 54px;
+    font-size: 12px;
+  }
+}
