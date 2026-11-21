@@ -50,15 +50,17 @@
 <!-- Page header — aligned with Test Order. -->
 <div class="page-header">
   <div class="page-heading-copy">
-    <h1 class="page-title">Billing</h1>
-    <p class="page-subtitle">Review the invoice and collect payment for the selected tests.</p>
-    <div class="billing-header-meta">
-      <span class="inv-id-badge lis-mono"><i class="ti ti-file-invoice" aria-hidden="true"></i>{{ invoiceId }}</span>
-      <span class="prio-tag" [class.prio-tag--stat]="flow.priority() === 'stat'">
-        <i class="ti ti-flag-3" aria-hidden="true"></i>{{ flow.priority() | titlecase }}
-      </span>
-      <span class="inv-date-top">{{ today | date:'dd MMM yyyy' }}</span>
+    <div class="billing-title-row">
+      <h1 class="page-title">Billing</h1>
+      <div class="billing-header-meta">
+        <span class="inv-id-badge lis-mono"><i class="ti ti-file-invoice" aria-hidden="true"></i>{{ invoiceId }}</span>
+        <span class="prio-tag" [class.prio-tag--stat]="flow.priority() === 'stat'">
+          <i class="ti ti-flag-3" aria-hidden="true"></i>{{ flow.priority() | titlecase }}
+        </span>
+        <span class="inv-date-top">{{ today | date:'dd MMM yyyy' }}</span>
+      </div>
     </div>
+    <p class="page-subtitle">Review the invoice and collect payment for the selected tests.</p>
   </div>
   <lis-workflow-stepper [steps]="workflowSteps" [activeIndex]="workflowActiveIndex" />
 </div>
@@ -254,18 +256,6 @@
       </div>
       <div class="inv-meta lis-mono">{{ invoiceId }}</div>
     </div>
-
-    @if (patient) {
-      <div class="inv-pat">
-        <div class="inv-av" aria-hidden="true">{{ patientInitials }}</div>
-        <div>
-          <div class="inv-pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
-          <div class="inv-pat-meta">
-            {{ patientAge }} | {{ patient.gender }} | {{ patient.refDoctor }}
-          </div>
-        </div>
-      </div>
-    }
 
     <!-- Line items -->
     <div class="inv-items" role="list" aria-label="Invoice line items">
