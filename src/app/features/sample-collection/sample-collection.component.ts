@@ -225,6 +225,10 @@ export class SampleCollectionComponent {
     if (!Number.isNaN(parsed.getTime())) this.calendarMonth.set(new Date(parsed.getFullYear(), parsed.getMonth(), 1));
   }
 
+  toggleTimePicker(): void {
+    this.timePickerExpanded.update(expanded => !expanded);
+  }
+
   updateCollectionTime(value: string): void {
     this.collectionTimePart.set(value.replace(/[^0-9:]/g, '').slice(0, 5));
   }
