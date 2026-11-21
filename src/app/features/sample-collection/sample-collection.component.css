@@ -712,3 +712,67 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+
+/* ── Compact integrated workflow header ─────────────────────────────
+   Keep the page title/breadcrumb and the full patient lifecycle on one
+   horizontal card at desktop widths; stack cleanly on smaller screens.
+   ─────────────────────────────────────────────────────────────────── */
+.sample-top-card {
+  padding: 10px 16px;
+  margin-bottom: 12px;
+}
+.sample-top-layout {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.72fr) minmax(0, 2.28fr);
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+}
+.sample-top-heading {
+  display: block;
+  min-width: 0;
+  padding: 0 16px 0 2px;
+  border-right: 1px solid var(--border-color);
+}
+.sample-top-heading .page-title {
+  margin: 0 0 7px;
+  font-size: 21px;
+  line-height: 1.2;
+  font-weight: 650;
+}
+.sample-top-heading .breadcrumb {
+  flex-wrap: wrap;
+  row-gap: 3px;
+}
+.sample-top-card .timeline-card {
+  min-width: 0;
+  margin: 0;
+  padding: 4px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+}
+.sample-top-context { display: none; }
+
+@media (max-width: 1180px) {
+  .sample-top-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+  .sample-top-heading {
+    padding: 0 0 8px;
+    border-right: 0;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .sample-top-card .timeline-card {
+    padding: 7px 0 2px;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+}
+@media (max-width: 560px) {
+  .sample-top-card { padding: 10px; }
+  .sample-top-heading .page-title { font-size: 19px; }
+}
