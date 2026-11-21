@@ -1,0 +1,166 @@
+<div class="page-header review-page-header">
+  <div>
+    <div class="review-title-row">
+      <h1 class="page-title">Review Order</h1>
+      <span class="lis-badge">{{ flow.selectedTests().length }} tests</span>
+    </div>
+    <p class="review-subtitle">Verify tests, specimen requirements and preparation before billing.</p>
+    <nav aria-label="Breadcrumb">
+      <ol class="breadcrumb">
+        <li><a routerLink="/dashboard/home">Home</a></li>
+        <li><a routerLink="/dashboard/test-order">Test Selection</a></li>
+        <li aria-current="page">Order Review</li>
+      </ol>
+    </nav>
+  </div>
+  <lis-workflow-stepper [steps]="workflowSteps" [activeIndex]="workflowActiveIndex" />
+</div>
+
+@if (patient) {
+  <section class="lis-card review-patient" aria-label="Patient and visit details">
+    <div class="pat-av" aria-hidden="true">{{ patientInitials() }}</div>
+    <div class="review-patient__identity">
+      <div class="review-patient__name">{{ patient.firstName }} {{ patient.lastName }}</div>
+      <div class="review-patient__meta">
+        <span><i class="ti ti-id-badge-2" aria-hidden="true"></i>{{ patient.id }}</span>
+        <span><i class="ti ti-user" aria-hidden="true"></i>{{ patient.gender | titlecase }}</span>
+        <span><i class="ti ti-calendar" aria-hidden="true"></i>{{ patient.dob | date:'dd MMM yyyy' }}</span>
+        <span><i class="ti ti-walk" aria-hidden="true"></i>{{ patient.visitType | titlecase }}</span>
+        <span><i class="ti ti-stethoscope" aria-hidden="true"></i>{{ patient.refDoctor || 'Self / Walk-in' }}</span>
+      </div>
+    </div>
+    <a routerLink="/dashboard/registration" class="lis-btn lis-btn--secondary lis-btn--sm">
+      <i class="ti ti-edit" aria-hidden="true"></i> Edit patient
+    </a>
+  </section>
+}
+
+<div class="review-grid">
+  <main class="review-main">
+    <section class="lis-card review-section" aria-labelledby="review-tests-title">
+      <div class="lis-card__header">
+        <i class="ti ti-test-pipe lis-card-icon" aria-hidden="true"></i>
+        <h2 id="review-tests-title" class="lis-card__title">Selected Tests</h2>
+        <span class="lis-badge">{{ flow.selectedTests().length }} tests</span>
+        <button type="button" class="review-text-btn" (click)="backToSelection()">
+          <i class="ti ti-pencil" aria-hidden="true"></i> Edit selection
+        </button>
+      </div>
+      <div class="review-table-wrap">
+        <table class="review-table">
+          <thead><tr><th>Test name</th><th>Department</th><th>Specimen</th><th class="align-right">TAT</th><th class="align-right">Price</th></tr></thead>
+          <tbody>
+            @for (test of flow.selectedTests(); track test.id) {
+              <tr>
+                <td><strong>{{ test.name }}</strong><small>{{ test.id }}</small></td>
+                <td>{{ test.category }}</td>
+                <td><span class="review-specimen-tag">{{ test.tubeType }}</span><small>{{ test.sampleType }}</small></td>
+                <td class="align-right">{{ test.tatHours }}h</td>
+                <td class="align-right review-price">₹{{ formatCurrency(test.price) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="review-section-footer">
+        <span>{{ flow.selectedTests().length }} tests in this order</span>
+        <button type="button" class="review-text-btn" (click)="backToSelection()">
+          <i class="ti ti-plus" aria-hidden="true"></i> Add more tests
+        </button>
+      </div>
+    </section>
+
+    <section class="lis-card review-section" aria-labelledby="specimen-title">
+      <div class="lis-card__header">
+        <i class="ti ti-test-pipe lis-card-icon" aria-hidden="true"></i>
+        <h2 id="specimen-title" class="lis-card__title">Specimen / Collection Plan</h2>
+        <span class="lis-badge">{{ specimenGroups().length }} groups</span>
+      </div>
+      <div class="specimen-grid">
+        @for (group of specimenGroups(); track group.key) {
+          <article class="specimen-group">
+            <div class="specimen-group__icon"><i class="ti ti-vial" aria-hidden="true"></i></div>
+            <div class="specimen-group__body">
+              <strong>{{ group.tubeType }}</strong>
+              <span>{{ group.sampleType }}</span>
+              <small>Tests: {{ group.testsLabel }}</small>
+            </div>
+            <span class="lis-badge">{{ group.tests.length }} {{ group.tests.length === 1 ? 'test' : 'tests' }}</span>
+          </article>
+        }
+      </div>
+      <p class="review-footnote"><i class="ti ti-info-circle" aria-hidden="true"></i> Final tube quantity and draw volume must follow the laboratory's validated collection protocol.</p>
+    </section>
+
+    <section class="lis-card review-section" aria-labelledby="prep-title">
+      <div class="lis-card__header">
+        <i class="ti ti-clipboard-check lis-card-icon" aria-hidden="true"></i>
+        <h2 id="prep-title" class="lis-card__title">Preparation &amp; Alerts</h2>
+        <span class="lis-badge">{{ preparationNotes().length }} instructions</span>
+      </div>
+      @if (preparationNotes().length) {
+        <div class="prep-list">
+          @for (note of preparationNotes(); track note.instruction) {
+            <div class="prep-item">
+              <i class="ti ti-alert-circle" aria-hidden="true"></i>
+              <div><strong>{{ note.testName }}</strong><span>{{ note.instruction }}</span></div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="review-empty"><i class="ti ti-check-circle" aria-hidden="true"></i>No special preparation instructions for the selected tests.</div>
+      }
+      @if (preparationNotes().length && patient?.fasting !== 'fasting') {
+        <div class="review-warning" role="alert"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Confirm the patient's fasting status before collection.</div>
+      }
+    </section>
+  </main>
+
+  <aside class="review-aside">
+    <section class="lis-card review-section">
+      <div class="lis-card__header">
+        <i class="ti ti-flag-3 lis-card-icon" aria-hidden="true"></i>
+        <h2 class="lis-card__title">Order Priority</h2>
+        <span class="review-required">*</span>
+      </div>
+      <div class="review-priorities" role="group" aria-label="Order priority">
+        @for (priority of priorities; track priority.id) {
+          <button type="button" class="review-priority"
+            [class.review-priority--active]="flow.priority() === priority.id"
+            [class.review-priority--stat]="priority.id === 'stat' && flow.priority() === priority.id"
+            (click)="flow.setPriority(priority.id)" [attr.aria-pressed]="flow.priority() === priority.id">
+            <i class="ti {{ priority.icon }}" aria-hidden="true"></i>
+            <span><strong>{{ priority.label }}</strong><small>{{ priority.description }}</small></span>
+          </button>
+        }
+      </div>
+      @if (flow.priority() === 'stat') {
+        <div class="review-warning" role="alert"><i class="ti ti-alert-triangle" aria-hidden="true"></i> STAT orders require immediate processing.</div>
+      }
+    </section>
+
+    <section class="lis-card review-section review-totals">
+      <div class="lis-card__header">
+        <i class="ti ti-receipt lis-card-icon" aria-hidden="true"></i>
+        <h2 class="lis-card__title">Order Summary</h2>
+      </div>
+      <div class="review-total-row"><span>Tests</span><strong>{{ flow.selectedTests().length }}</strong></div>
+      <div class="review-total-row"><span>Specimen groups</span><strong>{{ specimenGroups().length }}</strong></div>
+      <div class="review-total-row"><span>Longest estimated TAT</span><strong>{{ flow.maxTat() }}h</strong></div>
+      <div class="review-total-row"><span>Subtotal</span><strong>₹{{ formatCurrency(flow.orderTotal()) }}</strong></div>
+      <div class="review-total-row"><span>Discount</span><strong>₹{{ formatCurrency(flow.discountAmt()) }}</strong></div>
+      <div class="review-grand-total"><span>Grand Total</span><strong>₹{{ formatCurrency(flow.grandTotal()) }}</strong></div>
+    </section>
+
+    <section class="lis-card review-actions">
+      <button type="button" class="lis-btn lis-btn--primary lis-btn--full review-continue"
+        (click)="continueToBilling()" [disabled]="flow.selectedTests().length === 0">
+        <i class="ti ti-file-invoice" aria-hidden="true"></i> Confirm Order &amp; Continue to Billing
+        <i class="ti ti-arrow-right" aria-hidden="true"></i>
+      </button>
+      <button type="button" class="review-back-btn" (click)="backToSelection()">
+        <i class="ti ti-arrow-left" aria-hidden="true"></i> Back to Test Selection
+      </button>
+    </section>
+  </aside>
+</div>

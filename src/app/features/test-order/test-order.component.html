@@ -25,45 +25,29 @@
      Patient summary — the visual anchor of the page
      ════════════════════════════════════════════════ -->
 @if (patient) {
-  <div class="patient-summary lis-card" role="region" aria-label="Patient information">
-    <div class="pat-info-row">
-      <div class="pat-av" aria-hidden="true">{{ patientInitials }}</div>
-      <div class="pat-id-main">
-        <div class="pat-name-row">
-          <div class="pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
-          <span class="pill pill--routine">
-            <i class="ti ti-circle-check" aria-hidden="true"></i>Registered
-          </span>
-          <span class="pill pill--visit">
-            <i class="ti ti-calendar-event" aria-hidden="true"></i>{{ patient.visitType | titlecase }}
-          </span>
-        </div>
-        <div class="pat-detail-row">
-          <span class="pat-detail-item"><i class="ti ti-id-badge-2 pat-detail-icon" aria-hidden="true"></i><span class="lis-mono">{{ patient.id }}</span></span>
-          <span class="pat-detail-sep" aria-hidden="true">|</span>
-          <span class="pat-detail-item age-inline" [title]="patientAgeBreakdown()">
-            <i class="ti ti-cake pat-detail-icon" aria-hidden="true"></i><span class="age-inline__y">{{ ageParts().years }}y</span><span class="age-inline__sep"> · </span><span class="age-inline__m">{{ ageParts().months }}m</span><span class="age-inline__sep"> · </span><span class="age-inline__d">{{ ageParts().days }}d</span>
-          </span>
-          <span class="pat-detail-sep" aria-hidden="true">|</span>
-          <span class="pat-detail-item"><i class="ti ti-calendar-event pat-detail-icon" aria-hidden="true"></i>DOB {{ patient.dob | date:'dd MMM yyyy' }}</span>
-          <span class="pat-detail-sep" aria-hidden="true">|</span>
-          <span class="pat-detail-item"><i class="ti {{ genderIcon() }} pat-detail-icon" aria-hidden="true"></i>{{ patient.gender | titlecase }}</span>
-        </div>
-        <div class="pat-detail-row">
-          <span class="pat-detail-item"><i class="ti ti-phone pat-detail-icon" aria-hidden="true"></i>{{ patient.mobile }}</span>
-          <span class="pat-detail-sep" aria-hidden="true">|</span>
-          <span class="pat-detail-item"><i class="ti ti-stethoscope pat-detail-icon" aria-hidden="true"></i>{{ patient.refDoctor }}</span>
-          <span class="pat-detail-sep" aria-hidden="true">|</span>
-          <span class="pat-detail-item"><i class="ti ti-droplet-half-2 pat-detail-icon" aria-hidden="true"></i>{{ patient.fasting }}</span>
-          <span class="pat-detail-sep" aria-hidden="true">|</span>
-          <span class="pat-detail-item"><i class="ti ti-heartbeat pat-detail-icon" aria-hidden="true"></i>{{ patient.bloodGroup || '—' }}</span>
-        </div>
+  <section class="patient-summary lis-card" role="region" aria-label="Patient information">
+    <div class="patient-summary__avatar" aria-hidden="true">{{ patientInitials }}</div>
+    <div class="patient-summary__identity">
+      <div class="patient-summary__name-line">
+        <h2>{{ patient.firstName }} {{ patient.lastName }}</h2>
+        <span class="patient-summary__id lis-mono">{{ patient.id }}</span>
       </div>
-      <a routerLink="/dashboard/registration" class="lis-btn lis-btn--secondary lis-btn--sm" aria-label="Edit patient details">
-        <i class="ti ti-edit" aria-hidden="true"></i> Edit Patient
-      </a>
+      <div class="patient-summary__details">
+        <span><i class="ti {{ genderIcon() }}" aria-hidden="true"></i>{{ patient.gender | titlecase }}</span>
+        <span><i class="ti ti-cake" aria-hidden="true"></i>{{ ageParts().years }}y {{ ageParts().months }}m</span>
+        <span><i class="ti ti-calendar" aria-hidden="true"></i>DOB: {{ patient.dob | date:'dd MMM yyyy' }}</span>
+        <span><i class="ti ti-phone" aria-hidden="true"></i>{{ patient.mobile }}</span>
+      </div>
     </div>
-  </div>
+    <div class="patient-summary__visit">
+      <div><i class="ti ti-walk" aria-hidden="true"></i><span>{{ patient.visitType | titlecase }}</span></div>
+      <div><i class="ti ti-tools-kitchen-2" aria-hidden="true"></i><span>{{ patient.fasting || 'Fasting not set' }}</span></div>
+      <div><i class="ti ti-stethoscope" aria-hidden="true"></i><span>{{ patient.refDoctor || 'Self / Walk-in' }}</span></div>
+    </div>
+    <a routerLink="/dashboard/registration" class="lis-btn lis-btn--secondary lis-btn--sm patient-summary__edit" aria-label="Edit patient details">
+      <i class="ti ti-edit" aria-hidden="true"></i><span>Edit</span>
+    </a>
+  </section>
 }
 
 <!-- Main layout: search left, order panel right -->
@@ -240,154 +224,44 @@
             (click)="toggle(t)"
             [attr.aria-pressed]="isSelected(t.id)"
             [attr.aria-label]="t.name + ', ' + t.category + ', ₹' + t.price + (isSelected(t.id) ? ', selected' : '')">
-            <div class="test-tog"
-              [class.test-tog--on]="isSelected(t.id)"
-              aria-hidden="true">
-              @if (isSelected(t.id)) {
-                <i class="ti ti-check"></i>
-              } @else {
-                <i class="ti ti-plus"></i>
-              }
+            <div class="test-tog" [class.test-tog--on]="isSelected(t.id)" aria-hidden="true">
+              @if (isSelected(t.id)) { <i class="ti ti-check"></i> } @else { <i class="ti ti-plus"></i> }
             </div>
+            <div class="test-icon" aria-hidden="true"><i class="ti {{ categoryIcon[t.category] || 'ti-test-pipe' }}"></i></div>
             <div class="test-info">
-              <div class="test-name">{{ t.name }}</div>
+              <div class="test-title-line"><span class="test-name">{{ t.name }}</span><span class="test-code">{{ t.id }}</span></div>
+              <div class="test-description">{{ t.category }} · {{ t.sampleType }}</div>
               <div class="test-meta">
-                <span class="meta-chip">{{ t.category }}</span>
-                <span class="meta-chip"><i class="ti ti-flask-2" aria-hidden="true"></i> {{ t.tubeType }}</span>
-                <span class="meta-chip">{{ t.sampleType }}</span>
-                <span class="meta-chip meta-chip--tat"><i class="ti ti-clock" aria-hidden="true"></i> {{ t.tatHours }}h TAT</span>
-                @if (t.prep !== 'None') {
-                  <span class="meta-chip meta-chip--prep"><i class="ti ti-alert-circle" aria-hidden="true"></i> {{ t.prep }}</span>
-                }
+                <span class="meta-chip"><i class="ti ti-test-pipe" aria-hidden="true"></i> Specimen: {{ t.sampleType }}</span>
+                <span class="meta-chip"><i class="ti ti-vial" aria-hidden="true"></i> Container: {{ t.tubeType }}</span>
+                <span class="meta-chip meta-chip--tat"><i class="ti ti-clock" aria-hidden="true"></i> TAT: {{ t.tatHours }} hours</span>
+                @if (t.prep !== 'None') { <span class="meta-chip meta-chip--prep"><i class="ti ti-alert-circle" aria-hidden="true"></i> {{ t.prep }}</span> }
               </div>
             </div>
-            <div class="test-price">₹{{ t.price }}</div>
+            <div class="test-row__action">
+              <strong class="test-price">₹{{ t.price }}</strong>
+              <span class="test-action-pill" [class.test-action-pill--selected]="isSelected(t.id)">
+                <i class="ti" [class.ti-check]="isSelected(t.id)" [class.ti-plus]="!isSelected(t.id)" aria-hidden="true"></i>
+                {{ isSelected(t.id) ? 'Selected' : 'Add Test' }}
+              </span>
+            </div>
           </div>
         }
       </div>
     </div>
   </div>
 
-  <!-- ── Right: Order summary, split into sections ─── -->
-  <aside class="order-panel" aria-label="Test order summary">
+</div>
 
-    <!-- Selected tests -->
-    <div class="lis-card op-card">
-      <div class="op-hd">
-        <span><i class="ti ti-clipboard-list" aria-hidden="true"></i> Selected Tests</span>
-        <span class="lis-badge">{{ flow.selectedTests().length }}</span>
-      </div>
-
-      <div class="selected-list" role="list" aria-label="Selected tests" aria-live="polite">
-        @if (flow.selectedTests().length === 0) {
-          <div class="no-tests-hint">
-            <i class="ti ti-click" aria-hidden="true"></i>
-            Click tests on the left to add them
-          </div>
-        }
-        @for (t of flow.selectedTests(); track t.id) {
-          <div class="sel-item" role="listitem">
-            <div class="sel-item-info">
-              <div class="sel-name">{{ t.name }}</div>
-              <div class="sel-cat">{{ t.category }}</div>
-            </div>
-            <div class="sel-price">₹{{ t.price }}</div>
-            <button type="button" class="sel-del"
-              (click)="toggle(t)"
-              [attr.aria-label]="'Remove ' + t.name">
-              <i class="ti ti-trash" aria-hidden="true"></i>
-            </button>
-          </div>
-        }
-      </div>
-    </div>
-
-    <!-- Priority -->
-    <div class="lis-card op-card">
-      <div class="op-label">Priority</div>
-      <div class="prio-cards" role="group" aria-label="Order priority">
-        @for (p of priorities; track p) {
-          <button type="button" class="prio-card"
-            [class.prio-card--active]="flow.priority() === p"
-            [class.prio-card--stat]="p === 'stat'"
-            [class.prio-card--stat-active]="p === 'stat' && flow.priority() === 'stat'"
-            (click)="onPriorityClick(p)"
-            [attr.aria-pressed]="flow.priority() === p">
-            <i class="ti {{ priorityInfo[p].icon }}" aria-hidden="true"></i>
-            <span class="prio-card-label">{{ priorityInfo[p].label }}</span>
-            <span class="prio-card-desc">{{ priorityInfo[p].desc }}</span>
-          </button>
-        }
-      </div>
-      @if (flow.priority() === 'stat') {
-        <div class="stat-warn" role="alert">
-          <i class="ti ti-alert-triangle" aria-hidden="true"></i>
-          STAT — process immediately
-        </div>
-      }
-    </div>
-
-    <!-- Summary -->
-    <div class="lis-card op-card">
-      <div class="op-label">Summary</div>
-      <div class="tot-row">
-        <span>Tests</span>
-        <span>{{ flow.selectedTests().length }}</span>
-      </div>
-      <div class="tot-row">
-        <span>Est. TAT</span>
-        <span>{{ flow.maxTat() }}h</span>
-      </div>
-      <div class="tot-row">
-        <span>Subtotal</span>
-        <span>₹{{ flow.orderTotal().toLocaleString('en-IN') }}</span>
-      </div>
-      <div class="tot-row">
-        <span>Discount</span>
-        <span>{{ flow.discountAmt() > 0 ? '-₹' + flow.discountAmt().toLocaleString('en-IN') : '₹0' }}</span>
-      </div>
-      <div class="tot-row">
-        <span>Tax</span>
-        <span>₹0</span>
-      </div>
-      <div class="tot-row tot-grand" [class.tot-grand--pulse]="totalPulse()" aria-label="Grand total">
-        <span>Grand Total</span>
-        <span>₹{{ flow.grandTotal().toLocaleString('en-IN') }}</span>
-      </div>
-    </div>
-
-    <!-- Actions -->
-    <div class="lis-card op-card op-actions">
-      <button type="button" class="lis-btn lis-btn--primary lis-btn--full proceed-btn"
-        (click)="proceedToBilling(); onCtaRipple($event)"
-        [disabled]="!hasTests || saving()">
-        @if (saving()) {
-          <span class="proceed-btn-main"><i class="ti ti-loader-2 spin" aria-hidden="true"></i> Saving…</span>
-        } @else {
-          <span class="proceed-btn-main">
-            <i class="ti ti-file-invoice" aria-hidden="true"></i>
-            Save &amp; Continue to Billing
-            <i class="ti ti-arrow-right proceed-arrow" aria-hidden="true"></i>
-          </span>
-          <kbd class="kbd-hint kbd-hint--on-primary">Ctrl+Enter</kbd>
-        }
-      </button>
-      <button type="button" class="draft-btn" (click)="saveDraft()" [disabled]="savingDraft()">
-        @if (savingDraft()) {
-          <i class="ti ti-loader-2 spin" aria-hidden="true"></i> Saving draft…
-        } @else if (draftSaved()) {
-          <i class="ti ti-circle-check" aria-hidden="true"></i> Draft saved
-        } @else {
-          <i class="ti ti-device-floppy" aria-hidden="true"></i> Save as draft
-          <kbd class="kbd-hint">Ctrl+S</kbd>
-        }
-      </button>
-
-      @if (!hasTests) {
-        <div class="no-tests-msg" role="status">
-          Add at least one test to continue
-        </div>
-      }
-    </div>
-  </aside>
+<!-- Compact sticky basket: selection page stays focused on finding tests. -->
+<div class="selection-basket" role="region" aria-label="Current order basket">
+  <div class="selection-basket__info">
+    <span class="selection-basket__count">{{ flow.selectedTests().length }} tests selected</span>
+    <span class="selection-basket__amount">₹{{ flow.grandTotal().toLocaleString('en-IN') }}</span>
+    <span class="selection-basket__hint">Review specimen groups and preparation before billing</span>
+  </div>
+  <button type="button" class="lis-btn lis-btn--primary selection-basket__cta"
+    (click)="proceedToReview()" [disabled]="!hasTests">
+    Review Order <i class="ti ti-arrow-right" aria-hidden="true"></i>
+  </button>
 </div>

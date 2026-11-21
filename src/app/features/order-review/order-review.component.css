@@ -1,0 +1,68 @@
+:host { display:block; color:var(--text-primary); }
+.review-page-header { align-items:center; }
+.review-title-row { display:flex; align-items:center; gap:12px; }
+.review-subtitle { margin:5px 0 7px; color:var(--text-secondary); font-size:12px; }
+.review-patient { display:flex; align-items:center; gap:14px; padding:13px 16px; margin-bottom:14px; }
+.review-patient__identity { flex:1; min-width:0; }
+.review-patient__name { font-size:14px; font-weight:700; color:var(--text-primary); }
+.review-patient__meta { display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:6px; color:var(--text-secondary); font-size:11px; }
+.review-patient__meta span { display:inline-flex; align-items:center; gap:5px; }
+.review-patient__meta i { color:var(--lis-primary,#1D9E75); }
+.review-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(270px,330px); align-items:start; gap:14px; }
+.review-main { display:flex; flex-direction:column; gap:14px; min-width:0; }
+.review-aside { position:sticky; top:82px; display:flex; flex-direction:column; gap:14px; }
+.review-section { padding:14px; min-width:0; }
+.review-section .lis-card__header { display:flex; align-items:center; gap:9px; margin-bottom:12px; }
+.review-section .lis-card__title { flex:1; }
+.review-text-btn { display:inline-flex; align-items:center; gap:5px; border:0; background:transparent; color:var(--lis-primary,#1D9E75); font:600 11px var(--font-family); cursor:pointer; }
+.review-table-wrap { overflow-x:auto; }
+.review-table { width:100%; border-collapse:collapse; font-size:11.5px; }
+.review-table th { padding:9px 10px; text-align:left; color:var(--text-secondary); font-size:10px; text-transform:uppercase; letter-spacing:.04em; border-bottom:1px solid var(--border-color); white-space:nowrap; }
+.review-table td { padding:11px 10px; border-bottom:1px solid var(--border-color); color:var(--text-secondary); vertical-align:middle; }
+.review-table tbody tr:last-child td { border-bottom:0; }
+.review-table td strong { display:block; color:var(--text-primary); font-size:12px; font-weight:650; }
+.review-table td small { display:block; margin-top:3px; color:var(--text-secondary); font-size:10px; }
+.align-right { text-align:right!important; white-space:nowrap; }
+.review-price { color:var(--text-primary)!important; font-weight:700; }
+.review-specimen-tag { display:inline-block; padding:3px 7px; border-radius:5px; background:var(--body-bg); border:1px solid var(--border-color); color:var(--text-primary); white-space:nowrap; font-size:10px; }
+.review-section-footer { display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border-color); padding-top:10px; color:var(--text-secondary); font-size:10.5px; }
+.specimen-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+.specimen-group { display:flex; align-items:center; gap:10px; min-width:0; padding:10px; background:var(--body-bg); border:1px solid var(--border-color); border-radius:9px; }
+.specimen-group__icon { display:grid; place-items:center; width:34px; height:34px; flex-shrink:0; border-radius:8px; color:var(--lis-primary,#1D9E75); background:var(--lis-primary-xlight,rgba(29,158,117,.12)); font-size:17px; }
+.specimen-group__body { display:flex; flex:1; min-width:0; flex-direction:column; gap:3px; }
+.specimen-group__body strong { font-size:11.5px; color:var(--text-primary); }
+.specimen-group__body span,.specimen-group__body small { color:var(--text-secondary); font-size:10px; }
+.specimen-group__body small { overflow-wrap:anywhere; }
+.review-footnote { display:flex; align-items:flex-start; gap:6px; margin:11px 0 0; color:var(--text-secondary); font-size:10px; line-height:1.5; }
+.review-footnote i { color:var(--lis-primary,#1D9E75); flex-shrink:0; }
+.prep-list { display:flex; flex-direction:column; gap:8px; }
+.prep-item { display:flex; gap:9px; padding:10px; border-radius:8px; background:var(--body-bg); border:1px solid var(--border-color); }
+.prep-item>i { color:var(--lis-primary,#1D9E75); font-size:15px; }
+.prep-item div { display:flex; flex-direction:column; gap:3px; }
+.prep-item strong { color:var(--text-primary); font-size:11px; }
+.prep-item span { color:var(--text-secondary); font-size:11px; }
+.review-empty { display:flex; gap:8px; align-items:center; padding:10px; color:var(--text-secondary); font-size:11px; }
+.review-empty i { color:var(--lis-primary,#1D9E75); }
+.review-warning { display:flex; gap:7px; align-items:flex-start; margin-top:10px; padding:9px 10px; border-radius:7px; background:rgba(226,160,50,.12); color:var(--text-primary); font-size:10.5px; line-height:1.45; }
+.review-warning i { color:#D99A2B; flex-shrink:0; }
+.review-required { color:#E24B4A; }
+.review-priorities { display:flex; flex-direction:column; gap:7px; }
+.review-priority { display:flex; align-items:center; gap:10px; width:100%; padding:10px; border:1px solid var(--border-color); border-radius:8px; background:var(--body-bg); color:var(--text-secondary); text-align:left; cursor:pointer; }
+.review-priority>i { font-size:16px; color:var(--text-secondary); }
+.review-priority span { display:flex; flex-direction:column; gap:2px; }
+.review-priority strong { color:var(--text-primary); font-size:11.5px; }
+.review-priority small { color:var(--text-secondary); font-size:10px; }
+.review-priority--active { border-color:var(--lis-primary,#1D9E75); background:var(--lis-primary-xlight,rgba(29,158,117,.12)); }
+.review-priority--active>i { color:var(--lis-primary,#1D9E75); }
+.review-priority--stat.review-priority--active { border-color:#E24B4A; background:rgba(226,75,74,.1); }
+.review-totals { padding-bottom:12px; }
+.review-total-row { display:flex; justify-content:space-between; gap:12px; padding:7px 0; color:var(--text-secondary); font-size:11px; border-bottom:1px solid var(--border-color); }
+.review-total-row strong { color:var(--text-primary); font-weight:600; text-align:right; }
+.review-grand-total { display:flex; justify-content:space-between; align-items:center; gap:12px; padding-top:13px; margin-top:5px; color:var(--text-primary); font-size:13px; font-weight:700; }
+.review-grand-total strong { color:var(--lis-primary,#1D9E75); font-size:19px; }
+.review-actions { display:flex; flex-direction:column; gap:8px; padding:12px; }
+.review-continue { min-height:46px; gap:8px; }
+.review-back-btn { display:flex; justify-content:center; align-items:center; gap:6px; padding:8px; border:0; background:transparent; color:var(--text-secondary); font:600 11px var(--font-family); cursor:pointer; }
+@media(max-width:1050px) { .review-grid { grid-template-columns:minmax(0,1fr) 280px; } .specimen-grid { grid-template-columns:1fr; } }
+@media(max-width:800px) { .review-grid { grid-template-columns:1fr; } .review-aside { position:static; } .review-patient { flex-wrap:wrap; } .review-patient__identity { flex-basis:calc(100% - 60px); } }
+@media(max-width:560px) { .review-table { min-width:650px; } .review-section-footer { align-items:flex-start; gap:8px; flex-direction:column; } }
