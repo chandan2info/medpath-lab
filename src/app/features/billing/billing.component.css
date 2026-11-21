@@ -2787,3 +2787,79 @@ select.settlement-input {
     font-size: 16px;
   }
 }
+
+
+/* Final page hierarchy: patient details anchor the left column while the
+   Billing & Payment workspace starts at the same top edge on the right. */
+@media (min-width: 1101px) {
+  .bill-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(350px, 390px);
+    align-items: start;
+    gap: 14px;
+  }
+
+  .bill-main {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .bill-main > .patient-summary {
+    order: 0;
+    display: flex;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    margin: 0;
+    box-sizing: border-box;
+    align-items: center;
+  }
+
+  .bill-main > [aria-label="Ordered tests"] {
+    order: 1;
+    min-width: 0;
+  }
+
+  .bill-main > .invoice-panel {
+    order: 2;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+  }
+
+  .billing-sidebar {
+    position: sticky;
+    top: 12px;
+    align-self: start;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+  }
+}
+
+@media (max-width: 1100px) {
+  .bill-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .bill-main,
+  .billing-sidebar {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .bill-main > .patient-summary {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    box-sizing: border-box;
+  }
+
+  .billing-sidebar {
+    position: static;
+  }
+}
