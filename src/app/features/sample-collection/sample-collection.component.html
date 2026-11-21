@@ -120,7 +120,11 @@
                 <i class="ti ti-calendar-month collection-datetime-end-icon" aria-hidden="true"></i>
               </button>
               @if (datePickerOpen()) {
-                <div class="collection-datetime-popover" role="dialog" aria-label="Choose collection date and time">
+                <div class="collection-datetime-popover" role="dialog" aria-label="Choose collection date and time"
+                  [style.top.px]="datePickerPosition().top"
+                  [style.left.px]="datePickerPosition().left"
+                  [style.width.px]="datePickerPosition().width"
+                  [style.max-height.px]="datePickerPosition().maxHeight">
                   <div class="collection-datetime-popover__selected-date">
                     <i class="ti ti-calendar-event" aria-hidden="true"></i>
                     <strong>{{ draftCollectionDateTime() | date:'EEE, dd MMM yyyy' }}</strong>
