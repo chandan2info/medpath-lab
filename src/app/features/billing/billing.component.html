@@ -308,13 +308,15 @@
       </section>
 
       <section class="settlement-actions" aria-label="Billing actions">
-        <div class="settlement-priority">
-          <span>Order priority</span>
-          <span class="prio-tag" [class.prio-tag--stat]="flow.priority() === 'stat'">{{ flow.priority() | titlecase }}</span>
+        <div class="settlement-action-meta">
+          <div class="settlement-priority">
+            <span>Order priority</span>
+            <span class="prio-tag" [class.prio-tag--stat]="flow.priority() === 'stat'">{{ flow.priority() | titlecase }}</span>
+          </div>
+          <button type="button" class="lis-link receipt-preview-link" (click)="showReceipt.set(true)">
+            <i class="ti ti-eye" aria-hidden="true"></i> Preview Receipt
+          </button>
         </div>
-        <button type="button" class="lis-link receipt-preview-link" (click)="showReceipt.set(true)">
-          <i class="ti ti-eye" aria-hidden="true"></i> Preview Receipt
-        </button>
         <button type="button" class="lis-btn lis-btn--primary lis-btn--full confirm-btn"
           (click)="confirmPayment()" [disabled]="saving() || flow.selectedTests().length === 0">
           @if (saving()) { <i class="ti ti-loader-2 spin" aria-hidden="true"></i> Processing… }
