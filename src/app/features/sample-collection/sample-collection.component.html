@@ -147,7 +147,7 @@
                   <div class="collection-calendar__time">
                     <button type="button" class="collection-calendar__time-toggle"
                       [attr.aria-expanded]="timePickerExpanded()"
-                      (click)="timePickerExpanded.update(expanded => !expanded)">
+                      (click)="toggleTimePicker()">
                       <i class="ti ti-clock" aria-hidden="true"></i>
                       <span>Collection time</span>
                       <strong>{{ draftCollectionDateTime() | date:'hh:mm a' }}</strong>
