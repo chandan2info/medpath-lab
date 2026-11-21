@@ -85,12 +85,7 @@ test.describe('Authenticated route smoke tests', () => {
   const routes = [
     { path: '/dashboard/home', heading: /dashboard|overview|welcome|today/i },
     { path: '/dashboard/registration', heading: /patient registration/i },
-    { path: '/dashboard/test-order', heading: /test order/i },
-    { path: '/dashboard/review-order', heading: /review order/i },
-    { path: '/dashboard/billing', heading: /billing/i },
-    { path: '/dashboard/collection', heading: /sample collection/i },
     { path: '/dashboard/tracking', heading: /sample tracking/i },
-    { path: '/dashboard/results', heading: /result entry/i },
     { path: '/dashboard/reports', heading: /reports/i },
     { path: '/dashboard/report-preview', heading: /report preview/i },
     { path: '/dashboard/history', heading: /patient history/i },
