@@ -2791,3 +2791,47 @@
     max-width: calc(100vw - 24px);
   }
 }
+
+
+/* Final time-row sizing: compact Hour/Minute fields leave room for AM/PM. */
+.collect-panel .collection-time-picker {
+  grid-template-columns: minmax(58px, 0.72fr) minmax(58px, 0.72fr) minmax(100px, 1.1fr) !important;
+  align-items: end;
+  column-gap: 7px;
+  row-gap: 0;
+}
+.collect-panel .collection-time-picker__unit {
+  min-width: 0;
+  width: 100%;
+}
+.collect-panel .collection-time-picker__unit select {
+  width: 100%;
+  min-width: 0;
+  padding-left: 6px;
+  padding-right: 18px;
+  font-size: 11px;
+}
+.collect-panel .collection-time-picker__period {
+  width: 100%;
+  min-width: 100px;
+  height: 32px;
+  min-height: 32px;
+  align-self: end;
+  box-sizing: border-box;
+}
+.collect-panel .collection-time-picker__period button {
+  flex: 1 1 0;
+  min-width: 0;
+  padding-left: 3px;
+  padding-right: 3px;
+  white-space: nowrap;
+}
+@media (max-width: 360px) {
+  .collect-panel .collection-time-picker {
+    grid-template-columns: minmax(52px, 0.68fr) minmax(52px, 0.68fr) minmax(88px, 1fr) !important;
+    column-gap: 5px;
+  }
+  .collect-panel .collection-time-picker__period {
+    min-width: 88px;
+  }
+}
