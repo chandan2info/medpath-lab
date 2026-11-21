@@ -2359,3 +2359,89 @@
   margin: 0 !important;
   line-height: 1.25 !important;
 }
+
+
+/* Refined custom time selector: consistent with the dark MedPath calendar. */
+.collect-panel .collection-time-picker {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 8px;
+}
+.collect-panel .collection-time-picker__unit {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  color: var(--text-secondary);
+  font-size: 10px;
+}
+.collect-panel .collection-time-picker__unit select {
+  width: 100%;
+  min-width: 0;
+  height: 38px;
+  min-height: 38px;
+  padding: 0 9px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--body-bg);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 12px;
+  color-scheme: dark;
+}
+.collect-panel .collection-time-picker__unit select:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--lis-primary, #1D9E75) 55%, transparent);
+  outline-offset: 1px;
+  border-color: var(--lis-primary, #1D9E75);
+}
+.collect-panel .collection-time-picker__separator {
+  align-self: center;
+  padding-top: 15px;
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+.collect-panel .collection-time-picker__period {
+  display: flex;
+  height: 38px;
+  padding: 3px;
+  gap: 2px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--body-bg);
+}
+.collect-panel .collection-time-picker__period button {
+  min-width: 36px;
+  padding: 0 7px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.collect-panel .collection-time-picker__period button:hover {
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--lis-primary, #1D9E75) 10%, transparent);
+}
+.collect-panel .collection-time-picker__period button.is-active {
+  background: var(--lis-primary, #1D9E75);
+  color: #fff;
+}
+
+/* Patient-condition choices are plain radio + label; remove the selected tile outline. */
+.collect-panel .condition-option,
+.collect-panel .condition-option--selected {
+  border: 1px solid transparent !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.collect-panel .condition-option:hover {
+  color: var(--text-primary);
+  background: transparent !important;
+}
+.collect-panel .condition-option--selected {
+  color: var(--lis-primary, #1D9E75);
+}
