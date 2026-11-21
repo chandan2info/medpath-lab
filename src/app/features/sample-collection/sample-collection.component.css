@@ -2522,3 +2522,75 @@
   margin: 0 !important;
   line-height: 1.25 !important;
 }
+
+
+/* Compact expandable time selector; all controls share one aligned row. */
+.collect-panel .collection-calendar__time {
+  padding: 8px 10px;
+  margin: 0 0 10px;
+}
+.collect-panel .collection-calendar__time-toggle {
+  width: 100%;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+.collect-panel .collection-calendar__time-toggle > span {
+  font-size: 12px;
+  font-weight: 650;
+}
+.collect-panel .collection-calendar__time-toggle strong {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--text-secondary);
+}
+.collect-panel .collection-calendar__time-toggle i {
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+.collect-panel .collection-time-picker {
+  display: grid;
+  grid-template-columns: minmax(66px, 0.75fr) auto minmax(66px, 0.75fr) minmax(104px, 1fr);
+  align-items: end;
+  gap: 6px;
+  margin-top: 8px;
+}
+.collect-panel .collection-time-picker__unit {
+  min-width: 0;
+  gap: 3px;
+}
+.collect-panel .collection-time-picker__unit span {
+  font-size: 10px;
+}
+.collect-panel .collection-time-picker__unit select {
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+  min-height: 32px;
+  padding: 0 7px;
+}
+.collect-panel .collection-time-picker__separator {
+  align-self: end;
+  padding: 0 0 7px;
+}
+.collect-panel .collection-time-picker__period {
+  display: flex;
+  align-self: end;
+  height: 32px;
+  min-width: 0;
+  margin: 0;
+}
+.collect-panel .collection-time-picker__period button {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 32px;
+  padding: 0 7px;
+}
