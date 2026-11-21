@@ -2085,3 +2085,149 @@ select.settlement-input {
     margin: 0;
   }
 }
+
+
+/* Viewport/scroll safety pass:
+   keep billing content in normal document flow so it never slides beneath
+   the fixed application toolbar or creates overlapping sticky panels. */
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+:host *,
+:host *::before,
+:host *::after {
+  box-sizing: border-box;
+}
+
+.page-header,
+.patient-summary,
+.bill-layout {
+  position: relative;
+  z-index: auto;
+  min-width: 0;
+}
+
+.page-header {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.patient-summary {
+  margin: 0 0 12px;
+  min-width: 0;
+}
+
+.bill-layout {
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, min(36vw, 390px));
+  gap: 14px;
+  align-items: start;
+}
+
+.bill-main,
+.billing-sidebar {
+  min-width: 0;
+  width: 100%;
+}
+
+.bill-main {
+  gap: 12px;
+}
+
+.bill-main > [aria-label="Ordered tests"],
+.bill-main > .invoice-panel,
+.billing-sidebar > .settlement-card {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* No nested sticky cards: the app content area owns vertical scrolling. */
+.invoice-panel,
+.billing-sidebar {
+  position: static !important;
+  inset: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.bill-main .tests-list {
+  max-height: clamp(210px, 34vh, 340px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.invoice-panel .inv-items {
+  max-height: none;
+  overflow: visible;
+}
+
+.billing-sidebar .settlement-card {
+  height: auto;
+  max-height: none;
+  overflow: visible;
+}
+
+@media (min-width: 1101px) {
+  .bill-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(340px, min(36vw, 390px));
+  }
+
+  .billing-sidebar {
+    align-self: start;
+  }
+}
+
+@media (max-width: 1100px) {
+  .bill-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .billing-sidebar {
+    position: static !important;
+    width: 100%;
+  }
+
+  .bill-main .tests-list {
+    max-height: clamp(200px, 38vh, 360px);
+  }
+}
+
+@media (max-width: 760px) {
+  .page-header {
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .patient-summary {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 9px;
+  }
+
+  .patient-summary .patient-main {
+    flex: 1 1 calc(100% - 56px);
+    min-width: 0;
+  }
+
+  .patient-summary .patient-visit-meta {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .bill-layout {
+    gap: 10px;
+  }
+
+  .bill-main {
+    gap: 10px;
+  }
+
+  .bill-main .tests-list {
+    max-height: 300px;
+  }
+}
