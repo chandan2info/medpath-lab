@@ -123,7 +123,7 @@
                 <div class="collection-datetime-popover" role="dialog" aria-label="Choose collection date and time">
                   <div class="collection-datetime-popover__selected-date">
                     <i class="ti ti-calendar-event" aria-hidden="true"></i>
-                    <strong>{{ collectionDateTime() | date:'EEE, dd MMM yyyy' }}</strong>
+                    <strong>{{ draftCollectionDateTime() | date:'EEE, dd MMM yyyy' }}</strong>
                   </div>
                   <div class="collection-calendar">
                     <div class="collection-calendar__header">
@@ -150,7 +150,7 @@
                       (click)="timePickerExpanded.update(expanded => !expanded)">
                       <i class="ti ti-clock" aria-hidden="true"></i>
                       <span>Collection time</span>
-                      <strong>{{ collectionDateTime() | date:'hh:mm a' }}</strong>
+                      <strong>{{ draftCollectionDateTime() | date:'hh:mm a' }}</strong>
                       <i class="ti" [class.ti-chevron-down]="!timePickerExpanded()" [class.ti-chevron-up]="timePickerExpanded()" aria-hidden="true"></i>
                     </button>
                     @if (timePickerExpanded()) {
@@ -175,7 +175,7 @@
                     }
                   </div>
                   <div class="collection-datetime-popover__actions">
-                    <button type="button" class="lis-btn lis-btn--secondary" (click)="datePickerOpen.set(false)">Cancel</button>
+                    <button type="button" class="lis-btn lis-btn--secondary" (click)="cancelDatePicker()">Cancel</button>
                     <button type="button" class="lis-btn lis-btn--primary" (click)="applyDatePicker()">Apply</button>
                   </div>
                 </div>     }
