@@ -106,6 +106,7 @@ export class BillingComponent implements OnInit {
 
   confirmPayment(): void {
     if (this.discountPct() > 0 && !this.discountReason()) return;
+    if (this.outstanding() > 0 && this.payMode() !== 'credit' && this.outstanding() <= 0) return;
     this.saving.set(true);
     setTimeout(() => {
       this.flow.setDiscount(this.discountPct());
