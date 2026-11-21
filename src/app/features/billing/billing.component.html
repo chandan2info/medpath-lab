@@ -196,7 +196,19 @@
     <div class="settlement-grid">
       <section class="settlement-section discount-section" aria-label="Discounts and adjustments">
         <div class="settlement-section-title"><span class="discount-title-label"><i class="ti ti-tag" aria-hidden="true"></i> Discounts</span><span class="settlement-policy-note"><i class="ti ti-shield-check" aria-hidden="true"></i> Discounts follow lab policy</span></div>
-        <div class="discount-input-grid">
+        <div class="discount-input-grid discount-input-grid--paired">
+          <div class="lis-field discount-reason-field">
+            <label for="discountReason">Reason for discount <span class="required-mark">*</span></label>
+            <select id="discountReason" class="settlement-input" [value]="discountReason()" (change)="setDiscountReason($event)">
+              <option value="">Select a reason</option>
+              <option value="Promotional offer">Promotional offer</option>
+              <option value="Staff discount">Staff discount</option>
+              <option value="Senior citizen">Senior citizen</option>
+              <option value="Referral discount">Referral discount</option>
+              <option value="Special approval">Special approval</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
           <div class="lis-field">
             <label for="discountType">Discount type</label>
             <select id="discountType" class="settlement-input" [value]="discountType()" (change)="setDiscountType($event)">
@@ -216,23 +228,9 @@
               <span class="settlement-number-suffix">{{ discountType() === 'percentage' ? '%' : '₹' }}</span>
             </div>
           </div>
-          <div class="discount-calculation-column">
-            <div class="lis-field">
-              <label>Calculated discount</label>
-              <div class="settlement-value"><span>₹</span><strong>{{ discAmt().toLocaleString('en-IN', { minimumFractionDigits: 2 }) }}</strong></div>
-            </div>
-            <div class="lis-field discount-reason-field">
-            <label for="discountReason">Reason for discount <span class="required-mark">*</span></label>
-            <select id="discountReason" class="settlement-input" [value]="discountReason()" (change)="setDiscountReason($event)">
-              <option value="">Select a reason</option>
-              <option value="Promotional offer">Promotional offer</option>
-              <option value="Staff discount">Staff discount</option>
-              <option value="Senior citizen">Senior citizen</option>
-              <option value="Referral discount">Referral discount</option>
-              <option value="Special approval">Special approval</option>
-              <option value="Other">Other</option>
-            </select>
-            </div>
+          <div class="lis-field calculated-discount-field">
+            <label>Calculated discount</label>
+            <div class="settlement-value"><span>₹</span><strong>{{ discAmt().toLocaleString('en-IN', { minimumFractionDigits: 2 }) }}</strong></div>
           </div>
         </div>
         @if (discountPct() > 0 && !discountReason()) {
