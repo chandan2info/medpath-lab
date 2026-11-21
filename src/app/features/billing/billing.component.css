@@ -2651,3 +2651,139 @@ select.settlement-input {
     line-height: 1.35;
   }
 }
+
+
+/* Advance section: compact, single-column payment entry with a clear
+   secondary balance row. This overrides earlier experimental layouts. */
+.billing-sidebar .advance-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.billing-sidebar .advance-section .settlement-section-title {
+  margin-bottom: 0;
+}
+
+.billing-sidebar .advance-entry-column,
+.billing-sidebar .advance-entry-column .lis-field {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 7px !important;
+  width: 100%;
+  min-width: 0;
+}
+
+.billing-sidebar .advance-entry-column .lis-field > label {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.billing-sidebar .advance-entry-column .settlement-currency {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  box-sizing: border-box;
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  background: var(--body-bg);
+  overflow: hidden;
+}
+
+.billing-sidebar .advance-entry-column .settlement-currency:focus-within {
+  border-color: var(--lis-primary, #1D9E75);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--lis-primary, #1D9E75) 16%, transparent);
+}
+
+.billing-sidebar .advance-entry-column .currency-prefix {
+  flex: 0 0 auto;
+  padding: 0 0 0 12px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.billing-sidebar .advance-entry-column .settlement-currency input {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  height: 40px;
+  padding: 0 12px 0 8px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.billing-sidebar .advance-entry-column .field-hint {
+  display: flex !important;
+  align-items: center;
+  gap: 5px;
+  margin: 0 !important;
+  max-width: none !important;
+  color: var(--text-secondary);
+  font-size: 10px !important;
+  line-height: 1.35 !important;
+}
+
+.billing-sidebar .advance-entry-column .field-hint i {
+  flex: 0 0 auto;
+  color: var(--lis-primary, #1D9E75);
+  font-size: 12px;
+}
+
+.billing-sidebar .advance-impact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--lis-primary, #1D9E75) 24%, var(--border-color));
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--lis-primary, #1D9E75) 8%, var(--body-bg));
+}
+
+.billing-sidebar .advance-impact > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.billing-sidebar .advance-impact > span i {
+  color: var(--lis-primary, #1D9E75);
+  font-size: 14px;
+}
+
+.billing-sidebar .advance-impact > strong {
+  color: var(--text-primary);
+  font-size: 17px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 760px) {
+  .billing-sidebar .advance-section {
+    gap: 10px;
+  }
+
+  .billing-sidebar .advance-impact {
+    min-height: 44px;
+    padding: 9px 10px;
+  }
+
+  .billing-sidebar .advance-impact > strong {
+    font-size: 16px;
+  }
+}
