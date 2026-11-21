@@ -128,7 +128,10 @@
   <aside class="invoice-panel lis-card" aria-label="Invoice summary">
     <div class="inv-hd">
       <div class="inv-hd-row">
-        <div class="inv-title">Invoice Summary</div>
+        <div class="inv-heading-group">
+          <div class="inv-title">Invoice Summary</div>
+          <div class="inv-meta lis-mono">{{ invoiceId }}</div>
+        </div>
         <span class="pay-status-badge" [class.pay-status-badge--paid]="paymentStatus() === 'paid'"
           [class.pay-status-badge--partial]="paymentStatus() === 'partial'">
           <i class="ti ti-point-filled" aria-hidden="true"></i>
@@ -139,7 +142,6 @@
           }
         </span>
       </div>
-      <div class="inv-meta lis-mono">{{ invoiceId }}</div>
     </div>
 
     <!-- Financial summary only; test names are already shown in the table. -->
