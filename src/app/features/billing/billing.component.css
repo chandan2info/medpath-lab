@@ -1509,3 +1509,145 @@ select.settlement-input {
   .discount-reason-field { grid-column: auto; }
   .invoice-payment-progress__labels { flex-wrap: wrap; }
 }
+
+
+/* Billing page layout: tests and invoice on the left, payment workspace on the right. */
+@media (min-width: 1051px) {
+  .bill-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(330px, 380px);
+    align-items: start;
+    gap: 14px;
+  }
+  .bill-main {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .bill-main > .lis-card {
+    height: auto;
+    min-width: 0;
+  }
+  .bill-main > .lis-card[aria-label="Ordered tests"] {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .bill-main .tests-list {
+    max-height: min(390px, 42dvh);
+    overflow-y: auto;
+  }
+  .invoice-panel {
+    min-width: 0;
+    display: block;
+    align-self: stretch;
+  }
+  .invoice-panel .inv-totals {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px 16px 16px;
+  }
+  .invoice-panel .tot-row {
+    padding: 7px 0;
+  }
+  .invoice-panel .tot-grand {
+    margin-top: 5px;
+    padding: 12px;
+  }
+  .billing-sidebar {
+    min-width: 0;
+    align-self: start;
+    position: sticky;
+    top: 12px;
+  }
+  .billing-sidebar .settlement-card {
+    height: auto;
+    min-width: 0;
+  }
+  .billing-sidebar .settlement-header {
+    align-items: flex-start;
+    padding: 14px 15px;
+  }
+  .billing-sidebar .settlement-heading-copy p {
+    line-height: 1.4;
+  }
+  .billing-sidebar .settlement-policy-note {
+    margin: 8px 0 0;
+    white-space: normal;
+  }
+  .billing-sidebar .settlement-grid {
+    display: flex;
+    flex-direction: column;
+  }
+  .billing-sidebar .settlement-section,
+  .billing-sidebar .settlement-actions {
+    min-width: 0;
+    padding: 13px 15px;
+    border-left: 0;
+    border-top: 1px solid var(--border-color);
+  }
+  .billing-sidebar .settlement-section:first-child {
+    border-top: 0;
+  }
+  .billing-sidebar .discount-input-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px;
+  }
+  .billing-sidebar .discount-reason-field {
+    grid-column: 1 / -1;
+  }
+  .billing-sidebar .pay-modes {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 7px;
+  }
+  .billing-sidebar .pay-mode-btn {
+    min-width: 0;
+    min-height: 58px;
+    padding: 8px 4px;
+  }
+  .billing-sidebar .settlement-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .billing-sidebar .settlement-actions .receipt-preview-link {
+    align-self: flex-end;
+  }
+  .billing-sidebar .settlement-secondary-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 1050px) {
+  .bill-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .bill-main {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .billing-sidebar {
+    min-width: 0;
+    position: static;
+  }
+  .billing-sidebar .settlement-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .billing-sidebar .settlement-actions {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 700px) {
+  .billing-sidebar .settlement-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .billing-sidebar .discount-input-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .billing-sidebar .discount-reason-field {
+    grid-column: auto;
+  }
+}
