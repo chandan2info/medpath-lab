@@ -397,3 +397,236 @@
     height: 34px;
   }
 }
+
+
+/* ── Workflow header, patient identity and specimen workstation ── */
+.sample-top-card {
+  margin-bottom: 12px;
+  padding: 10px 16px 8px;
+  overflow: hidden;
+}
+.sample-top-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 1px 2px 8px;
+}
+.sample-top-heading .page-title {
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 650;
+  margin: 0 0 4px;
+}
+.sample-top-context {
+  color: var(--text-secondary);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.sample-top-card .timeline-card {
+  margin: 0;
+  padding: 8px 8px 4px;
+  border: 0;
+  border-top: 1px solid var(--border-color);
+  border-radius: 0;
+  background: transparent;
+  overflow: hidden;
+}
+
+.patient-summary {
+  padding: 0;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.patient-summary .pat-info-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 82px;
+  padding: 12px 16px;
+}
+.patient-summary .pat-id-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.patient-summary .pat-name-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+.patient-summary .pat-detail-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  column-gap: 9px;
+  row-gap: 5px;
+  min-width: 0;
+}
+.patient-summary .pat-detail-item {
+  min-width: 0;
+  white-space: nowrap;
+}
+.patient-summary .pat-detail-sep {
+  opacity: .35;
+}
+.patient-summary .status-chip {
+  padding: 4px 9px;
+  font-size: 11px;
+}
+
+.cp-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(310px, 350px);
+  gap: 12px;
+  margin-bottom: 12px;
+  align-items: stretch;
+}
+.specimen-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: clamp(330px, calc(100dvh - 455px), 560px);
+  padding-bottom: 0;
+}
+.specimen-panel__header {
+  flex: 0 0 auto;
+}
+.tube-cards {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding: 10px;
+}
+.tube-card2 {
+  flex: 0 0 auto;
+}
+.collect-panel {
+  min-height: 0;
+  height: clamp(330px, calc(100dvh - 455px), 560px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.collection-field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px 10px;
+}
+.collection-field--wide {
+  grid-column: 1 / -1;
+}
+.cp-form .lis-field {
+  min-width: 0;
+}
+.cp-form .lis-field label {
+  display: block;
+  margin-bottom: 4px;
+}
+.cp-form .lis-field input,
+.cp-form .lis-field select {
+  width: 100%;
+  min-width: 0;
+  min-height: 38px;
+  box-sizing: border-box;
+}
+.cp-form .lis-field small {
+  display: block;
+  margin-top: 3px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  line-height: 1.3;
+}
+.cp-form .lis-field textarea {
+  width: 100%;
+  min-height: 58px;
+  box-sizing: border-box;
+}
+.required-mark {
+  color: #E24B4A;
+}
+.cp-form .collect-btn {
+  min-height: 40px;
+}
+
+.checklist-card {
+  margin-bottom: 0;
+}
+.checklist-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  padding: 8px 12px 10px;
+}
+.checklist-item {
+  min-width: 0;
+  min-height: 42px;
+  padding: 7px 8px;
+  gap: 7px;
+}
+.checklist-label {
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+@media (max-width: 1100px) {
+  .cp-layout {
+    grid-template-columns: minmax(0, 1fr) 310px;
+  }
+  .specimen-panel,
+  .collect-panel {
+    height: clamp(340px, calc(100dvh - 430px), 520px);
+  }
+  .checklist-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 820px) {
+  .cp-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .specimen-panel {
+    height: auto;
+    max-height: 480px;
+    min-height: 280px;
+  }
+  .collect-panel {
+    height: auto;
+    overflow: visible;
+  }
+  .checklist-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 560px) {
+  .sample-top-card {
+    padding: 10px;
+  }
+  .sample-top-heading {
+    align-items: flex-start;
+  }
+  .sample-top-context {
+    display: none;
+  }
+  .patient-summary .pat-info-row {
+    align-items: flex-start;
+    padding: 11px;
+  }
+  .patient-summary .pat-detail-row {
+    column-gap: 6px;
+  }
+  .patient-summary .pat-detail-sep {
+    display: none;
+  }
+  .collection-field-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .collection-field--wide {
+    grid-column: auto;
+  }
+  .checklist-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
