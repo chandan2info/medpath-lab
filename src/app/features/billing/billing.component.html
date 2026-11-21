@@ -245,8 +245,8 @@
             <span class="currency-prefix">₹</span>
             <input id="advance" type="text" inputmode="numeric" pattern="[0-9]*"
               [value]="advance()"
-              (keydown)="allowNumericKeysOnly($event)"
-              (input)="advance.set(sanitizeNumericInput($event))"
+              (keydown)="allowDecimalKeysOnly($event)"
+              (input)="advance.set(sanitizeDecimalInput($event))"
               placeholder="0" />
           </div>
           <span class="field-hint">Deducted from the payable balance.</span>
