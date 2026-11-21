@@ -576,7 +576,7 @@
    unused space below the billing bar even when the host had a viewport min-height. */
 @media (min-width: 761px) {
   :host {
-    height: calc(100dvh - 150px) !important;
+    height: calc(100dvh - 75px) !important;
     min-height: 0 !important;
     max-height: none !important;
     display: flex !important;
