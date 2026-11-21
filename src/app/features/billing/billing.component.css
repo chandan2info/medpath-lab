@@ -2326,3 +2326,128 @@ select.settlement-input {
     min-width: 0;
   }
 }
+
+
+/* Billing polish: give the heading and policy chip separate breathing room,
+   make the calculated discount read as output, and keep advance guidance
+   visually attached to its input. */
+@media (min-width: 761px) {
+  .billing-sidebar .settlement-header {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr);
+    align-items: center;
+    column-gap: 10px;
+    row-gap: 8px;
+  }
+
+  .billing-sidebar .settlement-heading-copy {
+    min-width: 0;
+  }
+
+  .billing-sidebar .settlement-heading-copy h2 {
+    margin: 0;
+    line-height: 1.3;
+  }
+
+  .billing-sidebar .settlement-heading-copy p {
+    max-width: none;
+    margin: 4px 0 0;
+    line-height: 1.4;
+  }
+
+  .billing-sidebar .settlement-policy-note {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: start;
+    margin: 0;
+    white-space: normal;
+    max-width: 100%;
+  }
+
+  .billing-sidebar .discount-calculation-column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+
+  .billing-sidebar .discount-calculation-column .settlement-value {
+    width: 100%;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 7px;
+    padding: 0 11px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--body-bg);
+    color: var(--text-primary);
+  }
+
+  .billing-sidebar .discount-calculation-column .settlement-value strong {
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .billing-sidebar .advance-entry-column,
+  .billing-sidebar .advance-entry-column .lis-field {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .billing-sidebar .advance-entry-column .field-hint {
+    display: block;
+    margin: 0;
+    line-height: 1.4;
+  }
+}
+
+@media (max-width: 760px) {
+  .billing-sidebar .settlement-header {
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px 9px;
+  }
+
+  .billing-sidebar .settlement-heading-copy {
+    min-width: 0;
+  }
+
+  .billing-sidebar .settlement-policy-note {
+    grid-column: 2;
+    justify-self: start;
+    max-width: 100%;
+    margin: 0;
+    white-space: normal;
+  }
+
+  .billing-sidebar .discount-calculation-column {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    min-width: 0;
+  }
+
+  .billing-sidebar .advance-entry-column,
+  .billing-sidebar .advance-entry-column .lis-field {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .billing-sidebar .advance-entry-column .field-hint {
+    margin: 0;
+    line-height: 1.4;
+  }
+}
