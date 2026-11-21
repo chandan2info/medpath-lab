@@ -85,7 +85,6 @@ const TIMELINE_STEPS: WorkflowStep[] = [
 export class SampleCollectionComponent {
   protected readonly flow          = inject(PatientFlowService);
   protected readonly barcodeWidths = [2,1,3,1,2,1,1,2,3,1,2,1,2,3,1];
-  protected readonly now           = new Date();
   protected readonly checklistItems = CHECKLIST_ITEMS;
   protected readonly timelineSteps  = TIMELINE_STEPS;
 
@@ -156,7 +155,7 @@ export class SampleCollectionComponent {
   }
 
   markCollected(): void {
-    const now = new Date();
+    if (!this.collectionDateTime()) return;
     this.collectedAt.set(
       new Date(this.collectionDateTime()).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
     );
