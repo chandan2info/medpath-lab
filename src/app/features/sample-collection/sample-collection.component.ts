@@ -95,7 +95,22 @@ export class SampleCollectionComponent {
   datePickerOpen = signal(false);
   collectionDatePart = signal(this.toDateTimeLocal(new Date()).slice(0, 10));
   collectionTimePart = signal(this.toDateTimeLocal(new Date()).slice(11, 16));
-  readonly todayDate = this.toDateTimeLocal(new Date()).slice(0, 10);
+  calendarMonth = signal(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  readonly calendarWeekdays = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+  calendarMonthLabel = computed(() => this.calendarMonth().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }));
+  calendarDays = computed(() => {
+    const month = this.calendarMonth();
+    const firstDay = new Date(month.getFullYear(), month.getMonth(), 1).getDay();
+    const count = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+    const today = this.toDateTimeLocal(new Date()).slice(0, 10);
+    return [
+      ...Array.from({ length: firstDay }, () => null),
+      ...Array.from({ length: count }, (_, index) => {
+        const date = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}-${String(index + 1).padStart(2, '0')}`;
+        return { day: index + 1, date, isToday: date === today, isFuture: date > today };
+      })
+    ];
+  });
   collectionSite = signal('');
   patientCondition = signal('Not recorded');
   protected readonly patientConditionOptions = [
@@ -161,14 +176,30 @@ export class SampleCollectionComponent {
     this.datePickerOpen.update(open => !open);
   }
 
+  changeCalendarMonth(offset: number): void {
+    const current = this.calendarMonth();
+    const next = new Date(current.getFullYear(), current.getMonth() + offset, 1);
+    const today = new Date();
+    if (next.getTime() > new Date(today.getFullYear(), today.getMonth(), 1).getTime()) return;
+    this.calendarMonth.set(next);
+  }
+
   updateCollectionDate(value: string): void {
     this.collectionDatePart.set(value);
+    const parsed = new Date(`${value}T00:00:00`);
+    if (!Number.isNaN(parsed.getTime())) this.calendarMonth.set(new Date(parsed.getFullYear(), parsed.getMonth(), 1));
     this.syncCollectionDateTime();
   }
 
   updateCollectionTime(value: string): void {
-    this.collectionTimePart.set(value);
+    this.collectionTimePart.set(value.replace(/[^0-9:]/g, '').slice(0, 5));
     this.syncCollectionDateTime();
+  }
+
+  applyDatePicker(): void {
+    if (!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(this.collectionTimePart())) return;
+    this.syncCollectionDateTime();
+    this.datePickerOpen.set(false);
   }
 
   private syncCollectionDateTime(): void {
