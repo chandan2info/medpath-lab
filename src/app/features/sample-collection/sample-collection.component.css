@@ -776,3 +776,171 @@
   .sample-top-card { padding: 10px; }
   .sample-top-heading .page-title { font-size: 19px; }
 }
+
+
+/* ── Collection Details: match the right-side reference panel ─────────
+   Fixed, compact form hierarchy: date/time; collector + specimen type;
+   site; patient condition; notes; then collection actions.
+   The panel aligns with the specimen list and only its form scrolls
+   when the available viewport is genuinely too short.
+   ─────────────────────────────────────────────────────────────────── */
+.cp-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 370px);
+  gap: 12px;
+  align-items: stretch;
+}
+
+.collect-panel {
+  display: flex;
+  flex-direction: column;
+  height: clamp(390px, calc(100dvh - 420px), 560px);
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.collect-panel > .lis-card__header {
+  display: flex;
+  align-items: center;
+  flex: 0 0 46px;
+  min-height: 46px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.collect-panel > .lis-card__header .lis-card__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.collect-panel .cp-form {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  padding: 12px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.collect-panel .collection-field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 10px;
+}
+
+.collect-panel .collection-field--wide {
+  grid-column: 1 / -1;
+}
+
+.collect-panel .lis-field {
+  min-width: 0;
+  margin: 0;
+}
+
+.collect-panel .lis-field label {
+  display: block;
+  margin: 0 0 5px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.collect-panel .lis-field input,
+.collect-panel .lis-field select {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: 38px;
+  min-height: 38px;
+  padding: 0 10px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.collect-panel .lis-field input[readonly] {
+  color: var(--text-primary);
+  opacity: 1;
+  cursor: default;
+  background: var(--body-bg);
+}
+
+.collect-panel .lis-field small {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  line-height: 1.25;
+}
+
+.collect-panel .lis-field textarea {
+  display: block;
+  width: 100%;
+  min-height: 58px;
+  max-height: 76px;
+  padding: 9px 10px;
+  box-sizing: border-box;
+  resize: vertical;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.collect-panel .cp-form > .collect-btn {
+  flex: 0 0 auto;
+  width: 100%;
+  min-height: 40px;
+  margin: 0;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.collect-panel .mark-collected-btn {
+  min-height: 42px;
+  height: 42px;
+  margin-top: auto !important;
+}
+
+.collect-panel .print-btn {
+  min-height: 38px;
+}
+
+.collect-panel .collected-confirm {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 1100px) {
+  .cp-layout {
+    grid-template-columns: minmax(0, 1fr) 340px;
+  }
+}
+
+@media (max-width: 820px) {
+  .cp-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .collect-panel {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+  .collect-panel .cp-form {
+    overflow: visible;
+  }
+}
+
+@media (max-width: 560px) {
+  .collect-panel .collection-field-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .collect-panel .collection-field--wide {
+    grid-column: auto;
+  }
+}
