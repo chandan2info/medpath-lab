@@ -1960,3 +1960,128 @@ select.settlement-input {
     margin-left: 0;
   }
 }
+
+
+/* Final precision pass: align the sidebar controls and action hierarchy. */
+@media (min-width: 1101px) {
+  .billing-sidebar .discount-input-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 10px;
+    row-gap: 9px;
+    align-items: end;
+  }
+
+  .billing-sidebar .discount-input-grid > .lis-field:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+
+  .billing-sidebar .discount-input-grid > .discount-reason-field {
+    grid-column: 1 / -1;
+  }
+
+  .billing-sidebar .discount-input-grid .settlement-value {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 7px;
+    padding: 0 11px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--body-bg);
+  }
+
+  .billing-sidebar .discount-input-grid .settlement-value strong {
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .billing-sidebar .discount-input-grid .settlement-input,
+  .billing-sidebar .discount-input-grid select,
+  .billing-sidebar .discount-input-grid .settlement-number-field,
+  .billing-sidebar .advance-section .settlement-currency,
+  .billing-sidebar .payment-section .settlement-currency {
+    height: 38px;
+    min-height: 38px;
+  }
+
+  .billing-sidebar .settlement-number-field {
+    display: flex;
+    align-items: stretch;
+    overflow: hidden;
+  }
+
+  .billing-sidebar .settlement-number-field input {
+    flex: 1 1 auto;
+    width: 1%;
+    min-width: 0;
+    height: 100%;
+    box-sizing: border-box;
+  }
+
+  .billing-sidebar .settlement-number-suffix {
+    flex: 0 0 34px;
+    display: grid;
+    place-items: center;
+    min-width: 34px;
+  }
+
+  .billing-sidebar .settlement-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    line-height: 1.25;
+  }
+
+  .billing-sidebar .advance-impact {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 40px;
+    box-sizing: border-box;
+  }
+
+  .billing-sidebar .settlement-action-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .billing-sidebar .settlement-priority {
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: flex-start;
+  }
+
+  .billing-sidebar .settlement-actions .receipt-preview-link {
+    flex: 0 0 auto;
+    align-self: auto;
+    margin: 0;
+    min-height: 28px;
+    white-space: nowrap;
+  }
+
+  .billing-sidebar .settlement-actions .confirm-btn {
+    min-height: 42px;
+    border-radius: 8px;
+  }
+
+  .billing-sidebar .settlement-secondary-actions .lis-btn {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+@media (max-width: 1100px) {
+  .billing-sidebar .settlement-action-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .billing-sidebar .settlement-actions .receipt-preview-link {
+    margin: 0;
+  }
+}
