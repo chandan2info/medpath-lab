@@ -630,3 +630,85 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+
+/* ── Screenshot review fixes: distribute patient details and contain form ── */
+.patient-summary .pat-info-row {
+  align-items: center;
+  gap: 16px;
+}
+.patient-summary .pat-id-main {
+  width: 100%;
+  flex: 1 1 0%;
+}
+.patient-summary .pat-name-row {
+  min-height: 26px;
+  margin-bottom: 7px;
+}
+.patient-summary .pat-detail-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: center;
+  column-gap: 14px;
+  row-gap: 5px;
+  width: 100%;
+}
+.patient-summary .pat-detail-item {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.patient-summary .pat-detail-sep {
+  display: none;
+}
+
+.collect-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.collect-panel > .lis-card__header {
+  flex: 0 0 auto;
+}
+.collect-panel .cp-form {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding: 0 12px 12px;
+}
+.collect-panel .collection-field-grid {
+  gap: 8px 10px;
+}
+.collect-panel .lis-field textarea {
+  min-height: 54px;
+  max-height: 90px;
+  resize: vertical;
+}
+.collect-panel .collect-btn {
+  width: 100%;
+}
+.collect-panel .cp-form > .collect-btn:first-of-type {
+  margin-top: 2px;
+}
+@media (max-width: 820px) {
+  .patient-summary .pat-detail-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .collect-panel {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+  .collect-panel .cp-form {
+    overflow: visible;
+  }
+}
+@media (max-width: 560px) {
+  .patient-summary .pat-detail-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
