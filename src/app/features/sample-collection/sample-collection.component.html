@@ -3,8 +3,8 @@
      Single-patient task screen, entered from Billing.
      ═══════════════════════════════════════════════════════════ -->
 
-<div class="sample-page-top">
-  <div class="page-header">
+<section class="sample-top-card lis-card" aria-label="Sample collection workflow">
+  <div class="sample-top-heading">
     <div>
       <h1 class="page-title">Sample Collection</h1>
       <nav aria-label="Breadcrumb">
@@ -15,11 +15,12 @@
         </ol>
       </nav>
     </div>
+    <span class="sample-top-context">Patient workflow</span>
   </div>
   <div class="timeline-card">
     <lis-workflow-stepper [steps]="timelineSteps" [activeIndex]="timelineActiveIndex()" [ariaLabel]="'Sample lifecycle progress'" />
   </div>
-</div>
+</section>
 
 <!-- Process timeline — the full pipeline, not just the pre-collection steps,
      so the technician always knows where this sample sits in the journey.
@@ -30,7 +31,7 @@
   <!-- ════════════════════════════════════════════════
        Patient summary — identity + status dominate
        ════════════════════════════════════════════════ -->
-  <div class="patient-summary lis-card" role="region" aria-label="Current patient sample collection">
+  <section class="patient-summary lis-card" role="region" aria-label="Current patient sample collection">
     <div class="pat-info-row">
       <div class="ps-av-wrap" [class.ps-av-wrap--done]="collected()">
         <div class="pat-av" aria-hidden="true">{{ patientInitials }}</div>
@@ -76,7 +77,7 @@
       </div>
     </div>
 
-  </div>
+  </section>
 
   <!-- ════════════════════════════════════════════════
        Sample cards + Collection panel
@@ -135,22 +136,46 @@
       </div>
 
       <div class="cp-form">
-        <div class="lis-field">
-          <label>Collector</label>
-          <input value="Lab Technician" readonly />
-        </div>
-        <div class="lis-field">
-          <label>Collection time</label>
-          <input [value]="collected() ? collectedAt() : (now | date:'hh:mm a')" readonly />
-        </div>
-        <div class="lis-field">
-          <label>Sample type</label>
-          <input value="Venous blood" readonly />
-        </div>
-        <div class="lis-field">
-          <label>Notes</label>
-          <textarea placeholder="e.g. difficult vein, hemolysis risk, special handling…"
-            [value]="notes()" (input)="notes.set($any($event.target).value)"></textarea>
+        <div class="collection-field-grid">
+          <div class="lis-field collection-field--wide">
+            <label for="collection-date-time">Collection date &amp; time <span class="required-mark">*</span></label>
+            <input id="collection-date-time" type="datetime-local" [value]="collectionDateTime()"
+              (input)="collectionDateTime.set($any($event.target).value)" [disabled]="collected()" />
+          </div>
+          <div class="lis-field">
+            <label for="collection-collector">Collector</label>
+            <input id="collection-collector" [value]="collectorName" readonly />
+            <small>Signed-in operator</small>
+          </div>
+          <div class="lis-field">
+            <label for="collection-sample-type">Specimen type</label>
+            <input id="collection-sample-type" [value]="sampleType()" readonly />
+            <small>Derived from the ordered tests and required tubes</small>
+          </div>
+          <div class="lis-field collection-field--wide">
+            <label for="collection-site">Collection site</label>
+            <select id="collection-site" [value]="collectionSite()" (change)="collectionSite.set($any($event.target).value)" [disabled]="collected()">
+              <option value="">Select collection site</option>
+              <option value="Phlebotomy room">Phlebotomy room</option>
+              <option value="Ward / bedside">Ward / bedside</option>
+              <option value="Home collection">Home collection</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="lis-field collection-field--wide">
+            <label for="collection-condition">Patient condition</label>
+            <select id="collection-condition" [value]="patientCondition()" (change)="patientCondition.set($any($event.target).value)" [disabled]="collected()">
+              <option value="Not recorded">Not recorded</option>
+              <option value="Fasting">Fasting</option>
+              <option value="Non-fasting">Non-fasting</option>
+              <option value="Post-meal">Post-meal</option>
+            </select>
+          </div>
+          <div class="lis-field collection-field--wide">
+            <label for="collection-notes">Collection notes</label>
+            <textarea id="collection-notes" placeholder="e.g. difficult vein, hemolysis risk, special handling…"
+              [value]="notes()" (input)="notes.set($any($event.target).value)" [disabled]="collected()"></textarea>
+          </div>
         </div>
 
         @if (!collected()) {
