@@ -265,6 +265,7 @@
               [class.pay-mode-btn--active]="payMode() === m.id"
               [class.pay-mode-btn--credit]="m.id === 'credit' && payMode() === 'credit'"
               (click)="setPayMode(m.id)"
+              (keydown)="onPayModeKeydown($event, m.id)"
               [attr.aria-checked]="payMode() === m.id"
               [attr.tabindex]="payMode() === m.id ? 0 : -1">
               <i class="ti ti-{{ m.icon }}" aria-hidden="true"></i>
