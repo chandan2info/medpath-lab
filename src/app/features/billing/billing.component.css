@@ -1191,3 +1191,160 @@
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 }
+
+
+/* ── Billing redesign: financial summary + four-step settlement flow ── */
+.bill-layout {
+  grid-template-columns: minmax(0, 1.65fr) minmax(300px, .85fr);
+  gap: 14px;
+  align-items: stretch;
+}
+.bill-main { min-width: 0; }
+.bill-main > .lis-card { min-width: 0; height: 100%; }
+.tests-list {
+  max-height: 390px;
+  overflow-y: auto;
+}
+.invoice-panel {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+}
+.invoice-panel .inv-hd { flex: none; }
+.invoice-panel .inv-totals {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 16px 18px;
+}
+.invoice-panel .tot-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  font-size: 12px;
+}
+.invoice-panel .tot-grand {
+  margin-top: 8px;
+  padding: 14px 12px;
+  border: 1px solid color-mix(in srgb, var(--lis-primary, #1d9e75) 35%, var(--border-color));
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--lis-primary, #1d9e75) 10%, var(--body-bg));
+  font-size: 14px;
+  font-weight: 700;
+}
+.invoice-panel .tot-grand-amt { font-size: 21px; font-weight: 800; }
+.invoice-panel .tot-outstanding {
+  color: var(--lis-primary, #1d9e75);
+  font-weight: 700;
+}
+.settlement-header {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+.settlement-heading-copy { min-width: 0; }
+.settlement-policy-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  padding: 6px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  white-space: nowrap;
+}
+.settlement-policy-note i { color: var(--lis-primary, #1d9e75); font-size: 13px; }
+.settlement-grid {
+  grid-template-columns: minmax(0, 1.12fr) minmax(170px, .72fr) minmax(0, 1.12fr) minmax(220px, .9fr);
+}
+.settlement-section { padding: 14px 14px 16px; }
+.settlement-section-title { margin-bottom: 12px; }
+.discount-input-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 11px 9px;
+}
+.discount-reason-field { grid-column: 1 / -1; }
+.discount-rate-field .settlement-stepper { position: relative; }
+.stepper-suffix {
+  flex: 0 0 30px;
+  display: grid;
+  place-items: center;
+  align-self: stretch;
+  border-left: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+.settlement-input {
+  appearance: none;
+  padding: 0 10px;
+}
+select.settlement-input {
+  cursor: pointer;
+}
+.required-mark { color: #e07878; }
+.field-hint {
+  display: block;
+  margin: 6px 0 0;
+  color: var(--text-secondary);
+  font-size: 10px;
+  line-height: 1.4;
+}
+.field-hint--warning { color: #d69a42; }
+.field-hint i { margin-right: 4px; }
+.advance-section .lis-field { margin-top: 2px; }
+.advance-impact {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 16px;
+  padding: 11px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--lis-primary, #1d9e75) 8%, var(--body-bg));
+}
+.advance-impact span { color: var(--text-secondary); font-size: 10px; }
+.advance-impact strong { color: var(--text-primary); font-size: 17px; }
+.payment-section .pay-mode-btn { min-height: 60px; }
+.settlement-actions { gap: 9px; padding: 14px; }
+.settlement-actions .confirm-btn { min-height: 42px; }
+.settlement-secondary-actions { grid-template-columns: 1fr; }
+@media (max-width: 1180px) {
+  .settlement-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .settlement-actions {
+    grid-column: 1 / -1;
+    border-left: 0;
+    border-top: 1px solid var(--border-color);
+    display: grid;
+    grid-template-columns: minmax(150px, .7fr) auto minmax(220px, 1.2fr);
+    align-items: center;
+  }
+  .settlement-secondary-actions {
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 900px) {
+  .bill-layout { grid-template-columns: minmax(0, 1fr); }
+  .invoice-panel .inv-totals { padding: 12px 16px; }
+  .invoice-panel .tot-grand-amt { font-size: 18px; }
+}
+@media (max-width: 700px) {
+  .settlement-grid { grid-template-columns: minmax(0, 1fr); }
+  .settlement-section + .settlement-section,
+  .settlement-actions {
+    border-left: 0;
+    border-top: 1px solid var(--border-color);
+  }
+  .settlement-actions { display: flex; }
+  .settlement-secondary-actions { grid-template-columns: 1fr 1fr; }
+  .settlement-policy-note { margin-left: 0; }
+  .tests-list { max-height: 300px; }
+}
