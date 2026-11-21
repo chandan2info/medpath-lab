@@ -2594,3 +2594,49 @@
   height: 32px;
   padding: 0 7px;
 }
+
+/* Date/time popup styled to match the selected-date header, calendar and expandable time reference. */
+.collect-panel .collection-datetime-control { position: relative; z-index: 40; }
+.collect-panel .collection-datetime-popover {
+  width: min(430px, calc(100vw - 32px)); max-width: 430px; padding: 10px;
+  border: 1px solid #52647b; border-radius: 12px; background: #172337;
+  box-shadow: 0 18px 42px rgb(0 0 0 / 48%);
+}
+.collect-panel .collection-datetime-popover__selected-date {
+  display: flex; align-items: center; gap: 10px; min-height: 38px;
+  margin: -2px -2px 8px; padding: 0 10px; border: 1px solid var(--border-color);
+  border-radius: 9px 9px 0 0; background: color-mix(in srgb, var(--body-bg) 78%, #52647b);
+  color: var(--text-primary); font-size: 13px;
+}
+.collect-panel .collection-datetime-popover__selected-date i { color: var(--lis-primary, #1D9E75); font-size: 16px; }
+.collect-panel .collection-datetime-popover__selected-date strong { font-weight: 700; }
+.collect-panel .collection-calendar { padding: 0 1px 8px; border-bottom: 1px solid var(--border-color); }
+.collect-panel .collection-calendar__header { grid-template-columns: 34px 1fr 34px; margin: 0 0 8px; }
+.collect-panel .collection-calendar__header button { width: 32px; height: 32px; }
+.collect-panel .collection-calendar__weekdays, .collect-panel .collection-calendar__days { gap: 3px; }
+.collect-panel .collection-calendar__weekdays span { padding: 4px 0 6px; font-size: 10px; }
+.collect-panel .collection-calendar__days button, .collect-panel .collection-calendar__days > span { height: 29px; border-radius: 7px; font-size: 11px; }
+.collect-panel .collection-calendar__time {
+  margin: 9px 0 0; padding: 0; border: 1px solid var(--border-color);
+  border-radius: 9px; background: color-mix(in srgb, var(--body-bg) 76%, transparent);
+}
+.collect-panel .collection-calendar__time-toggle { min-height: 36px; padding: 0 9px; }
+.collect-panel .collection-calendar__time-toggle > i:first-child { color: var(--lis-primary, #1D9E75); font-size: 15px; }
+.collect-panel .collection-calendar__time-toggle > span { font-size: 12px; }
+.collect-panel .collection-calendar__time-toggle strong { color: var(--text-primary); font-size: 12px; }
+.collect-panel .collection-time-picker {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(104px, .95fr);
+  align-items: end; gap: 9px; margin: 0; padding: 0 9px 9px;
+}
+.collect-panel .collection-time-picker__unit { gap: 4px; font-size: 10px; }
+.collect-panel .collection-time-picker__unit select { height: 36px; min-height: 36px; border-radius: 8px; }
+.collect-panel .collection-time-picker__period { height: 36px; min-height: 36px; align-self: end; padding: 3px; }
+.collect-panel .collection-time-picker__period button { height: 28px; }
+.collect-panel .collection-datetime-popover__actions {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 9px; margin-top: 9px;
+}
+.collect-panel .collection-datetime-popover__actions .lis-btn { min-height: 36px; border-radius: 8px; font-size: 12px; }
+@media (max-width: 520px) {
+  .collect-panel .collection-datetime-popover { left: 0; right: auto; width: min(430px, calc(100vw - 32px)); }
+  .collect-panel .collection-time-picker { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(96px, .9fr); gap: 6px; }
+}
