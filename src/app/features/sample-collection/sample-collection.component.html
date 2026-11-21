@@ -142,10 +142,26 @@
                     </div>
                   </div>
                   <div class="collection-calendar__time">
-                    <label for="collection-time">Collection time</label>
-                    <input id="collection-time" type="text" inputmode="numeric" placeholder="HH:mm (24-hour)"
-                      [value]="collectionTimePart()" (input)="updateCollectionTime($any($event.target).value)"
-                      maxlength="5" />
+                    <label>Collection time</label>
+                    <div class="collection-time-picker" role="group" aria-label="Choose collection time">
+                      <label class="collection-time-picker__unit">
+                        <span>Hour</span>
+                        <select aria-label="Hour" [value]="timeHour()" (change)="updateTimeSelection($any($event.target).value, timeMinute(), timePeriod())">
+                          @for (hour of timeHours; track hour) { <option [value]="hour">{{ hour }}</option> }
+                        </select>
+                      </label>
+                      <span class="collection-time-picker__separator">:</span>
+                      <label class="collection-time-picker__unit">
+                        <span>Minute</span>
+                        <select aria-label="Minute" [value]="timeMinute()" (change)="updateTimeSelection(timeHour(), $any($event.target).value, timePeriod())">
+                          @for (minute of timeMinutes; track minute) { <option [value]="minute">{{ minute }}</option> }
+                        </select>
+                      </label>
+                      <div class="collection-time-picker__period" aria-label="AM or PM">
+                        <button type="button" [class.is-active]="timePeriod() === 'AM'" (click)="updateTimeSelection(timeHour(), timeMinute(), 'AM')">AM</button>
+                        <button type="button" [class.is-active]="timePeriod() === 'PM'" (click)="updateTimeSelection(timeHour(), timeMinute(), 'PM')">PM</button>
+                      </div>
+                    </div>
                   </div>
                   <div class="collection-datetime-popover__actions">
                     <button type="button" class="lis-btn lis-btn--secondary" (click)="datePickerOpen.set(false)">Cancel</button>
