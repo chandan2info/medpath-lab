@@ -181,7 +181,9 @@ export class SampleCollectionComponent {
 
   toggleDatePicker(): void {
     if (this.collected()) return;
-    this.datePickerOpen.update(open => !open);
+    const willOpen = !this.datePickerOpen();
+    this.datePickerOpen.set(willOpen);
+    if (willOpen) this.timePickerExpanded.set(true);
   }
 
   changeCalendarMonth(offset: number): void {
