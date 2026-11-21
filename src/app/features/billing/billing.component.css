@@ -3035,3 +3035,62 @@ select.settlement-input {
     min-height: 0;
   }
 }
+
+
+/* Billing patient context is read-only here: keep the card compact and
+   give identity/visit details a balanced layout without widening the column. */
+@media (min-width: 761px) {
+  .bill-main > .patient-summary {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) minmax(220px, auto);
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 0;
+    padding: 12px 14px;
+  }
+
+  .bill-main > .patient-summary .pat-avatar {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .bill-main > .patient-summary .patient-main {
+    grid-column: 2;
+    min-width: 0;
+  }
+
+  .bill-main > .patient-summary .patient-name-line {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px 9px;
+    min-width: 0;
+  }
+
+  .bill-main > .patient-summary .patient-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px 12px;
+    min-width: 0;
+  }
+
+  .bill-main > .patient-summary .patient-visit-meta {
+    grid-column: 3;
+    grid-row: 1;
+    justify-content: flex-end;
+    gap: 10px;
+    min-width: 0;
+    padding: 2px 0 2px 12px;
+  }
+
+  .bill-main > .patient-summary .patient-visit-meta span {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .bill-main > .patient-summary .patient-visit-meta {
+    border-top: 1px solid var(--border-color);
+    padding-top: 9px;
+  }
+}
