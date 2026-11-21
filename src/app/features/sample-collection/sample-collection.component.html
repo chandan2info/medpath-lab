@@ -3,16 +3,21 @@
      Single-patient task screen, entered from Billing.
      ═══════════════════════════════════════════════════════════ -->
 
-<div class="page-header">
-  <div>
-    <h1 class="page-title">Sample Collection</h1>
-    <nav aria-label="Breadcrumb">
-      <ol class="breadcrumb">
-        <li><a routerLink="/dashboard/home">Home</a></li>
-        <li><a routerLink="/dashboard/billing">Billing</a></li>
-        <li aria-current="page">Sample Collection</li>
-      </ol>
-    </nav>
+<div class="sample-page-top">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Sample Collection</h1>
+      <nav aria-label="Breadcrumb">
+        <ol class="breadcrumb">
+          <li><a routerLink="/dashboard/home">Home</a></li>
+          <li><a routerLink="/dashboard/billing">Billing</a></li>
+          <li aria-current="page">Sample Collection</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+  <div class="timeline-card">
+    <lis-workflow-stepper [steps]="timelineSteps" [activeIndex]="timelineActiveIndex()" [ariaLabel]="'Sample lifecycle progress'" />
   </div>
 </div>
 
@@ -21,10 +26,6 @@
      Uses the shared stepper component (same design used on Registration,
      Test Order and Billing) inside a card wrapper for the timeline's
      distinct framed look. -->
-<div class="timeline-card">
-  <lis-workflow-stepper [steps]="timelineSteps" [activeIndex]="timelineActiveIndex()" [ariaLabel]="'Sample lifecycle progress'" />
-</div>
-
 @if (patient && currentPatientTubes().length > 0) {
   <!-- ════════════════════════════════════════════════
        Patient summary — identity + status dominate
@@ -82,7 +83,13 @@
        ════════════════════════════════════════════════ -->
   <div class="cp-layout">
     <!-- Sample cards -->
-    <div class="tube-cards" role="list" aria-label="Sample tubes">
+    <section class="specimen-panel lis-card" aria-labelledby="specimen-heading">
+      <div class="lis-card__header specimen-panel__header">
+        <i class="ti ti-test-pipe lis-card-icon" aria-hidden="true"></i>
+        <h2 class="lis-card__title" id="specimen-heading">Specimen Collection</h2>
+        <span class="specimen-count">{{ currentPatientTubes().length }}</span>
+      </div>
+      <div class="tube-cards" role="list" aria-label="Sample tubes">
       @for (tube of currentPatientTubes(); track tube.id) {
         <div class="tube-card2" role="listitem" [style.--tube-color]="tube.color">
           <div class="tc-strip" aria-hidden="true"></div>
@@ -117,13 +124,14 @@
           </div>
         </div>
       }
-    </div>
+      </div>
+    </section>
 
     <!-- Collection panel -->
     <div class="collect-panel lis-card">
       <div class="lis-card__header">
         <i class="ti ti-clipboard-list lis-card-icon" aria-hidden="true"></i>
-        <h2 class="lis-card__title">Collection</h2>
+        <h2 class="lis-card__title">Collection Details</h2>
       </div>
 
       <div class="cp-form">
