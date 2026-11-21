@@ -207,8 +207,9 @@ export class SampleCollectionComponent {
   }
 
   private positionDatePicker(): void {
-    const trigger = this.hostRef.nativeElement.querySelector<HTMLElement>('.collection-datetime-trigger');
-    const card = this.hostRef.nativeElement.querySelector<HTMLElement>('.collect-panel');
+    const hostElement = this.hostRef.nativeElement as HTMLElement;
+    const trigger = hostElement.querySelector('.collection-datetime-trigger') as HTMLElement | null;
+    const card = hostElement.querySelector('.collect-panel') as HTMLElement | null;
     if (!trigger || !card) return;
 
     const triggerRect = trigger.getBoundingClientRect();
