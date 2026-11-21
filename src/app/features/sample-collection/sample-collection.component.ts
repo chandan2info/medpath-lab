@@ -14,7 +14,7 @@
 //  (For the lab-wide operations view, see
 //  Screen 4b — Sample Tracking.)
 // ─────────────────────────────────────────────
-import { Component, signal, computed, inject, ChangeDetectionStrategy, HostListener } from '@angular/core';
+import { Component, signal, computed, inject, ChangeDetectionStrategy, HostListener, ElementRef } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DatePipe, TitleCasePipe } from '@angular/common';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
@@ -83,6 +83,7 @@ const TIMELINE_STEPS: WorkflowStep[] = [
   styleUrl: './sample-collection.component.css',
 })
 export class SampleCollectionComponent {
+  private readonly hostRef = inject(ElementRef<HTMLElement>);
   protected readonly flow          = inject(PatientFlowService);
   protected readonly barcodeWidths = [2,1,3,1,2,1,1,2,3,1,2,1,2,3,1];
   protected readonly checklistItems = CHECKLIST_ITEMS;
@@ -263,12 +264,25 @@ export class SampleCollectionComponent {
     this.collected.set(true);
   }
 
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.datePickerOpen()) return;
+    const target = event.target as Node | null;
+    const control = this.hostRef.nativeElement.querySelector('.collection-datetime-control');
+    if (target && control && !control.contains(target)) this.cancelDatePicker();
+  }
+
   // ── Keyboard shortcuts ────────────────────────────────────────
   // Enter → Mark as Collected · Ctrl/Cmd+P → Print Labels
   printFlash = signal(false);
 
   @HostListener('document:keydown', ['$event'])
   onKeydown(e: KeyboardEvent): void {
+    if (e.key === 'Escape' && this.datePickerOpen()) {
+      e.preventDefault();
+      this.cancelDatePicker();
+      return;
+    }
     const target = e.target as HTMLElement;
     const typing = target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
 
