@@ -1963,3 +1963,12 @@
     position: static;
   }
 }
+
+
+/* ── Increase workstation card height for more usable vertical space ── */
+@media (min-width: 1101px) {
+  .specimen-panel,
+  .collect-panel {
+    height: clamp(500px, calc(100dvh - 400px), 620px);
+  }
+}
