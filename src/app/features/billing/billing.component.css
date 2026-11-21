@@ -1752,3 +1752,211 @@ select.settlement-input {
     max-height: 340px;
   }
 }
+
+
+/* Right-side Billing & Payment panel — compact vertical treatment from the approved target. */
+@media (min-width: 1101px) {
+  .bill-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(350px, 390px);
+    gap: 14px;
+    align-items: start;
+  }
+
+  .billing-sidebar {
+    min-width: 0;
+    width: 100%;
+    position: sticky;
+    top: 12px;
+  }
+
+  .billing-sidebar .settlement-card {
+    width: 100%;
+    overflow: hidden;
+    border-radius: 12px;
+  }
+
+  .billing-sidebar .settlement-header {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr);
+    align-items: center;
+    gap: 9px;
+    padding: 13px 14px;
+  }
+
+  .billing-sidebar .settlement-header > i {
+    width: 32px;
+    height: 32px;
+    font-size: 17px;
+  }
+
+  .billing-sidebar .settlement-heading-copy h2 {
+    font-size: 14px;
+    line-height: 1.25;
+  }
+
+  .billing-sidebar .settlement-heading-copy p {
+    margin-top: 3px;
+    font-size: 10px;
+    line-height: 1.35;
+  }
+
+  .billing-sidebar .settlement-policy-note {
+    grid-column: 1 / -1;
+    justify-self: start;
+    margin: 0;
+    padding: 5px 8px;
+    font-size: 9px;
+  }
+
+  .billing-sidebar .settlement-grid {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .billing-sidebar .settlement-section,
+  .billing-sidebar .settlement-actions {
+    min-width: 0;
+    padding: 12px 14px;
+    border: 0;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .billing-sidebar .settlement-section:first-child {
+    border-top: 0;
+  }
+
+  .billing-sidebar .settlement-section-title {
+    margin-bottom: 10px;
+    font-size: 12px;
+  }
+
+  .billing-sidebar .discount-input-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 9px 10px;
+    align-items: end;
+  }
+
+  .billing-sidebar .discount-reason-field {
+    grid-column: 1 / -1;
+  }
+
+  .billing-sidebar .discount-input-grid .lis-field label,
+  .billing-sidebar .settlement-section .lis-field label {
+    font-size: 10px;
+    line-height: 1.25;
+  }
+
+  .billing-sidebar .settlement-input,
+  .billing-sidebar .settlement-number-field,
+  .billing-sidebar .settlement-value,
+  .billing-sidebar .settlement-currency,
+  .billing-sidebar .pay-adaptive input {
+    min-width: 0;
+    width: 100%;
+    height: 38px;
+    box-sizing: border-box;
+  }
+
+  .billing-sidebar .settlement-number-field input {
+    min-width: 0;
+    width: 100%;
+    font-size: 12px;
+  }
+
+  .billing-sidebar .advance-section .lis-field {
+    margin: 0;
+  }
+
+  .billing-sidebar .advance-impact {
+    margin-top: 9px;
+    padding: 9px 10px;
+    gap: 3px;
+  }
+
+  .billing-sidebar .advance-impact strong {
+    font-size: 16px;
+  }
+
+  .billing-sidebar .field-hint {
+    margin-top: 5px;
+    font-size: 9px;
+  }
+
+  .billing-sidebar .payment-section .pay-modes {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+    margin: 0 0 11px;
+  }
+
+  .billing-sidebar .payment-section .pay-mode-btn {
+    min-width: 0;
+    min-height: 54px;
+    padding: 7px 3px;
+    gap: 4px;
+    font-size: 10px;
+  }
+
+  .billing-sidebar .payment-section .pay-mode-btn i {
+    font-size: 17px;
+  }
+
+  .billing-sidebar .pay-adaptive .lis-field {
+    gap: 5px;
+  }
+
+  .billing-sidebar .settlement-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 9px;
+  }
+
+  .billing-sidebar .settlement-priority {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 10px;
+  }
+
+  .billing-sidebar .settlement-actions .receipt-preview-link {
+    align-self: flex-end;
+    margin-top: -28px;
+    min-height: 24px;
+    font-size: 10px;
+  }
+
+  .billing-sidebar .settlement-actions .confirm-btn {
+    width: 100%;
+    min-height: 42px;
+    margin-top: 2px;
+    font-size: 11px;
+  }
+
+  .billing-sidebar .settlement-secondary-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .billing-sidebar .settlement-secondary-actions .lis-btn {
+    min-width: 0;
+    min-height: 38px;
+    padding: 7px 5px;
+    white-space: nowrap;
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .billing-sidebar .settlement-header {
+    flex-wrap: wrap;
+  }
+
+  .billing-sidebar .settlement-policy-note {
+    margin-left: 0;
+  }
+}
