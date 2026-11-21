@@ -214,3 +214,61 @@
 .draft-actions{display:flex;align-items:center;gap:6px;flex:none}.draft-actions .lis-btn{min-height:29px;padding:4px 9px;font-size:10px}
 .draft-delete{color:#d66}.drafts-empty{padding:12px;color:var(--text-secondary);font-size:10px}
 @media(max-width:700px){.selection-actions{flex-wrap:wrap}.drafts-toggle{order:0}.draft-item{align-items:flex-start}.draft-actions{align-self:center}}
+
+
+/* Keep the Test Order header and patient card full-width and aligned to Billing. */
+.page-header,
+.patient-summary {
+  width: 100%;
+  box-sizing: border-box;
+}
+.page-header {
+  padding: 12px 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--lis-card-radius, 10px);
+}
+.patient-summary {
+  min-height: 76px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  align-items: center;
+}
+.patient-main {
+  min-width: 0;
+}
+.patient-meta {
+  gap: 7px 16px;
+  font-size: 11px;
+}
+.patient-meta span {
+  gap: 7px;
+}
+.patient-visit-meta {
+  gap: 18px;
+  padding-inline: 18px;
+}
+@media (max-width: 900px) {
+  .patient-summary {
+    flex-wrap: wrap;
+  }
+  .patient-visit-meta {
+    flex: 1 1 100%;
+    border-left: 0;
+    border-top: 1px solid var(--border-color);
+    padding: 10px 0 0;
+  }
+}
+@media (max-width: 600px) {
+  .page-header {
+    padding: 10px 12px;
+  }
+  .patient-summary {
+    gap: 10px;
+    padding: 10px 12px;
+  }
+  .patient-visit-meta {
+    flex-wrap: wrap;
+    gap: 10px 14px;
+  }
+}
