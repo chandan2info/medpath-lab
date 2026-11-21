@@ -31,51 +31,25 @@
        Patient summary — identity + status dominate
        ════════════════════════════════════════════════ -->
   <section class="patient-summary lis-card" role="region" aria-label="Current patient sample collection">
-    <div class="pat-info-row">
+    <div class="patient-identity">
       <div class="ps-av-wrap" [class.ps-av-wrap--done]="collected()">
         <div class="pat-av" aria-hidden="true">{{ patientInitials }}</div>
       </div>
-      <div class="pat-id-main">
-        <div class="pat-name-row">
-          <div class="pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
-          @if (!collected()) {
-            <span class="status-chip status-chip--warn">
-              <i class="ti ti-hourglass-low" aria-hidden="true"></i> Awaiting Collection
-            </span>
-          } @else {
-            <span class="pill pill--routine">
-              <i class="ti ti-circle-check" aria-hidden="true"></i>Collected
-            </span>
-          }
-        </div>
-        <div class="pat-detail-row">
-          <span class="pat-detail-item"><i class="ti ti-id-badge-2 pat-detail-icon" aria-hidden="true"></i><span class="lis-mono">{{ patient.id }}</span></span>
-          <span class="pat-detail-sep" aria-hidden="true">|</span>
-          <span class="pat-detail-item age-inline" [title]="patientAgeBreakdown()">
-            <i class="ti ti-cake pat-detail-icon" aria-hidden="true"></i><span class="age-inline__y">{{ ageParts().years }}y</span><span class="age-inline__sep"> · </span><span class="age-inline__m">{{ ageParts().months }}m</span><span class="age-inline__sep"> · </span><span class="age-inline__d">{{ ageParts().days }}d</span>
-          </span>
-          <span class="pat-detail-sep" aria-hidden="true">|</span>
-          <span class="pat-detail-item"><i class="ti ti-calendar-event pat-detail-icon" aria-hidden="true"></i>DOB {{ patient.dob | date:'dd MMM yyyy' }}</span>
-          <span class="pat-detail-sep" aria-hidden="true">|</span>
-          <span class="pat-detail-item"><i class="ti {{ genderIcon() }} pat-detail-icon" aria-hidden="true"></i>{{ patient.gender | titlecase }}</span>
-        </div>
-        <div class="pat-detail-row">
-          <span class="pat-detail-item"><i class="ti ti-phone pat-detail-icon" aria-hidden="true"></i>{{ patient.mobile }}</span>
-          <span class="pat-detail-sep" aria-hidden="true">|</span>
-          <span class="pat-detail-item"><i class="ti ti-stethoscope pat-detail-icon" aria-hidden="true"></i>{{ patient.refDoctor }}</span>
-          <span class="pat-detail-sep" aria-hidden="true">|</span>
-          <span class="pat-detail-item"><i class="ti ti-droplet-half-2 pat-detail-icon" aria-hidden="true"></i>{{ patient.fasting }}</span>
-          <span class="pat-detail-sep" aria-hidden="true">|</span>
-          <span class="pat-detail-item">
-            <span class="prio-badge" [style.color]="priorityStyle().color" [style.background]="priorityStyle().bg"
-                  [style.border-color]="priorityStyle().color">
-              <i class="ti {{ priorityStyle().icon }}" aria-hidden="true"></i> {{ flow.priority() | titlecase }}
-            </span>
-          </span>
-        </div>
+      <div class="patient-identity__name">
+        <div class="pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
+        <span class="lis-mono patient-id">{{ patient.id }}</span>
       </div>
     </div>
-
+    <div class="patient-fact"><i class="ti ti-user patient-fact__icon" aria-hidden="true"></i><span class="patient-fact__label">Age</span><strong>{{ ageParts().years }}y {{ ageParts().months }}m {{ ageParts().days }}d</strong></div>
+    <div class="patient-fact"><i class="ti ti-calendar-event patient-fact__icon" aria-hidden="true"></i><span class="patient-fact__label">DOB</span><strong>{{ patient.dob | date:'dd MMM yyyy' }}</strong></div>
+    <div class="patient-fact"><i class="ti {{ genderIcon() }} patient-fact__icon" aria-hidden="true"></i><span class="patient-fact__label">Sex</span><strong>{{ patient.gender | titlecase }}</strong></div>
+    <div class="patient-fact"><i class="ti ti-phone patient-fact__icon" aria-hidden="true"></i><span class="patient-fact__label">Mobile</span><strong>{{ patient.mobile }}</strong></div>
+    <div class="patient-fact"><i class="ti ti-walk patient-fact__icon" aria-hidden="true"></i><span class="patient-fact__label">Visit</span><strong>Walk-in</strong></div>
+    <div class="patient-fact"><i class="ti ti-droplet-half-2 patient-fact__icon" aria-hidden="true"></i><span class="patient-fact__label">Fasting</span><strong>{{ patient.fasting || 'Unknown' }}</strong></div>
+    <div class="patient-fact patient-fact--priority">
+      <i class="ti ti-flag patient-fact__icon" aria-hidden="true"></i><span class="patient-fact__label">Priority</span>
+      <span class="prio-badge" [style.color]="priorityStyle().color" [style.background]="priorityStyle().bg" [style.border-color]="priorityStyle().color">{{ flow.priority() | titlecase }}</span>
+    </div>
   </section>
 
   <!-- ════════════════════════════════════════════════
@@ -94,31 +68,29 @@
         <div class="tube-card2" role="listitem" [style.--tube-color]="tube.color">
           <div class="tc-strip" aria-hidden="true"></div>
           <div class="tc-body">
-            <div class="tc-head">
-              <div class="tc-label">{{ tube.label }}</div>
-              <span class="tc-required"><i class="ti ti-check" aria-hidden="true"></i> Required</span>
-            </div>
-            <div class="tc-tests">{{ tube.tests.join(' · ') }}</div>
-
-            <div class="tc-barcode-row">
-              <div class="tc-barcode" [attr.aria-label]="'Barcode for ' + tube.id">
-                <div class="bc-bars bc-bars--lg" aria-hidden="true">
-                  @for (w of barcodeWidths; track $index) {
-                    <div class="bc-bar" [style.width.px]="w * 1.35"></div>
-                  }
+            <div class="tc-main">
+              <div class="tc-heading">
+                <i class="ti ti-test-pipe tc-tube-icon" aria-hidden="true"></i>
+                <div class="tc-heading__copy">
+                  <div class="tc-label">{{ tube.label }}</div>
+                  <div class="tc-tests">{{ tube.tests.join(' · ') }}</div>
                 </div>
-                <div class="bc-num lis-mono">{{ tube.id }}</div>
+                <span class="tc-required"><i class="ti ti-check" aria-hidden="true"></i> Required</span>
               </div>
-              <div class="tc-actions">
-                <button type="button" class="tc-icon-btn" title="Print" aria-label="Print label" (click)="printLabels()">
-                  <i class="ti ti-printer" aria-hidden="true"></i>
-                </button>
-                <button type="button" class="tc-icon-btn" title="Preview" aria-label="Preview label">
-                  <i class="ti ti-eye" aria-hidden="true"></i>
-                </button>
-                <button type="button" class="tc-icon-btn" title="Reprint" aria-label="Reprint label">
-                  <i class="ti ti-refresh" aria-hidden="true"></i>
-                </button>
+              <div class="tc-barcode-row">
+                <div class="tc-barcode" [attr.aria-label]="'Barcode for ' + tube.id">
+                  <div class="bc-bars bc-bars--lg" aria-hidden="true">
+                    @for (w of barcodeWidths; track $index) {
+                      <div class="bc-bar" [style.width.px]="w * 1.8"></div>
+                    }
+                  </div>
+                  <div class="bc-num lis-mono">{{ tube.id }}</div>
+                </div>
+                <div class="tc-actions">
+                  <button type="button" class="tc-action-btn" title="Print label" (click)="printLabels()"><i class="ti ti-printer" aria-hidden="true"></i><span>Print Label</span></button>
+                  <button type="button" class="tc-action-btn" title="Preview label"><i class="ti ti-eye" aria-hidden="true"></i><span>Preview</span></button>
+                  <button type="button" class="tc-action-btn" title="Regenerate barcode" (click)="printLabels()"><i class="ti ti-refresh" aria-hidden="true"></i><span>Regenerate</span></button>
+                </div>
               </div>
             </div>
           </div>
