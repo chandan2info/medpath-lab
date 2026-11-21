@@ -92,9 +92,12 @@ export class SampleCollectionComponent {
   collectedAt = signal('');
   notes       = signal('');
   collectionDateTime = signal(this.toDateTimeLocal(new Date()));
-  datePickerOpen = signal(false);\n  timePickerExpanded = signal(false);
-  collectionDatePart = signal(this.toDateTimeLocal(new Date()).slice(0, 10));
-  collectionTimePart = signal(this.toDateTimeLocal(new Date()).slice(11, 16));
+  datePickerOpen = signal(false);
+  timePickerExpanded = signal(false);
+  private readonly initialCollectionDateTime = this.toDateTimeLocal(new Date());
+  collectionDatePart = signal(this.initialCollectionDateTime.slice(0, 10));
+  collectionTimePart = signal(this.initialCollectionDateTime.slice(11, 16));
+  readonly draftCollectionDateTime = computed(() => `${this.collectionDatePart()}T${this.collectionTimePart()}`);
   readonly timeHours = Array.from({ length: 12 }, (_, index) => String(index + 1).padStart(2, '0'));
   readonly timeMinutes = Array.from({ length: 60 }, (_, index) => String(index).padStart(2, '0'));
   timeHour = computed(() => {
@@ -181,9 +184,30 @@ export class SampleCollectionComponent {
 
   toggleDatePicker(): void {
     if (this.collected()) return;
-    const willOpen = !this.datePickerOpen();
-    this.datePickerOpen.set(willOpen);
-    if (willOpen) this.timePickerExpanded.set(true);
+    if (this.datePickerOpen()) {
+      this.cancelDatePicker();
+      return;
+    }
+    this.beginDatePickerEdit();
+  }
+
+  private beginDatePickerEdit(): void {
+    const current = this.collectionDateTime();
+    this.collectionDatePart.set(current.slice(0, 10));
+    this.collectionTimePart.set(current.slice(11, 16));
+    const selected = new Date(`${current.slice(0, 10)}T00:00:00`);
+    if (!Number.isNaN(selected.getTime())) {
+      this.calendarMonth.set(new Date(selected.getFullYear(), selected.getMonth(), 1));
+    }
+    this.timePickerExpanded.set(true);
+    this.datePickerOpen.set(true);
+  }
+
+  cancelDatePicker(): void {
+    const current = this.collectionDateTime();
+    this.collectionDatePart.set(current.slice(0, 10));
+    this.collectionTimePart.set(current.slice(11, 16));
+    this.datePickerOpen.set(false);
   }
 
   changeCalendarMonth(offset: number): void {
@@ -198,31 +222,24 @@ export class SampleCollectionComponent {
     this.collectionDatePart.set(value);
     const parsed = new Date(`${value}T00:00:00`);
     if (!Number.isNaN(parsed.getTime())) this.calendarMonth.set(new Date(parsed.getFullYear(), parsed.getMonth(), 1));
-    this.syncCollectionDateTime();
   }
 
   updateCollectionTime(value: string): void {
     this.collectionTimePart.set(value.replace(/[^0-9:]/g, '').slice(0, 5));
-    this.syncCollectionDateTime();
   }
   updateTimeSelection(hourValue: string, minuteValue: string, period: 'AM' | 'PM'): void {
     let hours = Number(hourValue) % 12;
     if (period === 'PM') hours += 12;
     const time = `${String(hours).padStart(2, '0')}:${String(Number(minuteValue)).padStart(2, '0')}`;
     this.collectionTimePart.set(time);
-    this.syncCollectionDateTime();
   }
 
   applyDatePicker(): void {
     if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(this.collectionTimePart())) return;
-    this.syncCollectionDateTime();
-    this.datePickerOpen.set(false);
-  }
-
-  private syncCollectionDateTime(): void {
     const date = this.collectionDatePart();
-    const time = this.collectionTimePart();
-    if (date && time) this.collectionDateTime.set(`${date}T${time}`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+    this.collectionDateTime.set(`${date}T${this.collectionTimePart()}`);
+    this.datePickerOpen.set(false);
   }
 
   isChecked(id: string): boolean { return this._checked().has(id); }
