@@ -92,6 +92,10 @@ export class SampleCollectionComponent {
   collected   = signal(false);
   collectedAt = signal('');
   notes       = signal('');
+  collectionDateTime = signal(this.toDateTimeLocal(new Date()));
+  collectionSite = signal('');
+  patientCondition = signal('Not recorded');
+  protected readonly collectorName = 'Current operator';
 
   private _checked = signal<Set<string>>(new Set());
   checkedCount = computed(() => this._checked().size);
@@ -118,8 +122,25 @@ export class SampleCollectionComponent {
     }));
   });
 
+  // Derive specimen type from the tubes generated for the ordered tests.
+  // This is a display-only summary; each tube remains separately identified.
+  sampleType = computed(() => {
+    const tubes = this.currentPatientTubes();
+    if (tubes.length === 0) return 'Not determined';
+    const hasUrine = tubes.some(t => t.label.toLowerCase().includes('urine'));
+    const hasBlood = tubes.some(t => !t.label.toLowerCase().includes('urine'));
+    if (hasUrine && hasBlood) return 'Blood + urine specimens';
+    if (hasUrine) return 'Urine specimen';
+    return 'Blood specimen';
+  });
+
   // 2 = Collection is the 3rd step (index 2) of TIMELINE_STEPS
   timelineActiveIndex = computed(() => (this.collected() ? 3 : 2));
+
+  private toDateTimeLocal(date: Date): string {
+    const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+    return local.toISOString().slice(0, 16);
+  }
 
   isChecked(id: string): boolean { return this._checked().has(id); }
   toggleChecklist(id: string): void {
@@ -137,7 +158,7 @@ export class SampleCollectionComponent {
   markCollected(): void {
     const now = new Date();
     this.collectedAt.set(
-      now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+      new Date(this.collectionDateTime()).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
     );
     this.collected.set(true);
   }
