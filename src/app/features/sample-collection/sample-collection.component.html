@@ -139,7 +139,7 @@
         <div class="collection-field-grid">
           <div class="lis-field collection-field--wide">
             <label for="collection-date-time">Collection date &amp; time <span class="required-mark">*</span></label>
-            <input id="collection-date-time" type="datetime-local" [value]="collectionDateTime()"
+            <input id="collection-date-time" type="datetime-local" required [value]="collectionDateTime()"
               (input)="collectionDateTime.set($any($event.target).value)" [disabled]="collected()" />
           </div>
           <div class="lis-field">
