@@ -174,7 +174,7 @@
               <kbd class="kbd-hint">Ctrl+P</kbd>
             </button>
             <button type="button" class="lis-btn lis-btn--primary collect-btn mark-collected-btn"
-              (click)="markCollected()" [disabled]="!collectionDateTime()">
+              (click)="markCollected()" [disabled]="!collectionFormValid()">
               <i class="ti ti-check" aria-hidden="true"></i>
               <span>Mark as Collected</span>
               <kbd class="kbd-hint kbd-hint--on-primary">Enter</kbd>
