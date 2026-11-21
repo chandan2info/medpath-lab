@@ -1405,3 +1405,107 @@ select.settlement-input {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+
+/* Billing controls refinement: direct numeric entry and clear single-choice payment modes. */
+.discount-input-grid {
+  grid-template-columns: minmax(120px, .9fr) minmax(120px, .9fr) minmax(130px, 1fr);
+  gap: 10px;
+}
+.discount-reason-field { grid-column: 1 / -1; }
+.settlement-number-field {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  height: 40px;
+  box-sizing: border-box;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--body-bg);
+}
+.settlement-number-field:focus-within {
+  border-color: var(--lis-primary, #1d9e75);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--lis-primary, #1d9e75) 14%, transparent);
+}
+.settlement-number-field input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0 11px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.settlement-number-suffix {
+  display: grid;
+  place-items: center;
+  align-self: stretch;
+  min-width: 34px;
+  padding: 0 9px;
+  border-left: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+.payment-section .pay-modes { role: radiogroup; }
+.payment-section .pay-mode-btn {
+  position: relative;
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease, color .15s ease, box-shadow .15s ease;
+}
+.payment-section .pay-mode-btn:focus-visible {
+  outline: 2px solid var(--lis-primary, #1d9e75);
+  outline-offset: 2px;
+}
+.payment-section .pay-mode-btn--active {
+  border: 1.5px solid var(--lis-primary, #1d9e75);
+  background: color-mix(in srgb, var(--lis-primary, #1d9e75) 14%, var(--body-bg));
+  color: var(--lis-primary, #1d9e75);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--lis-primary, #1d9e75) 30%, transparent);
+}
+.payment-section .pay-mode-btn--active::after {
+  content: '✓';
+  position: absolute;
+  top: -7px;
+  right: -6px;
+  display: grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: var(--lis-primary, #1d9e75);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+}
+.payment-section .pay-mode-btn--credit.pay-mode-btn--active {
+  border-color: #d97777;
+  background: #fff1f1;
+  color: #a32e2e;
+}
+.invoice-payment-progress { margin-top: 10px; padding-top: 8px; }
+.invoice-payment-progress__labels {
+  display: flex; justify-content: space-between; gap: 10px;
+  color: var(--text-secondary); font-size: 10px; font-weight: 600;
+}
+.invoice-payment-progress__track {
+  height: 7px; margin-top: 7px; overflow: hidden;
+  border-radius: 20px; background: var(--body-bg);
+}
+.invoice-payment-progress__track span {
+  display: block; height: 100%; border-radius: inherit;
+  background: var(--lis-primary, #1d9e75); transition: width .2s ease;
+}
+@media (max-width: 760px) {
+  .discount-input-grid { grid-template-columns: minmax(0, 1fr); }
+  .discount-reason-field { grid-column: auto; }
+  .invoice-payment-progress__labels { flex-wrap: wrap; }
+}
