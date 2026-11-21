@@ -642,3 +642,96 @@
     min-width: 0;
   }
 }
+
+
+/* Refine patient summary and billing footer: use empty horizontal space intentionally. */
+.patient-meta span i,
+.patient-visit-meta span i {
+  width: 19px;
+  height: 19px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 6px;
+  font-size: 11px;
+  background: var(--lis-primary-xlight);
+}
+.patient-meta span:nth-child(1) i,
+.patient-visit-meta span:nth-child(1) i {
+  color: #36b58f;
+  background: rgba(54,181,143,.14);
+}
+.patient-meta span:nth-child(2) i,
+.patient-visit-meta span:nth-child(2) i {
+  color: #8b86f6;
+  background: rgba(139,134,246,.15);
+}
+.patient-meta span:nth-child(3) i,
+.patient-visit-meta span:nth-child(3) i {
+  color: #e4a64e;
+  background: rgba(228,166,78,.15);
+}
+.patient-meta span:nth-child(4) i,
+.patient-visit-meta span:nth-child(4) i {
+  color: #55a9e8;
+  background: rgba(85,169,232,.15);
+}
+.patient-summary {
+  gap: 14px;
+}
+.patient-main {
+  flex: 1 1 38%;
+}
+.patient-visit-meta {
+  flex: 0 1 auto;
+  justify-content: space-around;
+  min-width: 330px;
+  gap: clamp(12px, 2vw, 26px);
+}
+.patient-edit {
+  flex: 0 0 auto;
+}
+
+/* Spread the five billing figures across the footer instead of leaving a dead gap. */
+@media (min-width: 761px) {
+  .order-bottom-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: clamp(14px, 2vw, 28px);
+    padding: 10px 14px;
+  }
+  .order-total-inline {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+  .order-total-inline > div {
+    min-width: 0;
+    padding: 4px 9px;
+    border-right: 1px solid var(--border-color);
+  }
+  .order-total-inline > div:last-child {
+    border-right: 0;
+  }
+  .order-total-inline .grand-total {
+    padding: 6px 10px;
+    border-right: 0;
+  }
+  .review-actions {
+    justify-content: flex-end;
+    gap: 14px;
+  }
+}
+@media (max-width: 760px) {
+  .patient-visit-meta {
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+  .order-total-inline {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+}
