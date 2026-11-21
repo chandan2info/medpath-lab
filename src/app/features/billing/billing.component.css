@@ -2451,3 +2451,120 @@ select.settlement-input {
     line-height: 1.4;
   }
 }
+
+
+/* Compact horizontal field pairs in the billing sidebar. */
+@media (min-width: 761px) {
+  .billing-sidebar .discount-section .settlement-section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .billing-sidebar .discount-title-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .billing-sidebar .discount-section .settlement-policy-note {
+    margin: 0;
+    justify-self: auto;
+    white-space: nowrap;
+    flex: 0 0 auto;
+  }
+
+  .billing-sidebar .discount-calculation-column {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    align-items: end;
+    gap: 10px;
+  }
+
+  .billing-sidebar .discount-calculation-column .lis-field {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .billing-sidebar .discount-calculation-column .settlement-value,
+  .billing-sidebar .discount-calculation-column .settlement-input {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .billing-sidebar .advance-entry-column {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(110px, 0.8fr);
+    align-items: end;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .billing-sidebar .advance-entry-column .lis-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .billing-sidebar .advance-entry-column .field-hint {
+    align-self: center;
+    margin: 0 0 2px;
+    line-height: 1.4;
+  }
+}
+
+@media (max-width: 760px) {
+  .billing-sidebar .discount-section .settlement-section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+
+  .billing-sidebar .discount-title-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .billing-sidebar .discount-section .settlement-policy-note {
+    margin: 0;
+    white-space: normal;
+  }
+
+  .billing-sidebar .discount-calculation-column {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    align-items: end;
+    gap: 8px;
+  }
+
+  .billing-sidebar .discount-calculation-column .lis-field {
+    min-width: 0;
+  }
+
+  .billing-sidebar .advance-entry-column {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(105px, 0.8fr);
+    align-items: end;
+    gap: 8px;
+  }
+
+  .billing-sidebar .advance-entry-column .lis-field {
+    min-width: 0;
+  }
+
+  .billing-sidebar .advance-entry-column .field-hint {
+    margin: 0 0 2px;
+    line-height: 1.4;
+  }
+}
