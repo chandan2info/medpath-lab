@@ -454,3 +454,68 @@
   .status-pill { padding: 7px 10px; font-size: 10px; }
   .collection-time { font-size: 10px; }
 }
+
+
+/* Patient strip typography and width alignment with the result workspace */
+@media (min-width: 1201px) {
+  .patient-strip {
+    width: calc(100% - 312px);
+    box-sizing: border-box;
+  }
+  .patient-meta {
+    font-size: 12px;
+    column-gap: 14px;
+    row-gap: 6px;
+  }
+  .patient-meta i {
+    font-size: 15px;
+  }
+  .patient-name .gender,
+  .patient-name .age {
+    font-size: 12px;
+  }
+  .patient-name .gender i {
+    font-size: 14px;
+  }
+  .summary-top {
+    font-size: 15px;
+  }
+  .summary-top i {
+    font-size: 20px;
+  }
+  .summary-sub {
+    font-size: 12px;
+    line-height: 1.55;
+  }
+  .status-pill {
+    font-size: 13px;
+    padding: 8px 14px;
+  }
+  .status-pill i {
+    font-size: 15px;
+  }
+  .collection-time {
+    font-size: 12px;
+    gap: 8px;
+  }
+  .collection-time i {
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 1201px) and (max-width: 1450px) {
+  .patient-strip {
+    width: calc(100% - 284px);
+  }
+  .patient-meta {
+    font-size: 11px;
+    column-gap: 10px;
+  }
+  .patient-meta i { font-size: 14px; }
+  .summary-sub { font-size: 11px; }
+  .collection-time { font-size: 11px; }
+}
+
+@media (max-width: 1200px) {
+  .patient-strip { width: 100%; }
+}
