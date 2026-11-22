@@ -1143,3 +1143,102 @@
   .workflow-card .workflow-step small { font-size: 9px; }
   .workflow-card .workflow-step > b { min-width: 58px; padding: 5px 8px; }
 }
+
+
+/* Test Summary — compact reference-matched card */
+.summary-card {
+  padding: 0 0 9px;
+  overflow: hidden;
+}
+.summary-card > .panel-heading {
+  min-height: 0;
+  padding: 9px 14px 7px;
+  background: transparent;
+}
+.summary-card > .panel-heading h2 {
+  font-size: 14px;
+  line-height: 1.25;
+  font-weight: 700;
+}
+.summary-card .summary-line {
+  align-items: center;
+  min-height: 29px;
+  margin: 0 14px;
+  padding: 5px 0;
+  gap: 10px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 11px;
+  line-height: 1.3;
+}
+.summary-card .summary-line span {
+  flex: 0 0 auto;
+  color: var(--text-primary);
+  opacity: .82;
+}
+.summary-card .summary-line strong {
+  min-width: 0;
+  text-align: right;
+  font-size: 11px;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+.summary-card .summary-line .priority-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 4px 10px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--lis-danger);
+  color: #fff;
+  font-size: 10px;
+  line-height: 1.2;
+  letter-spacing: .2px;
+  text-transform: uppercase;
+}
+.summary-card > h3 {
+  margin: 8px 14px 7px;
+  font-size: 11px;
+  line-height: 1.3;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.summary-card .flag-summary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 10px;
+}
+.summary-card .flag-summary > div {
+  min-width: 0;
+  min-height: 68px;
+  justify-content: center;
+  gap: 3px;
+  padding: 7px 3px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--body-bg) 70%, transparent);
+}
+.summary-card .flag-summary .flag-dot {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 9px;
+}
+.summary-card .flag-summary strong {
+  font-size: 17px;
+  line-height: 1.15;
+  font-weight: 700;
+}
+.summary-card .flag-summary span {
+  font-size: 10px;
+  line-height: 1.2;
+}
+@media (max-width: 640px) {
+  .summary-card > .panel-heading { padding: 9px 12px 7px; }
+  .summary-card .summary-line { margin-inline: 12px; font-size: 10px; }
+  .summary-card .summary-line strong { font-size: 10px; }
+  .summary-card > h3 { margin-inline: 12px; }
+  .summary-card .flag-summary { gap: 6px; margin-inline: 8px; }
+  .summary-card .flag-summary > div { min-height: 64px; }
+}
