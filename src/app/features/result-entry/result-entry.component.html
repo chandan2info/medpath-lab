@@ -181,7 +181,7 @@
         <div class="summary-line"><span>Tests (this screen)</span><strong>{{ selectedTest().code }} ({{ totalCount() }} parameters)</strong></div>
         <div class="summary-line"><span>Collected</span><strong>{{ sample()?.collectedAt || '—' }}</strong></div>
         <div class="summary-line"><span>Priority</span><strong class="priority-chip">{{ sample()?.priority | titlecase }}</strong></div>
-        <h3>Flags (selected test)</h3>
+        <h3>Flags ({{ selectedTest().code }})</h3>
         <div class="flag-summary">
           <div><i class="flag-dot flag-dot--normal"></i><strong>{{ normalCount() }}</strong><span>Normal</span></div>
           <div><i class="flag-dot flag-dot--abnormal"></i><strong>{{ abnormalCount() }}</strong><span>Abnormal</span></div>
