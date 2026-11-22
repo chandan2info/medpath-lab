@@ -124,10 +124,26 @@ export class ResultEntryComponent implements OnInit {
   readonly isFirstTest = computed(() => this.selectedTestIndex() <= 0);
   readonly isLastTest = computed(() => this.selectedTestIndex() < 0 || this.selectedTestIndex() >= this.tests().length - 1);
   readonly selectedTest = computed(() => this.tests().find(test => test.id === this.selectedTestId()) ?? this.tests()[0]);
+  /**
+   * Derive workflow status from entered parameter values instead of relying
+   * on the initial demo status. This keeps the chips and list accurate after
+   * a result is entered or cleared.
+   */
+  effectiveTestStatus(test: MockOrderedTest): TestStatus {
+    const entered = test.parameters.filter(parameter => parameter.value.trim() !== '').length;
+    if (entered === 0) return 'PENDING';
+    if (entered === test.parameters.length) return 'COMPLETED';
+    return 'IN_PROGRESS';
+  }
+
   readonly visibleTests = computed(() => {
     const q = this.testSearch().trim().toLowerCase();
-    return this.tests().filter(test => (this.filter() === 'ALL' || test.status === this.filter()) &&
-      (!q || test.name.toLowerCase().includes(q) || test.code.toLowerCase().includes(q)));
+    const selectedFilter = this.filter();
+    return this.tests().filter(test => {
+      const matchesStatus = selectedFilter === 'ALL' || this.effectiveTestStatus(test) === selectedFilter;
+      const searchable = [test.name, test.shortName, test.code].join(' ').toLowerCase();
+      return matchesStatus && (!q || searchable.includes(q));
+    });
   });
   readonly enteredCount = computed(() => this.selectedTest().parameters.filter(p => p.value.trim() !== '').length);
   readonly totalCount = computed(() => this.selectedTest().parameters.length);
@@ -138,9 +154,9 @@ export class ResultEntryComponent implements OnInit {
   readonly hasCritical = computed(() => this.criticalParameters().length > 0);
   readonly activeParameter = computed(() => this.selectedTest().parameters.find(p => p.id === this.noteDraft()?.parameterId) ?? null);
   readonly testCount = computed(() => this.tests().length);
-  readonly completedTests = computed(() => this.tests().filter(test => test.status === 'COMPLETED').length);
-  readonly pendingTests = computed(() => this.tests().filter(test => test.status === 'PENDING').length);
-  readonly inProgressTests = computed(() => this.tests().filter(test => test.status === 'IN_PROGRESS').length);
+  readonly completedTests = computed(() => this.tests().filter(test => this.effectiveTestStatus(test) === 'COMPLETED').length);
+  readonly pendingTests = computed(() => this.tests().filter(test => this.effectiveTestStatus(test) === 'PENDING').length);
+  readonly inProgressTests = computed(() => this.tests().filter(test => this.effectiveTestStatus(test) === 'IN_PROGRESS').length);
 
   ngOnInit(): void {
     if (this.sampleId() && !this.sample()) {
