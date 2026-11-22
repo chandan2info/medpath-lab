@@ -93,6 +93,13 @@ export class ResultEntryComponent implements OnInit {
     return patient ? { firstName: patient.firstName, lastName: patient.lastName, dob: patient.dob, gender: patient.gender, id: patient.id, refDoctor: patient.refDoctor } : null;
   });
   readonly sampleLabel = computed(() => this.sample()?.id ?? 'Active sample');
+  readonly priorityLabel = computed(() => {
+    const priority = this.sample()?.priority;
+    if (priority === 'stat') return 'STAT';
+    if (priority === 'urgent') return 'URGENT';
+    if (priority === 'routine') return 'ROUTINE';
+    return '—';
+  });
   readonly orderedTestsLabel = computed(() => {
     // Use the same 12-test collection that drives the card count, not the
     // sample's raw test-code list (which may contain extra/legacy entries).
