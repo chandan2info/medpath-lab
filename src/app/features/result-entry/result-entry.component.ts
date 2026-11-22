@@ -94,7 +94,9 @@ export class ResultEntryComponent implements OnInit {
   });
   readonly sampleLabel = computed(() => this.sample()?.id ?? 'Active sample');
   readonly orderedTestsLabel = computed(() => {
-    const testCodes = this.sample()?.tests ?? this.flow.selectedTests().map(test => test.id);
+    // Use the same 12-test collection that drives the card count, not the
+    // sample's raw test-code list (which may contain extra/legacy entries).
+    const testCodes = this.tests().map(test => test.code);
     if (!testCodes.length) return '—';
     const visibleCodes = testCodes.slice(0, 5);
     const remainingCount = testCodes.length - visibleCodes.length;
