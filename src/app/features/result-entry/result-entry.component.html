@@ -116,7 +116,7 @@
               </div>
             </div>
             <div class="critical-alert-actions">
-              <span class="critical-alert-bell" aria-label="{{ criticalCount() }} critical notification(s)">
+              <span class="critical-alert-bell" [attr.aria-label]="criticalCount() + ' critical notification(s)'">
                 <i class="ti ti-bell"></i><b>{{ criticalCount() }}</b>
               </span>
               <button type="button" class="critical-action" (click)="toggleCriticalDetails()">Details</button>
