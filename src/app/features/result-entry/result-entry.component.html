@@ -95,7 +95,7 @@
               <tbody>
                 @for (p of params(); track p.id; let i = $index) {
                   <tr [class.row-critical]="p.flag === 'critical'">
-                    <td class="status-cell"><span class="status-mark" [class]="'status-mark--' + p.flag" [attr.aria-label]="flagLabel(p.flag) + ' status"><i class="ti {{ statusIcon(p.flag) }}"></i></span></td>
+                    <td class="status-cell"><span class="status-mark" [class]="'status-mark--' + p.flag" [attr.aria-label]="flagLabel(p.flag) + ' status'"><i class="ti {{ statusIcon(p.flag) }}"></i></span></td>
                     <td class="param-cell"><strong>{{ p.name }}</strong>@if (p.editedBy) { <small>Edited by {{ p.editedBy }} · {{ p.editedAt }}</small> }</td>
                     <td><div class="result-input-wrap">
                       <input class="result-input" [class]="'result-input--' + p.flag" [attr.data-row-index]="i"
