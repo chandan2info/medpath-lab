@@ -118,6 +118,9 @@ export class ResultEntryComponent implements OnInit {
   readonly selectedTestId = signal('KFT');
   readonly testSearch = signal('');
   readonly filter = signal<TestFilter>('ALL');
+  readonly referenceProfiles = ['Adult Male', 'Adult Female', 'Child', 'Senior Adult'] as const;
+  readonly selectedReferenceProfile = signal<string>('Adult Male');
+  readonly showReferenceProfiles = signal(false);
   readonly showFilterMenu = signal(false);
   readonly leftCollapsed = signal(false);
   readonly workflowCollapsed = signal(false);
@@ -192,6 +195,11 @@ export class ResultEntryComponent implements OnInit {
   }
   setFilter(value: TestFilter): void { this.filter.set(value); this.showFilterMenu.set(false); }
   toggleFilterMenu(): void { this.showFilterMenu.update(open => !open); }
+  toggleReferenceProfiles(): void { this.showReferenceProfiles.update(open => !open); }
+  selectReferenceProfile(profile: string): void {
+    this.selectedReferenceProfile.set(profile);
+    this.showReferenceProfiles.set(false);
+  }
   toggleLeftPanel(): void { this.leftCollapsed.update(value => !value); }
   toggleWorkflow(): void { this.workflowCollapsed.update(value => !value); }
   updateSearch(value: string): void { this.testSearch.set(value); }
