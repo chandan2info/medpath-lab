@@ -64,11 +64,11 @@
         <div class="test-list" aria-label="Ordered test list">
           @for (test of visibleTests(); track test.id) {
             <button type="button" class="test-item" [class.test-item--selected]="selectedTestId() === test.id" (click)="selectTest(test.id)" [attr.aria-current]="selectedTestId() === test.id ? 'true' : null">
-              <span class="test-state" [class.test-state--complete]="test.status === 'COMPLETED'" [class.test-state--progress]="test.status === 'IN_PROGRESS'">
+              <span class="test-state" [class.test-state--complete]="effectiveTestStatus(test) === 'COMPLETED'" [class.test-state--progress]="effectiveTestStatus(test) === 'IN_PROGRESS'">
                 <i class="ti" [ngClass]="test.status === 'COMPLETED' ? 'ti-check' : test.status === 'IN_PROGRESS' ? 'ti-circle-dot' : 'ti-circle'"></i>
               </span>
               <span class="test-copy"><strong>{{ test.shortName }}</strong><small>{{ testEntered(test) }} / {{ test.parameters.length }} parameters</small></span>
-              <span class="test-status" [class.test-status--complete]="test.status === 'COMPLETED'" [class.test-status--progress]="test.status === 'IN_PROGRESS'">{{ testStatusLabel(test.status) }}</span>
+              <span class="test-status" [class.test-status--complete]="test.status === 'COMPLETED'" [class.test-status--progress]="test.status === 'IN_PROGRESS'">{{ testStatusLabel(effectiveTestStatus(test)) }}</span>
             </button>
           } @empty {
             <div class="empty-state"><i class="ti ti-search-off"></i><strong>No matching tests</strong><span>Change the search or status filter</span></div>
@@ -80,7 +80,7 @@
     <main class="result-panel">
       <section class="test-card panel">
         <div class="test-card-heading">
-          <div class="test-title"><i class="ti ti-flask-2"></i><div><h2>{{ selectedTest().name }}</h2><small>{{ selectedTest().code }} · {{ selectedTest().status | titlecase }}</small></div></div>
+          <div class="test-title"><i class="ti ti-flask-2"></i><div><h2>{{ selectedTest().name }}</h2><small>{{ selectedTest().code }} · {{ testStatusLabel(effectiveTestStatus(selectedTest())) }}</small></div></div>
           <div class="entry-progress">{{ enteredCount() }} / {{ totalCount() }} parameters entered</div>
           <button type="button" class="profile-select" disabled aria-label="Reference profile preview"><i class="ti ti-adjustments-horizontal"></i> Reference profile <i class="ti ti-chevron-down"></i></button>
         </div>
