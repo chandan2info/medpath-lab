@@ -52,8 +52,16 @@
     <aside class="ordered-panel panel">
       <div class="panel-heading">
         <div><h2>Ordered Tests <span class="count-pill">{{ testCount() }}</span></h2><p>{{ completedTests() }} completed · {{ inProgressTests() }} in progress</p></div>
-        <button class="filter-reset-button" type="button" (click)="clearOrderedFilters()" aria-label="Clear test search and filters" title="Clear search and filters"><i class="ti ti-filter"></i></button>
+        <button class="filter-reset-button" type="button" (click)="toggleFilterMenu()" [attr.aria-expanded]="showFilterMenu()" aria-haspopup="true" aria-label="Open test filters" title="Filter ordered tests"><i class="ti ti-filter"></i></button>
       </div>
+      @if (showFilterMenu()) {
+        <div class="filter-popover" role="group" aria-label="Choose test status filter">
+          <div class="filter-popover__heading"><strong>Filter by status</strong><button type="button" (click)="clearOrderedFilters()">Reset</button></div>
+          @for (item of [{key:'ALL',label:'All',count:testCount()},{key:'PENDING',label:'Pending',count:pendingTests()},{key:'IN_PROGRESS',label:'In Progress',count:inProgressTests()},{key:'COMPLETED',label:'Completed',count:completedTests()}]; track item.key) {
+            <button type="button" class="filter-popover__option" [class.filter-popover__option--active]="filter() === item.key" (click)="setFilter($any(item.key))"><span>{{ item.label }}</span><span class="filter-popover__count">{{ item.count }}</span>@if (filter() === item.key) { <i class="ti ti-check"></i> }</button>
+          }
+        </div>
+      }
       @if (!leftCollapsed()) {
         <label class="search-box"><i class="ti ti-search"></i><input type="search" placeholder="Search tests..." [value]="testSearch()" (input)="updateSearch($any($event.target).value)" aria-label="Search ordered tests">@if (testSearch()) { <button type="button" class="search-clear" (click)="updateSearch('')" aria-label="Clear test search"><i class="ti ti-x"></i></button> }</label>
         <div class="filter-row" role="group" aria-label="Filter ordered tests">
