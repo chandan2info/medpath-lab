@@ -52,10 +52,10 @@
     <aside class="ordered-panel panel">
       <div class="panel-heading">
         <div><h2>Ordered Tests <span class="count-pill">{{ testCount() }}</span></h2><p>{{ completedTests() }} completed · {{ inProgressTests() }} in progress</p></div>
-        <button class="icon-button" type="button" (click)="toggleLeftPanel()" [attr.aria-label]="leftCollapsed() ? 'Expand ordered tests' : 'Collapse ordered tests'"><i class="ti" [ngClass]="leftCollapsed() ? 'ti-layout-sidebar-right' : 'ti-layout-sidebar-left'"></i></button>
+        <button class="filter-reset-button" type="button" (click)="clearOrderedFilters()" aria-label="Clear test search and filters" title="Clear search and filters"><i class="ti ti-filter"></i></button>
       </div>
       @if (!leftCollapsed()) {
-        <label class="search-box"><i class="ti ti-search"></i><input type="search" placeholder="Search tests..." [value]="testSearch()" (input)="updateSearch($any($event.target).value)" aria-label="Search ordered tests"></label>
+        <label class="search-box"><i class="ti ti-search"></i><input type="search" placeholder="Search tests..." [value]="testSearch()" (input)="updateSearch($any($event.target).value)" aria-label="Search ordered tests"><button type="button" class="search-clear" *ngIf="testSearch()" (click)="updateSearch('')" aria-label="Clear test search"><i class="ti ti-x"></i></button></label>
         <div class="filter-row" role="group" aria-label="Filter ordered tests">
           @for (item of [{key:'ALL',label:'All',count:testCount()},{key:'PENDING',label:'Pending',count:pendingTests()},{key:'IN_PROGRESS',label:'In Progress',count:inProgressTests()},{key:'COMPLETED',label:'Completed',count:completedTests()}]; track item.key) {
             <button type="button" class="filter-chip" [class.filter-chip--active]="filter() === item.key" (click)="setFilter($any(item.key))">{{ item.label }} <span>{{ item.count }}</span></button>
