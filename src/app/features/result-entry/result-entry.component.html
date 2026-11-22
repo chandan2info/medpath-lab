@@ -189,7 +189,14 @@
         </div>
       </section>
       @if (hasCritical()) {
-        <section class="panel notification-card"><h2><i class="ti ti-phone"></i> Critical Notification</h2>
+        <section class="panel notification-card">
+          <h2 class="notification-card-heading">
+            <span class="notification-bell" aria-hidden="true">
+              <i class="ti ti-bell"></i>
+              <b>{{ criticalCount() }}</b>
+            </span>
+            <span>Critical Notification</span>
+          </h2>
           @for (parameter of criticalParameters(); track parameter.id) {
             <div class="notification-detail"><strong>{{ patient()?.refDoctor || 'Referring physician not specified' }}</strong><span>{{ parameter.name }} = {{ parameter.value }} {{ parameter.unit }}</span><small>Notified: — · Acknowledged: —</small><button type="button" (click)="openNotification(parameter)">Record notification</button></div>
           }
