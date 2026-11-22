@@ -128,7 +128,7 @@
         <footer class="test-footer"><span><i class="ti ti-info-circle"></i> Clinical flags and ranges shown here are illustrative mock data.</span><span>Keyboard: Tab between fields · Enter to continue</span></footer>
       </section>
 
-      <div class="bottom-navigation"><button type="button" class="secondary-button" (click)="selectTest(tests()[Math.max(0, tests().findIndex(t => t.id === selectedTestId()) - 1)].id)" [disabled]="tests().findIndex(t => t.id === selectedTestId()) === 0"><i class="ti ti-chevron-left"></i> Previous test</button><span>{{ tests().findIndex(t => t.id === selectedTestId()) + 1 }} of {{ testCount() }}</span><button type="button" class="secondary-button" (click)="selectTest(tests()[Math.min(tests().length - 1, tests().findIndex(t => t.id === selectedTestId()) + 1)].id)" [disabled]="tests().findIndex(t => t.id === selectedTestId()) === tests().length - 1">Next test <i class="ti ti-chevron-right"></i></button></div>
+      <div class="bottom-navigation"><button type="button" class="secondary-button" (click)="previousTest()" [disabled]="isFirstTest()"><i class="ti ti-chevron-left"></i> Previous test</button><span>{{ selectedTestPosition() }} of {{ testCount() }}</span><button type="button" class="secondary-button" (click)="nextTest()" [disabled]="isLastTest()">Next test <i class="ti ti-chevron-right"></i></button></div>
     </main>
 
     <aside class="workflow-panel">
