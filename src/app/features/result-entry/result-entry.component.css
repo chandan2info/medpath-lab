@@ -37,3 +37,62 @@
 @media(max-width:992px) { :host { height:auto;overflow:visible; }.workspace { grid-template-columns:1fr;overflow:visible; }.ordered-panel { height:clamp(360px,calc(100dvh - 250px),560px);min-height:0;max-height:calc(100dvh - 190px); }.result-page { height:auto; }.result-panel { overflow:visible; }.test-card { min-height:480px; }.workflow-panel { display:flex; }.patient-strip { grid-template-columns:1fr; }.patient-order-summary { display:block;border:0;padding:0; }.sample-status { flex-direction:row;align-items:center;flex-wrap:wrap; }.result-page { gap:10px; } }
 @media(max-width:640px) { .ordered-panel { height:clamp(340px,calc(100dvh - 220px),520px);max-height:calc(100dvh - 160px); }.page-header { align-items:flex-start; }.save-state { white-space:normal;font-size:9px; }.patient-strip { padding:10px; }.patient-meta { gap:6px; }.test-card-heading { align-items:flex-start; }.entry-progress { margin-left:0; }.profile-select { display:none; }.critical-alert { flex-wrap:wrap; }.critical-alert-copy { flex-basis:calc(100% - 40px); }.critical-action { flex:1; }.test-footer { flex-direction:column; }.bottom-navigation { flex-wrap:wrap;gap:6px; }.parameter-table { min-width:650px; } }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important;transition:none!important; } }
+
+
+/* Ordered Tests controls — align with the reference panel */
+.filter-reset-button {
+  display:inline-grid;place-items:center;width:30px;height:30px;flex:0 0 30px;
+  border:1px solid var(--border-color);border-radius:8px;
+  background:var(--body-bg);color:var(--text-secondary);cursor:pointer;
+}
+.filter-reset-button:hover,.filter-reset-button:focus-visible {
+  border-color:var(--lis-primary);color:var(--lis-primary);outline:none;
+}
+.filter-reset-button i { font-size:16px; }
+.search-box {
+  min-height:38px;margin:10px 10px 8px;padding:7px 10px;
+  background:var(--body-bg);box-sizing:border-box;
+}
+.search-box input { flex:1;min-width:0; }
+.search-clear {
+  display:inline-grid;place-items:center;width:22px;height:22px;flex:0 0 22px;
+  border:0;border-radius:50%;background:transparent;color:var(--text-secondary);cursor:pointer;
+}
+.search-clear:hover { background:var(--border-color);color:var(--text-primary); }
+.filter-row { gap:6px;padding:0 9px 10px; }
+.filter-chip {
+  min-height:26px;padding:5px 9px;gap:5px;
+  border-radius:18px;font-size:10px;font-weight:600;
+  background:var(--body-bg);white-space:nowrap;
+}
+.filter-chip span {
+  display:inline-grid;place-items:center;min-width:15px;height:15px;
+  padding:0 3px;border-radius:10px;background:rgba(127,145,166,.16);
+  font-size:9px;opacity:1;
+}
+.filter-chip--active {
+  border-color:var(--lis-primary);background:var(--lis-primary);color:#fff;
+}
+.filter-chip--active span { background:rgba(255,255,255,.2);color:#fff; }
+
+/* Keep the right-side action card visually grouped and easy to reach */
+.workflow-panel { scrollbar-width:thin;overscroll-behavior:contain; }
+.action-card {
+  display:flex;flex-direction:column;gap:8px;padding:12px;
+  border:1px solid var(--border-color);border-radius:12px;
+  background:var(--card-bg);
+}
+.action-card button { width:100%;min-height:40px;font-size:11px;font-weight:600; }
+.action-card .primary-action:disabled {
+  border-color:var(--border-color);background:var(--body-bg);
+  color:var(--text-secondary);opacity:1;
+}
+.action-card .outline-action {
+  border-color:var(--lis-primary);background:transparent;color:var(--text-primary);
+}
+.action-card .outline-action:hover { background:var(--lis-primary-xlight); }
+.action-disclaimer { padding-top:2px; }
+@media(max-width:1450px) {
+  .filter-row { gap:5px; }
+  .filter-chip { padding:5px 7px;font-size:9px; }
+}
