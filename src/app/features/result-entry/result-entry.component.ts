@@ -82,7 +82,12 @@ export class ResultEntryComponent implements OnInit {
     this.route.paramMap.pipe(map(params => params.get('sampleId'))),
     { initialValue: this.route.snapshot.paramMap.get('sampleId') },
   );
-  readonly sample = computed(() => this.sampleSvc.getById(this.sampleId()));
+  readonly sample = computed(() => {
+    const routeSampleId = this.sampleId();
+    return routeSampleId
+      ? this.sampleSvc.getById(routeSampleId)
+      : this.sampleSvc.getDefaultSample();
+  });
   readonly patient = computed(() => {
     const sample = this.sample();
     if (sample) {
@@ -93,6 +98,35 @@ export class ResultEntryComponent implements OnInit {
     return patient ? { firstName: patient.firstName, lastName: patient.lastName, dob: patient.dob, gender: patient.gender, id: patient.id, refDoctor: patient.refDoctor } : null;
   });
   readonly sampleLabel = computed(() => this.sample()?.id ?? 'Active sample');
+  readonly collectedLabel = computed(() => {
+    const collectedAt = this.sample()?.collectedAt?.trim();
+    if (!collectedAt) return '—';
+
+    // Mock data currently stores a local time only (for example, "9:20 AM").
+    if (/^\\d{1,2}:\\d{2}\\s?(AM|PM)$/i.test(collectedAt)) {
+      return `Today, ${collectedAt.replace(/\\s+/g, ' ').toUpperCase()}`;
+    }
+
+    const collectedDate = new Date(collectedAt);
+    if (Number.isNaN(collectedDate.getTime())) return collectedAt;
+
+    const time = new Intl.DateTimeFormat('en-IN', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    }).format(collectedDate);
+    const isToday = collectedDate.toDateString() === new Date().toDateString();
+    if (isToday) return `Today, ${time}`;
+
+    return new Intl.DateTimeFormat('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    }).format(collectedDate);
+  });
   readonly priorityLabel = computed(() => {
     const priority = this.sample()?.priority;
     if (priority === 'stat') return 'STAT';
@@ -180,11 +214,11 @@ export class ResultEntryComponent implements OnInit {
   readonly inProgressTests = computed(() => this.tests().filter(test => this.effectiveTestStatus(test) === 'IN_PROGRESS').length);
 
   ngOnInit(): void {
+    // A missing route id intentionally uses the default mock sample for direct
+    // UI preview. An explicitly supplied but unknown id remains an invalid link.
     if (this.sampleId() && !this.sample()) {
       this.router.navigate(['/dashboard/tracking']);
-      return;
     }
-    if (!this.sampleId() && !this.flow.patient()) this.router.navigate(['/dashboard/registration']);
   }
 
   previousTest(): void {
