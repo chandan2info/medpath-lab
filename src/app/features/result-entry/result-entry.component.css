@@ -1300,3 +1300,96 @@
 .notification-detail + .notification-detail {
   margin-top: 8px;
 }
+
+
+/* Integrated critical alert + notification controls within the result table */
+.critical-alert {
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 12px 12px 0;
+  padding: 11px 12px;
+}
+.critical-alert-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.critical-alert-main > i {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: var(--lis-danger);
+  font-size: 19px;
+}
+.critical-alert-copy {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.critical-alert-copy strong {
+  display: block;
+  line-height: 1.4;
+}
+.critical-alert-copy p {
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.critical-alert-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  flex: 0 0 auto;
+}
+.critical-alert-bell {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  margin-right: 3px;
+  border: 1px solid var(--lis-primary);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--lis-primary) 6%, var(--body-bg));
+  color: var(--lis-primary);
+}
+.critical-alert-bell > i {
+  font-size: 17px;
+  line-height: 1;
+}
+.critical-alert-bell > b {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  display: grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border: 2px solid var(--card-bg);
+  border-radius: 999px;
+  background: var(--lis-danger);
+  color: #fff;
+  font-size: 9px;
+  line-height: 1;
+}
+@media (max-width: 900px) {
+  .critical-alert {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .critical-alert-actions {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 520px) {
+  .critical-alert-actions {
+    justify-content: flex-start;
+  }
+  .critical-alert-actions .critical-action {
+    flex: 1 1 auto;
+  }
+}
