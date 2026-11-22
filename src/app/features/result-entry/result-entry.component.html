@@ -1,295 +1,193 @@
-<div class="page-header">
-  <div class="page-header__left">
-    <div class="page-header__title-row">
-      <div class="page-header__icon" aria-hidden="true">
-        <i class="ti ti-clipboard-list"></i>
-      </div>
-      <div>
-        <h1 class="page-title">Result Entry</h1>
-        <nav aria-label="Breadcrumb">
-          <ol class="breadcrumb">
+<div class="result-page">
+  <header class="page-header">
+    <div class="page-header__left">
+      <div class="page-header__title-row">
+        <div class="page-header__icon" aria-hidden="true"><i class="ti ti-clipboard-list"></i></div>
+        <div>
+          <h1 class="page-title">Result Entry</h1>
+          <nav aria-label="Breadcrumb"><ol class="breadcrumb">
             <li><a routerLink="/dashboard/home">Home</a></li>
             <li><a routerLink="/dashboard/tracking">Tracking</a></li>
-            @if (patient) {
-              <li aria-current="page">{{ patient.firstName }} {{ patient.lastName }} — {{ sampleLabel }}</li>
-            }
-          </ol>
-        </nav>
+            <li aria-current="page">{{ patient()?.firstName }} {{ patient()?.lastName }} — {{ sampleLabel() }}</li>
+          </ol></nav>
+        </div>
       </div>
     </div>
-  </div>
-  <div class="autosave-chip" aria-live="polite">
-    <i class="ti ti-circle-check" aria-hidden="true"></i> Autosaved {{ lastSavedAt() }}
-  </div>
-</div>
+    <div class="save-state" [class.save-state--dirty]="demoSavedState() === 'unsaved'" aria-live="polite">
+      <i class="ti" [ngClass]="demoSavedState() === 'unsaved' ? 'ti-cloud-upload' : 'ti-info-circle'"></i>
+      {{ demoSavedState() === 'unsaved' ? 'Demo changes not saved' : 'UI preview · mock data only' }}
+    </div>
+  </header>
 
-<div class="re-layout">
-  <!-- Left: entry area -->
-  <div class="re-main">
-    <!-- Patient card — bound to whichever real record is in scope: the
-         Sample Tracking row the user clicked (via :sampleId), or the
-         PatientFlowService active patient when continuing straight from
-         Sample Collection. Never a fixed demo record.
-         Uses the canonical Patient Info Metadata pattern (pat-info-row /
-         pat-name-row / pat-detail-row) shared with Billing and Test Order,
-         so patient details read identically across the whole flow. The
-         referring-doctor field keeps its original "Ref: {doctor}" badge
-         treatment, just repositioned as a trailing, vertically-centered
-         element so it doesn't get lost inside a text-heavy detail row. -->
-    @if (patient) {
-      <div class="pat-info-row pat-info-row--bordered">
-        <div class="pat-av" aria-hidden="true">{{ patientInitials }}</div>
-        <div class="pat-id-main">
-          <div class="pat-name-row">
-            <div class="pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
-            @if (isStat) {
-              <span class="pill pill--stat" aria-label="STAT priority">
-                <i class="ti ti-flag-3" aria-hidden="true"></i>STAT
+  <section class="patient-strip" aria-label="Patient and sample information">
+    <div class="patient-identity">
+      <div class="patient-avatar">{{ patientInitials() }}</div>
+      <div class="patient-details">
+        <div class="patient-name">{{ patient()?.firstName }} {{ patient()?.lastName }}
+          <span class="gender"><i class="ti ti-gender-male"></i>{{ patient()?.gender | titlecase }}</span>
+          <span class="age">{{ patientAge() }}</span>
+        </div>
+        <div class="patient-meta">
+          <span><i class="ti ti-id-badge-2"></i>{{ patient()?.id }}</span>
+          <span><i class="ti ti-flask"></i>{{ sampleLabel() }}</span>
+          <span><i class="ti ti-stethoscope"></i>{{ patient()?.refDoctor || 'Self / Walk-in' }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="patient-order-summary">
+      <div class="summary-top"><i class="ti ti-flask-2"></i><strong>Ordered Tests ({{ testCount() }})</strong></div>
+      <div class="summary-sub">{{ orderedTestsLabel() }}</div>
+    </div>
+    <div class="sample-status">
+      <span class="status-pill"><i class="ti ti-circle-check"></i>Sample {{ sample()?.status === 'ready' ? 'Ready' : 'Received' }}</span>
+      <span class="collection-time"><i class="ti ti-calendar-time"></i>Collected: {{ sample()?.collectedAt || 'Collection time unavailable' }}</span>
+    </div>
+  </section>
+
+  @if (showDemoNotice()) {
+    <div class="demo-notice" role="status"><i class="ti ti-info-circle"></i> Preview only: no backend request was made and no clinical workflow state was changed. <button type="button" (click)="showDemoNotice.set(false)" aria-label="Dismiss notice"><i class="ti ti-x"></i></button></div>
+  }
+
+  <div class="workspace" [class.workspace--left-collapsed]="leftCollapsed()" [class.workspace--workflow-collapsed]="workflowCollapsed()">
+    <aside class="ordered-panel panel">
+      <div class="panel-heading">
+        <div><h2>Ordered Tests <span class="count-pill">{{ testCount() }}</span></h2><p>{{ completedTests() }} completed · {{ inProgressTests() }} in progress</p></div>
+        <button class="icon-button" type="button" (click)="toggleLeftPanel()" [attr.aria-label]="leftCollapsed() ? 'Expand ordered tests' : 'Collapse ordered tests'"><i class="ti" [ngClass]="leftCollapsed() ? 'ti-layout-sidebar-right' : 'ti-layout-sidebar-left'"></i></button>
+      </div>
+      @if (!leftCollapsed()) {
+        <label class="search-box"><i class="ti ti-search"></i><input type="search" placeholder="Search tests..." [value]="testSearch()" (input)="updateSearch($any($event.target).value)" aria-label="Search ordered tests"></label>
+        <div class="filter-row" role="group" aria-label="Filter ordered tests">
+          @for (item of [{key:'ALL',label:'All',count:testCount()},{key:'PENDING',label:'Pending',count:pendingTests()},{key:'IN_PROGRESS',label:'In Progress',count:inProgressTests()},{key:'COMPLETED',label:'Completed',count:completedTests()}]; track item.key) {
+            <button type="button" class="filter-chip" [class.filter-chip--active]="filter() === item.key" (click)="setFilter($any(item.key))">{{ item.label }} <span>{{ item.count }}</span></button>
+          }
+        </div>
+        <div class="test-list" aria-label="Ordered test list">
+          @for (test of visibleTests(); track test.id) {
+            <button type="button" class="test-item" [class.test-item--selected]="selectedTestId() === test.id" (click)="selectTest(test.id)" [attr.aria-current]="selectedTestId() === test.id ? 'true' : null">
+              <span class="test-state" [class.test-state--complete]="test.status === 'COMPLETED'" [class.test-state--progress]="test.status === 'IN_PROGRESS'">
+                <i class="ti" [ngClass]="test.status === 'COMPLETED' ? 'ti-check' : test.status === 'IN_PROGRESS' ? 'ti-circle-dot' : 'ti-circle'"></i>
               </span>
-            }
-          </div>
-          <div class="pat-detail-row">
-            <span class="pat-detail-item"><i class="ti ti-id-badge-2 pat-detail-icon" aria-hidden="true"></i><span class="lis-mono">{{ patient.id }}</span></span>
-            <span class="pat-detail-sep" aria-hidden="true">|</span>
-            <span class="pat-detail-item"><i class="ti ti-flask pat-detail-icon" aria-hidden="true"></i><span class="lis-mono">{{ sampleLabel }}</span></span>
-            <span class="pat-detail-sep" aria-hidden="true">|</span>
-            <span class="pat-detail-item age-inline" [title]="patientAgeBreakdown()">
-              <i class="ti ti-cake pat-detail-icon" aria-hidden="true"></i><span class="age-inline__y">{{ ageParts().years }}y</span><span class="age-inline__sep"> · </span><span class="age-inline__m">{{ ageParts().months }}m</span><span class="age-inline__sep"> · </span><span class="age-inline__d">{{ ageParts().days }}d</span>
-            </span>
-            <span class="pat-detail-sep" aria-hidden="true">|</span>
-            <span class="pat-detail-item"><i class="ti {{ genderIcon() }} pat-detail-icon" aria-hidden="true"></i>{{ patient.gender | titlecase }}</span>
-          </div>
-          <div class="pat-detail-row">
-            <span class="pat-detail-item"><i class="ti ti-clipboard-list pat-detail-icon" aria-hidden="true"></i>{{ orderedTestsLabel }}</span>
-          </div>
+              <span class="test-copy"><strong>{{ test.shortName }}</strong><small>{{ testEntered(test) }} / {{ test.parameters.length }} parameters</small></span>
+              <span class="test-status" [class.test-status--complete]="test.status === 'COMPLETED'" [class.test-status--progress]="test.status === 'IN_PROGRESS'">{{ testStatusLabel(test.status) }}</span>
+            </button>
+          } @empty {
+            <div class="empty-state"><i class="ti ti-search-off"></i><strong>No matching tests</strong><span>Change the search or status filter</span></div>
+          }
         </div>
-        <div class="pat-doctor-badge">
-          <i class="ti ti-stethoscope" aria-hidden="true"></i>
-          <span>Ref: {{ patient.refDoctor }}</span>
-        </div>
-      </div>
-    }
-
-    <!-- Tab bar -->
-    <div class="tab-bar" role="tablist" aria-label="Test tabs">
-      @for (tab of tabs; track tab.key; let i = $index) {
-        <button type="button" class="tab" role="tab"
-          [id]="'tab-' + tab.key"
-          [attr.data-tab-key]="tab.key"
-          [class.tab--active]="activeTabKey() === tab.key"
-          [attr.aria-selected]="activeTabKey() === tab.key"
-          [attr.aria-controls]="'panel-' + tab.key"
-          [attr.tabindex]="activeTabKey() === tab.key ? 0 : -1"
-          (click)="selectTab(tab.key)"
-          (keydown)="onTabKeydown($event, i)"
-        >{{ tab.label }}</button>
       }
-    </div>
+    </aside>
 
-    <!-- Critical banner -->
-    @if (hasCritical()) {
-      <div class="critical-banner" role="alert" aria-live="assertive">
-        <span class="critical-icon-wrap">
-          <i class="ti ti-alert-octagon" aria-hidden="true"></i>
-        </span>
-        <div class="critical-text">
-          <div class="critical-headline">
-            <span class="critical-badge">CRITICAL VALUE</span>
-            <span class="critical-param">{{ criticalParam()?.name }} — {{ criticalParam()?.value }} {{ criticalParam()?.unit }}</span>
-          </div>
-          <div class="critical-sub">Notify the referring physician before report dispatch.</div>
+    <main class="result-panel">
+      <section class="test-card panel">
+        <div class="test-card-heading">
+          <div class="test-title"><i class="ti ti-flask-2"></i><div><h2>{{ selectedTest().name }}</h2><small>{{ selectedTest().code }} · {{ selectedTest().status | titlecase }}</small></div></div>
+          <div class="entry-progress">{{ enteredCount() }} / {{ totalCount() }} parameters entered</div>
+          <button type="button" class="profile-select" disabled aria-label="Reference profile preview"><i class="ti ti-adjustments-horizontal"></i> Reference profile <i class="ti ti-chevron-down"></i></button>
         </div>
-        <button type="button" class="critical-notify-btn">
-          <i class="ti ti-phone" aria-hidden="true"></i> Notify
-        </button>
-      </div>
-    }
+        @if (hasCritical()) {
+          <div class="critical-alert" role="alert">
+            <i class="ti ti-alert-triangle"></i>
+            <div class="critical-alert-copy">
+              <strong>Critical Result Detected <span>({{ criticalCount() }} parameter{{ criticalCount() === 1 ? '' : 's' }})</span></strong>
+              @for (parameter of criticalParameters(); track parameter.id) { <p>{{ parameter.name }} = {{ parameter.value }} {{ parameter.unit }} — follow laboratory critical-value notification policy.</p> }
+              @if (showCriticalDetails()) { <p class="critical-detail">Notification status is not recorded in this UI preview.</p> }
+            </div>
+            <button type="button" class="critical-action" (click)="toggleCriticalDetails()">Details</button>
+            @if (criticalParameters()[0]; as critical) { <button type="button" class="critical-action critical-action--solid" (click)="openNotification(critical)"><i class="ti ti-phone"></i> Record notification</button> }
+          </div>
+        }
+        <div class="table-wrap">
+          <table class="parameter-table">
+            <thead><tr><th>Status</th><th>Parameter</th><th>Result</th><th>Unit</th><th>Reference range</th><th>Flag</th><th>Actions</th></tr></thead>
+            <tbody>
+              @for (parameter of selectedTest().parameters; track parameter.id; let i = $index) {
+                <tr>
+                  <td><i class="ti status-icon" [ngClass]="'ti-' + statusIcon(parameter.flag).replace('ti-','')" [class]=" 'status-icon status-icon--' + parameter.flag" [attr.aria-label]="flagLabel(parameter.flag)"></i></td>
+                  <td class="parameter-name"><strong>{{ parameter.name }}</strong><small>{{ parameter.method }}{{ parameter.isCalculated ? ' · Calculated' : '' }}</small></td>
+                  <td><input class="result-input" [class]="'result-input result-input--' + parameter.flag" [value]="parameter.value" [readonly]="parameter.isCalculated" [placeholder]="parameter.isCalculated ? 'Calculated' : 'Enter result'" (input)="updateResult(parameter.id, $any($event.target).value)" [attr.aria-label]="parameter.name + ' result'" /></td>
+                  <td class="unit-cell">{{ parameter.unit || '—' }}</td>
+                  <td><div class="reference-copy">{{ parameter.range }}</div><div class="range-track"><span class="range-marker" [style.left.%]="rangePct(parameter)"></span></div></td>
+                  <td><span class="flag-pill" [class]="'flag-pill flag-pill--' + parameter.flag"><i></i>{{ flagLabel(parameter.flag) }}</span></td>
+                  <td><div class="row-actions">
+                    <button type="button" class="icon-button note-action" [class.has-note]="!!parameter.note" (click)="openNotes(parameter)" [attr.aria-label]="'Notes for ' + parameter.name" title="Parameter notes"><i class="ti ti-message-circle"></i></button>
+                    <div class="more-wrap"><button type="button" class="icon-button" (click)="toggleMore(parameter.id)" [attr.aria-expanded]="moreMenuId() === parameter.id" [attr.aria-label]="'More actions for ' + parameter.name" title="More actions"><i class="ti ti-dots"></i></button>
+                      @if (moreMenuId() === parameter.id) {
+                        <div class="more-menu" role="menu">
+                          <button type="button" role="menuitem" [disabled]="parameter.previousValue === undefined" (click)="restorePrevious(parameter)"><i class="ti ti-history"></i>Restore previous value</button>
+                          <button type="button" role="menuitem" (click)="clearResult(parameter)"><i class="ti ti-eraser"></i>Clear result…</button>
+                          <button type="button" role="menuitem" (click)="viewHistory(parameter)"><i class="ti ti-clock"></i>View result history</button>
+                        </div>
+                      }
+                    </div>
+                  </div></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <footer class="test-footer"><span><i class="ti ti-info-circle"></i> Clinical flags and ranges shown here are illustrative mock data.</span><span>Keyboard: Tab between fields · Enter to continue</span></footer>
+      </section>
 
-    <!-- Result table -->
-    <div class="result-card lis-card" role="tabpanel" [id]="'panel-' + activeTabKey()" [attr.aria-labelledby]="'tab-' + activeTabKey()">
-      <div class="lis-card__header">
-        <i class="ti {{ activeTab().cardIcon }} lis-card-icon" aria-hidden="true"></i>
-        <h2 class="lis-card__title">{{ activeTab().cardTitle }}</h2>
-        <span class="lis-badge" [class]="'lis-badge--' + cardBadge().style">
-          <i class="ti {{ cardBadge().icon }} ti-xs"></i> {{ cardBadge().text }}
-        </span>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="result-tbl" role="table" [attr.aria-label]="activeTab().cardTitle + ' result entry'">
-          <thead>
-            <tr>
-              <th scope="col">Status</th>
-              <th scope="col">Parameter</th>
-              <th scope="col">Result</th>
-              <th scope="col">Unit</th>
-              <th scope="col">Reference range</th>
-              <th scope="col">Flag</th>
-              <th scope="col">Notes</th>
-              <th scope="col">Reset</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (p of params(); track p.id; let i = $index) {
-              <tr>
-                <td class="status-cell">
-                  <i class="ti {{ statusIcon(p.flag) }} status-icon status-icon--{{ p.flag }}"
-                     [attr.aria-label]="flagLabel(p.flag) + ' status'"></i>
-                </td>
-                <td class="param-name" [class.param-critical]="p.flag === 'critical'">
-                  {{ p.name }}
-                  @if (p.editedBy) {
-                    <div class="param-edited">Edited by {{ p.editedBy }} · {{ p.editedAt }}</div>
-                  }
-                </td>
-                <td>
-                  <div class="result-input-wrap">
-                    <input
-                      class="result-input"
-                      [class]="'result-input--' + p.flag"
-                      [attr.data-row-index]="i"
-                      type="number"
-                      placeholder="Enter value"
-                      [value]="p.value"
-                      (input)="updateValue(i, $any($event.target).value)"
-                      (keydown)="onResultKeydown($event, i)"
-                      [attr.aria-label]="p.name + ' result'"
-                    />
-                    @if (p.flag === 'high' || p.flag === 'critical') {
-                      <span class="arrow-up" [attr.title]="p.flag === 'critical' ? 'Critical — well above reference' : 'Above reference range'" aria-hidden="true">
-                        {{ p.flag === 'critical' ? '↑↑' : '↑' }}
-                      </span>
-                    }
-                    @if (p.flag === 'low') {
-                      <span class="arrow-dn" title="Below reference range" aria-hidden="true">↓</span>
-                    }
-                  </div>
-                </td>
-                <td class="unit-cell">{{ p.unit }}</td>
-                <td class="ref-cell">
-                  <div class="ref-label">{{ p.refLabel }}</div>
-                  <div class="range-bar" aria-hidden="true">
-                    <div class="range-bar__track"></div>
-                    <div class="range-bar__marker" [class]="'range-bar__marker--' + p.flag"
-                         [style.left.%]="rangePct(p)"></div>
-                  </div>
-                </td>
-                <td>
-                  <span class="lis-flag" [class]="'lis-flag--' + p.flag">
-                    <span class="lis-flag__dot" aria-hidden="true"></span>
-                    {{ flagLabel(p.flag) }}
-                  </span>
-                </td>
-                <td>
-                  <div class="param-row-actions">
-                    <button type="button" class="note-btn" [attr.aria-label]="'Add note for ' + p.name">
-                      <i class="ti ti-message-circle" aria-hidden="true"></i>
-                    </button>
-                  </div>
-                </td>  
-                <td>
-                  <div class="param-row-actions">
-                    <button type="button" class="reset-btn" [disabled]="!isRowEdited(p)"
-                            [attr.aria-label]="'Reset ' + p.name + ' to original value'"
-                            title="Reset to original value" (click)="resetRow(i)">
-                      <i class="ti ti-arrow-back-up" aria-hidden="true"></i>
-                    </button>
-                  </div>
-                </td>
-                
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    </div>
+      <div class="bottom-navigation"><button type="button" class="secondary-button" (click)="selectTest(tests()[Math.max(0, tests().findIndex(t => t.id === selectedTestId()) - 1)].id)" [disabled]="tests().findIndex(t => t.id === selectedTestId()) === 0"><i class="ti ti-chevron-left"></i> Previous test</button><span>{{ tests().findIndex(t => t.id === selectedTestId()) + 1 }} of {{ testCount() }}</span><button type="button" class="secondary-button" (click)="selectTest(tests()[Math.min(tests().length - 1, tests().findIndex(t => t.id === selectedTestId()) + 1)].id)" [disabled]="tests().findIndex(t => t.id === selectedTestId()) === tests().length - 1">Next test <i class="ti ti-chevron-right"></i></button></div>
+    </main>
+
+    <aside class="workflow-panel">
+      <section class="panel workflow-card">
+        <div class="panel-heading"><h2>Result Workflow</h2><button type="button" class="icon-button" (click)="toggleWorkflow()" aria-label="Collapse workflow panel"><i class="ti ti-chevron-right"></i></button></div>
+        @if (!workflowCollapsed()) {
+          <div class="workflow-steps">
+            <div class="workflow-step workflow-step--done"><span><i class="ti ti-check"></i></span><div><strong>Result Entry</strong><small>{{ enteredCount() }} / {{ totalCount() }} parameters entered</small></div><b>Preview</b></div>
+            <div class="workflow-step workflow-step--pending"><span><i class="ti ti-circle"></i></span><div><strong>Validation</strong><small>Backend validation not connected</small></div><b>Pending</b></div>
+            <div class="workflow-step workflow-step--pending"><span><i class="ti ti-circle"></i></span><div><strong>Authorization</strong><small>Pathologist approval not connected</small></div><b>Pending</b></div>
+          </div>
+        }
+      </section>
+      <section class="panel summary-card">
+        <div class="panel-heading"><h2>Test Summary</h2></div>
+        <div class="summary-line"><span>Sample ID</span><strong>{{ sampleLabel() }}</strong></div>
+        <div class="summary-line"><span>Tests (this screen)</span><strong>{{ selectedTest().code }} ({{ totalCount() }} parameters)</strong></div>
+        <div class="summary-line"><span>Collected</span><strong>{{ sample()?.collectedAt || '—' }}</strong></div>
+        <div class="summary-line"><span>Priority</span><strong class="priority-chip">{{ sample()?.priority | titlecase }}</strong></div>
+        <h3>Flags (selected test)</h3>
+        <div class="flag-summary">
+          <div><i class="flag-dot flag-dot--normal"></i><strong>{{ normalCount() }}</strong><span>Normal</span></div>
+          <div><i class="flag-dot flag-dot--abnormal"></i><strong>{{ abnormalCount() }}</strong><span>Abnormal</span></div>
+          <div><i class="flag-dot flag-dot--critical"></i><strong>{{ criticalCount() }}</strong><span>Critical</span></div>
+        </div>
+      </section>
+      @if (hasCritical()) {
+        <section class="panel notification-card"><h2><i class="ti ti-phone"></i> Critical Notification</h2>
+          @for (parameter of criticalParameters(); track parameter.id) {
+            <div class="notification-detail"><strong>{{ patient()?.refDoctor || 'Referring physician not specified' }}</strong><span>{{ parameter.name }} = {{ parameter.value }} {{ parameter.unit }}</span><small>Notified: — · Acknowledged: —</small><button type="button" (click)="openNotification(parameter)">Record notification</button></div>
+          }
+        </section>
+      }
+      <section class="panel action-card">
+        <button type="button" class="primary-action" disabled title="Available after backend release workflow is integrated"><i class="ti ti-lock"></i> Finalize &amp; Generate Report</button>
+        <button type="button" class="outline-action" (click)="submitReviewDemo()"><i class="ti ti-user-check"></i> Submit for Review</button>
+        <button type="button" class="outline-action" (click)="validateDemo()"><i class="ti ti-shield-check"></i> Validate Results</button>
+        <button type="button" class="outline-action" (click)="saveDraft()"><i class="ti ti-device-floppy"></i> Save Draft (preview)</button>
+        <small class="action-disclaimer">Actions are visual previews only. No clinical workflow is submitted.</small>
+      </section>
+    </aside>
   </div>
 
-  <!-- Right: summary -->
-  <aside class="re-side" aria-label="Entry summary">
-    <div class="lis-card side-card">
-      <div class="lis-card__header">
-        <h2 class="lis-card__title">Test summary</h2>
-      </div>
-      <div class="side-rows">
-        <div class="side-row"><span>Sample ID</span><span class="lis-mono">SMP-2406-087</span></div>
-        <div class="side-row"><span>Tests ordered</span><span>KFT · Urine R/M</span></div>
-        <div class="side-row"><span>Collected</span><span>9:20 AM</span></div>
-        <div class="side-row"><span>Priority</span><span class="stat-chip stat-chip--sm">STAT</span></div>
-      </div>
-
-      <!-- Progress ring -->
-      <div class="side-section">Progress</div>
-      <div class="progress-wrap">
-        <svg viewBox="0 0 80 80" width="112" height="112" class="progress-ring" [attr.aria-label]="enteredCount() + ' of ' + params().length + ' parameters entered'" role="img">
-          <defs>
-            <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#3DC9A8"/>
-              <stop offset="55%" stop-color="#2FB4D9"/>
-              <stop offset="100%" stop-color="#6366F1"/>
-            </linearGradient>
-          </defs>
-          <circle cx="40" cy="40" r="34" fill="none" stroke="var(--body-bg)" stroke-width="8"/>
-          <circle cx="40" cy="40" r="34" fill="none"
-            stroke="url(#ringGrad)" stroke-width="8"
-            stroke-dasharray="213.6" [attr.stroke-dashoffset]="213.6 - (213.6 * pct() / 100)"
-            stroke-linecap="round" transform="rotate(-90 40 40)"/>
-        </svg>
-        <div class="progress-ring-label">
-          <div class="progress-status">Completed</div>
-          <div class="progress-pct">{{ pct() }}%</div>
-          <div class="progress-caption">{{ enteredCount() }} / {{ params().length }} parameters</div>
-        </div>
-      </div>
-
-      <!-- Flag summary -->
-      <div class="side-section">Flags</div>
-      <div class="flag-stat-grid">
-        <div class="flag-stat flag-stat--normal">
-          <span class="flag-stat__dot" aria-hidden="true"></span>
-          <span class="flag-stat__count">{{ normalCount() }}</span>
-          <span class="flag-stat__label">Normal</span>
-        </div>
-        <div class="flag-stat flag-stat--high">
-          <span class="flag-stat__dot" aria-hidden="true"></span>
-          <span class="flag-stat__count">{{ abnCount() }}</span>
-          <span class="flag-stat__label">Abnormal</span>
-        </div>
-        <div class="flag-stat flag-stat--critical">
-          <span class="flag-stat__dot" aria-hidden="true"></span>
-          <span class="flag-stat__count">{{ critCount() }}</span>
-          <span class="flag-stat__label">Critical</span>
-        </div>
-      </div>
-
-      <!-- Notify box -->
-      @if (hasCritical()) {
-        <div class="side-section">Action needed</div>
-        <div class="notify-box" role="status">
-          <i class="ti ti-phone" aria-hidden="true"></i>
-          <div>
-            <div class="notify-title">Notify Dr. Suresh Menon</div>
-            <div class="notify-sub">Critical {{ criticalParam()?.name }} — required before dispatch</div>
-          </div>
-        </div>
-      }
-
-      <div class="side-actions">
-        <button type="button" class="lis-btn lis-btn--primary lis-btn--full" (click)="navigateToPreview()" title="Ctrl+Enter">
-          <i class="ti ti-file-text" aria-hidden="true"></i> Finalise &amp; generate report
-        </button>
-        <button type="button" class="lis-btn lis-btn--secondary lis-btn--full" (click)="saveDraft()" title="Ctrl+S">
-          <i class="ti ti-device-floppy" aria-hidden="true"></i> Save draft
-        </button>
-        <button type="button" class="lis-btn lis-btn--ghost lis-btn--full" (click)="resetAll()" [disabled]="!anyEdited()"
-                title="Reset all values on this tab to their original entries">
-          <i class="ti ti-refresh-alert" aria-hidden="true"></i> Reset this section
-        </button>
-        <div class="kbd-hint">
-          <span><kbd>Enter</kbd> next row</span>
-          <span><kbd>Ctrl</kbd>+<kbd>S</kbd> save</span>
-          <span><kbd>Ctrl</kbd>+<kbd>↵</kbd> report</span>
-        </div>
-      </div>
+  @if (noteDraft(); as draft) {
+    <div class="modal-backdrop" (click)="closeNotes()">
+      <section class="dialog notes-dialog" role="dialog" aria-modal="true" aria-labelledby="notes-title" (click)="$event.stopPropagation()">
+        <header><div><h2 id="notes-title">Parameter Notes</h2><p>{{ activeParameter()?.name }}</p></div><button type="button" class="icon-button" (click)="closeNotes()" aria-label="Close notes"><i class="ti ti-x"></i></button></header>
+        <div class="dialog-content"><div class="note-context"><span>Current result</span><strong>{{ activeParameter()?.value || 'Not entered' }} {{ activeParameter()?.unit }}</strong></div><label for="parameter-note">Comment</label><textarea id="parameter-note" rows="4" [value]="draft.text" (input)="updateNote($any($event.target).value)" placeholder="Add a comment for this parameter..."></textarea><small>Preview only · author and timestamp are not persisted.</small></div>
+        <footer><button type="button" class="secondary-button" (click)="closeNotes()">Cancel</button><button type="button" class="primary-action" (click)="saveNote()">Save note locally</button></footer>
+      </section>
     </div>
-  </aside>
+  }
+  @if (showNotificationDialog()) {
+    <div class="modal-backdrop" (click)="closeNotification()">
+      <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="notification-title" (click)="$event.stopPropagation()">
+        <header><div><h2 id="notification-title">Record Critical Notification</h2><p>Demo interaction — no notification will be sent</p></div><button type="button" class="icon-button" (click)="closeNotification()" aria-label="Close dialog"><i class="ti ti-x"></i></button></header>
+        <div class="dialog-content"><label for="notification-recipient">Referring physician / recipient</label><input id="notification-recipient" [value]="notificationDraft()?.recipient || ''" (input)="updateRecipient($any($event.target).value)" /><p>Critical result: {{ activeParameter()?.name || criticalParameters()[0]?.name }} · {{ activeParameter()?.value || criticalParameters()[0]?.value }}</p></div>
+        <footer><button type="button" class="secondary-button" (click)="closeNotification()">Cancel</button><button type="button" class="primary-action" (click)="confirmNotificationDemo()">Record in preview</button></footer>
+      </section>
+    </div>
+  }
 </div>
