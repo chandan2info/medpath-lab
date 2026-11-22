@@ -93,7 +93,7 @@ export class ResultEntryComponent implements OnInit {
     return patient ? { firstName: patient.firstName, lastName: patient.lastName, dob: patient.dob, gender: patient.gender, id: patient.id, refDoctor: patient.refDoctor } : null;
   });
   readonly sampleLabel = computed(() => this.sample()?.id ?? 'Active sample');
-  readonly orderedTestsLabel = computed(() => this.sample()?.tests.join(' · ') ?? this.flow.selectedTests().map(test => test.id).join(' · ') || '—');
+  readonly orderedTestsLabel = computed(() => this.sample()?.tests.join(' · ') ?? (this.flow.selectedTests().map(test => test.id).join(' · ') || '—'));
   readonly patientInitials = computed(() => {
     const p = this.patient();
     return p ? (p.firstName[0] + (p.lastName[0] ?? '')).toUpperCase() : '?';
