@@ -777,3 +777,15 @@
 @media (max-width: 1200px) {
   .workflow-panel { transform: none; height: auto; max-height: none; }
 }
+
+
+/* Match Sample Collection vertical rhythm: 12px from top card to patient card. */
+@media (min-width: 1201px) {
+  .result-page {
+    row-gap: 12px;
+  }
+  .result-page > .page-header,
+  .result-page > .patient-strip {
+    margin-block: 0;
+  }
+}
