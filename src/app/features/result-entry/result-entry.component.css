@@ -126,3 +126,65 @@
   background:var(--body-bg);text-align:center;font-size:9px;
 }
 .filter-popover__option>i { font-size:13px; }
+
+
+/* Patient / sample summary strip — align with the supplied Result Entry reference.
+   Scoped exclusively to the patient card; workspace panels are intentionally untouched. */
+@media (min-width: 1201px) {
+  .patient-strip {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1.1fr) minmax(190px, .85fr);
+    gap: 0;
+    padding: 14px 18px;
+    min-height: 82px;
+  }
+  .patient-identity { gap: 14px; padding-right: 18px; }
+  .patient-avatar {
+    width: 56px;
+    height: 56px;
+    flex-basis: 56px;
+    font-size: 18px;
+  }
+  .patient-name { gap: 10px; font-size: 17px; line-height: 1.25; }
+  .gender,.age { font-size: 11px; }
+  .patient-meta {
+    gap: 12px;
+    margin-top: 8px;
+    font-size: 10px;
+    line-height: 1.35;
+  }
+  .patient-order-summary {
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 2px 18px;
+  }
+  .summary-top { gap: 9px; font-size: 13px; line-height: 1.3; }
+  .summary-top i { font-size: 18px; }
+  .summary-sub {
+    margin-top: 7px;
+    font-size: 10px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+  .sample-status {
+    align-self: stretch;
+    justify-content: center;
+    gap: 9px;
+    padding-left: 18px;
+  }
+  .status-pill { padding: 7px 11px; font-size: 10px; }
+  .collection-time { font-size: 10px; line-height: 1.4; }
+}
+
+@media (min-width: 1201px) and (max-width: 1450px) {
+  .patient-strip {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1.1fr) minmax(185px, .85fr);
+    gap: 0;
+    padding: 12px 14px;
+  }
+  .patient-identity { gap: 11px; padding-right: 12px; }
+  .patient-meta { gap: 8px; font-size: 9px; }
+  .patient-order-summary { padding-left: 12px; padding-right: 12px; }
+  .sample-status { padding-left: 12px; }
+}
