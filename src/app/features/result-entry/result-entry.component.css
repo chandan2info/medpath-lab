@@ -653,3 +653,24 @@
   .status-pill { font-size: 12px; padding: 7px 10px; }
   .collection-time { font-size: 11px; }
 }
+
+
+/* Final micro-refinements for patient identity and sample metadata */
+@media (min-width: 1201px) {
+  .patient-name {
+    column-gap: 15px;
+  }
+  .patient-name .gender {
+    margin-left: 2px;
+  }
+  .collection-time {
+    min-width: 0;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+@media (min-width: 1201px) and (max-width: 1450px) {
+  .patient-name { column-gap: 12px; }
+}
