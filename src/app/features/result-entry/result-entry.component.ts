@@ -119,6 +119,10 @@ export class ResultEntryComponent implements OnInit {
   readonly demoSavedState = signal<'idle' | 'unsaved'>('idle');
   readonly expandedRight = signal(true);
 
+  readonly selectedTestIndex = computed(() => this.tests().findIndex(test => test.id === this.selectedTestId()));
+  readonly selectedTestPosition = computed(() => Math.max(0, this.selectedTestIndex()) + 1);
+  readonly isFirstTest = computed(() => this.selectedTestIndex() <= 0);
+  readonly isLastTest = computed(() => this.selectedTestIndex() < 0 || this.selectedTestIndex() >= this.tests().length - 1);
   readonly selectedTest = computed(() => this.tests().find(test => test.id === this.selectedTestId()) ?? this.tests()[0]);
   readonly visibleTests = computed(() => {
     const q = this.testSearch().trim().toLowerCase();
@@ -146,6 +150,14 @@ export class ResultEntryComponent implements OnInit {
     if (!this.sampleId() && !this.flow.patient()) this.router.navigate(['/dashboard/registration']);
   }
 
+  previousTest(): void {
+    const index = this.selectedTestIndex();
+    if (index > 0) this.selectTest(this.tests()[index - 1].id);
+  }
+  nextTest(): void {
+    const index = this.selectedTestIndex();
+    if (index >= 0 && index < this.tests().length - 1) this.selectTest(this.tests()[index + 1].id);
+  }
   selectTest(id: string): void {
     this.selectedTestId.set(id);
     this.moreMenuId.set(null);
