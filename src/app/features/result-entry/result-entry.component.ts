@@ -108,6 +108,7 @@ export class ResultEntryComponent implements OnInit {
   readonly selectedTestId = signal('KFT');
   readonly testSearch = signal('');
   readonly filter = signal<TestFilter>('ALL');
+  readonly showFilterMenu = signal(false);
   readonly leftCollapsed = signal(false);
   readonly workflowCollapsed = signal(false);
   readonly noteDraft = signal<NoteDraft | null>(null);
@@ -179,11 +180,12 @@ export class ResultEntryComponent implements OnInit {
     this.moreMenuId.set(null);
     this.noteDraft.set(null);
   }
-  setFilter(value: TestFilter): void { this.filter.set(value); }
+  setFilter(value: TestFilter): void { this.filter.set(value); this.showFilterMenu.set(false); }
+  toggleFilterMenu(): void { this.showFilterMenu.update(open => !open); }
   toggleLeftPanel(): void { this.leftCollapsed.update(value => !value); }
   toggleWorkflow(): void { this.workflowCollapsed.update(value => !value); }
   updateSearch(value: string): void { this.testSearch.set(value); }
-  clearOrderedFilters(): void { this.testSearch.set(''); this.filter.set('ALL'); }
+  clearOrderedFilters(): void { this.testSearch.set(''); this.filter.set('ALL'); this.showFilterMenu.set(false); }
 
   updateResult(parameterId: string, value: string): void {
     this.updateParameter(parameterId, { value });
