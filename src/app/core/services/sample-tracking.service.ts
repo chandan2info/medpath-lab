@@ -32,4 +32,10 @@ export class SampleTrackingService {
     if (!id) return undefined;
     return this._samples().find(s => s.id === id);
   }
+
+  /** Default mock sample for opening Result Entry directly during UI preview.
+   *  API integration can replace this fallback with the lab's active sample. */
+  getDefaultSample(): Sample | undefined {
+    return this._samples()[0];
+  }
 }
