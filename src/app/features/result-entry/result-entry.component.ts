@@ -96,7 +96,7 @@ export class ResultEntryComponent implements OnInit {
   readonly orderedTestsLabel = computed(() => {
     const testCodes = this.sample()?.tests ?? this.flow.selectedTests().map(test => test.id);
     if (!testCodes.length) return '—';
-    const visibleCodes = testCodes.slice(0, 6);
+    const visibleCodes = testCodes.slice(0, 5);
     const remainingCount = testCodes.length - visibleCodes.length;
     return remainingCount > 0
       ? `${visibleCodes.join(' · ')} · +${remainingCount}`
