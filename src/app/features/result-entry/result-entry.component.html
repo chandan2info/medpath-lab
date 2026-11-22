@@ -90,7 +90,20 @@
         <div class="test-card-heading">
           <div class="test-title"><i class="ti ti-flask-2"></i><div><h2>{{ selectedTest().name }}</h2><small>{{ selectedTest().code }} · {{ testStatusLabel(effectiveTestStatus(selectedTest())) }}</small></div></div>
           <div class="entry-progress">{{ enteredCount() }} / {{ totalCount() }} parameters entered</div>
-          <button type="button" class="profile-select" disabled aria-label="Reference profile preview"><i class="ti ti-adjustments-horizontal"></i> Reference profile <i class="ti ti-chevron-down"></i></button>
+          <div class="profile-select-wrap">
+            <button type="button" class="profile-select" (click)="toggleReferenceProfiles()" [attr.aria-expanded]="showReferenceProfiles()" aria-haspopup="listbox">
+              <i class="ti ti-adjustments-horizontal"></i> {{ selectedReferenceProfile() }} <i class="ti ti-chevron-down"></i>
+            </button>
+            @if (showReferenceProfiles()) {
+              <div class="profile-options" role="listbox" aria-label="Reference profile">
+                @for (profile of referenceProfiles; track profile) {
+                  <button type="button" role="option" [attr.aria-selected]="selectedReferenceProfile() === profile" [class.profile-option--selected]="selectedReferenceProfile() === profile" (click)="selectReferenceProfile(profile)">
+                    {{ profile }} @if (selectedReferenceProfile() === profile) { <i class="ti ti-check"></i> }
+                  </button>
+                }
+              </div>
+            }
+          </div>
         </div>
         @if (hasCritical()) {
           <div class="critical-alert" role="alert">
@@ -106,11 +119,11 @@
         }
         <div class="table-wrap">
           <table class="parameter-table">
-            <thead><tr><th>Status</th><th>Parameter</th><th>Result</th><th>Unit</th><th>Reference range</th><th>Flag</th><th>Actions</th></tr></thead>
+            <thead><tr><th class="serial-column">#</th><th>Parameter</th><th>Result</th><th>Unit</th><th>Reference range</th><th>Flag</th><th>Actions</th></tr></thead>
             <tbody>
               @for (parameter of selectedTest().parameters; track parameter.id; let i = $index) {
                 <tr>
-                  <td><i class="ti status-icon" [ngClass]="'ti-' + statusIcon(parameter.flag).replace('ti-','')" [class]=" 'status-icon status-icon--' + parameter.flag" [attr.aria-label]="flagLabel(parameter.flag)"></i></td>
+                  <td class="serial-cell">{{ i + 1 }}</td>
                   <td class="parameter-name"><strong>{{ parameter.name }}</strong><small>{{ parameter.method }}{{ parameter.isCalculated ? ' · Calculated' : '' }}</small></td>
                   <td><input class="result-input" [class]="'result-input result-input--' + parameter.flag" [value]="parameter.value" [readonly]="parameter.isCalculated" [placeholder]="parameter.isCalculated ? 'Calculated' : 'Enter result'" (input)="updateResult(parameter.id, $any($event.target).value)" [attr.aria-label]="parameter.name + ' result'" /></td>
                   <td class="unit-cell">{{ parameter.unit || '—' }}</td>
