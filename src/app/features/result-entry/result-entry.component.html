@@ -179,7 +179,7 @@
         <div class="panel-heading"><h2>Test Summary</h2></div>
         <div class="summary-line"><span>Sample ID</span><strong>{{ sampleLabel() }}</strong></div>
         <div class="summary-line"><span>Tests (this screen)</span><strong>{{ selectedTest().code }} ({{ totalCount() }} parameters)</strong></div>
-        <div class="summary-line"><span>Collected</span><strong>{{ sample()?.collectedAt || '—' }}</strong></div>
+        <div class="summary-line"><span>Collected</span><strong>{{ collectedLabel() }}</strong></div>
         <div class="summary-line"><span>Priority</span><strong class="priority-chip">{{ priorityLabel() }}</strong></div>
         <h3>Flags ({{ selectedTest().code }})</h3>
         <div class="flag-summary">
