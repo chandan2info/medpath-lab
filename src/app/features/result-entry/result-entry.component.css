@@ -1011,3 +1011,14 @@
     justify-content: center;
   }
 }
+
+
+/* Allow the right workflow rail to rise into the reserved space beside the patient strip.
+   The workspace previously clipped the translated rail at its own top edge. */
+@media (min-width: 1201px) {
+  .workspace { overflow: visible; }
+  .workflow-panel {
+    position: relative;
+    z-index: 2;
+  }
+}
