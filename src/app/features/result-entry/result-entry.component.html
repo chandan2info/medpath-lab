@@ -107,14 +107,21 @@
         </div>
         @if (hasCritical()) {
           <div class="critical-alert" role="alert">
-            <i class="ti ti-alert-triangle"></i>
-            <div class="critical-alert-copy">
-              <strong>Critical Result Detected <span>({{ criticalCount() }} parameter{{ criticalCount() === 1 ? '' : 's' }})</span></strong>
-              @for (parameter of criticalParameters(); track parameter.id) { <p>{{ parameter.name }} = {{ parameter.value }} {{ parameter.unit }} — follow laboratory critical-value notification policy.</p> }
-              @if (showCriticalDetails()) { <p class="critical-detail">Notification status is not recorded in this UI preview.</p> }
+            <div class="critical-alert-main">
+              <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+              <div class="critical-alert-copy">
+                <strong>Critical Result Detected <span>({{ criticalCount() }} parameter{{ criticalCount() === 1 ? '' : 's' }})</span></strong>
+                @for (parameter of criticalParameters(); track parameter.id) { <p>{{ parameter.name }} = {{ parameter.value }} {{ parameter.unit }} — follow laboratory critical-value notification policy.</p> }
+                @if (showCriticalDetails()) { <p class="critical-detail">Notification status is not recorded in this UI preview.</p> }
+              </div>
             </div>
-            <button type="button" class="critical-action" (click)="toggleCriticalDetails()">Details</button>
-            @if (criticalParameters()[0]; as critical) { <button type="button" class="critical-action critical-action--solid" (click)="openNotification(critical)"><i class="ti ti-phone"></i> Record notification</button> }
+            <div class="critical-alert-actions">
+              <span class="critical-alert-bell" aria-label="{{ criticalCount() }} critical notification(s)">
+                <i class="ti ti-bell"></i><b>{{ criticalCount() }}</b>
+              </span>
+              <button type="button" class="critical-action" (click)="toggleCriticalDetails()">Details</button>
+              @if (criticalParameters()[0]; as critical) { <button type="button" class="critical-action critical-action--solid" (click)="openNotification(critical)"><i class="ti ti-phone"></i> Record notification</button> }
+            </div>
           </div>
         }
         <div class="table-wrap">
@@ -188,20 +195,6 @@
           <div><i class="flag-dot flag-dot--critical"></i><strong>{{ criticalCount() }}</strong><span>Critical</span></div>
         </div>
       </section>
-      @if (hasCritical()) {
-        <section class="panel notification-card">
-          <h2 class="notification-card-heading">
-            <span class="notification-bell" aria-hidden="true">
-              <i class="ti ti-bell"></i>
-              <b>{{ criticalCount() }}</b>
-            </span>
-            <span>Critical Notification</span>
-          </h2>
-          @for (parameter of criticalParameters(); track parameter.id) {
-            <div class="notification-detail"><strong>{{ patient()?.refDoctor || 'Referring physician not specified' }}</strong><span>{{ parameter.name }} = {{ parameter.value }} {{ parameter.unit }}</span><small>Notified: — · Acknowledged: —</small><button type="button" (click)="openNotification(parameter)">Record notification</button></div>
-          }
-        </section>
-      }
       <section class="panel action-card">
         <button type="button" class="primary-action" disabled title="Available after backend release workflow is integrated"><i class="ti ti-lock"></i> Finalize &amp; Generate Report</button>
         <button type="button" class="outline-action" (click)="submitReviewDemo()"><i class="ti ti-user-check"></i> Submit for Review</button>
