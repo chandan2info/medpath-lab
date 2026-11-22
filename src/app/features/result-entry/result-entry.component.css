@@ -674,3 +674,106 @@
 @media (min-width: 1201px) and (max-width: 1450px) {
   .patient-name { column-gap: 12px; }
 }
+
+
+/* Result Entry layout refinements */
+@media (min-width: 1201px) {
+  /* Keep the same 12px rhythm between header, patient strip and workspace. */
+  .result-page { gap: 12px; }
+  .workspace { gap: 12px; }
+
+  /* The workflow column occupies the reserved right side beside the patient strip. */
+  .workflow-panel {
+    transform: translateY(-96px);
+    height: calc(100% + 96px);
+    max-height: calc(100% + 96px);
+    overflow-y: auto;
+    overflow-x: visible;
+  }
+
+  /* Guarantee visible, comfortably clickable row actions. */
+  .parameter-table th:last-child,
+  .parameter-table td:last-child {
+    width: 78px;
+    min-width: 78px;
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+  .row-actions { display: flex; align-items: center; justify-content: center; gap: 4px; min-width: 68px; }
+  .row-actions .icon-button {
+    display: inline-grid;
+    flex: 0 0 30px;
+    width: 30px;
+    height: 30px;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    background: var(--body-bg);
+    opacity: 1;
+    visibility: visible;
+  }
+  .row-actions .icon-button i {
+    display: block;
+    font-size: 16px;
+    line-height: 1;
+    color: currentColor;
+    opacity: 1;
+    visibility: visible;
+  }
+  .row-actions .icon-button:hover,
+  .row-actions .icon-button:focus-visible {
+    color: var(--lis-primary);
+    border-color: var(--lis-primary);
+  }
+  .parameter-table th.serial-column { width: 38px; min-width: 38px; text-align: center; }
+  .parameter-table td.serial-cell {
+    width: 38px;
+    min-width: 38px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Reference profile selector — interactive preview control */
+.profile-select-wrap { position: relative; flex: 0 0 auto; }
+.profile-select { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.profile-select:disabled { cursor: not-allowed; }
+.profile-select-wrap .profile-options {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 30;
+  min-width: 176px;
+  padding: 5px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--card-bg);
+  box-shadow: var(--shadow-card);
+}
+.profile-options button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 9px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+}
+.profile-options button:hover,
+.profile-options button.profile-option--selected {
+  background: var(--lis-primary-xlight);
+  color: var(--lis-primary);
+}
+.profile-options button i { color: var(--lis-primary); }
+
+@media (max-width: 1200px) {
+  .workflow-panel { transform: none; height: auto; max-height: none; }
+}
