@@ -154,12 +154,24 @@
 
     <aside class="workflow-panel">
       <section class="panel workflow-card">
-        <div class="panel-heading"><h2>Result Workflow</h2><button type="button" class="icon-button" (click)="toggleWorkflow()" aria-label="Collapse workflow panel"><i class="ti ti-chevron-right"></i></button></div>
+        <div class="panel-heading"><h2>Result Workflow</h2></div>
         @if (!workflowCollapsed()) {
           <div class="workflow-steps">
-            <div class="workflow-step workflow-step--done"><span><i class="ti ti-check"></i></span><div><strong>Result Entry</strong><small>{{ enteredCount() }} / {{ totalCount() }} parameters entered</small></div><b>Preview</b></div>
-            <div class="workflow-step workflow-step--pending"><span><i class="ti ti-circle"></i></span><div><strong>Validation</strong><small>Backend validation not connected</small></div><b>Pending</b></div>
-            <div class="workflow-step workflow-step--pending"><span><i class="ti ti-circle"></i></span><div><strong>Authorization</strong><small>Pathologist approval not connected</small></div><b>Pending</b></div>
+            <div class="workflow-step workflow-step--done">
+              <span aria-hidden="true"><i class="ti ti-check"></i></span>
+              <div><strong>Result Entry</strong><small>All parameters entered</small></div>
+              <b>{{ enteredCount() }} / {{ totalCount() }}</b>
+            </div>
+            <div class="workflow-step workflow-step--active" aria-current="step">
+              <span aria-hidden="true"><i class="ti ti-circle-filled"></i></span>
+              <div><strong>Validation</strong><small>Result validation pending</small></div>
+              <b>Pending</b>
+            </div>
+            <div class="workflow-step workflow-step--upcoming">
+              <span aria-hidden="true"></span>
+              <div><strong>Authorization</strong><small>Pathologist approval pending</small></div>
+              <b>Pending</b>
+            </div>
           </div>
         }
       </section>
