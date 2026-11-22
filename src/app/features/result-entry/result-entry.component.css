@@ -1022,3 +1022,124 @@
     z-index: 2;
   }
 }
+
+
+/* Result Workflow — compact vertical timeline matching the approved reference */
+.workflow-card .panel-heading {
+  min-height: 0;
+  padding: 9px 16px 8px;
+  background: transparent;
+  border-bottom: 1px solid var(--border-color);
+}
+.workflow-card .panel-heading h2 {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.workflow-card .workflow-steps {
+  position: relative;
+  padding: 3px 16px 7px;
+}
+.workflow-card .workflow-steps::before {
+  content: "";
+  position: absolute;
+  left: 28px;
+  top: 28px;
+  bottom: 31px;
+  width: 2px;
+  background: var(--text-secondary);
+  opacity: .65;
+}
+.workflow-card .workflow-step {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 49px;
+  padding: 6px 2px;
+  border: 0;
+}
+.workflow-card .workflow-step > span {
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  flex: 0 0 25px;
+  border: 2px solid var(--text-secondary);
+  border-radius: 50%;
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.workflow-card .workflow-step--done > span {
+  border-color: var(--lis-primary);
+  background: var(--lis-primary);
+  color: #062d2a;
+}
+.workflow-card .workflow-step--active > span {
+  border: 3px solid var(--lis-warning);
+  background: var(--card-bg);
+  color: var(--lis-warning);
+}
+.workflow-card .workflow-step--active > span i {
+  font-size: 9px;
+}
+.workflow-card .workflow-step--upcoming > span {
+  border: 2px solid var(--text-secondary);
+  background: var(--card-bg);
+}
+.workflow-card .workflow-step > div {
+  min-width: 0;
+  flex: 1 1 auto;
+  gap: 1px;
+}
+.workflow-card .workflow-step strong {
+  color: var(--text-primary);
+  font-size: 12px;
+  line-height: 1.3;
+  font-weight: 700;
+}
+.workflow-card .workflow-step small {
+  color: var(--text-secondary);
+  font-size: 10px;
+  line-height: 1.35;
+}
+.workflow-card .workflow-step--active strong,
+.workflow-card .workflow-step--active small {
+  color: var(--lis-warning);
+}
+.workflow-card .workflow-step > b {
+  flex: 0 0 auto;
+  min-width: 66px;
+  padding: 6px 10px;
+  border-radius: 18px;
+  background: var(--body-bg);
+  color: var(--text-secondary);
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.workflow-card .workflow-step--done > b {
+  min-width: 58px;
+  background: color-mix(in srgb, var(--lis-primary) 20%, var(--body-bg));
+  color: var(--lis-primary);
+}
+.workflow-card .workflow-step--active > b {
+  background: color-mix(in srgb, var(--lis-warning) 24%, var(--body-bg));
+  color: var(--text-primary);
+}
+.workflow-card .workflow-step--upcoming > b {
+  background: color-mix(in srgb, var(--text-secondary) 18%, var(--body-bg));
+  color: var(--text-primary);
+}
+@media (max-width: 640px) {
+  .workflow-card .panel-heading { padding: 10px 14px 8px; }
+  .workflow-card .workflow-steps { padding: 3px 14px 7px; }
+  .workflow-card .workflow-steps::before { left: 26px; }
+  .workflow-card .workflow-step { min-height: 48px; gap: 10px; }
+  .workflow-card .workflow-step strong { font-size: 11px; }
+  .workflow-card .workflow-step small { font-size: 9px; }
+  .workflow-card .workflow-step > b { min-width: 58px; padding: 5px 8px; }
+}
