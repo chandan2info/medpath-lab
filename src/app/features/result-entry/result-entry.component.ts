@@ -167,6 +167,7 @@ export class ResultEntryComponent implements OnInit {
   toggleLeftPanel(): void { this.leftCollapsed.update(value => !value); }
   toggleWorkflow(): void { this.workflowCollapsed.update(value => !value); }
   updateSearch(value: string): void { this.testSearch.set(value); }
+  clearOrderedFilters(): void { this.testSearch.set(''); this.filter.set('ALL'); }
 
   updateResult(parameterId: string, value: string): void {
     this.updateParameter(parameterId, { value });
