@@ -282,3 +282,64 @@
   .result-action-bar__right .lis-btn--primary { grid-column:auto; }
   .patient-context-right { grid-template-columns:1fr; }
 }
+
+
+/* Ordered-tests rail: keep the card bounded to the available viewport and
+   let only the investigation list scroll. The heading and helper note stay
+   visible while navigating longer worklists. */
+.re-layout {
+  min-height: 0;
+  align-items: stretch;
+}
+.test-rail {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: clamp(420px, calc(100dvh - 260px), 680px);
+  min-height: 0;
+  max-height: calc(100dvh - 220px);
+  overflow: hidden;
+}
+.test-rail-heading {
+  flex: 0 0 auto;
+}
+.test-list {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb, var(--border-color)) transparent;
+  padding-right: 3px;
+}
+.test-list::-webkit-scrollbar { width: 6px; }
+.test-list::-webkit-scrollbar-track { background: transparent; }
+.test-list::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb, var(--border-color));
+  border-radius: 8px;
+}
+.test-choice { flex: 0 0 auto; }
+.test-rail-note {
+  flex: 0 0 auto;
+  margin-top: 8px;
+}
+@media (max-width: 1050px) {
+  .test-rail {
+    height: clamp(360px, calc(100dvh - 245px), 560px);
+    max-height: calc(100dvh - 205px);
+  }
+}
+@media (max-width: 700px) {
+  .test-rail {
+    height: clamp(360px, calc(100dvh - 210px), 560px);
+    max-height: calc(100dvh - 170px);
+  }
+  .test-list {
+    display: flex;
+    grid-template-columns: none;
+  }
+  .test-choice { padding: 9px; }
+}
