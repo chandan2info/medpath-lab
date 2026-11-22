@@ -789,3 +789,225 @@
     margin-block: 0;
   }
 }
+
+
+/* Right-side Result Entry rail and bottom action card refinement */
+@media (min-width: 1201px) {
+  .workflow-panel {
+    gap: 12px;
+    padding: 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+  }
+
+  .workflow-panel > .panel {
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, .035);
+  }
+
+  .workflow-panel .panel-heading {
+    min-height: 48px;
+    padding: 11px 14px;
+    background: var(--body-bg);
+  }
+
+  .workflow-panel .panel-heading h2 {
+    font-size: 13px;
+    letter-spacing: .1px;
+  }
+
+  .workflow-card .workflow-steps {
+    padding: 5px 14px 10px;
+  }
+
+  .workflow-card .workflow-step {
+    gap: 10px;
+    padding: 11px 0;
+  }
+
+  .workflow-card .workflow-step > span {
+    width: 25px;
+    height: 25px;
+    flex: 0 0 25px;
+    font-size: 12px;
+  }
+
+  .workflow-card .workflow-step strong {
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .workflow-card .workflow-step small {
+    font-size: 10px;
+    line-height: 1.4;
+  }
+
+  .workflow-card .workflow-step > b {
+    font-size: 9px;
+    white-space: nowrap;
+  }
+
+  .summary-card {
+    padding-bottom: 12px;
+  }
+
+  .summary-card .summary-line {
+    align-items: center;
+    gap: 10px;
+    margin: 0 14px;
+    padding: 9px 0;
+    font-size: 10px;
+  }
+
+  .summary-card .summary-line span {
+    flex: 0 0 auto;
+  }
+
+  .summary-card .summary-line strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-size: 10px;
+  }
+
+  .summary-card h3 {
+    margin: 14px 14px 9px;
+    font-size: 11px;
+  }
+
+  .summary-card .flag-summary {
+    gap: 7px;
+    margin: 0 12px;
+  }
+
+  .summary-card .flag-summary > div {
+    min-width: 0;
+    padding: 10px 3px;
+    gap: 5px;
+    background: var(--body-bg);
+  }
+
+  .summary-card .flag-summary strong {
+    font-size: 17px;
+    line-height: 1.1;
+  }
+
+  .summary-card .flag-summary span {
+    font-size: 9px;
+    white-space: nowrap;
+  }
+
+  .notification-card {
+    padding: 13px 14px;
+    border-radius: 12px;
+  }
+
+  .notification-card h2 {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 10px;
+    font-size: 12px;
+  }
+
+  .notification-detail {
+    gap: 6px;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--body-bg);
+    font-size: 10px;
+    line-height: 1.4;
+  }
+
+  .notification-detail button {
+    align-self: flex-start;
+    min-height: 30px;
+    padding: 6px 10px;
+    border: 1px solid var(--lis-warning);
+    border-radius: 7px;
+    background: transparent;
+    color: var(--lis-warning);
+    font: 600 10px var(--font-family);
+    cursor: pointer;
+  }
+
+  .action-card {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    padding: 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--card-bg);
+    box-shadow: 0 3px 10px rgba(15, 23, 42, .045);
+  }
+
+  .action-card::before {
+    content: "Report Actions";
+    display: block;
+    margin: 0 0 2px;
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .1px;
+  }
+
+  .action-card .primary-action,
+  .action-card .outline-action {
+    display: flex;
+    width: 100%;
+    min-height: 39px;
+    box-sizing: border-box;
+    justify-content: center;
+    gap: 8px;
+    padding: 9px 11px;
+    border-radius: 8px;
+    font-size: 11px;
+    line-height: 1.25;
+    white-space: normal;
+  }
+
+  .action-card .primary-action {
+    box-shadow: 0 2px 4px rgba(15, 23, 42, .08);
+  }
+
+  .action-card .primary-action i,
+  .action-card .outline-action i {
+    flex: 0 0 auto;
+    font-size: 15px;
+  }
+
+  .action-card .outline-action {
+    border-color: var(--border-color);
+    background: var(--body-bg);
+  }
+
+  .action-card .outline-action:hover,
+  .action-card .outline-action:focus-visible {
+    border-color: var(--lis-primary);
+    background: var(--lis-primary-xlight);
+  }
+
+  .action-card .action-disclaimer {
+    display: block;
+    margin-top: 2px;
+    padding-top: 9px;
+    border-top: 1px solid var(--border-color);
+    font-size: 9px;
+    line-height: 1.45;
+  }
+}
+
+@media (max-width: 1200px) {
+  .workflow-panel .action-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+  }
+  .workflow-panel .action-card .primary-action,
+  .workflow-panel .action-card .outline-action {
+    width: 100%;
+    justify-content: center;
+  }
+}
