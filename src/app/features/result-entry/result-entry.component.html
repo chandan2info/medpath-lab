@@ -19,23 +19,24 @@
     </div>
   </header>
 
-  <section class="patient-strip" aria-label="Patient and sample information">
-    <div class="patient-identity">
-      <div class="patient-avatar">{{ patientInitials() }}</div>
-      <div class="patient-details">
-        <div class="patient-name">{{ patient()?.firstName }} {{ patient()?.lastName }}</div>
-        <div class="patient-id"><i class="ti ti-id-badge-2" aria-hidden="true"></i>{{ patient()?.id }}</div>
+  <section class="patient-summary patient-summary--result" aria-label="Patient information">
+    <div class="pat-avatar" aria-hidden="true">{{ patientInitials() }}</div>
+    <div class="patient-main">
+      <div class="patient-name-line">
+        <strong>{{ patient()?.firstName }} {{ patient()?.lastName }}</strong>
+        <span class="patient-id">{{ patient()?.id }}</span>
+      </div>
+      <div class="patient-meta">
+        <span><i class="ti ti-user" aria-hidden="true"></i>{{ patient()?.gender | titlecase }}</span>
+        <span><i class="ti ti-cake" aria-hidden="true"></i>{{ patientAge() }}</span>
+        <span><i class="ti ti-calendar" aria-hidden="true"></i>DOB {{ patient()?.dob || '—' }}</span>
       </div>
     </div>
-    <div class="patient-meta" aria-label="Patient metadata">
-      <span class="patient-meta-item"><i class="ti ti-gender-male" aria-hidden="true"></i><span>{{ patient()?.gender | titlecase }}</span></span>
-      <span class="patient-meta-item"><i class="ti ti-calendar" aria-hidden="true"></i><span>{{ patientAge() }}</span></span>
-      <span class="patient-meta-item patient-meta-item--sample"><i class="ti ti-flask" aria-hidden="true"></i><span>{{ sampleLabel() }}</span></span>
-      <span class="patient-meta-item patient-meta-item--doctor"><i class="ti ti-stethoscope" aria-hidden="true"></i><span>{{ patient()?.refDoctor || 'Self / Walk-in' }}</span></span>
-    </div>
-    <div class="sample-status">
-      <span class="status-pill"><i class="ti ti-circle-check"></i>Sample {{ sample()?.status === 'ready' ? 'Ready' : 'Received' }}</span>
-      <span class="collection-time"><i class="ti ti-calendar-time"></i>Collected: {{ sample()?.collectedAt || '—' }}</span>
+    <div class="patient-visit-meta patient-visit-meta--result">
+      <span><i class="ti ti-flask" aria-hidden="true"></i><small>Sample ID</small><strong>{{ sampleLabel() }}</strong></span>
+      <span><i class="ti ti-calendar-time" aria-hidden="true"></i><small>Collected</small><strong>{{ collectedLabel() }}</strong></span>
+      <span><i class="ti ti-circle-check" aria-hidden="true"></i><small>Status</small><strong class="patient-sample-status">{{ sample()?.status === 'ready' ? 'Sample Ready' : 'Sample Received' }}</strong></span>
+      <span><i class="ti ti-stethoscope" aria-hidden="true"></i><small>Referred by</small><strong>{{ patient()?.refDoctor || 'Self / Walk-in' }}</strong></span>
     </div>
   </section>
 
