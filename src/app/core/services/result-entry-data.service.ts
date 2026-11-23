@@ -57,7 +57,7 @@ export function flagFromValue(value:string,range:string):ResultFlag {
   if(!value.trim()) return 'normal';
   const numeric=Number(value);
   if(!Number.isFinite(numeric)) return 'normal';
-  const bounds=range.match(/[0-9]+(?:\\.[0-9]+)?/g)?.map(Number)??[];
+  const bounds=range.match(/[0-9.]+/g)?.map(Number)??[];
   if(!bounds.length) return 'normal';
   if(/[≥>]=?/.test(range)) return numeric<bounds[0]?'low':'normal';
   if(/[≤<]=?/.test(range)) return numeric>bounds[0]?'high':'normal';
