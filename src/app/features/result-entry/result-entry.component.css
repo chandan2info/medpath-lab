@@ -2111,3 +2111,55 @@
     font-size: 11px;
   }
 }
+
+
+
+/* Rebalance Result Entry workspace: wider ordered list, less crowded result grid */
+.workspace.workspace--simplified {
+  grid-template-columns: minmax(270px, 0.31fr) minmax(0, 1fr);
+  gap: 12px;
+}
+.workspace--simplified .ordered-panel {
+  min-width: 0;
+}
+.workspace--simplified .result-panel {
+  min-width: 0;
+}
+.workspace--simplified .parameter-table--simplified {
+  min-width: 790px;
+  table-layout: auto;
+}
+.workspace--simplified .parameter-table--simplified th,
+.workspace--simplified .parameter-table--simplified td {
+  padding-right: 10px;
+  padding-left: 10px;
+}
+.workspace--simplified .parameter-table--simplified .parameter-name {
+  min-width: 145px;
+}
+.workspace--simplified .parameter-table--simplified .method-cell {
+  min-width: 105px;
+}
+.workspace--simplified .parameter-table--simplified .unit-cell {
+  min-width: 78px;
+}
+.workspace--simplified .parameter-table--simplified .reference-copy {
+  min-width: 88px;
+}
+.workspace--simplified .parameter-table--simplified .flag-pill {
+  white-space: nowrap;
+}
+@media (max-width: 1250px) {
+  .workspace.workspace--simplified {
+    grid-template-columns: minmax(245px, 0.34fr) minmax(0, 1fr);
+    gap: 10px;
+  }
+  .workspace--simplified .parameter-table--simplified {
+    min-width: 760px;
+  }
+}
+@media (max-width: 900px) {
+  .workspace.workspace--simplified {
+    grid-template-columns: minmax(220px, 0.4fr) minmax(0, 1fr);
+  }
+}
