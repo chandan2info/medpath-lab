@@ -43,11 +43,11 @@ interface NotificationDraft { parameterId: string; recipient: string; channel: s
 const createDemoTests = (): MockOrderedTest[] => [
   { id: 'KFT', code: 'KFT', name: 'Kidney Function Test (KFT)', shortName: 'KFT – Kidney Function Test', status: 'COMPLETED', parameters: [
     { id: 'cr', name: 'Serum creatinine', method: 'Enzymatic method', value: '2.4', unit: 'mg/dL', range: '0.7 – 1.3', flag: 'high', previousValue: '1.1' },
-    { id: 'bun', name: 'Blood urea nitrogen', method: 'Urease', value: '48', unit: 'mg/dL', range: '7 – 20', flag: 'high' },
-    { id: 'k', name: 'Serum potassium (K⁺)', method: 'ISE', value: '6.8', unit: 'mEq/L', range: '3.5 – 5.0', flag: 'critical', note: 'Demo note: verify sample integrity.' },
-    { id: 'na', name: 'Serum sodium (Na⁺)', method: 'ISE', value: '138', unit: 'mEq/L', range: '136 – 145', flag: 'normal' },
-    { id: 'ua', name: 'Serum uric acid', method: 'Uricase', value: '5.2', unit: 'mg/dL', range: '3.5 – 7.2', flag: 'normal' },
-    { id: 'egfr', name: 'eGFR (CKD-EPI)', method: 'Calculated', value: '32', unit: 'mL/min/1.73 m²', range: '≥ 60', flag: 'low', isCalculated: true },
+    { id: 'bun', name: 'Blood urea nitrogen', method: 'Urease', value: '48', unit: 'mg/dL', range: '7 – 20', flag: 'high', previousValue: '19' },
+    { id: 'k', name: 'Serum potassium (K⁺)', method: 'ISE', value: '6.8', unit: 'mEq/L', range: '3.5 – 5.0', flag: 'critical', previousValue: '4.2', note: 'Demo note: verify sample integrity.' },
+    { id: 'na', name: 'Serum sodium (Na⁺)', method: 'ISE', value: '138', unit: 'mEq/L', range: '136 – 145', flag: 'normal', previousValue: '139' },
+    { id: 'ua', name: 'Serum uric acid', method: 'Uricase', value: '5.2', unit: 'mg/dL', range: '3.5 – 7.2', flag: 'normal', previousValue: '5.0' },
+    { id: 'egfr', name: 'eGFR (CKD-EPI)', method: 'Calculated', value: '32', unit: 'mL/min/1.73 m²', range: '≥ 60', flag: 'low', isCalculated: true, previousValue: '82' },
   ] },
   { id: 'LFT', code: 'LFT', name: 'Liver Function Test (LFT)', shortName: 'LFT – Liver Function Test', status: 'COMPLETED', parameters: Array.from({length:8}, (_,i) => ({ id:`lft-${i}`, name:['Bilirubin total','Bilirubin direct','SGOT (AST)','SGPT (ALT)','Alkaline phosphatase','Total protein','Albumin','Globulin'][i], method:'Configured method', value:['0.8','0.2','28','32','92','7.1','4.2','2.9'][i], unit:i<2?'mg/dL':'U/L', range:'Configured range', flag:'normal' as ResultFlag })) },
   { id: 'CBC', code: 'CBC', name: 'Complete Blood Count (CBC)', shortName: 'CBC – Complete Blood Count', status: 'IN_PROGRESS', parameters: Array.from({length:22}, (_,i) => ({ id:`cbc-${i}`, name:['Haemoglobin','Total WBC count','Platelet count','RBC count','Haematocrit','MCV','MCH','MCHC','Neutrophils','Lymphocytes','Monocytes','Eosinophils','Basophils','RDW','MPV','PCV','PCT','PDW','ESR','ANC','ALC','Reticulocyte count'][i], method:'Configured method', value:i<16?['13.5','7800','210000','4.8','42','88','29','33','62','30','5','2','1','13','9','40'][i]:'', unit:'', range:'Configured range', flag:'normal' as ResultFlag })) },
