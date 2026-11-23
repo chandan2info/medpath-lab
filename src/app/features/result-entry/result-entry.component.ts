@@ -164,10 +164,18 @@ export class ResultEntryComponent implements OnInit {
     return p ? (p.firstName[0] + (p.lastName[0] ?? '')).toUpperCase() : '?';
   });
   readonly patientAge = computed(() => {
-    const p = this.patient();
-    if (!p?.dob) return '—';
-    const age = this.flow.calcAgeParts(p.dob);
-    return `${age.years}y ${age.months}m`;
+    const dob = this.patient()?.dob;
+    if (!dob) return '—';
+    const birthDate = new Date(`${dob}T00:00:00`);
+    if (Number.isNaN(birthDate.getTime())) return '—';
+    const today = new Date();
+    if (birthDate > today) return '—';
+    let years = today.getFullYear() - birthDate.getFullYear();
+    let months = today.getMonth() - birthDate.getMonth();
+    let days = today.getDate() - birthDate.getDate();
+    if (days < 0) { months -= 1; days += new Date(today.getFullYear(), today.getMonth(), 0).getDate(); }
+    if (months < 0) { years -= 1; months += 12; }
+    return `${years}y ${months}m ${days}d`;
   });
   readonly tests = signal<MockOrderedTest[]>(createDemoTests());
   readonly selectedTestId = signal('KFT');
