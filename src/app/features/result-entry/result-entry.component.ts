@@ -7,7 +7,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { NgClass, TitleCasePipe } from '@angular/common';
+import { DatePipe, NgClass, TitleCasePipe } from '@angular/common';
 import { map } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
@@ -67,7 +67,7 @@ const createDemoTests = (): MockOrderedTest[] => [
 @Component({
   selector: 'app-result-entry',
   standalone: true,
-  imports: [RouterLink, NgClass, TitleCasePipe],
+  imports: [RouterLink, NgClass, TitleCasePipe, DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './result-entry.component.html',
   styleUrl: './result-entry.component.css',
