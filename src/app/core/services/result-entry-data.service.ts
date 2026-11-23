@@ -109,13 +109,15 @@ export class ResultEntryDataService {
   }
 
   saveDraft(record: ResultEntryRecord): ResultEntryRecord {
-    const next = { ...record, workflowStatus: 'DRAFT' as const, updatedAt: new Date().toISOString() };
+    const existing = this.read(record.sampleId);
+    const next = { ...existing, ...record, notifications: existing?.notifications ?? [], workflowStatus: 'DRAFT' as const, updatedAt: new Date().toISOString() };
     this.write(next);
     return next;
   }
 
   submitForValidation(record: ResultEntryRecord): ResultEntryRecord {
-    const next = { ...record, workflowStatus: 'SUBMITTED_FOR_VALIDATION' as const, updatedAt: new Date().toISOString() };
+    const existing = this.read(record.sampleId);
+    const next = { ...existing, ...record, notifications: existing?.notifications ?? [], workflowStatus: 'SUBMITTED_FOR_VALIDATION' as const, updatedAt: new Date().toISOString() };
     this.write(next);
     return next;
   }
