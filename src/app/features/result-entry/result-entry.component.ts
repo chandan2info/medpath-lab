@@ -92,10 +92,10 @@ export class ResultEntryComponent implements OnInit {
     const sample = this.sample();
     if (sample) {
       const [firstName, ...rest] = sample.patientName.split(' ');
-      return { firstName, lastName: rest.join(' '), dob: sample.dob ?? '', gender: sample.gender ?? '', id: sample.patientId, refDoctor: sample.refDoctor ?? '—' };
+      return { firstName, lastName: rest.join(' '), dob: sample.dob ?? '', gender: sample.gender ?? '', id: sample.patientId, refDoctor: sample.refDoctor ?? '—', mobile: sample.mobile ?? '' };
     }
     const patient = this.flow.patient();
-    return patient ? { firstName: patient.firstName, lastName: patient.lastName, dob: patient.dob, gender: patient.gender, id: patient.id, refDoctor: patient.refDoctor } : null;
+    return patient ? { firstName: patient.firstName, lastName: patient.lastName, dob: patient.dob, gender: patient.gender, id: patient.id, refDoctor: patient.refDoctor, mobile: patient.mobile ?? '' } : null;
   });
   readonly sampleLabel = computed(() => this.sample()?.id ?? 'Active sample');
   readonly collectedLabel = computed(() => {
@@ -132,6 +132,20 @@ export class ResultEntryComponent implements OnInit {
     if (priority === 'stat') return 'STAT';
     if (priority === 'urgent') return 'URGENT';
     if (priority === 'routine') return 'ROUTINE';
+    return '—';
+  });
+  readonly visitTypeLabel = computed(() => {
+    const visitType = this.sample()?.visitType;
+    if (visitType === 'home-visit') return 'Home Visit';
+    if (visitType === 'appointment') return 'Appointment';
+    if (visitType === 'walk-in') return 'Walk-in';
+    return '—';
+  });
+  readonly fastingLabel = computed(() => {
+    const fasting = this.sample()?.fastingStatus;
+    if (fasting === 'fasting') return 'Fasting';
+    if (fasting === 'non-fasting') return 'Non-fasting';
+    if (fasting === 'unknown') return 'Unknown';
     return '—';
   });
   readonly orderedTestsLabel = computed(() => {
