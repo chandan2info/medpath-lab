@@ -15,6 +15,11 @@ import { SampleTrackingService } from '../../core/services/sample-tracking.servi
 import { ResultFlag } from '../../shared/models/lis.models';
 import { ResultEntryDataService, MockOrderedTest, MockParameter, NoteDraft, NotificationDraft, TestFilter, TestStatus, flagFromValue } from '../../core/services/result-entry-data.service';
 
+const EMPTY_ORDERED_TEST: MockOrderedTest = {
+  id: '', code: '', name: 'Loading results', shortName: 'Loading results…',
+  status: 'PENDING', parameters: [],
+};
+
 @Component({
   selector: 'app-result-entry',
   standalone: true,
@@ -148,7 +153,7 @@ export class ResultEntryComponent implements OnInit {
   readonly selectedTestPosition = computed(() => Math.max(0, this.selectedTestIndex()) + 1);
   readonly isFirstTest = computed(() => this.selectedTestIndex() <= 0);
   readonly isLastTest = computed(() => this.selectedTestIndex() < 0 || this.selectedTestIndex() >= this.tests().length - 1);
-  readonly selectedTest = computed(() => this.tests().find(test => test.id === this.selectedTestId()) ?? this.tests()[0]);
+  readonly selectedTest = computed(() => this.tests().find(test => test.id === this.selectedTestId()) ?? this.tests()[0] ?? EMPTY_ORDERED_TEST);
   /**
    * Derive workflow status from entered parameter values instead of relying
    * on the initial demo status. This keeps the chips and list accurate after
