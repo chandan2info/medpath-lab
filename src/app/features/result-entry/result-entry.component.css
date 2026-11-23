@@ -1544,3 +1544,42 @@
 .patient-identity { gap:14px; }
 .patient-meta { gap:16px; }
 .sample-status { min-width:220px; }
+
+
+/* Desktop viewport fit: the route is already below the persistent topbar.
+   Do not subtract the topbar/header height twice; reserve only page padding. */
+@media (min-width: 993px) {
+  :host {
+    height: calc(100dvh - var(--lis-topbar-height, 52px) - 24px);
+    min-height: 0;
+    max-height: calc(100dvh - var(--lis-topbar-height, 52px) - 24px);
+    overflow: hidden;
+  }
+
+  .result-page {
+    height: 100%;
+    min-height: 0;
+    gap: 10px;
+  }
+
+  .workspace--simplified {
+    min-height: 0;
+    flex: 1 1 0;
+  }
+
+  .workspace--simplified .ordered-panel,
+  .workspace--simplified .result-panel,
+  .workspace--simplified .test-card {
+    min-height: 0;
+  }
+
+  .workspace--simplified .table-wrap {
+    min-height: 0;
+    flex: 1 1 0;
+    overscroll-behavior: contain;
+  }
+
+  .result-action-bar {
+    flex-shrink: 0;
+  }
+}
