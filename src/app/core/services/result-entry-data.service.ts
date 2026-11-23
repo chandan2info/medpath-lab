@@ -105,10 +105,29 @@ export class ResultEntryDataService {
 
   loadForSample(sample: Sample, catalogue: LabTest[]): Observable<ResultEntryRecord> {
     const saved = this.read(sample.id);
-    if (saved) return of(saved);
+    const configuredTests = createDemoTests(sample.tests, catalogue);
+    if (saved) {
+      // Existing browser drafts may predate critical-limit configuration.
+      // Rehydrate threshold metadata without overwriting the user's entered values.
+      const tests = saved.tests.map(test => {
+        const configured = configuredTests.find(item => item.id === test.id);
+        return {
+          ...test,
+          parameters: test.parameters.map(parameter => {
+            const defaults = configured?.parameters.find(item => item.id === parameter.id);
+            return {
+              ...parameter,
+              criticalLow: parameter.criticalLow ?? defaults?.criticalLow,
+              criticalHigh: parameter.criticalHigh ?? defaults?.criticalHigh,
+            };
+          }),
+        };
+      });
+      return of({ ...saved, tests });
+    }
     return of({
       sampleId: sample.id,
-      tests: createDemoTests(sample.tests, catalogue),
+      tests: configuredTests,
       workflowStatus: 'DRAFT',
       updatedAt: new Date().toISOString(),
     });
