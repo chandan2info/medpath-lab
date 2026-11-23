@@ -8,6 +8,7 @@
 // ─────────────────────────────────────────────
 import { Injectable, signal } from '@angular/core';
 import { Sample } from '../../shared/models/lis.models';
+import { LabWorkflowMockService } from './lab-workflow-mock.service';
 
 const SAMPLES: Sample[] = [
   { id:'SMP-2406-087', patientId:'PAT-0316', patientName:'Arun Pillai',   dob:'1965-03-12', gender:'male',   refDoctor:'Dr. Rajesh Iyer', mobile:'9876543210', visitType:'walk-in', fastingStatus:'unknown', tests:['KFT','Urine R/M'],  priority:'stat',    status:'critical',   collectedAt:'9:20 AM',  etaLabel:'Now',   tubes:[{id:'087-A',color:'#E24B4A',label:'Red top (SST)',   tests:['KFT']},{id:'087-B',color:'#C9A227',label:'Yellow (Urine)',tests:['Urine R/M']}] },
@@ -20,6 +21,8 @@ const SAMPLES: Sample[] = [
 
 @Injectable({ providedIn: 'root' })
 export class SampleTrackingService {
+  constructor(private readonly workflowStore: LabWorkflowMockService) {}
+
   private readonly storageKey = 'medpath.samples.v1';
   private readonly _samples = signal<Sample[]>(this.readSamples());
 
@@ -78,6 +81,26 @@ export class SampleTrackingService {
   updateStatus(sampleId: string, status: Sample['status']): Sample | undefined {
     const current = this.getById(sampleId);
     if (!current) return undefined;
+    const allowed: Record<Sample['status'], Sample['status'][]> = {
+      pending: ['received', 'rejected'],
+      received: ['processing', 'rejected'],
+      processing: ['ready', 'rejected'],
+      ready: [],
+      critical: ['processing', 'rejected'],
+      rejected: ['pending'],
+      dispatched: [],
+    };
+    if (current.status !== status && !allowed[current.status].includes(status)) {
+      throw new Error(`Invalid sample transition: ${current.status} → ${status}.`);
+    }
+
+    const workflowSample = this.workflowStore.samples().find(sample => sample.id === sampleId);
+    const workflowStatus = ({
+      received: 'received', processing: 'processing', rejected: 'rejected', pending: 'collected',
+    } as const)[status as 'received' | 'processing' | 'rejected' | 'pending'];
+    if (workflowSample && workflowStatus) {
+      this.workflowStore.updateSampleStatus(sampleId, workflowStatus);
+    }
     const updated = { ...current, status };
     this._samples.update(samples => {
       const next = samples.map(sample => sample.id === sampleId ? updated : sample);
@@ -86,6 +109,11 @@ export class SampleTrackingService {
     });
     return updated;
   }
+
+  receiveSample(sampleId: string): Sample | undefined { return this.updateStatus(sampleId, 'received'); }
+  startProcessing(sampleId: string): Sample | undefined { return this.updateStatus(sampleId, 'processing'); }
+  rejectSample(sampleId: string): Sample | undefined { return this.updateStatus(sampleId, 'rejected'); }
+  requestRecollection(sampleId: string): Sample | undefined { return this.updateStatus(sampleId, 'pending'); }
 
   private createSampleId(): string {
     const now = new Date();
