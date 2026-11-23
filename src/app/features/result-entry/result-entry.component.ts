@@ -12,7 +12,7 @@ import { map } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
 import { SampleTrackingService } from '../../core/services/sample-tracking.service';
-import { ResultFlag } from '../../shared/models/lis.models';
+import { LabTest, ResultFlag } from '../../shared/models/lis.models';
 
 type TestStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
 type TestFilter = 'ALL' | TestStatus;
@@ -40,30 +40,45 @@ interface MockOrderedTest {
 interface NoteDraft { parameterId: string; text: string; }
 interface NotificationDraft { parameterId: string; recipient: string; channel: string; }
 
-const createDemoTests = (): MockOrderedTest[] => [
-  { id: 'KFT', code: 'KFT', name: 'Kidney Function Test (KFT)', shortName: 'KFT – Kidney Function Test', status: 'COMPLETED', parameters: [
-    { id: 'cr', name: 'Serum creatinine', method: 'Enzymatic method', value: '2.4', unit: 'mg/dL', range: '0.7 – 1.3', flag: 'high', previousValue: '1.1' },
-    { id: 'bun', name: 'Blood urea nitrogen', method: 'Urease', value: '48', unit: 'mg/dL', range: '7 – 20', flag: 'high', previousValue: '19' },
-    { id: 'k', name: 'Serum potassium (K⁺)', method: 'ISE', value: '6.8', unit: 'mEq/L', range: '3.5 – 5.0', flag: 'critical', previousValue: '4.2', note: 'Demo note: verify sample integrity.' },
-    { id: 'na', name: 'Serum sodium (Na⁺)', method: 'ISE', value: '138', unit: 'mEq/L', range: '136 – 145', flag: 'normal', previousValue: '139' },
-    { id: 'ua', name: 'Serum uric acid', method: 'Uricase', value: '5.2', unit: 'mg/dL', range: '3.5 – 7.2', flag: 'normal', previousValue: '5.0' },
-    { id: 'egfr', name: 'eGFR (CKD-EPI)', method: 'Calculated', value: '32', unit: 'mL/min/1.73 m²', range: '≥ 60', flag: 'low', isCalculated: true, previousValue: '82' },
-  ] },
-  { id: 'LFT', code: 'LFT', name: 'Liver Function Test (LFT)', shortName: 'LFT – Liver Function Test', status: 'COMPLETED', parameters: Array.from({length:8}, (_,i) => ({ id:`lft-${i}`, name:['Bilirubin total','Bilirubin direct','SGOT (AST)','SGPT (ALT)','Alkaline phosphatase','Total protein','Albumin','Globulin'][i], method:'Configured method', value:['0.8','0.2','28','32','92','7.1','4.2','2.9'][i], unit:i<2?'mg/dL':'U/L', range:'Configured range', flag:'normal' as ResultFlag })) },
-  { id: 'CBC', code: 'CBC', name: 'Complete Blood Count (CBC)', shortName: 'CBC – Complete Blood Count', status: 'IN_PROGRESS', parameters: Array.from({length:22}, (_,i) => ({ id:`cbc-${i}`, name:['Haemoglobin','Total WBC count','Platelet count','RBC count','Haematocrit','MCV','MCH','MCHC','Neutrophils','Lymphocytes','Monocytes','Eosinophils','Basophils','RDW','MPV','PCV','PCT','PDW','ESR','ANC','ALC','Reticulocyte count'][i], method:'Configured method', value:i<16?['13.5','7800','210000','4.8','42','88','29','33','62','30','5','2','1','13','9','40'][i]:'', unit:'', range:'Configured range', flag:'normal' as ResultFlag })) },
-  { id: 'HBA', code: 'HBA1C', name: 'HbA1c', shortName: 'HBA – Haemoglobin A1c', status: 'IN_PROGRESS', parameters: Array.from({length:4}, (_,i) => ({ id:`hba-${i}`, name:['HbA1c','Estimated average glucose','Interpretation','Method'][i], method:'Configured method', value:i<2?['6.2','131'][i]:'', unit:i===0?'%':'mg/dL', range:'Configured range', flag:'normal' as ResultFlag })) },
-  ...[
-    ['URI','Urine R/M – Routine & Microscopy',12],
-    ['THY','Thyroid Profile',3],
-    ['LIP','Lipid Profile',8],
-    ['GLU','Blood Glucose',2],
-    ['VTD','Vitamin D',1],
-    ['B12','Vitamin B12',1],
-    ['CRP','C-Reactive Protein',1],
-    ['FER','Serum Ferritin',1],
-  ].map(([id,name,count]) => ({ id:String(id), code:String(id), name:String(name), shortName:String(name), status:'PENDING' as TestStatus, parameters:Array.from({length:Number(count)},(_,i)=>({id:`${id}-${i}`,name:`Parameter ${i+1}`,method:'Configured method',value:'',unit:'',range:'Configured range',flag:'normal' as ResultFlag})) })),
-];
-
+const PARAMETER_TEMPLATES: Record<string, Array<Omit<MockParameter, 'value' | 'flag'>>> = {
+  KFT: [
+    {id:'cr',name:'Serum creatinine',method:'Enzymatic method',unit:'mg/dL',range:'0.7 – 1.3',previousValue:'1.1'},
+    {id:'bun',name:'Blood urea nitrogen',method:'Urease',unit:'mg/dL',range:'7 – 20',previousValue:'19'},
+    {id:'k',name:'Serum potassium (K⁺)',method:'ISE',unit:'mEq/L',range:'3.5 – 5.0',previousValue:'4.2',note:'Demo note: verify sample integrity.'},
+    {id:'na',name:'Serum sodium (Na⁺)',method:'ISE',unit:'mEq/L',range:'136 – 145',previousValue:'139'},
+    {id:'ua',name:'Serum uric acid',method:'Uricase',unit:'mg/dL',range:'3.5 – 7.2',previousValue:'5.0'},
+    {id:'egfr',name:'eGFR (CKD-EPI)',method:'Calculated',unit:'mL/min/1.73 m²',range:'≥ 60',previousValue:'82',isCalculated:true},
+  ],
+  LFT: ['Bilirubin total','Bilirubin direct','SGOT (AST)','SGPT (ALT)','Alkaline phosphatase','Total protein','Albumin','Globulin'].map((name,i)=>({id:'lft-'+i,name,method:'Configured method',unit:i<2?'mg/dL':'U/L',range:'Configured range'})),
+  CBC: ['Haemoglobin','Total WBC count','Platelet count','RBC count','Haematocrit','MCV','MCH','MCHC','Neutrophils','Lymphocytes','Monocytes','Eosinophils','Basophils','RDW','MPV','PCV','PCT','PDW','ESR','ANC','ALC','Reticulocyte count'].map((name,i)=>({id:'cbc-'+i,name,method:'Configured method',unit:i===0?'g/dL':i===1||i===2?'cells/µL':'',range:'Configured range'})),
+  HBA: [{id:'hba-0',name:'HbA1c',method:'HPLC',unit:'%',range:'4.0 – 5.6'},{id:'hba-1',name:'Estimated average glucose',method:'Calculated',unit:'mg/dL',range:'70 – 126',isCalculated:true}],
+  GLU: [{id:'glu-0',name:'Blood glucose',method:'Hexokinase',unit:'mg/dL',range:'70 – 99'}],
+  ESR: [{id:'esr-0',name:'Erythrocyte sedimentation rate',method:'Westergren',unit:'mm/hr',range:'0 – 20'}],
+  LIP: ['Total cholesterol','Triglycerides','HDL cholesterol','LDL cholesterol','VLDL cholesterol','Total cholesterol / HDL ratio'].map((name,i)=>({id:'lip-'+i,name,method:i===5?'Calculated':'Enzymatic',unit:i===5?'ratio':'mg/dL',range:'Configured range',isCalculated:i===5})),
+  TSH: [{id:'tsh-0',name:'Thyroid stimulating hormone (TSH)',method:'CLIA',unit:'µIU/mL',range:'0.4 – 4.5'}],
+  FT3: [{id:'ft3-0',name:'Free T3',method:'CLIA',unit:'pg/mL',range:'2.0 – 4.4'},{id:'ft3-1',name:'Free T4',method:'CLIA',unit:'ng/dL',range:'0.8 – 1.8'},{id:'ft3-2',name:'TSH',method:'CLIA',unit:'µIU/mL',range:'0.4 – 4.5'}],
+  VTD: [{id:'vtd-0',name:'25-OH Vitamin D',method:'CLIA',unit:'ng/mL',range:'30 – 100'}],
+  URI: ['Colour','Appearance','Specific gravity','pH','Protein','Glucose','Ketones','Blood','Pus cells','RBCs','Epithelial cells','Casts'].map((name,i)=>({id:'uri-'+i,name,method:'Microscopy / dipstick',unit:i>7?' /HPF':'',range:'As per lab reference'})),
+  UCR: [{id:'ucr-0',name:'Urine creatinine',method:'Enzymatic',unit:'mg/dL',range:'Configured range'}],
+  CRP: [{id:'crp-0',name:'C-reactive protein',method:'Immunoturbidimetry',unit:'mg/L',range:'0 – 5'}],
+  FER: [{id:'fer-0',name:'Serum ferritin',method:'CLIA',unit:'ng/mL',range:'Configured range'}],
+  B12: [{id:'b12-0',name:'Vitamin B12',method:'CLIA',unit:'pg/mL',range:'200 – 900'}],
+};
+const DEMO_VALUES: Record<string,string[]> = {KFT:['2.4','48','6.8','138','5.2','32'],LFT:['0.8','0.2','28','32','92','7.1','4.2','2.9'],CBC:['13.5','7800','210000','4.8','42','88','29','33','62','30','5','2','1','13','9','40'],HBA:['6.2','131'],GLU:['96'],ESR:['12'],LIP:['182','145','48','112','29','3.8'],TSH:['2.4'],FT3:['3.1','1.2','2.4'],VTD:['28'],UCR:['85'],CRP:['3.2'],FER:['86'],B12:['420'],URI:['Pale yellow','Clear','1.020','6.0','Nil','Nil','Nil','Nil','1–2','0–1','Few','Nil']};
+const DEMO_FLAGS: Record<string,ResultFlag[]> = {KFT:['high','high','critical','normal','normal','low'],HBA:['high','normal'],VTD:['low']};
+function flagFromValue(value:string,range:string):ResultFlag { const numeric=Number(value); const bounds=range.match(/[\\d.]+/g)?.map(Number)??[]; if(!value.trim()||!Number.isFinite(numeric)||bounds.length<2)return 'normal'; if(numeric<bounds[0])return 'low'; if(numeric>bounds[1])return 'high'; return 'normal'; }
+const createDemoTests = (testIds:string[],catalogue:LabTest[]):MockOrderedTest[] => {
+  const aliases:Record<string,string>={'URINE R/M':'URI','URINE R/M – ROUTINE & MICROSCOPY':'URI','THYROID PANEL':'TSH','LIPIDS':'LIP'};
+  return testIds.map(rawId=>{
+    const normalized=aliases[rawId.toUpperCase()]??rawId.toUpperCase();
+    const labTest=catalogue.find(test=>test.id.toUpperCase()===normalized||test.name.toUpperCase()===rawId.toUpperCase());
+    const code=labTest?.id??normalized;
+    const templates=PARAMETER_TEMPLATES[code]??[{id:code.toLowerCase()+'-0',name:(labTest?.name??rawId)+' result',method:'Configured method',unit:'',range:'Configured range'}];
+    const values=DEMO_VALUES[code]??[]; const flags=DEMO_FLAGS[code]??[];
+    const parameters:MockParameter[]=templates.map((template,index)=>{const value=values[index]??'';return {...template,value,flag:flags[index]??flagFromValue(value,template.range)};});
+    return {id:code,code,name:labTest?.name??rawId,shortName:code==='KFT'?'KFT – Kidney Function Test':code==='LFT'?'LFT – Liver Function Test':code==='CBC'?'CBC – Complete Blood Count':labTest?.name??rawId,status:parameters.every(p=>p.value.trim())?'COMPLETED':parameters.some(p=>p.value.trim())?'IN_PROGRESS':'PENDING',parameters};
+  });
+};
 @Component({
   selector: 'app-result-entry',
   standalone: true,
@@ -172,8 +187,9 @@ export class ResultEntryComponent implements OnInit {
     if (months < 0) { years -= 1; months += 12; }
     return `${years}y ${months}m ${days}d`;
   });
-  readonly tests = signal<MockOrderedTest[]>(createDemoTests());
-  readonly selectedTestId = signal('KFT');
+  readonly tests = signal<MockOrderedTest[]>([]);
+  readonly selectedTestId = signal('');
+  private readonly resultStoragePrefix = 'medpath.result-entry.v1';
   readonly testSearch = signal('');
   readonly filter = signal<TestFilter>('ALL');
   readonly referenceProfiles = ['Adult Male', 'Adult Female', 'Child', 'Senior Adult'] as const;
@@ -231,27 +247,31 @@ export class ResultEntryComponent implements OnInit {
   readonly inProgressTests = computed(() => this.tests().filter(test => this.effectiveTestStatus(test) === 'IN_PROGRESS').length);
 
   ngOnInit(): void {
-    const routeSampleId = this.sampleId();
-    if (routeSampleId) {
-      if (!this.sample()) this.router.navigate(['/dashboard/tracking']);
+    const routeSampleId=this.sampleId();
+    if(!routeSampleId){
+      const selectedPatient=this.flow.patient();
+      if(!selectedPatient){this.router.navigate(['/dashboard/tracking']);return;}
+      const patientSample=this.sampleSvc.getLatestByPatientId(selectedPatient.id);
+      if(patientSample)this.router.navigate(['/dashboard/results',patientSample.id],{replaceUrl:true});
+      else this.router.navigate(['/dashboard/collection'],{replaceUrl:true});
       return;
     }
-
-    // Resolve the selected patient to their own sample; never show a
-    // different patient's first sample as a silent fallback.
-    const selectedPatient = this.flow.patient();
-    if (!selectedPatient) {
-      this.router.navigate(['/dashboard/tracking']);
-      return;
-    }
-    const patientSample = this.sampleSvc.getLatestByPatientId(selectedPatient.id);
-    if (patientSample) {
-      this.router.navigate(['/dashboard/results', patientSample.id], { replaceUrl: true });
-    } else {
-      this.router.navigate(['/dashboard/collection'], { replaceUrl: true });
-    }
+    const sample=this.sample();
+    if(!sample){this.router.navigate(['/dashboard/tracking']);return;}
+    const initialTests=createDemoTests(sample.tests,this.flow.allTests);
+    const savedTests=this.readSavedResults(sample.id);
+    const tests=savedTests?.length?savedTests:initialTests;
+    this.tests.set(tests);
+    this.selectedTestId.set(tests[0]?.id??'');
   }
 
+  private readSavedResults(sampleId:string):MockOrderedTest[]|null {
+    try {const raw=localStorage.getItem(this.resultStoragePrefix+':'+sampleId);if(!raw)return null;const parsed:unknown=JSON.parse(raw);return Array.isArray(parsed)?parsed as MockOrderedTest[]:null;}catch{return null;}
+  }
+  private persistResults():void {
+    const sampleId=this.sample()?.id;if(!sampleId)return;
+    try{localStorage.setItem(this.resultStoragePrefix+':'+sampleId,JSON.stringify(this.tests()));}catch{this.showDemoNotice.set(true);}
+  }
   previousTest(): void {
     const index = this.selectedTestIndex();
     if (index > 0) this.selectTest(this.tests()[index - 1].id);
@@ -279,12 +299,13 @@ export class ResultEntryComponent implements OnInit {
 
   updateResult(parameterId: string, value: string): void {
     this.updateParameter(parameterId, { value });
+    this.persistResults();
     this.demoSavedState.set('unsaved');
   }
   private updateParameter(parameterId: string, patch: Partial<MockParameter>): void {
     this.tests.update(tests => tests.map(test => test.id !== this.selectedTestId() ? test : {
       ...test,
-      parameters: test.parameters.map(parameter => parameter.id === parameterId ? { ...parameter, ...patch } : parameter),
+      parameters: test.parameters.map(parameter => { if(parameter.id!==parameterId)return parameter; const updated={...parameter,...patch}; if(patch.value!==undefined)updated.flag=flagFromValue(updated.value,updated.range); return updated; }),
     }));
   }
   resultClass(flag: ResultFlag): string { return flag; }
@@ -310,6 +331,7 @@ export class ResultEntryComponent implements OnInit {
     const draft = this.noteDraft();
     if (!draft) return;
     this.updateParameter(draft.parameterId, { note: draft.text.trim() || undefined });
+    this.persistResults();
     this.noteDraft.set(null);
   }
   closeNotes(): void { this.noteDraft.set(null); }
@@ -317,12 +339,14 @@ export class ResultEntryComponent implements OnInit {
   restorePrevious(parameter: MockParameter): void {
     if (parameter.previousValue === undefined) return;
     this.updateParameter(parameter.id, { value: parameter.previousValue });
+    this.persistResults();
     this.moreMenuId.set(null);
   }
   clearResult(parameter: MockParameter): void {
     const confirmed = window.confirm(`Clear the result for "${parameter.name}"? This demo action only changes local mock data.`);
     if (!confirmed) return;
     this.updateParameter(parameter.id, { value: '' });
+    this.persistResults();
     this.moreMenuId.set(null);
   }
   viewHistory(parameter: MockParameter): void {
@@ -339,11 +363,8 @@ export class ResultEntryComponent implements OnInit {
     this.showNotificationDialog.set(false);
     this.showDemoNotice.set(true);
   }
-  saveDraft(): void {
-    this.showDemoNotice.set(true);
-    this.demoSavedState.set('idle');
-  }
-  validateDemo(): void { this.showDemoNotice.set(true); }
+  saveDraft(): void { this.persistResults(); this.showDemoNotice.set(true); this.demoSavedState.set('idle'); }
+  validateDemo(): void { this.persistResults(); this.showDemoNotice.set(true); }
   submitReviewDemo(): void { this.showDemoNotice.set(true); }
   finalizeDemo(): void { this.showDemoNotice.set(true); }
   toggleCriticalDetails(): void { this.showCriticalDetails.update(v => !v); }
