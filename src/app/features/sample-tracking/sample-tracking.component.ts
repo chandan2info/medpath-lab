@@ -105,7 +105,7 @@ export class SampleTrackingComponent {
   rejectSample(): void {
     const reason = window.prompt('Enter the specimen rejection reason:');
     if (!reason?.trim()) return;
-    this.runSampleAction(id => this.svc.rejectSample(id));
+    this.runSampleAction(id => this.svc.rejectSample(id, reason));
   }
   requestRecollection(): void { this.runSampleAction(id => this.svc.requestRecollection(id)); }
   canEnterResults(): boolean {
