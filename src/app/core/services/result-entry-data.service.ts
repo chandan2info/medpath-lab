@@ -16,6 +16,9 @@ export interface MockParameter {
   isCalculated?: boolean;
   note?: string;
   previousValue?: string;
+  /** Lab-configured critical limits; distinct from the ordinary reference range. */
+  criticalLow?: number;
+  criticalHigh?: number;
 }
 export interface MockOrderedTest {
   id: string;
@@ -32,7 +35,7 @@ const PARAMETER_TEMPLATES: Record<string, Array<Omit<MockParameter, 'value' | 'f
   KFT: [
     {id:'cr',name:'Serum creatinine',method:'Enzymatic method',unit:'mg/dL',range:'0.7 – 1.3',previousValue:'1.1'},
     {id:'bun',name:'Blood urea nitrogen',method:'Urease',unit:'mg/dL',range:'7 – 20',previousValue:'19'},
-    {id:'k',name:'Serum potassium (K⁺)',method:'ISE',unit:'mEq/L',range:'3.5 – 5.0',previousValue:'4.2',note:'Demo note: verify sample integrity.'},
+    {id:'k',name:'Serum potassium (K⁺)',method:'ISE',unit:'mEq/L',range:'3.5 – 5.0',previousValue:'4.2',criticalLow:2.5,criticalHigh:6.5,note:'Demo note: verify sample integrity.'},
     {id:'na',name:'Serum sodium (Na⁺)',method:'ISE',unit:'mEq/L',range:'136 – 145',previousValue:'139'},
     {id:'ua',name:'Serum uric acid',method:'Uricase',unit:'mg/dL',range:'3.5 – 7.2',previousValue:'5.0'},
     {id:'egfr',name:'eGFR (CKD-EPI)',method:'Calculated',unit:'mL/min/1.73 m²',range:'≥ 60',previousValue:'82',isCalculated:true},
@@ -54,10 +57,12 @@ const PARAMETER_TEMPLATES: Record<string, Array<Omit<MockParameter, 'value' | 'f
 };
 const DEMO_VALUES: Record<string,string[]> = {KFT:['2.4','48','6.8','138','5.2','32'],LFT:['0.8','0.2','28','32','92','7.1','4.2','2.9'],CBC:['13.5','7800','210000','4.8','42','88','29','33','62','30','5','2','1','13','9','40'],HBA:['6.2','131'],GLU:['96'],ESR:['12'],LIP:['182','145','48','112','29','3.8'],TSH:['2.4'],FT3:['3.1','1.2','2.4'],VTD:['28'],UCR:['85'],CRP:['3.2'],FER:['86'],B12:['420'],URI:['Pale yellow','Clear','1.020','6.0','Nil','Nil','Nil','Nil','1–2','0–1','Few','Nil']};
 const DEMO_FLAGS: Record<string,ResultFlag[]> = {KFT:['high','high','critical','normal','normal','low'],HBA:['high','normal'],VTD:['low']};
-export function flagFromValue(value:string,range:string):ResultFlag {
+export function flagFromValue(value:string,range:string,criticalLow?:number,criticalHigh?:number):ResultFlag {
   if(!value.trim()) return 'normal';
   const numeric=Number(value);
   if(!Number.isFinite(numeric)) return 'normal';
+  // Critical limits take precedence over ordinary high/low reference flags.
+  if((criticalLow!==undefined && numeric<=criticalLow)||(criticalHigh!==undefined && numeric>=criticalHigh)) return 'critical';
   const bounds=range.match(/[0-9.]+/g)?.map(Number)??[];
   if(!bounds.length) return 'normal';
   if(/[≥>]=?/.test(range)) return numeric<bounds[0]?'low':'normal';
