@@ -309,6 +309,7 @@ export class ResultEntryComponent implements OnInit {
     }
     this.showNotificationDialog.set(false);
     this.notificationDraft.set(null);
+    this.demoNoticeMessage.set('Critical result notification recorded locally for this sample.');
     this.showDemoNotice.set(true);
   }
   saveDraft(): void { this.persistResults(); this.demoSavedState.set('idle'); this.demoNoticeMessage.set('Result draft saved locally for this sample.'); this.showDemoNotice.set(true); }
