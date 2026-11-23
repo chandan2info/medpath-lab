@@ -20,10 +20,10 @@ interface ReportStat {
 }
 
 const REPORT_STATS: ReportStat[] = [
-  { id: 'total',      label: 'Total Reports',   value: '1,248', icon: 'file-text',      variant: 'primary', delta: '+12.5% vs last month', deltaType: 'up',      spark: '0,28 16,24 32,26 48,18 64,20 80,10 100,6' },
-  { id: 'pending',    label: 'Pending Reports', value: '5',     icon: 'hourglass',      variant: 'warning', delta: 'Needs attention',       deltaType: 'neutral', spark: '0,20 16,10 32,16 48,8 64,18 80,12 100,4' },
-  { id: 'dispatched', label: 'Dispatched',      value: '320',   icon: 'circle-check',   variant: 'success',  delta: '+8.2% vs last month',   deltaType: 'up',      spark: '0,26 16,22 32,24 48,14 64,18 80,8 100,10' },
-  { id: 'critical',   label: 'Critical Alerts', value: '12',    icon: 'alert-triangle', variant: 'danger',  delta: 'Requires follow-up',    deltaType: 'down',    spark: '0,10 16,18 32,12 48,22 64,14 80,24 100,18' },
+  { id: 'total',      label: 'Total Reports',   value: '0', icon: 'file-text',      variant: 'primary', delta: 'Local mock records', deltaType: 'neutral',      spark: '0,28 16,24 32,26 48,18 64,20 80,10 100,6' },
+  { id: 'pending',    label: 'Pending Reports', value: '0',     icon: 'hourglass',      variant: 'warning', delta: 'Awaiting dispatch',       deltaType: 'neutral', spark: '0,20 16,10 32,16 48,8 64,18 80,12 100,4' },
+  { id: 'dispatched', label: 'Dispatched',      value: '0',   icon: 'circle-check',   variant: 'success',  delta: 'Recorded dispatches',   deltaType: 'neutral',      spark: '0,26 16,22 32,24 48,14 64,18 80,8 100,10' },
+  { id: 'critical',   label: 'Critical Alerts', value: '0',    icon: 'alert-triangle', variant: 'danger',  delta: 'No mock alert count',    deltaType: 'neutral',    spark: '0,10 16,18 32,12 48,22 64,14 80,24 100,18' },
 ];
 
 const PAGE_SIZE = 5;
@@ -59,7 +59,7 @@ export class ReportsComponent {
     ? { ...stat, value: String(this.reports().length) }
     : stat.id === 'pending' ? { ...stat, value: String(this.pendingCount()) }
     : stat.id === 'dispatched' ? { ...stat, value: String(this.reports().filter(report => report.status === 'dispatched').length) }
-    : stat));
+    : stat.id === 'critical' ? { ...stat, value: '0' } : stat));
   selected = signal<ReportRow | null>(null);
   query = signal('');
   statusFilter = signal<ReportStatusFilter>('all');
