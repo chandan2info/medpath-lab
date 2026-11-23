@@ -218,7 +218,7 @@ export class ResultEntryComponent implements OnInit {
     const sampleId=this.sample()?.id;if(!sampleId)return;
     const record={sampleId,tests:this.tests(),workflowStatus:'DRAFT' as const,updatedAt:new Date().toISOString()};
     const request=submit?this.resultData.submitForValidation(record):this.resultData.saveDraft(record);
-    request.subscribe({error:()=>{this.demoNoticeMessage.set('Unable to save results. Please retry.');this.showDemoNotice.set(true);}});
+    request.subscribe({next:()=>this.demoSavedState.set('idle'),error:()=>{this.demoSavedState.set('unsaved');this.demoNoticeMessage.set('Unable to save results. Please retry.');this.showDemoNotice.set(true);}});
   }
   previousTest(): void {
     const index = this.selectedTestIndex();
@@ -247,8 +247,8 @@ export class ResultEntryComponent implements OnInit {
 
   updateResult(parameterId: string, value: string): void {
     this.updateParameter(parameterId, { value });
-    this.persistResults();
     this.demoSavedState.set('unsaved');
+    this.persistResults();
   }
   private updateParameter(parameterId: string, patch: Partial<MockParameter>): void {
     this.tests.update(tests => tests.map(test => test.id !== this.selectedTestId() ? test : {
