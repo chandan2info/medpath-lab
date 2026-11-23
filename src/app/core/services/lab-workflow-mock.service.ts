@@ -173,7 +173,12 @@ export class LabWorkflowMockService {
       id: existing?.id ?? this.id('RES'), sampleId, status: 'draft',
       values: { ...values }, updatedAt: new Date().toISOString()
     };
-    this.persist({ ...current, results: [result, ...current.results.filter(r => r.sampleId !== sampleId)] });
+    this.persist({
+      ...current,
+      results: [result, ...current.results.filter(r => r.sampleId !== sampleId)],
+      samples: current.samples.map(sample => sample.id === sampleId && sample.status !== 'validated'
+        ? { ...sample, status: 'results-entered' } : sample)
+    });
     return result;
   }
 
