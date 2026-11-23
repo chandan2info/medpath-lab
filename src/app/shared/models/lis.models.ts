@@ -62,6 +62,7 @@ export interface Sample {
   status: SampleStatus;
   collectedAt: string;
   etaLabel: string;
+  rejectionReason?: string;
   tubes: Tube[];
 }
 
