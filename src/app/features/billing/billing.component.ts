@@ -32,13 +32,12 @@ export class BillingComponent implements OnInit {
     { id: 'credit', icon: 'clock',       label: 'Credit' },
   ];
 
-  /** Shared 4-step workflow stepper (Register → Test Order → Billing → Sample). */
+  /** Patient Workflow ends here. Sample Collection is handled under Lab Work. */
   protected readonly workflowSteps: WorkflowStep[] = [
     { label: 'Register',   icon: 'ti-user-plus' },
     { label: 'Test Order', icon: 'ti-test-pipe' },
     { label: 'Review Order', icon: 'ti-clipboard-check' },
     { label: 'Billing',    icon: 'ti-receipt' },
-    { label: 'Sample',     icon: 'ti-droplet' },
   ];
   protected readonly workflowActiveIndex = 3;
 
