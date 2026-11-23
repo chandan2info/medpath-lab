@@ -1,9 +1,10 @@
 import { Component, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgClass } from '@angular/common';
+import { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';
 
 interface ReportRow {
-  id: string; patientName: string; patientId: string;
+  id: string; patientName: string; patientId: string; sampleId: string;
   test: string; date: string; status: 'pending' | 'dispatched';
 }
 
@@ -56,10 +57,29 @@ type ReportStatusFilter = 'all' | 'pending' | 'dispatched';
     styleUrl: './reports.component.css',
 })
 export class ReportsComponent {
-  protected readonly reports  = REPORTS;
-  protected readonly kftRows  = KFT_ROWS;
-  protected readonly stats    = REPORT_STATS;
-  selected = signal<ReportRow | null>(REPORTS[0]);
+  private readonly workflowStore = inject(LabWorkflowMockService);
+  protected readonly reports = computed<ReportRow[]>(() => this.workflowStore.reports().map(report => {
+    const sample = this.workflowStore.samples().find(item => item.id === report.sampleId);
+    return {
+      id: report.id, patientName: sample?.patientName ?? 'Unknown patient',
+      patientId: sample?.patientId ?? '—', sampleId: report.sampleId,
+      test: sample?.testIds.join(' + ') ?? '—',
+      date: new Date(report.generatedAt).toLocaleDateString('en-IN'),
+      status: report.status === 'dispatched' ? 'dispatched' : 'pending'
+    };
+  }));
+  protected readonly resultRows = computed(() => {
+    const selected = this.selected();
+    if (!selected) return [];
+    const result = this.workflowStore.results().find(item => item.sampleId === selected.sampleId);
+    return Object.entries(result?.values ?? {}).map(([name, value]) => ({ name, result: value || '—', unit: '—', ref: '—', flag: 'entered' }));
+  });
+  protected readonly stats = computed(() => REPORT_STATS.map(stat => stat.id === 'total'
+    ? { ...stat, value: String(this.reports().length) }
+    : stat.id === 'pending' ? { ...stat, value: String(this.pendingCount()) }
+    : stat.id === 'dispatched' ? { ...stat, value: String(this.reports().filter(report => report.status === 'dispatched').length) }
+    : stat));
+  selected = signal<ReportRow | null>(null);
   query = signal('');
   statusFilter = signal<ReportStatusFilter>('all');
   page = signal(1);
@@ -69,7 +89,7 @@ export class ReportsComponent {
   filteredReports = computed(() => {
     const q = this.query().trim().toLowerCase();
     const status = this.statusFilter();
-    return this.reports.filter(r =>
+    return this.reports().filter(r =>
       (status === 'all' || r.status === status) &&
       (!q || r.patientName.toLowerCase().includes(q) || r.test.toLowerCase().includes(q) || r.id.toLowerCase().includes(q))
     );
@@ -89,7 +109,7 @@ export class ReportsComponent {
   rangeStart = computed(() => this.filteredReports().length === 0 ? 0 : (this.currentPage() - 1) * PAGE_SIZE + 1);
   rangeEnd   = computed(() => Math.min(this.currentPage() * PAGE_SIZE, this.filteredReports().length));
 
-  pendingCount = computed(() => this.reports.filter(r => r.status === 'pending').length);
+  pendingCount = computed(() => this.reports().filter(r => r.status === 'pending').length);
 
   setQuery(q: string): void {
     this.query.set(q);
