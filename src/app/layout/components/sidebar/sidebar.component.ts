@@ -27,13 +27,15 @@ const NAV: NavEntry[] = [
   { caption: 'Patient Workflow' },
   { label: 'Register Patient',     route: '/dashboard/registration', icon: 'user-plus'     },
   { label: 'Test Order',           route: '/dashboard/test-order',   icon: 'test-pipe'     },
+  { label: 'Review Order',         route: '/dashboard/review-order', icon: 'clipboard-check' },
   { label: 'Billing',              route: '/dashboard/billing',      icon: 'file-invoice', badge: 'billing' },
 
-  { caption: 'Lab Work' },
+  { caption: 'Lab Workflow' },
   { label: 'Sample Collection',    route: '/dashboard/collection',   icon: 'droplet'       },
   { label: 'Sample Tracking',      route: '/dashboard/tracking',     icon: 'timeline',     badge: 'tracking' },
-  { label: 'Result Entry',         route: '/dashboard/results',      icon: 'writing'       },
-  { label: 'Reports',              route: '/dashboard/reports',      icon: 'file-text',    badge: 'reports'  },
+  { label: 'Result Entry',         route: '/dashboard/results',     icon: 'writing'       },
+  { label: 'Result Validation',    route: '/dashboard/validation',  icon: 'clipboard-check' },
+  { label: 'Reports',              route: '/dashboard/reports',     icon: 'file-text',    badge: 'reports'  },
 
   { caption: 'Records' },
   { label: 'Patient History',      route: '/dashboard/history',      icon: 'history'       },
