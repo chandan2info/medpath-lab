@@ -1,4 +1,4 @@
-import { Component, signal, computed, ChangeDetectionStrategy } from '@angular/core';
+import { Component, signal, computed, ChangeDetectionStrategy, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgClass } from '@angular/common';
 import { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';
@@ -127,6 +127,19 @@ export class ReportsComponent {
 
   prevPage(): void { this.goToPage(this.currentPage() - 1); }
   nextPage(): void { this.goToPage(this.currentPage() + 1); }
+
+  dispatchSelected(mode: string): void {
+    const selected = this.selected();
+    if (!selected) return;
+    try {
+      this.workflowStore.dispatchReport(selected.id, mode);
+      this.selected.set({ ...selected, status: 'dispatched' });
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : 'Unable to dispatch report.');
+    }
+  }
+
+  printReport(): void { window.print(); }
 
   initials(name: string) { return name.split(' ').map(w => w[0]).join('').slice(0,2); }
 }
