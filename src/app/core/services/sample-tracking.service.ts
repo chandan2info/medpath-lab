@@ -112,8 +112,30 @@ export class SampleTrackingService {
 
   receiveSample(sampleId: string): Sample | undefined { return this.updateStatus(sampleId, 'received'); }
   startProcessing(sampleId: string): Sample | undefined { return this.updateStatus(sampleId, 'processing'); }
-  rejectSample(sampleId: string): Sample | undefined { return this.updateStatus(sampleId, 'rejected'); }
-  requestRecollection(sampleId: string): Sample | undefined { return this.updateStatus(sampleId, 'pending'); }
+  rejectSample(sampleId: string, reason: string): Sample | undefined {
+    const current = this.getById(sampleId);
+    if (!current) return undefined;
+    const updated = this.updateStatus(sampleId, 'rejected');
+    if (!updated) return undefined;
+    const withReason = { ...updated, rejectionReason: reason.trim() };
+    this._samples.update(samples => {
+      const next = samples.map(sample => sample.id === sampleId ? withReason : sample);
+      this.persistSamples(next);
+      return next;
+    });
+    return withReason;
+  }
+  requestRecollection(sampleId: string): Sample | undefined {
+    const updated = this.updateStatus(sampleId, 'pending');
+    if (!updated) return undefined;
+    const { rejectionReason: _reason, ...recollected } = updated;
+    this._samples.update(samples => {
+      const next = samples.map(sample => sample.id === sampleId ? recollected : sample);
+      this.persistSamples(next);
+      return next;
+    });
+    return recollected;
+  }
 
   private createSampleId(): string {
     const now = new Date();
