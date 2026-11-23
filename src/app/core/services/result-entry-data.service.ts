@@ -123,16 +123,16 @@ export class ResultEntryDataService {
     return of(next);
   }
 
-  recordNotification(sampleId: string, notification: { parameterId: string; parameterName: string; value: string; unit: string; recipient: string; channel: string }): Observable<void> {
-    const current = this.read(sampleId) ?? {
-      sampleId, tests: [], workflowStatus: 'DRAFT' as const, updatedAt: new Date().toISOString()
-    };
-    this.write({
+  recordNotification(record: ResultEntryRecord, notification: { parameterId: string; parameterName: string; value: string; unit: string; recipient: string; channel: string }): Observable<ResultEntryRecord> {
+    const current = this.read(record.sampleId);
+    const next: ResultEntryRecord = {
       ...current,
-      notifications: [...(current.notifications ?? []), { ...notification, recordedAt: new Date().toISOString() }],
+      ...record,
+      notifications: [...(current?.notifications ?? []), { ...notification, recordedAt: new Date().toISOString() }],
       updatedAt: new Date().toISOString(),
-    });
-    return of(void 0);
+    };
+    this.write(next);
+    return of(next);
   }
 
   private read(sampleId: string): ResultEntryRecord | null {
