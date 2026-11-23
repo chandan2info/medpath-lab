@@ -225,7 +225,10 @@ export class ResultEntryComponent implements OnInit {
         const values = Object.fromEntries(this.tests().flatMap(test => test.parameters.map(parameter => [`${test.id}.${parameter.id}`, parameter.value])));
         try {
           this.workflowStore.saveResults(sampleId, values);
-          if (submit) this.workflowStore.submitResults(sampleId);
+          if (submit) {
+            this.workflowStore.submitResults(sampleId);
+            this.sampleSvc.updateStatus(sampleId, 'processing');
+          }
           this.demoSavedState.set('idle');
         } catch (error) {
           this.demoSavedState.set('unsaved');
