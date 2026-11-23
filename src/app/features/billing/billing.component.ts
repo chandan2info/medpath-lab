@@ -8,6 +8,7 @@ import { Router, RouterLink } from '@angular/router';
 import { NgClass, DatePipe, TitleCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
+import { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';
 import { PaymentMode } from '../../shared/models/lis.models';
 import { WorkflowStepperComponent, WorkflowStep } from '../../shared/components/workflow-stepper/workflow-stepper.component';
 
@@ -22,6 +23,7 @@ import { WorkflowStepperComponent, WorkflowStep } from '../../shared/components/
 export class BillingComponent implements OnInit {
   protected readonly flow   = inject(PatientFlowService);
   private   readonly router = inject(Router);
+  private readonly workflowStore = inject(LabWorkflowMockService);
 
   protected readonly payModes: { id: PaymentMode; icon: string; label: string }[] = [
     { id: 'cash',   icon: 'cash',        label: 'Cash'   },
@@ -125,11 +127,22 @@ export class BillingComponent implements OnInit {
   confirmPayment(): void {
     if (this.discountPct() > 0 && !this.discountReason()) return;
     this.saving.set(true);
-    setTimeout(() => {
+    try {
       this.flow.setDiscount(this.subtotal() > 0 ? (this.discAmt() / this.subtotal()) * 100 : 0);
+      const orderId = this.flow.ensureWorkflowOrder();
+      this.workflowStore.recordInvoice({
+        id: this.invoiceId,
+        orderId,
+        total: this.grandTotal(),
+        amountReceived: this.advance(),
+        paymentMode: this.payMode()
+      });
       this.saving.set(false);
       this.showReceipt.set(true);
-    }, 500);
+    } catch (error) {
+      this.saving.set(false);
+      window.alert(error instanceof Error ? error.message : 'Unable to save invoice.');
+    }
   }
 
   proceedToSample(): void {
