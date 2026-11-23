@@ -64,15 +64,11 @@ export class SampleTrackingService {
 
   /** Create or update the sample at the end of the collection workflow. */
   createFromCollection(input: Omit<Sample, 'id'>): Sample {
-    const existing = this.getLatestByPatientId(input.patientId);
-    const sample: Sample = {
-      ...input,
-      id: existing?.id ?? this.createSampleId(),
-    };
+    // Every collection is a new visit/sample, even when the patient has
+    // previous samples in the queue. Never overwrite historical records.
+    const sample: Sample = { ...input, id: this.createSampleId() };
     this._samples.update(samples => {
-      const next = existing
-        ? samples.map(item => item.id === existing.id ? sample : item)
-        : [sample, ...samples];
+      const next = [sample, ...samples];
       this.persistSamples(next);
       return next;
     });
