@@ -20,15 +20,17 @@ interface SampleRow extends Sample {
 }
 
 const PRIORITY_RANK: Record<Sample['priority'], number> = { stat: 0, urgent: 1, routine: 2 };
-const STATUS_RANK: Record<SampleStatus, number> = { critical: 0, processing: 1, pending: 2, ready: 3, dispatched: 4 };
+const STATUS_RANK: Record<SampleStatus, number> = { critical: 0, rejected: 1, pending: 2, received: 3, processing: 4, ready: 5, dispatched: 6 };
 
 const FILTER_OPTS: { label: string; value: SampleStatus | 'all' | 'stat-priority' }[] = [
-  { label: 'All',            value: 'all'          },
-  { label: 'STAT priority',  value: 'stat-priority'},
-  { label: 'Critical status',value: 'critical'     },
-  { label: 'Processing',     value: 'processing'   },
-  { label: 'Pending',        value: 'pending'      },
-  { label: 'Ready',          value: 'ready'        },
+  { label: 'All samples', value: 'all' },
+  { label: 'STAT priority', value: 'stat-priority' },
+  { label: 'Awaiting receipt', value: 'pending' },
+  { label: 'Received', value: 'received' },
+  { label: 'Processing', value: 'processing' },
+  { label: 'Ready for entry', value: 'ready' },
+  { label: 'Rejected', value: 'rejected' },
+  { label: 'Critical', value: 'critical' },
 ];
 
 @Component({
@@ -47,6 +49,7 @@ export class SampleTrackingComponent {
   searchQ        = signal('');
   activeFilter   = signal<SampleStatus | 'all' | 'stat-priority'>('all');
   selectedSample = signal<Sample | null>(null);
+  actionError = signal('');
 
   constructor() {
     // Default the detail panel to the first row once the queue loads.
@@ -82,7 +85,33 @@ export class SampleTrackingComponent {
     return this.sort.apply(rows);
   });
 
-  selectSample(s: Sample): void { this.selectedSample.set(s); }
+  selectSample(s: Sample): void { this.selectedSample.set(s); this.actionError.set(''); }
+
+  private runSampleAction(action: (id: string) => Sample | undefined): void {
+    const current = this.selectedSample();
+    if (!current) return;
+    this.actionError.set('');
+    try {
+      const updated = action(current.id);
+      if (updated) this.selectedSample.set(updated);
+    } catch (error) {
+      this.actionError.set(error instanceof Error ? error.message : 'Unable to update sample status.');
+    }
+  }
+
+  receiveSample(): void { this.runSampleAction(id => this.svc.receiveSample(id)); }
+  startProcessing(): void { this.runSampleAction(id => this.svc.startProcessing(id)); }
+  markReady(): void { this.runSampleAction(id => this.svc.updateStatus(id, 'ready')); }
+  rejectSample(): void {
+    const reason = window.prompt('Enter the specimen rejection reason:');
+    if (!reason?.trim()) return;
+    this.runSampleAction(id => this.svc.rejectSample(id));
+  }
+  requestRecollection(): void { this.runSampleAction(id => this.svc.requestRecollection(id)); }
+  canEnterResults(): boolean {
+    const status = this.selectedSample()?.status;
+    return status === 'ready' || status === 'critical';
+  }
 
   /** Clears search text and resets the status/priority filter back to "All". */
   clearFilters(): void {
