@@ -16,23 +16,27 @@ export class StatusPillComponent {
   pillClass(): string {
     const map: Record<string, string> = {
       pending:    'pill-pending',
+      received:   'pill-process',
       processing: 'pill-process',
       ready:      'pill-ready',
       critical:   'pill-critical',
       stat:       'pill-stat',
       dispatched: 'pill-dispatched',
+      rejected:   'pill-critical',
     };
     return map[this.status()] ?? 'pill-pending';
   }
 
   label(): string {
     const map: Record<string, string> = {
-      pending:    'Pending',
+      pending:    'Awaiting receipt',
+      received:   'Received',
       processing: 'Processing',
       ready:      'Ready',
       critical:   'Critical',
       stat:       'STAT',
       dispatched: 'Dispatched',
+      rejected:   'Rejected',
     };
     return map[this.status()] ?? this.status();
   }
