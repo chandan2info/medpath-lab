@@ -2,7 +2,7 @@
 //  MedPath LIS — Shared Domain Models
 // ─────────────────────────────────────────────
 
-export type SampleStatus   = 'pending' | 'processing' | 'ready' | 'critical' | 'dispatched';
+export type SampleStatus   = 'pending' | 'received' | 'processing' | 'ready' | 'critical' | 'rejected' | 'dispatched';
 export type Priority       = 'routine' | 'urgent' | 'stat';
 export type Gender         = 'male' | 'female' | 'other';
 export type PaymentMode    = 'cash' | 'upi' | 'card' | 'credit';
