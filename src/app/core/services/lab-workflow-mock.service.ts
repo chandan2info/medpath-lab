@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, computed } from '@angular/core';
 
 export type PatientVisitStatus = 'registered' | 'ordered' | 'billed' | 'in-lab' | 'completed';
 export type MockSampleStatus = 'collected' | 'received' | 'processing' | 'results-entered' | 'awaiting-validation' | 'validated' | 'rejected';
@@ -47,12 +47,12 @@ interface StoreState {
 export class LabWorkflowMockService {
   private readonly storageKey = 'medpath.workflow.mock.v1';
   private readonly state = signal<StoreState>(this.readState());
-  readonly visits = this.state.asReadonly();
-  readonly orders = this.state.asReadonly();
-  readonly invoices = this.state.asReadonly();
-  readonly samples = this.state.asReadonly();
-  readonly results = this.state.asReadonly();
-  readonly reports = this.state.asReadonly();
+  readonly visits = computed(() => this.state().visits);
+  readonly orders = computed(() => this.state().orders);
+  readonly invoices = computed(() => this.state().invoices);
+  readonly samples = computed(() => this.state().samples);
+  readonly results = computed(() => this.state().results);
+  readonly reports = computed(() => this.state().reports);
 
   private readState(): StoreState {
     const empty: StoreState = { visits: [], orders: [], invoices: [], samples: [], results: [], reports: [] };
@@ -135,12 +135,12 @@ export class LabWorkflowMockService {
     return updated;
   }
 
-  createSample(input: Omit<MockLabSample,'id'|'status'>): MockLabSample {
+  createSample(input: Omit<MockLabSample,'id'|'status'> & { id?: string }): MockLabSample {
     const current = this.state();
     if (current.samples.some(s => s.orderId === input.orderId)) {
       return current.samples.find(s => s.orderId === input.orderId)!;
     }
-    const sample: MockLabSample = { ...input, id: this.id('SMP'), status: 'collected' };
+    const sample: MockLabSample = { ...input, id: input.id ?? this.id('SMP'), status: 'collected' };
     this.persist({
       ...current, samples: [sample, ...current.samples],
       visits: current.visits.map(v => v.id === sample.visitId ? { ...v, status: 'in-lab' } : v)
