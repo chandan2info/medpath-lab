@@ -9,12 +9,12 @@
   @if (selected()) {
     <div class="preview-actions page-header-actions">
       <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="printReport()">
-        <i class="ti ti-download" aria-hidden="true"></i> Download PDF
+        <i class="ti ti-download" aria-hidden="true"></i> Print / Save PDF
       </button>
       <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="dispatchSelected('Patient portal')">
-        <i class="ti ti-send" aria-hidden="true"></i> Send to patient
+        <i class="ti ti-send" aria-hidden="true"></i> Record dispatch
       </button>
-      <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="dispatchSelected('WhatsApp')">
+      <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="dispatchSelected('Record WhatsApp dispatch')">
         <i class="ti ti-brand-whatsapp" aria-hidden="true"></i> WhatsApp
       </button>
       <button type="button" class="lis-btn lis-btn--primary lis-btn--sm" (click)="printReport()">
