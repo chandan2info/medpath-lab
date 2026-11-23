@@ -2031,3 +2031,83 @@
     border-left: 0;
   }
 }
+
+
+
+/* Compact patient header: retain segmented metadata while reducing card height */
+.patient-summary--metadata {
+  min-height: 94px;
+  height: auto;
+  padding: 9px 12px;
+  grid-template-columns: minmax(205px, 1.35fr) minmax(0, 6fr);
+}
+.patient-summary--metadata .patient-identity-block {
+  gap: 11px;
+  padding-right: 12px;
+}
+.patient-summary--metadata .pat-avatar {
+  width: 58px;
+  height: 58px;
+  flex-basis: 58px;
+  font-size: 21px;
+}
+.patient-summary--metadata .patient-identity-copy {
+  gap: 6px;
+}
+.patient-summary--metadata .patient-display-name {
+  font-size: 17px;
+  line-height: 1.1;
+}
+.patient-summary--metadata .patient-id {
+  padding: 4px 9px;
+  font-size: 11px;
+}
+.patient-summary--metadata .patient-metadata-item {
+  min-height: 52px;
+  gap: 8px;
+  padding: 0 10px;
+}
+.patient-summary--metadata .patient-metadata-item > i {
+  font-size: 19px;
+}
+.patient-summary--metadata .patient-metadata-item > span {
+  gap: 5px;
+}
+.patient-summary--metadata .patient-metadata-item small {
+  font-size: 11px;
+}
+.patient-summary--metadata .patient-metadata-item strong {
+  font-size: 12px;
+}
+.patient-summary--metadata .patient-priority-pill {
+  min-height: 27px;
+  padding: 0 11px;
+  font-size: 11px;
+}
+@media (max-width: 1450px) and (min-width: 1051px) {
+  .patient-summary--metadata {
+    min-height: 86px;
+    padding: 8px 10px;
+    grid-template-columns: minmax(185px, 1.15fr) minmax(0, 6fr);
+  }
+  .patient-summary--metadata .pat-avatar {
+    width: 52px;
+    height: 52px;
+    flex-basis: 52px;
+    font-size: 19px;
+  }
+  .patient-summary--metadata .patient-metadata-item {
+    min-height: 48px;
+    gap: 6px;
+    padding: 0 7px;
+  }
+  .patient-summary--metadata .patient-metadata-item > i {
+    font-size: 17px;
+  }
+  .patient-summary--metadata .patient-metadata-item small {
+    font-size: 10px;
+  }
+  .patient-summary--metadata .patient-metadata-item strong {
+    font-size: 11px;
+  }
+}
