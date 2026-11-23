@@ -20,7 +20,30 @@ const SAMPLES: Sample[] = [
 
 @Injectable({ providedIn: 'root' })
 export class SampleTrackingService {
-  private readonly _samples = signal<Sample[]>(SAMPLES);
+  private readonly storageKey = 'medpath.samples.v1';
+  private readonly _samples = signal<Sample[]>(this.readSamples());
+
+  private readSamples(): Sample[] {
+    try {
+      if (typeof localStorage === 'undefined') return SAMPLES;
+      const saved = localStorage.getItem(this.storageKey);
+      if (!saved) return SAMPLES;
+      const parsed: unknown = JSON.parse(saved);
+      return Array.isArray(parsed) ? parsed as Sample[] : SAMPLES;
+    } catch {
+      return SAMPLES;
+    }
+  }
+
+  private persistSamples(samples: Sample[]): void {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(this.storageKey, JSON.stringify(samples));
+      }
+    } catch {
+      // Keep the in-memory queue usable if browser storage is unavailable.
+    }
+  }
 
   /** All samples currently in the lab queue. */
   readonly samples = this._samples.asReadonly();
@@ -46,9 +69,13 @@ export class SampleTrackingService {
       ...input,
       id: existing?.id ?? this.createSampleId(),
     };
-    this._samples.update(samples => existing
-      ? samples.map(item => item.id === existing.id ? sample : item)
-      : [sample, ...samples]);
+    this._samples.update(samples => {
+      const next = existing
+        ? samples.map(item => item.id === existing.id ? sample : item)
+        : [sample, ...samples];
+      this.persistSamples(next);
+      return next;
+    });
     return sample;
   }
 
