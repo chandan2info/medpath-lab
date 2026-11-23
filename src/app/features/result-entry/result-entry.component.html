@@ -43,7 +43,7 @@
   }
 
   @if (showDemoNotice()) {
-    <div class="demo-notice" role="status"><i class="ti ti-info-circle"></i> Preview only: no backend request was made and no clinical workflow state was changed. <button type="button" (click)="showDemoNotice.set(false)" aria-label="Dismiss notice"><i class="ti ti-x"></i></button></div>
+    <div class="demo-notice" role="status"><i class="ti ti-info-circle"></i> Mock workflow action saved locally for this sample. Backend API is not connected yet. <button type="button" (click)="showDemoNotice.set(false)" aria-label="Dismiss notice"><i class="ti ti-x"></i></button></div>
   }
 
   <div class="workspace workspace--simplified">
