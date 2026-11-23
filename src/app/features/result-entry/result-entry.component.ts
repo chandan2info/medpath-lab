@@ -227,7 +227,6 @@ export class ResultEntryComponent implements OnInit {
           this.workflowStore.saveResults(sampleId, values);
           if (submit) {
             this.workflowStore.submitResults(sampleId);
-            this.sampleSvc.updateStatus(sampleId, 'processing');
           }
           this.demoSavedState.set('idle');
         } catch (error) {
