@@ -4,7 +4,8 @@
 //  Registration → Test Order → Billing →
 //  Sample Collection workflow.
 // ─────────────────────────────────────────────
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
+import { LabWorkflowMockService } from './lab-workflow-mock.service';
 import { LabTest, Priority, PaymentMode, TestPackage } from '../../shared/models/lis.models';
 
 export interface RegisteredPatient {
@@ -130,6 +131,9 @@ const KNOWN_PATIENTS: KnownPatientRecord[] = [
 
 @Injectable({ providedIn: 'root' })
 export class PatientFlowService {
+  private readonly workflowStore = inject(LabWorkflowMockService);
+  readonly activeVisitId = signal<string | null>(null);
+  readonly activeOrderId = signal<string | null>(null);
   // ── Master test catalogue ─────────────────
   readonly allTests  = LAB_TESTS;
   readonly popularTests = LAB_TESTS.filter(t => POPULAR_IDS.includes(t.id));
@@ -263,6 +267,9 @@ export class PatientFlowService {
     const yy  = String(new Date().getFullYear()).slice(2);
     const pat: RegisteredPatient = { ...data, id: existingPatientId ?? `PAT-${yy}${mm}-0${seq}` };
     this._patient.set(pat);
+    const visit = this.workflowStore.createVisit(pat);
+    this.activeVisitId.set(visit.id);
+    this.activeOrderId.set(null);
     this._selected.set(new Set());          // reset tests for new patient
     this.activeDraftId.set(null);
     this._discountPct.set(0);
@@ -282,6 +289,23 @@ export class PatientFlowService {
   setPriority(p: Priority): void { this._priority.set(p); this.persistActiveDraft(); }
   setDiscount(pct: number): void { this._discountPct.set(pct); }
   setPayMode(m: PaymentMode): void { this._payMode.set(m); }
+
+  ensureWorkflowOrder(): string {
+    const patient = this._patient();
+    if (!patient) throw new Error('Register or select a patient before creating an order.');
+    const visitId = this.activeVisitId();
+    if (!visitId) throw new Error('The active patient visit is missing. Please register the patient again.');
+    const existingId = this.activeOrderId();
+    if (existingId) return existingId;
+    const order = this.workflowStore.createOrder({
+      visitId, patientId: patient.id,
+      testIds: this.selectedTests().map(test => test.id),
+      priority: this._priority(), subtotal: this.orderTotal(),
+      discount: this.discountAmt(), total: this.grandTotal()
+    });
+    this.activeOrderId.set(order.id);
+    return order.id;
+  }
 
   generateInvoiceId(): string {
     const seq = String(Math.floor(Math.random() * 900) + 100);
