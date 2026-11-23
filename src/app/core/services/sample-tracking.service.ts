@@ -33,9 +33,29 @@ export class SampleTrackingService {
     return this._samples().find(s => s.id === id);
   }
 
-  /** Default mock sample for opening Result Entry directly during UI preview.
-   *  API integration can replace this fallback with the lab's active sample. */
-  getDefaultSample(): Sample | undefined {
-    return this._samples()[0];
+  /** Resolve the latest sample belonging to a patient. */
+  getLatestByPatientId(patientId: string | null | undefined): Sample | undefined {
+    if (!patientId) return undefined;
+    return this._samples().find(sample => sample.patientId === patientId);
+  }
+
+  /** Create or update the sample at the end of the collection workflow. */
+  createFromCollection(input: Omit<Sample, 'id'>): Sample {
+    const existing = this.getLatestByPatientId(input.patientId);
+    const sample: Sample = {
+      ...input,
+      id: existing?.id ?? this.createSampleId(),
+    };
+    this._samples.update(samples => existing
+      ? samples.map(item => item.id === existing.id ? sample : item)
+      : [sample, ...samples]);
+    return sample;
+  }
+
+  private createSampleId(): string {
+    const now = new Date();
+    const datePart = `${String(now.getFullYear()).slice(-2)}${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const sequence = String(this._samples().length + 1).padStart(3, '0');
+    return `SMP-${datePart}-${sequence}`;
   }
 }
