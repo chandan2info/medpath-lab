@@ -106,10 +106,15 @@ export class LabWorkflowMockService {
   recordInvoice(input: {id:string;orderId:string;total:number;amountReceived:number;paymentMode:'cash'|'upi'|'card'|'credit'}): MockInvoice {
     const current = this.state();
     const existing = current.invoices.find(i => i.orderId === input.orderId);
-    const amount = Math.max(0, Math.min(input.total, input.amountReceived));
-    const payments = amount > 0 ? [{ id: this.id('PAY'), amount, mode: input.paymentMode, recordedAt: new Date().toISOString() }] : [];
+    const requestedAmount = Math.max(0, Math.min(input.total, input.amountReceived));
+    const amount = Math.max(existing?.amountReceived ?? 0, requestedAmount);
+    const additionalPayment = amount - (existing?.amountReceived ?? 0);
+    const payments = [...(existing?.payments ?? [])];
+    if (additionalPayment > 0) payments.push({
+      id: this.id('PAY'), amount: additionalPayment, mode: input.paymentMode, recordedAt: new Date().toISOString()
+    });
     const invoice: MockInvoice = {
-      id: input.id, orderId: input.orderId, total: input.total, amountReceived: amount,
+      id: existing?.id ?? input.id, orderId: input.orderId, total: input.total, amountReceived: amount,
       balanceDue: Math.max(0, input.total - amount), paymentMode: input.paymentMode, payments,
       status: amount <= 0 ? 'unpaid' : amount >= input.total ? 'paid' : 'partial', createdAt: existing?.createdAt ?? new Date().toISOString()
     };
