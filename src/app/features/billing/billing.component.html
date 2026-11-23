@@ -11,7 +11,7 @@
       <div class="receipt-icon" aria-hidden="true">
         <i class="ti ti-circle-check"></i>
       </div>
-      <h2 id="receipt-title" class="receipt-title">Payment Received</h2>
+      <h2 id="receipt-title" class="receipt-title"{{ advance() > 0 ? 'Payment Recorded' : 'Invoice Created' }}</h2>
       <div class="receipt-inv lis-mono">{{ invoiceId }}</div>
 
       <div class="receipt-summary">
@@ -28,7 +28,11 @@
           <span class="rcpt-cap">{{ payMode() }}</span>
         </div>
         <div class="rcpt-row rcpt-total">
-          <span>Collected now</span>
+          <span>Received now</span>
+          <span>₹{{ advance().toLocaleString('en-IN') }}</span>
+        </div>
+        <div class="rcpt-row">
+          <span>Balance due</span>
           <span>₹{{ outstanding().toLocaleString('en-IN') }}</span>
         </div>
       </div>
