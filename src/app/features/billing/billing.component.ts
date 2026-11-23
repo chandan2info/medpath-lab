@@ -71,8 +71,10 @@ export class BillingComponent implements OnInit {
     } else if (this.flow.selectedTests().length === 0) {
       this.router.navigate(['/dashboard/test-order']);
     } else {
-      const orderId = this.flow.ensureWorkflowOrder();
-      const existingInvoice = this.workflowStore.invoices().find(invoice => invoice.orderId === orderId);
+      const orderId = this.flow.activeOrderId();
+      const existingInvoice = orderId
+        ? this.workflowStore.invoices().find(invoice => invoice.orderId === orderId)
+        : undefined;
       if (existingInvoice) {
         this.invoiceId = existingInvoice.id;
         this.advance.set(existingInvoice.amountReceived);
