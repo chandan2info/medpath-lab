@@ -84,6 +84,7 @@ export interface ResultEntryRecord {
   tests: MockOrderedTest[];
   workflowStatus: 'DRAFT' | 'SUBMITTED_FOR_VALIDATION';
   updatedAt: string;
+  notifications?: Array<{ parameterId: string; parameterName: string; value: string; unit: string; recipient: string; channel: string; recordedAt: string }>;
 }
 
 /**
@@ -117,6 +118,17 @@ export class ResultEntryDataService {
     const next = { ...record, workflowStatus: 'SUBMITTED_FOR_VALIDATION' as const, updatedAt: new Date().toISOString() };
     this.write(next);
     return next;
+  }
+
+  recordNotification(sampleId: string, notification: { parameterId: string; parameterName: string; value: string; unit: string; recipient: string; channel: string }): void {
+    const current = this.read(sampleId) ?? {
+      sampleId, tests: [], workflowStatus: 'DRAFT' as const, updatedAt: new Date().toISOString()
+    };
+    this.write({
+      ...current,
+      notifications: [...(current.notifications ?? []), { ...notification, recordedAt: new Date().toISOString() }],
+      updatedAt: new Date().toISOString(),
+    });
   }
 
   private read(sampleId: string): ResultEntryRecord | null {
