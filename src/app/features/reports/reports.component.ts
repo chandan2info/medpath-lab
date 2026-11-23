@@ -139,6 +139,11 @@ export class ReportsComponent {
     }
   }
 
+  workflowStoreReviewer(): string {
+    const sampleId = this.selected()?.sampleId;
+    return this.workflowStore.results().find(result => result.sampleId === sampleId)?.reviewer ?? 'Validation record unavailable';
+  }
+
   printReport(): void { window.print(); }
 
   initials(name: string) { return name.split(' ').map(w => w[0]).join('').slice(0,2); }
