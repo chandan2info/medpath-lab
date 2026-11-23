@@ -20,6 +20,7 @@ export class ResultValidationComponent {
     .filter(result => result.status === 'awaiting-validation')
     .map(result => ({ result, sample: this.store.samples().find(sample => sample.id === result.sampleId) }))
     .filter(item => !!item.sample));
+  readonly validatedResults = computed(() => this.store.results().filter(result => result.status === 'validated'));
   readonly selectedId = signal<string | null>(null);
   readonly reviewNote = signal('');
   readonly notice = signal('');
