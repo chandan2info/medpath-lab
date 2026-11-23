@@ -195,21 +195,25 @@ export class ResultEntryComponent implements OnInit {
     }
     const sample=this.sample();
     if(!sample){this.router.navigate(['/dashboard/tracking']);return;}
-    const record=this.resultData.loadForSample(sample,this.flow.allTests);
-    if(!record.tests.length){this.router.navigate(['/dashboard/tracking']);return;}
-    this.tests.set(record.tests);
-    this.selectedTestId.set(record.tests[0]?.id??'');
-    const age=this.patientAge();
-    const years=Number(age.match(/^\d+/)?.[0]??0);
-    const gender=(sample.gender??'male').toLowerCase();
-    this.selectedReferenceProfile.set(years<18?'Child':years>=60?'Senior Adult':gender==='female'?'Adult Female':'Adult Male');
+    this.resultData.loadForSample(sample,this.flow.allTests).subscribe({
+      next:record=>{
+        if(!record.tests.length){this.router.navigate(['/dashboard/tracking']);return;}
+        this.tests.set(record.tests);
+        this.selectedTestId.set(record.tests[0]?.id??'');
+        const age=this.patientAge();
+        const years=Number(age.match(/^[0-9]+/)?.[0]??0);
+        const gender=(sample.gender??'male').toLowerCase();
+        this.selectedReferenceProfile.set(years<18?'Child':years>=60?'Senior Adult':gender==='female'?'Adult Female':'Adult Male');
+      },
+      error:()=>this.router.navigate(['/dashboard/tracking']),
+    });
   }
 
   private persistResults(submit=false):void {
     const sampleId=this.sample()?.id;if(!sampleId)return;
     const record={sampleId,tests:this.tests(),workflowStatus:'DRAFT' as const,updatedAt:new Date().toISOString()};
-    if(submit)this.resultData.submitForValidation(record);
-    else this.resultData.saveDraft(record);
+    const request=submit?this.resultData.submitForValidation(record):this.resultData.saveDraft(record);
+    request.subscribe({error:()=>{this.demoNoticeMessage.set('Unable to save results. Please retry.');this.showDemoNotice.set(true);}});
   }
   previousTest(): void {
     const index = this.selectedTestIndex();
@@ -310,7 +314,7 @@ export class ResultEntryComponent implements OnInit {
         unit:parameter.unit,
         recipient:draft.recipient,
         channel:draft.channel,
-      });
+      }).subscribe({error:()=>{this.demoNoticeMessage.set('Unable to record notification. Please retry.');this.showDemoNotice.set(true);}});
     }
     this.showNotificationDialog.set(false);
     this.notificationDraft.set(null);
