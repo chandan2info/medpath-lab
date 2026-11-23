@@ -253,7 +253,7 @@ export class ResultEntryComponent implements OnInit {
   private updateParameter(parameterId: string, patch: Partial<MockParameter>): void {
     this.tests.update(tests => tests.map(test => test.id !== this.selectedTestId() ? test : {
       ...test,
-      parameters: test.parameters.map(parameter => { if(parameter.id!==parameterId)return parameter; const updated={...parameter,...patch}; if(patch.value!==undefined)updated.flag=flagFromValue(updated.value,updated.range); return updated; }),
+      parameters: test.parameters.map(parameter => { if(parameter.id!==parameterId)return parameter; const updated={...parameter,...patch}; if(patch.value!==undefined)updated.flag=flagFromValue(updated.value,updated.range,updated.criticalLow,updated.criticalHigh); return updated; }),
     }));
   }
   resultClass(flag: ResultFlag): string { return flag; }
