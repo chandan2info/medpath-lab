@@ -36,10 +36,11 @@ export class BillingComponent implements OnInit {
   protected readonly workflowSteps: WorkflowStep[] = [
     { label: 'Register',   icon: 'ti-user-plus' },
     { label: 'Test Order', icon: 'ti-test-pipe' },
+    { label: 'Review Order', icon: 'ti-clipboard-check' },
     { label: 'Billing',    icon: 'ti-receipt' },
     { label: 'Sample',     icon: 'ti-droplet' },
   ];
-  protected readonly workflowActiveIndex = 2;
+  protected readonly workflowActiveIndex = 3;
 
   readonly today  = new Date();
   discountPct     = signal(0);
