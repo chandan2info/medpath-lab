@@ -1,8 +1,9 @@
 // ─────────────────────────────────────────────
-//  Screen 4a — Sample Collection
-//  Task screen for the phlebotomist: collect
-//  tubes for the CURRENT patient right after
-//  billing. One patient, one job, one screen.
+//  Lab Workflow — Sample Collection
+//  Phlebotomy workstation for collecting
+//  specimens against a registered and billed
+//  patient order. This is separate from the
+//  Patient Workflow.
 //  Redesigned per UX review (2026-07) to read as
 //  a high-frequency operational workstation
 //  rather than a dashboard card:
@@ -11,8 +12,7 @@
 //   - collection panel ordered as a workflow
 //   - collection checklist fills the empty space
 //   - full process timeline, not just 4 steps
-//  (For the lab-wide operations view, see
-//  Screen 4b — Sample Tracking.)
+//  (For the lab-wide queue view, see Sample Tracking.)
 // ─────────────────────────────────────────────
 import { Component, signal, computed, inject, ChangeDetectionStrategy, HostListener, ElementRef } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
@@ -61,7 +61,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   { id: 'consent',  label: 'Consent verified',            icon: 'ti-file-check' },
 ];
 
-/** Full lab pipeline — Collection is one stage of a longer journey, and
+/** Full lab pipeline — Collection is the first Lab Workflow stage, and
  *  showing the whole thing (not just the 4 pre-collection steps) tells the
  *  technician exactly where this sample sits in the bigger picture.
  *  Rendered via the shared <lis-workflow-stepper /> (same component used
