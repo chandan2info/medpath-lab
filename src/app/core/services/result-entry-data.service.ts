@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Observable, of } from 'rxjs';
 import { LabTest, ResultFlag, Sample } from '../../shared/models/lis.models';
 
 export type TestStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
@@ -97,32 +98,32 @@ export interface ResultEntryRecord {
 export class ResultEntryDataService {
   private readonly storagePrefix = 'medpath.result-entry.v1';
 
-  loadForSample(sample: Sample, catalogue: LabTest[]): ResultEntryRecord {
+  loadForSample(sample: Sample, catalogue: LabTest[]): Observable<ResultEntryRecord> {
     const saved = this.read(sample.id);
-    if (saved) return saved;
-    return {
+    if (saved) return of(saved);
+    return of({
       sampleId: sample.id,
       tests: createDemoTests(sample.tests, catalogue),
       workflowStatus: 'DRAFT',
       updatedAt: new Date().toISOString(),
-    };
+    });
   }
 
-  saveDraft(record: ResultEntryRecord): ResultEntryRecord {
+  saveDraft(record: ResultEntryRecord): Observable<ResultEntryRecord> {
     const existing = this.read(record.sampleId);
     const next = { ...existing, ...record, notifications: existing?.notifications ?? [], workflowStatus: 'DRAFT' as const, updatedAt: new Date().toISOString() };
     this.write(next);
-    return next;
+    return of(next);
   }
 
-  submitForValidation(record: ResultEntryRecord): ResultEntryRecord {
+  submitForValidation(record: ResultEntryRecord): Observable<ResultEntryRecord> {
     const existing = this.read(record.sampleId);
     const next = { ...existing, ...record, notifications: existing?.notifications ?? [], workflowStatus: 'SUBMITTED_FOR_VALIDATION' as const, updatedAt: new Date().toISOString() };
     this.write(next);
-    return next;
+    return of(next);
   }
 
-  recordNotification(sampleId: string, notification: { parameterId: string; parameterName: string; value: string; unit: string; recipient: string; channel: string }): void {
+  recordNotification(sampleId: string, notification: { parameterId: string; parameterName: string; value: string; unit: string; recipient: string; channel: string }): Observable<void> {
     const current = this.read(sampleId) ?? {
       sampleId, tests: [], workflowStatus: 'DRAFT' as const, updatedAt: new Date().toISOString()
     };
@@ -131,6 +132,7 @@ export class ResultEntryDataService {
       notifications: [...(current.notifications ?? []), { ...notification, recordedAt: new Date().toISOString() }],
       updatedAt: new Date().toISOString(),
     });
+    return of(void 0);
   }
 
   private read(sampleId: string): ResultEntryRecord | null {
