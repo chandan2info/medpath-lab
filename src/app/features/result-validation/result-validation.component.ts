@@ -1,17 +1,19 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';
 
 @Component({
   selector: 'app-result-validation',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './result-validation.component.html',
   styleUrl: './result-validation.component.css'
 })
 export class ResultValidationComponent {
   private readonly store = inject(LabWorkflowMockService);
+  protected readonly workflow = this.store;
   readonly queue = computed(() => this.store.results()
     .filter(result => result.status === 'awaiting-validation')
     .map(result => ({ result, sample: this.store.samples().find(sample => sample.id === result.sampleId) }))
