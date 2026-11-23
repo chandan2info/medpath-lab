@@ -202,6 +202,10 @@ export class ResultEntryComponent implements OnInit {
     }
     const sample=this.sample();
     if(!sample){this.router.navigate(['/dashboard/tracking']);return;}
+    if(sample.status !== 'ready' && sample.status !== 'critical'){
+      this.router.navigate(['/dashboard/tracking']);
+      return;
+    }
     this.resultData.loadForSample(sample,this.flow.allTests).subscribe({
       next:record=>{
         if(!record.tests.length){this.router.navigate(['/dashboard/tracking']);return;}
