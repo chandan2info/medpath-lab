@@ -54,6 +54,9 @@ export interface Sample {
   dob?: string;
   gender?: Gender;
   refDoctor?: string;
+  mobile?: string;
+  visitType?: VisitType;
+  fastingStatus?: FastingStatus;
   tests: string[];
   priority: Priority;
   status: SampleStatus;
