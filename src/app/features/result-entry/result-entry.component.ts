@@ -312,7 +312,12 @@ export class ResultEntryComponent implements OnInit {
     const sampleId=this.sample()?.id;
     const parameter=this.tests().flatMap(test=>test.parameters).find(item=>item.id===draft?.parameterId);
     if(draft&&sampleId&&parameter){
-      this.resultData.recordNotification(sampleId,{
+      this.resultData.recordNotification({
+        sampleId,
+        tests:this.tests(),
+        workflowStatus:'DRAFT',
+        updatedAt:new Date().toISOString(),
+      },{
         parameterId:parameter.id,
         parameterName:parameter.name,
         value:parameter.value,
