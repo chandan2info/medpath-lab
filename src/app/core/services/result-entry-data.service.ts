@@ -53,7 +53,19 @@ const PARAMETER_TEMPLATES: Record<string, Array<Omit<MockParameter, 'value' | 'f
 };
 const DEMO_VALUES: Record<string,string[]> = {KFT:['2.4','48','6.8','138','5.2','32'],LFT:['0.8','0.2','28','32','92','7.1','4.2','2.9'],CBC:['13.5','7800','210000','4.8','42','88','29','33','62','30','5','2','1','13','9','40'],HBA:['6.2','131'],GLU:['96'],ESR:['12'],LIP:['182','145','48','112','29','3.8'],TSH:['2.4'],FT3:['3.1','1.2','2.4'],VTD:['28'],UCR:['85'],CRP:['3.2'],FER:['86'],B12:['420'],URI:['Pale yellow','Clear','1.020','6.0','Nil','Nil','Nil','Nil','1–2','0–1','Few','Nil']};
 const DEMO_FLAGS: Record<string,ResultFlag[]> = {KFT:['high','high','critical','normal','normal','low'],HBA:['high','normal'],VTD:['low']};
-export function flagFromValue(value:string,range:string):ResultFlag { const numeric=Number(value); const bounds=range.match(/[\\d.]+/g)?.map(Number)??[]; if(!value.trim()||!Number.isFinite(numeric)||bounds.length<2)return 'normal'; if(numeric<bounds[0])return 'low'; if(numeric>bounds[1])return 'high'; return 'normal'; }
+export function flagFromValue(value:string,range:string):ResultFlag {
+  if(!value.trim()) return 'normal';
+  const numeric=Number(value);
+  if(!Number.isFinite(numeric)) return 'normal';
+  const bounds=range.match(/[0-9]+(?:\\.[0-9]+)?/g)?.map(Number)??[];
+  if(!bounds.length) return 'normal';
+  if(/[≥>]=?/.test(range)) return numeric<bounds[0]?'low':'normal';
+  if(/[≤<]=?/.test(range)) return numeric>bounds[0]?'high':'normal';
+  if(bounds.length<2) return 'normal';
+  if(numeric<bounds[0]) return 'low';
+  if(numeric>bounds[1]) return 'high';
+  return 'normal';
+}
 export const createDemoTests = (testIds:string[],catalogue:LabTest[]):MockOrderedTest[] => {
   const aliases:Record<string,string>={'URINE R/M':'URI','URINE R/M – ROUTINE & MICROSCOPY':'URI','THYROID PANEL':'TSH','LIPIDS':'LIP'};
   return testIds.map(rawId=>{
