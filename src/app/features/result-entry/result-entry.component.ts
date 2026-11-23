@@ -84,37 +84,25 @@ export class ResultEntryComponent implements OnInit {
   );
   readonly sample = computed(() => {
     const routeSampleId = this.sampleId();
-    return routeSampleId
-      ? this.sampleSvc.getById(routeSampleId)
-      : this.sampleSvc.getDefaultSample();
+    return routeSampleId ? this.sampleSvc.getById(routeSampleId) : undefined;
   });
   readonly patient = computed(() => {
     const sample = this.sample();
     const flowPatient = this.flow.patient();
-    if (sample) {
-      // Keep Result Entry consistent with Test Order: render the patient record
-      // first, while using the selected sample's linked patient metadata when
-      // this route was opened from Sample Tracking.
-      const [firstName, ...rest] = sample.patientName.split(' ');
-      const samePatient = flowPatient?.id === sample.patientId;
-      return {
-        firstName: samePatient ? flowPatient.firstName : firstName,
-        lastName: samePatient ? flowPatient.lastName : rest.join(' '),
-        dob: samePatient ? flowPatient.dob : sample.dob ?? '',
-        gender: samePatient ? flowPatient.gender : sample.gender ?? '',
-        id: sample.patientId,
-        mobile: samePatient ? flowPatient.mobile : sample.mobile ?? '',
-        visitType: samePatient ? flowPatient.visitType : sample.visitType ?? '',
-        fasting: samePatient ? flowPatient.fasting : sample.fastingStatus ?? '',
-        refDoctor: samePatient ? flowPatient.refDoctor : sample.refDoctor ?? '',
-      };
-    }
-    const patient = flowPatient;
-    return patient ? {
-      firstName: patient.firstName, lastName: patient.lastName, dob: patient.dob,
-      gender: patient.gender, id: patient.id, mobile: patient.mobile,
-      visitType: patient.visitType, fasting: patient.fasting, refDoctor: patient.refDoctor,
-    } : null;
+    if (!sample) return null;
+    const samePatient = flowPatient?.id === sample.patientId;
+    const [firstName, ...lastName] = sample.patientName.split(' ');
+    return {
+      firstName,
+      lastName: lastName.join(' '),
+      dob: sample.dob || (samePatient ? flowPatient.dob : ''),
+      gender: sample.gender || (samePatient ? flowPatient.gender : ''),
+      id: sample.patientId,
+      mobile: sample.mobile || (samePatient ? flowPatient.mobile : ''),
+      visitType: sample.visitType || (samePatient ? flowPatient.visitType : ''),
+      fasting: sample.fastingStatus || (samePatient ? flowPatient.fasting : ''),
+      refDoctor: sample.refDoctor || (samePatient ? flowPatient.refDoctor : ''),
+    };
   });
   readonly sampleLabel = computed(() => this.sample()?.id ?? 'Active sample');
   readonly collectedLabel = computed(() => {
@@ -243,10 +231,24 @@ export class ResultEntryComponent implements OnInit {
   readonly inProgressTests = computed(() => this.tests().filter(test => this.effectiveTestStatus(test) === 'IN_PROGRESS').length);
 
   ngOnInit(): void {
-    // A missing route id intentionally uses the default mock sample for direct
-    // UI preview. An explicitly supplied but unknown id remains an invalid link.
-    if (this.sampleId() && !this.sample()) {
+    const routeSampleId = this.sampleId();
+    if (routeSampleId) {
+      if (!this.sample()) this.router.navigate(['/dashboard/tracking']);
+      return;
+    }
+
+    // Resolve the selected patient to their own sample; never show a
+    // different patient's first sample as a silent fallback.
+    const selectedPatient = this.flow.patient();
+    if (!selectedPatient) {
       this.router.navigate(['/dashboard/tracking']);
+      return;
+    }
+    const patientSample = this.sampleSvc.getLatestByPatientId(selectedPatient.id);
+    if (patientSample) {
+      this.router.navigate(['/dashboard/results', patientSample.id], { replaceUrl: true });
+    } else {
+      this.router.navigate(['/dashboard/collection'], { replaceUrl: true });
     }
   }
 
