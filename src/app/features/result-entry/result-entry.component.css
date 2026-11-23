@@ -1847,3 +1847,187 @@
     gap: 10px;
   }
 }
+
+
+
+/* Patient summary metadata layout aligned with the supplied Test Order reference */
+.patient-summary--metadata {
+  display: grid;
+  grid-template-columns: minmax(250px, 1.55fr) minmax(0, 6fr);
+  align-items: center;
+  gap: 0;
+  width: 100%;
+  min-height: 130px;
+  padding: 14px 16px;
+  border-radius: 15px;
+  background: var(--card-bg, #1e293b);
+  border: 1px solid var(--border-color, #334155);
+  box-sizing: border-box;
+}
+.patient-summary--metadata .patient-identity-block {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  min-width: 0;
+  padding-right: 16px;
+}
+.patient-summary--metadata .pat-avatar {
+  display: grid;
+  place-items: center;
+  width: 90px;
+  height: 90px;
+  flex: 0 0 90px;
+  border-radius: 50%;
+  background: var(--lis-primary, #35c5a5);
+  color: #fff;
+  font-size: 29px;
+  font-weight: 700;
+}
+.patient-summary--metadata .patient-identity-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+.patient-summary--metadata .patient-display-name {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--text-primary, #f8fafc);
+  font-size: 23px;
+  font-weight: 750;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.patient-summary--metadata .patient-id {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 7px 13px;
+  border: 1px solid var(--border-color, #475569);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary, #94a3b8);
+  font-size: 15px;
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
+.patient-summary--metadata .patient-metadata-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  align-items: center;
+  min-width: 0;
+}
+.patient-summary--metadata .patient-metadata-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  min-height: 66px;
+  padding: 0 14px;
+  border-left: 1px solid var(--border-color, #3b475b);
+}
+.patient-summary--metadata .patient-metadata-item > i {
+  flex: 0 0 auto;
+  color: var(--lis-primary, #35c5a5);
+  font-size: 24px;
+}
+.patient-summary--metadata .patient-metadata-item > span {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+.patient-summary--metadata .patient-metadata-item small {
+  color: var(--text-secondary, #94a3b8);
+  font-size: 13px;
+  line-height: 1;
+}
+.patient-summary--metadata .patient-metadata-item strong {
+  display: block;
+  overflow: hidden;
+  color: var(--text-primary, #f8fafc);
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.patient-summary--metadata .patient-priority-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 15px;
+  border: 1px solid #2f83d4;
+  border-radius: 999px;
+  background: #e5f1ff;
+  color: #164d83;
+  font-size: 14px;
+  font-weight: 750;
+}
+.patient-summary--metadata .patient-priority-pill--urgent {
+  border-color: #d99b28;
+  background: #fff2cf;
+  color: #895b08;
+}
+.patient-summary--metadata .patient-priority-pill--stat {
+  border-color: #e5484d;
+  background: #e5484d;
+  color: #fff;
+}
+@media (max-width: 1450px) {
+  .patient-summary--metadata {
+    grid-template-columns: minmax(210px, 1.2fr) minmax(0, 6fr);
+    padding: 12px;
+  }
+  .patient-summary--metadata .pat-avatar {
+    width: 66px;
+    height: 66px;
+    flex-basis: 66px;
+    font-size: 22px;
+  }
+  .patient-summary--metadata .patient-display-name {
+    font-size: 18px;
+  }
+  .patient-summary--metadata .patient-metadata-item {
+    gap: 7px;
+    padding: 0 8px;
+  }
+  .patient-summary--metadata .patient-metadata-item > i {
+    font-size: 19px;
+  }
+  .patient-summary--metadata .patient-metadata-item small {
+    font-size: 11px;
+  }
+  .patient-summary--metadata .patient-metadata-item strong {
+    font-size: 12px;
+  }
+}
+@media (max-width: 1050px) {
+  .patient-summary--metadata {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  .patient-summary--metadata .patient-identity-block {
+    padding: 0 0 12px;
+    border-bottom: 1px solid var(--border-color, #3b475b);
+  }
+  .patient-summary--metadata .patient-metadata-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    row-gap: 12px;
+  }
+  .patient-summary--metadata .patient-metadata-item:nth-child(4n + 1) {
+    border-left: 0;
+  }
+}
+@media (max-width: 640px) {
+  .patient-summary--metadata .patient-metadata-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .patient-summary--metadata .patient-metadata-item:nth-child(odd) {
+    border-left: 0;
+  }
+}
