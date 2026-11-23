@@ -1538,3 +1538,9 @@
   .result-actions { flex-direction:column; }
   .result-actions > button { width:100%; }
 }
+
+
+.patient-strip { grid-template-columns:minmax(0,1fr) auto; }
+.patient-identity { gap:14px; }
+.patient-meta { gap:16px; }
+.sample-status { min-width:220px; }
