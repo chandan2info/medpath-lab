@@ -28,9 +28,9 @@ const NAV: NavEntry[] = [
   { label: 'Register Patient',     route: '/dashboard/registration', icon: 'user-plus'     },
   { label: 'Test Order',           route: '/dashboard/test-order',   icon: 'test-pipe'     },
   { label: 'Billing',              route: '/dashboard/billing',      icon: 'file-invoice', badge: 'billing' },
-  { label: 'Sample Collection',    route: '/dashboard/collection',   icon: 'droplet'       },
 
   { caption: 'Lab Work' },
+  { label: 'Sample Collection',    route: '/dashboard/collection',   icon: 'droplet'       },
   { label: 'Sample Tracking',      route: '/dashboard/tracking',     icon: 'timeline',     badge: 'tracking' },
   { label: 'Result Entry',         route: '/dashboard/results',      icon: 'writing'       },
   { label: 'Reports',              route: '/dashboard/reports',      icon: 'file-text',    badge: 'reports'  },
