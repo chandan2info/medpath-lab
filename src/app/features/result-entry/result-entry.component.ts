@@ -293,7 +293,21 @@ export class ResultEntryComponent implements OnInit {
   closeNotification(): void { this.showNotificationDialog.set(false); }
   updateRecipient(value: string): void { this.notificationDraft.update(d => d ? {...d, recipient:value}:null); }
   confirmNotificationDemo(): void {
+    const draft=this.notificationDraft();
+    const sampleId=this.sample()?.id;
+    const parameter=this.tests().flatMap(test=>test.parameters).find(item=>item.id===draft?.parameterId);
+    if(draft&&sampleId&&parameter){
+      this.resultData.recordNotification(sampleId,{
+        parameterId:parameter.id,
+        parameterName:parameter.name,
+        value:parameter.value,
+        unit:parameter.unit,
+        recipient:draft.recipient,
+        channel:draft.channel,
+      });
+    }
     this.showNotificationDialog.set(false);
+    this.notificationDraft.set(null);
     this.showDemoNotice.set(true);
   }
   saveDraft(): void { this.persistResults(); this.showDemoNotice.set(true); this.demoSavedState.set('idle'); }
