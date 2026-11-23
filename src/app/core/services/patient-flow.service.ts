@@ -132,8 +132,27 @@ const KNOWN_PATIENTS: KnownPatientRecord[] = [
 @Injectable({ providedIn: 'root' })
 export class PatientFlowService {
   private readonly workflowStore = inject(LabWorkflowMockService);
-  readonly activeVisitId = signal<string | null>(null);
-  readonly activeOrderId = signal<string | null>(null);
+  private readonly sessionKey = 'medpath.active-patient-flow.v1';
+  readonly activeVisitId = signal<string | null>(this.readSession()?.visitId ?? null);
+  readonly activeOrderId = signal<string | null>(this.readSession()?.orderId ?? null);
+  private readSession(): { patient: RegisteredPatient | null; visitId: string | null; orderId: string | null; testIds: string[]; priority: Priority } | null {
+    try {
+      if (typeof localStorage === 'undefined') return null;
+      const raw = localStorage.getItem(this.sessionKey);
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  }
+
+  private persistSession(): void {
+    try {
+      if (typeof localStorage === 'undefined') return;
+      localStorage.setItem(this.sessionKey, JSON.stringify({
+        patient: this._patient(), visitId: this.activeVisitId(), orderId: this.activeOrderId(),
+        testIds: [...this._selected()], priority: this._priority()
+      }));
+    } catch { /* workflow records remain in the mock repository; session restore is best-effort */ }
+  }
+
   // ── Master test catalogue ─────────────────
   readonly allTests  = LAB_TESTS;
   readonly popularTests = LAB_TESTS.filter(t => POPULAR_IDS.includes(t.id));
@@ -148,12 +167,12 @@ export class PatientFlowService {
   }
 
   // ── Registered patient ────────────────────
-  private _patient  = signal<RegisteredPatient | null>(null);
+  private _patient  = signal<RegisteredPatient | null>(this.readSession()?.patient ?? null);
   readonly patient  = this._patient.asReadonly();
 
   // ── Test order ────────────────────────────
-  private _selected  = signal<Set<string>>(new Set());
-  private _priority  = signal<Priority>('routine');
+  private _selected  = signal<Set<string>>(new Set(this.readSession()?.testIds ?? []));
+  private _priority  = signal<Priority>(this.readSession()?.priority ?? 'routine');
   readonly priority  = this._priority.asReadonly();
 
   readonly selectedIds    = this._selected.asReadonly();
@@ -274,6 +293,7 @@ export class PatientFlowService {
     this.activeDraftId.set(null);
     this._discountPct.set(0);
     this._payMode.set('cash');
+    this.persistSession();
     return pat;
   }
 
@@ -284,9 +304,10 @@ export class PatientFlowService {
       return n;
     });
     this.persistActiveDraft();
+    this.persistSession();
   }
 
-  setPriority(p: Priority): void { this._priority.set(p); this.persistActiveDraft(); }
+  setPriority(p: Priority): void { this._priority.set(p); this.persistActiveDraft(); this.persistSession(); }
   setDiscount(pct: number): void { this._discountPct.set(pct); }
   setPayMode(m: PaymentMode): void { this._payMode.set(m); }
 
@@ -304,6 +325,7 @@ export class PatientFlowService {
       discount: this.discountAmt(), total: this.grandTotal()
     });
     this.activeOrderId.set(order.id);
+    this.persistSession();
     return order.id;
   }
 
