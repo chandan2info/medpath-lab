@@ -75,6 +75,18 @@ export class SampleTrackingService {
     return sample;
   }
 
+  updateStatus(sampleId: string, status: Sample['status']): Sample | undefined {
+    const current = this.getById(sampleId);
+    if (!current) return undefined;
+    const updated = { ...current, status };
+    this._samples.update(samples => {
+      const next = samples.map(sample => sample.id === sampleId ? updated : sample);
+      this.persistSamples(next);
+      return next;
+    });
+    return updated;
+  }
+
   private createSampleId(): string {
     const now = new Date();
     const datePart = `${String(now.getFullYear()).slice(-2)}${String(now.getMonth() + 1).padStart(2, '0')}`;
