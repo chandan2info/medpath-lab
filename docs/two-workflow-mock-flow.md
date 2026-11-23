@@ -6,14 +6,15 @@ This branch keeps the existing Patient Workflow and Lab Workflow screens and con
 1. Registration creates a patient visit.
 2. Test selection is retained in the active patient session.
 3. Billing creates an order and invoice, then records any amount received and remaining balance.
-4. Collection receives the same visit/order identifiers from the active workflow session.
+4. Billing completes the Patient Workflow and hands the visit/order to Lab Work. Sample Collection is not a Patient Workflow step.
 
 ## Lab Workflow
-1. Collection creates a sample linked to the order and visit. The required collection checklist is enforced.
-2. Specimen groups are derived from each catalogue test's `tubeType`, not its business category.
-3. Result Entry saves values against the sample and submits the record for validation.
-4. The Validation queue supports approve or reject/return decisions and records reviewer/time/note.
-5. Reports are generated only from validated result records. Dispatch actions are recorded in the mock repository.
+1. Sample Collection is the first Lab Workflow activity. It creates a sample linked to the visit and order; the required collection checklist is enforced.
+2. Sample Tracking provides the lab-wide queue and visibility after collection.
+3. Specimen groups are derived from each catalogue test's `tubeType`, not its business category.
+4. Result Entry saves values against the sample and submits the record for validation.
+5. The Validation queue supports approve or reject/return decisions and records reviewer/time/note.
+6. Reports are generated only from validated result records. Dispatch actions are recorded in the mock repository.
 
 ## Mock repository contract
 `LabWorkflowMockService` is the current persistence adapter. It stores visits, orders, invoices/payments, samples, results, validation decisions and reports under `medpath.workflow.mock.v1`. The active Patient Workflow session is restored from `medpath.active-patient-flow.v1`.
