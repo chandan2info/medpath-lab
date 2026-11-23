@@ -258,9 +258,9 @@
             </div>
           </div>
           <button type="button" class="lis-btn lis-btn--primary collect-btn"
-            (click)="proceedToResultEntry()" [disabled]="!createdSampleId()">
-            <i class="ti ti-writing" aria-hidden="true"></i>
-            Proceed to Result Entry
+            (click)="openSampleTracking()" [disabled]="!createdSampleId()">
+            <i class="ti ti-timeline" aria-hidden="true"></i>
+            Open Sample Tracking
           </button>
           <button type="button" class="lis-btn lis-btn--secondary collect-btn print-btn"
             [class.print-btn--flash]="printFlash()" (click)="printLabels()">
