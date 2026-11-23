@@ -30,7 +30,7 @@
   </section>
   <section class="approved-list">
     <h2>Recently validated</h2>
-    @for (result of workflow.results().filter(r => r.status === 'validated'); track result.id) {
+    @for (result of validatedResults(); track result.id) {
       <div class="approved-row"><span>{{ result.sampleId }}</span><span>{{ result.reviewer }} · {{ result.reviewedAt | date:'dd MMM, hh:mm a' }}</span><button type="button" (click)="generateReport(result.sampleId)">Generate report</button></div>
     } @empty { <p class="muted">No validated results yet.</p> }
   </section>
