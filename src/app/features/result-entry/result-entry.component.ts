@@ -140,6 +140,7 @@ export class ResultEntryComponent implements OnInit {
   readonly notificationDraft = signal<NotificationDraft | null>(null);
   readonly showCriticalDetails = signal(false);
   readonly showDemoNotice = signal(false);
+  readonly demoNoticeMessage = signal('Mock workflow action saved locally for this sample. Backend API is not connected yet.');
   readonly demoSavedState = signal<'idle' | 'unsaved'>('idle');
   readonly expandedRight = signal(true);
 
@@ -310,11 +311,12 @@ export class ResultEntryComponent implements OnInit {
     this.notificationDraft.set(null);
     this.showDemoNotice.set(true);
   }
-  saveDraft(): void { this.persistResults(); this.showDemoNotice.set(true); this.demoSavedState.set('idle'); }
+  saveDraft(): void { this.persistResults(); this.demoSavedState.set('idle'); this.demoNoticeMessage.set('Result draft saved locally for this sample.'); this.showDemoNotice.set(true); }
   validateDemo(): void {
     const incomplete=this.tests().filter(test=>test.parameters.some(parameter=>!parameter.value.trim()));
-    if(incomplete.length){this.showDemoNotice.set(true);return;}
+    if(incomplete.length){this.demoNoticeMessage.set('Complete all required parameters before submitting for validation.');this.showDemoNotice.set(true);return;}
     this.persistResults(true);
+    this.demoNoticeMessage.set('Results submitted for validation in the local mock workflow.');
     this.showDemoNotice.set(true);
   }
   submitReviewDemo(): void { this.showDemoNotice.set(true); }
