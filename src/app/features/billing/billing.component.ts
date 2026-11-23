@@ -78,6 +78,11 @@ export class BillingComponent implements OnInit {
       if (existingInvoice) {
         this.invoiceId = existingInvoice.id;
         this.advance.set(existingInvoice.amountReceived);
+        const restoredDiscountPct = this.subtotal() > 0
+          ? Math.max(0, Math.min(100, ((this.subtotal() - existingInvoice.total) / this.subtotal()) * 100))
+          : 0;
+        this.discountPct.set(restoredDiscountPct);
+        this.flow.setDiscount(restoredDiscountPct);
       }
     }
   }
