@@ -90,12 +90,31 @@ export class ResultEntryComponent implements OnInit {
   });
   readonly patient = computed(() => {
     const sample = this.sample();
+    const flowPatient = this.flow.patient();
     if (sample) {
+      // Keep Result Entry consistent with Test Order: render the patient record
+      // first, while using the selected sample's linked patient metadata when
+      // this route was opened from Sample Tracking.
       const [firstName, ...rest] = sample.patientName.split(' ');
-      return { firstName, lastName: rest.join(' '), dob: sample.dob ?? '', gender: sample.gender ?? '', id: sample.patientId, refDoctor: sample.refDoctor ?? '—', mobile: sample.mobile ?? '' };
+      const samePatient = flowPatient?.id === sample.patientId;
+      return {
+        firstName: samePatient ? flowPatient.firstName : firstName,
+        lastName: samePatient ? flowPatient.lastName : rest.join(' '),
+        dob: samePatient ? flowPatient.dob : sample.dob ?? '',
+        gender: samePatient ? flowPatient.gender : sample.gender ?? '',
+        id: sample.patientId,
+        mobile: samePatient ? flowPatient.mobile : sample.mobile ?? '',
+        visitType: samePatient ? flowPatient.visitType : sample.visitType ?? '',
+        fasting: samePatient ? flowPatient.fasting : sample.fastingStatus ?? '',
+        refDoctor: samePatient ? flowPatient.refDoctor : sample.refDoctor ?? '',
+      };
     }
-    const patient = this.flow.patient();
-    return patient ? { firstName: patient.firstName, lastName: patient.lastName, dob: patient.dob, gender: patient.gender, id: patient.id, refDoctor: patient.refDoctor, mobile: patient.mobile ?? '' } : null;
+    const patient = flowPatient;
+    return patient ? {
+      firstName: patient.firstName, lastName: patient.lastName, dob: patient.dob,
+      gender: patient.gender, id: patient.id, mobile: patient.mobile,
+      visitType: patient.visitType, fasting: patient.fasting, refDoctor: patient.refDoctor,
+    } : null;
   });
   readonly sampleLabel = computed(() => this.sample()?.id ?? 'Active sample');
   readonly collectedLabel = computed(() => {
@@ -134,20 +153,8 @@ export class ResultEntryComponent implements OnInit {
     if (priority === 'routine') return 'ROUTINE';
     return '—';
   });
-  readonly visitTypeLabel = computed(() => {
-    const visitType = this.sample()?.visitType;
-    if (visitType === 'home-visit') return 'Home Visit';
-    if (visitType === 'appointment') return 'Appointment';
-    if (visitType === 'walk-in') return 'Walk-in';
-    return '—';
-  });
-  readonly fastingLabel = computed(() => {
-    const fasting = this.sample()?.fastingStatus;
-    if (fasting === 'fasting') return 'Fasting';
-    if (fasting === 'non-fasting') return 'Non-fasting';
-    if (fasting === 'unknown') return 'Unknown';
-    return '—';
-  });
+  readonly visitTypeLabel = computed(() => this.patient()?.visitType || '—');
+  readonly fastingLabel = computed(() => this.patient()?.fasting || 'Not specified');
   readonly orderedTestsLabel = computed(() => {
     // Use the same 12-test collection that drives the card count, not the
     // sample's raw test-code list (which may contain extra/legacy entries).
