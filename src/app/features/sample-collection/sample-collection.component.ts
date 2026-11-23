@@ -1,8 +1,9 @@
 // ─────────────────────────────────────────────
-//  Screen 4a — Sample Collection
-//  Task screen for the phlebotomist: collect
-//  tubes for the CURRENT patient right after
-//  billing. One patient, one job, one screen.
+//  Lab Workflow — Sample Collection
+//  Phlebotomy workstation for collecting
+//  specimens against a registered and billed
+//  patient order. This is separate from the
+//  Patient Workflow.
 //  Redesigned per UX review (2026-07) to read as
 //  a high-frequency operational workstation
 //  rather than a dashboard card:
@@ -11,8 +12,7 @@
 //   - collection panel ordered as a workflow
 //   - collection checklist fills the empty space
 //   - full process timeline, not just 4 steps
-//  (For the lab-wide operations view, see
-//  Screen 4b — Sample Tracking.)
+//  (For the lab-wide queue view, see Sample Tracking.)
 // ─────────────────────────────────────────────
 import { Component, signal, computed, inject, ChangeDetectionStrategy, HostListener, ElementRef } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
@@ -20,20 +20,21 @@ import { DatePipe, TitleCasePipe } from '@angular/common';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
 import { Priority } from '../../shared/models/lis.models';
 import { SampleTrackingService } from '../../core/services/sample-tracking.service';
+import { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';
 import { WorkflowStepperComponent, WorkflowStep } from '../../shared/components/workflow-stepper/workflow-stepper.component';
 
 const TUBE_COLORS: Record<string, string> = {
-  'Haematology':   '#2B8B3E',
-  'Biochemistry':  '#E24B4A',
-  'Endocrinology': '#9F4BA8',
-  'Urine':         '#C9A227',
+  'EDTA (Purple top)': '#9F4BA8',
+  'Fluoride (Grey top)': '#7B8794',
+  'SST (Red/Gold top)': '#E24B4A',
+  'Universal container': '#C9A227',
 };
 
 const TUBE_LABELS: Record<string, string> = {
-  '#2B8B3E': 'Green top (EDTA)',
-  '#E24B4A': 'Red top (SST)',
-  '#9F4BA8': 'Purple (EDTA)',
-  '#C9A227': 'Yellow (Urine)',
+  '#9F4BA8': 'Purple top (EDTA)',
+  '#7B8794': 'Grey top (Fluoride)',
+  '#E24B4A': 'Red/Gold top (SST)',
+  '#C9A227': 'Universal urine container',
 };
 
 /** Priority → colour language, matched to the existing status-pill palette
@@ -60,7 +61,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   { id: 'consent',  label: 'Consent verified',            icon: 'ti-file-check' },
 ];
 
-/** Full lab pipeline — Collection is one stage of a longer journey, and
+/** Full lab pipeline — Collection is the first Lab Workflow stage, and
  *  showing the whole thing (not just the 4 pre-collection steps) tells the
  *  technician exactly where this sample sits in the bigger picture.
  *  Rendered via the shared <lis-workflow-stepper /> (same component used
@@ -99,6 +100,7 @@ export class SampleCollectionComponent {
   readonly datePickerPosition = signal({ top: 0, left: 0, width: 320, maxHeight: 360 });
   private readonly router = inject(Router);
   private readonly sampleTracking = inject(SampleTrackingService);
+  private readonly workflowStore = inject(LabWorkflowMockService);
   readonly createdSampleId = signal<string | null>(null);
   private readonly initialCollectionDateTime = this.toDateTimeLocal(new Date());
   collectionDatePart = signal(this.initialCollectionDateTime.slice(0, 10));
@@ -155,7 +157,7 @@ export class SampleCollectionComponent {
 
     const groups: Record<string, string[]> = {};
     for (const t of tests) {
-      const color = TUBE_COLORS[t.category] ?? '#888';
+      const color = TUBE_COLORS[t.tubeType] ?? '#888';
       if (!groups[color]) groups[color] = [];
       groups[color].push(t.name);
     }
@@ -289,11 +291,14 @@ export class SampleCollectionComponent {
   }
 
   markCollected(): void {
-    if (!this.collectionFormValid() || this.collected()) return;
+    if (!this.collectionFormValid() || !this.allChecked() || this.collected()) return;
     const patient = this.flow.patient();
     const orderedTests = this.flow.selectedTests();
     if (!patient || orderedTests.length === 0) return;
 
+    const orderId = this.flow.ensureWorkflowOrder();
+    const visitId = this.flow.activeVisitId();
+    if (!visitId) throw new Error('Active visit is missing. Please return to Patient Workflow.');
     const collectedDate = new Date(this.collectionDateTime());
     const sample = this.sampleTracking.createFromCollection({
       patientId: patient.id,
@@ -306,7 +311,7 @@ export class SampleCollectionComponent {
       fastingStatus: patient.fasting.toLowerCase().replace(/\s+/g, '-') as 'fasting' | 'non-fasting' | 'unknown',
       tests: orderedTests.map(test => test.id),
       priority: this.flow.priority(),
-      status: 'processing',
+      status: 'pending',
       collectedAt: collectedDate.toISOString(),
       etaLabel: 'Pending',
       tubes: this.currentPatientTubes().map(tube => ({
@@ -316,6 +321,26 @@ export class SampleCollectionComponent {
         tests: [...tube.tests],
       })),
     });
+    this.workflowStore.createSample({
+      id: sample.id,
+      orderId,
+      visitId,
+      patientId: patient.id,
+      patientName: `${patient.firstName} ${patient.lastName}`.trim(),
+      testIds: orderedTests.map(test => test.id),
+      priority: this.flow.priority(),
+      collectedAt: collectedDate.toISOString(),
+      collector: this.collectorName().trim(),
+      checklist: CHECKLIST_ITEMS.map(item => item.id),
+      notes: this.notes().trim(),
+      specimenGroups: orderedTests.reduce((groups, test) => {
+        const key = test.tubeType;
+        const group = groups.find(item => item.tubeType === key);
+        if (group) group.testIds.push(test.id);
+        else groups.push({ tubeType: key, sampleType: test.sampleType, testIds: [test.id] });
+        return groups;
+      }, [] as Array<{tubeType:string;sampleType:string;testIds:string[]}>)
+    });
     this.createdSampleId.set(sample.id);
     this.collectedAt.set(
       collectedDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
@@ -323,9 +348,8 @@ export class SampleCollectionComponent {
     this.collected.set(true);
   }
 
-  proceedToResultEntry(): void {
-    const sampleId = this.createdSampleId();
-    if (sampleId) this.router.navigate(['/dashboard/results', sampleId]);
+  openSampleTracking(): void {
+    if (this.createdSampleId()) this.router.navigate(['/dashboard/tracking']);
   }
 
   @HostListener('document:click', ['$event'])

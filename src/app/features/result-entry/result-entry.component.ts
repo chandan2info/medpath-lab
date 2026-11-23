@@ -13,6 +13,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
 import { SampleTrackingService } from '../../core/services/sample-tracking.service';
 import { ResultFlag } from '../../shared/models/lis.models';
+import { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';
 import { ResultEntryDataService, MockOrderedTest, MockParameter, NoteDraft, NotificationDraft, TestFilter, TestStatus, flagFromValue } from '../../core/services/result-entry-data.service';
 
 const EMPTY_ORDERED_TEST: MockOrderedTest = {
@@ -34,6 +35,7 @@ export class ResultEntryComponent implements OnInit {
   protected readonly flow = inject(PatientFlowService);
   private readonly sampleSvc = inject(SampleTrackingService);
   private readonly resultData = inject(ResultEntryDataService);
+  private readonly workflowStore = inject(LabWorkflowMockService);
 
   private readonly sampleId = toSignal(
     this.route.paramMap.pipe(map(params => params.get('sampleId'))),
@@ -200,6 +202,10 @@ export class ResultEntryComponent implements OnInit {
     }
     const sample=this.sample();
     if(!sample){this.router.navigate(['/dashboard/tracking']);return;}
+    if(sample.status !== 'ready' && sample.status !== 'critical'){
+      this.router.navigate(['/dashboard/tracking']);
+      return;
+    }
     this.resultData.loadForSample(sample,this.flow.allTests).subscribe({
       next:record=>{
         if(!record.tests.length){this.router.navigate(['/dashboard/tracking']);return;}
@@ -218,7 +224,23 @@ export class ResultEntryComponent implements OnInit {
     const sampleId=this.sample()?.id;if(!sampleId)return;
     const record={sampleId,tests:this.tests(),workflowStatus:'DRAFT' as const,updatedAt:new Date().toISOString()};
     const request=submit?this.resultData.submitForValidation(record):this.resultData.saveDraft(record);
-    request.subscribe({next:()=>this.demoSavedState.set('idle'),error:()=>{this.demoSavedState.set('unsaved');this.demoNoticeMessage.set('Unable to save results. Please retry.');this.showDemoNotice.set(true);}});
+    request.subscribe({
+      next:()=>{
+        const values = Object.fromEntries(this.tests().flatMap(test => test.parameters.map(parameter => [`${test.id}.${parameter.id}`, parameter.value])));
+        try {
+          this.workflowStore.saveResults(sampleId, values);
+          if (submit) {
+            this.workflowStore.submitResults(sampleId);
+          }
+          this.demoSavedState.set('idle');
+        } catch (error) {
+          this.demoSavedState.set('unsaved');
+          this.demoNoticeMessage.set(error instanceof Error ? error.message : 'Unable to update workflow status.');
+          this.showDemoNotice.set(true);
+        }
+      },
+      error:()=>{this.demoSavedState.set('unsaved');this.demoNoticeMessage.set('Unable to save results. Please retry.');this.showDemoNotice.set(true);}
+    });
   }
   previousTest(): void {
     const index = this.selectedTestIndex();
@@ -339,7 +361,27 @@ export class ResultEntryComponent implements OnInit {
     this.demoNoticeMessage.set('Results submitted for validation in the local mock workflow.');
     this.showDemoNotice.set(true);
   }
-  submitReviewDemo(): void { this.showDemoNotice.set(true); }
-  finalizeDemo(): void { this.showDemoNotice.set(true); }
+  submitReviewDemo(): void {
+    const sampleId = this.sample()?.id;
+    if (!sampleId) return;
+    try {
+      this.workflowStore.reviewResults(sampleId, 'Demo Pathologist', true, 'Approved in local mock validation workflow.');
+      this.demoNoticeMessage.set('Results validated locally. The report can now be generated.');
+    } catch (error) {
+      this.demoNoticeMessage.set(error instanceof Error ? error.message : 'Unable to validate results.');
+    }
+    this.showDemoNotice.set(true);
+  }
+  finalizeDemo(): void {
+    const sampleId = this.sample()?.id;
+    if (!sampleId) return;
+    try {
+      const report = this.workflowStore.generateReport(sampleId);
+      this.demoNoticeMessage.set(`Report ${report.id} generated from validated results.`);
+    } catch (error) {
+      this.demoNoticeMessage.set(error instanceof Error ? error.message : 'Unable to generate report.');
+    }
+    this.showDemoNotice.set(true);
+  }
   toggleCriticalDetails(): void { this.showCriticalDetails.update(v => !v); }
 }

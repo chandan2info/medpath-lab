@@ -31,12 +31,11 @@ export class PatientRegistrationComponent implements OnInit {
     'A+', 'A−', 'B+', 'B−', 'O+', 'O−', 'AB+', 'AB−', 'Unknown'
   ];
 
-  /** Shared 4-step workflow stepper (Register → Test Order → Billing → Sample). */
+  /** Patient Workflow ends at Billing. Sample Collection is the first Lab Workflow activity. */
   protected readonly workflowSteps: WorkflowStep[] = [
     { label: 'Register',   icon: 'ti-user-plus' },
     { label: 'Test Order', icon: 'ti-test-pipe' },
     { label: 'Billing',    icon: 'ti-receipt' },
-    { label: 'Sample',     icon: 'ti-droplet' },
   ];
   protected readonly workflowActiveIndex = 0;
 

@@ -121,3 +121,15 @@
 
 /* Header action buttons that aren't wired up yet */
 .lis-btn[disabled] { opacity:.5; cursor:not-allowed; }
+
+
+/* Workflow action feedback */
+.det-rejection, .det-error {
+  margin: 0 14px 8px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  font-size: 11px;
+  line-height: 1.45;
+}
+.det-rejection { background: var(--pill-critical-bg, #FCEBEB); color: var(--pill-critical-color, #791F1F); }
+.det-error { background: var(--pill-critical-bg, #FCEBEB); color: var(--pill-critical-color, #791F1F); }

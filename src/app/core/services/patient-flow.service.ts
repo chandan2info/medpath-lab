@@ -4,7 +4,8 @@
 //  Registration → Test Order → Billing →
 //  Sample Collection workflow.
 // ─────────────────────────────────────────────
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
+import { LabWorkflowMockService } from './lab-workflow-mock.service';
 import { LabTest, Priority, PaymentMode, TestPackage } from '../../shared/models/lis.models';
 
 export interface RegisteredPatient {
@@ -130,6 +131,28 @@ const KNOWN_PATIENTS: KnownPatientRecord[] = [
 
 @Injectable({ providedIn: 'root' })
 export class PatientFlowService {
+  private readonly workflowStore = inject(LabWorkflowMockService);
+  private readonly sessionKey = 'medpath.active-patient-flow.v1';
+  readonly activeVisitId = signal<string | null>(this.readSession()?.visitId ?? null);
+  readonly activeOrderId = signal<string | null>(this.readSession()?.orderId ?? null);
+  private readSession(): { patient: RegisteredPatient | null; visitId: string | null; orderId: string | null; testIds: string[]; priority: Priority } | null {
+    try {
+      if (typeof localStorage === 'undefined') return null;
+      const raw = localStorage.getItem(this.sessionKey);
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  }
+
+  private persistSession(): void {
+    try {
+      if (typeof localStorage === 'undefined') return;
+      localStorage.setItem(this.sessionKey, JSON.stringify({
+        patient: this._patient(), visitId: this.activeVisitId(), orderId: this.activeOrderId(),
+        testIds: [...this._selected()], priority: this._priority()
+      }));
+    } catch { /* workflow records remain in the mock repository; session restore is best-effort */ }
+  }
+
   // ── Master test catalogue ─────────────────
   readonly allTests  = LAB_TESTS;
   readonly popularTests = LAB_TESTS.filter(t => POPULAR_IDS.includes(t.id));
@@ -144,12 +167,12 @@ export class PatientFlowService {
   }
 
   // ── Registered patient ────────────────────
-  private _patient  = signal<RegisteredPatient | null>(null);
+  private _patient  = signal<RegisteredPatient | null>(this.readSession()?.patient ?? null);
   readonly patient  = this._patient.asReadonly();
 
   // ── Test order ────────────────────────────
-  private _selected  = signal<Set<string>>(new Set());
-  private _priority  = signal<Priority>('routine');
+  private _selected  = signal<Set<string>>(new Set(this.readSession()?.testIds ?? []));
+  private _priority  = signal<Priority>(this.readSession()?.priority ?? 'routine');
   readonly priority  = this._priority.asReadonly();
 
   readonly selectedIds    = this._selected.asReadonly();
@@ -263,10 +286,14 @@ export class PatientFlowService {
     const yy  = String(new Date().getFullYear()).slice(2);
     const pat: RegisteredPatient = { ...data, id: existingPatientId ?? `PAT-${yy}${mm}-0${seq}` };
     this._patient.set(pat);
+    const visit = this.workflowStore.createVisit(pat);
+    this.activeVisitId.set(visit.id);
+    this.activeOrderId.set(null);
     this._selected.set(new Set());          // reset tests for new patient
     this.activeDraftId.set(null);
     this._discountPct.set(0);
     this._payMode.set('cash');
+    this.persistSession();
     return pat;
   }
 
@@ -277,11 +304,30 @@ export class PatientFlowService {
       return n;
     });
     this.persistActiveDraft();
+    this.persistSession();
   }
 
-  setPriority(p: Priority): void { this._priority.set(p); this.persistActiveDraft(); }
+  setPriority(p: Priority): void { this._priority.set(p); this.persistActiveDraft(); this.persistSession(); }
   setDiscount(pct: number): void { this._discountPct.set(pct); }
   setPayMode(m: PaymentMode): void { this._payMode.set(m); }
+
+  ensureWorkflowOrder(): string {
+    const patient = this._patient();
+    if (!patient) throw new Error('Register or select a patient before creating an order.');
+    const visitId = this.activeVisitId();
+    if (!visitId) throw new Error('The active patient visit is missing. Please register the patient again.');
+    const existingId = this.activeOrderId();
+    if (existingId) return existingId;
+    const order = this.workflowStore.createOrder({
+      visitId, patientId: patient.id,
+      testIds: this.selectedTests().map(test => test.id),
+      priority: this._priority(), subtotal: this.orderTotal(),
+      discount: this.discountAmt(), total: this.grandTotal()
+    });
+    this.activeOrderId.set(order.id);
+    this.persistSession();
+    return order.id;
+  }
 
   generateInvoiceId(): string {
     const seq = String(Math.floor(Math.random() * 900) + 100);

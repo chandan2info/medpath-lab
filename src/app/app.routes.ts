@@ -86,6 +86,11 @@ export const routes: Routes = [
         title: 'Result Entry — MedPath LIS',
       },
       {
+        path: 'validation',
+        loadComponent: () => import('./features/result-validation/result-validation.component').then(m => m.ResultValidationComponent),
+        title: 'Result Validation — MedPath LIS',
+      },
+      {
         path: 'reports',
         loadComponent: () =>
           import('./features/reports/reports.component').then(m => m.ReportsComponent),

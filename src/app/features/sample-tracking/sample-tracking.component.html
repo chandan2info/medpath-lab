@@ -210,10 +210,39 @@
       </div>
 
       <div class="det-actions">
-        <a [routerLink]="['/dashboard/results', selectedSample()!.id]" class="lis-btn lis-btn--primary lis-btn--full">
-          <i class="ti ti-writing" aria-hidden="true"></i> Enter results
-        </a>
-        <button type="button" class="lis-btn lis-btn--secondary lis-btn--full">
+        @if (selectedSample()!.status === 'pending') {
+          <button type="button" class="lis-btn lis-btn--primary lis-btn--full" (click)="receiveSample()">
+            <i class="ti ti-inbox" aria-hidden="true"></i> Receive sample
+          </button>
+        } @else if (selectedSample()!.status === 'received') {
+          <button type="button" class="lis-btn lis-btn--primary lis-btn--full" (click)="startProcessing()">
+            <i class="ti ti-player-play" aria-hidden="true"></i> Start processing
+          </button>
+        } @else if (selectedSample()!.status === 'processing') {
+          <button type="button" class="lis-btn lis-btn--primary lis-btn--full" (click)="markReady()">
+            <i class="ti ti-check" aria-hidden="true"></i> Mark ready for result entry
+          </button>
+        } @else if (canEnterResults()) {
+          <a [routerLink]="['/dashboard/results', selectedSample()!.id]" class="lis-btn lis-btn--primary lis-btn--full">
+            <i class="ti ti-writing" aria-hidden="true"></i> Enter results
+          </a>
+        } @else if (selectedSample()!.status === 'rejected') {
+          <button type="button" class="lis-btn lis-btn--primary lis-btn--full" (click)="requestRecollection()">
+            <i class="ti ti-refresh" aria-hidden="true"></i> Request recollection
+          </button>
+        }
+        @if (selectedSample()!.status !== 'ready' && selectedSample()!.status !== 'rejected' && selectedSample()!.status !== 'dispatched') {
+          <button type="button" class="lis-btn lis-btn--secondary lis-btn--full" (click)="rejectSample()">
+            <i class="ti ti-alert-triangle" aria-hidden="true"></i> Reject sample
+          </button>
+        }
+        @if (selectedSample()!.rejectionReason) {
+          <div class="det-rejection"><strong>Rejection reason:</strong> {{ selectedSample()!.rejectionReason }}</div>
+        }
+        @if (actionError()) {
+          <div class="det-error" role="alert">{{ actionError() }}</div>
+        }
+        <button type="button" class="lis-btn lis-btn--secondary lis-btn--full" (click)="printLabels()">
           <i class="ti ti-printer" aria-hidden="true"></i> Reprint labels
         </button>
       </div>

@@ -1,9 +1,10 @@
-import { Component, signal, computed, ChangeDetectionStrategy } from '@angular/core';
+import { Component, signal, computed, ChangeDetectionStrategy, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgClass } from '@angular/common';
+import { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';
 
 interface ReportRow {
-  id: string; patientName: string; patientId: string;
+  id: string; patientName: string; patientId: string; sampleId: string;
   test: string; date: string; status: 'pending' | 'dispatched';
 }
 
@@ -19,29 +20,10 @@ interface ReportStat {
 }
 
 const REPORT_STATS: ReportStat[] = [
-  { id: 'total',      label: 'Total Reports',   value: '1,248', icon: 'file-text',      variant: 'primary', delta: '+12.5% vs last month', deltaType: 'up',      spark: '0,28 16,24 32,26 48,18 64,20 80,10 100,6' },
-  { id: 'pending',    label: 'Pending Reports', value: '5',     icon: 'hourglass',      variant: 'warning', delta: 'Needs attention',       deltaType: 'neutral', spark: '0,20 16,10 32,16 48,8 64,18 80,12 100,4' },
-  { id: 'dispatched', label: 'Dispatched',      value: '320',   icon: 'circle-check',   variant: 'success',  delta: '+8.2% vs last month',   deltaType: 'up',      spark: '0,26 16,22 32,24 48,14 64,18 80,8 100,10' },
-  { id: 'critical',   label: 'Critical Alerts', value: '12',    icon: 'alert-triangle', variant: 'danger',  delta: 'Requires follow-up',    deltaType: 'down',    spark: '0,10 16,18 32,12 48,22 64,14 80,24 100,18' },
-];
-
-const REPORTS: ReportRow[] = [
-  { id:'RPT-2406-041', patientName:'Arun Pillai',   patientId:'PAT-0316', test:'KFT',          date:'23 Jun 2026', status:'pending' },
-  { id:'RPT-2406-040', patientName:'Priya Sharma',  patientId:'PAT-0315', test:'Thyroid panel', date:'23 Jun 2026', status:'pending' },
-  { id:'RPT-2406-039', patientName:'Deepak Rao',    patientId:'PAT-0321', test:'Blood glucose', date:'23 Jun 2026', status:'pending' },
-  { id:'RPT-2406-038', patientName:'Anjali Verma',  patientId:'PAT-0312', test:'CBC + ESR',     date:'23 Jun 2026', status:'pending' },
-  { id:'RPT-2406-037', patientName:'Rajan Iyer',    patientId:'PAT-0309', test:'HbA1c',         date:'23 Jun 2026', status:'pending' },
-  { id:'RPT-2406-033', patientName:'Meena Joshi',   patientId:'PAT-0302', test:'LFT',           date:'22 Jun 2026', status:'dispatched' },
-  { id:'RPT-2406-030', patientName:'Suresh Menon',  patientId:'PAT-0317', test:'Lipid profile', date:'22 Jun 2026', status:'dispatched' },
-];
-
-const KFT_ROWS = [
-  { name:'Serum creatinine',    result:'2.4', unit:'mg/dL',  ref:'0.7 – 1.3',  flag:'high'     },
-  { name:'Blood urea nitrogen', result:'48',  unit:'mg/dL',  ref:'7 – 20',     flag:'high'     },
-  { name:'Serum potassium (K⁺)',result:'6.8', unit:'mEq/L',  ref:'3.5 – 5.0',  flag:'critical' },
-  { name:'Serum sodium (Na⁺)',  result:'138', unit:'mEq/L',  ref:'136 – 145',  flag:'normal'   },
-  { name:'Serum uric acid',     result:'5.2', unit:'mg/dL',  ref:'3.5 – 7.2',  flag:'normal'   },
-  { name:'eGFR (CKD-EPI)',      result:'32',  unit:'mL/min', ref:'≥ 60',       flag:'low'      },
+  { id: 'total',      label: 'Total Reports',   value: '0', icon: 'file-text',      variant: 'primary', delta: 'Local mock records', deltaType: 'neutral',      spark: '0,28 16,24 32,26 48,18 64,20 80,10 100,6' },
+  { id: 'pending',    label: 'Pending Reports', value: '0',     icon: 'hourglass',      variant: 'warning', delta: 'Awaiting dispatch',       deltaType: 'neutral', spark: '0,20 16,10 32,16 48,8 64,18 80,12 100,4' },
+  { id: 'dispatched', label: 'Dispatched',      value: '0',   icon: 'circle-check',   variant: 'success',  delta: 'Recorded dispatches',   deltaType: 'neutral',      spark: '0,26 16,22 32,24 48,14 64,18 80,8 100,10' },
+  { id: 'critical',   label: 'Critical Alerts', value: '0',    icon: 'alert-triangle', variant: 'danger',  delta: 'No mock alert count',    deltaType: 'neutral',    spark: '0,10 16,18 32,12 48,22 64,14 80,24 100,18' },
 ];
 
 const PAGE_SIZE = 5;
@@ -56,10 +38,29 @@ type ReportStatusFilter = 'all' | 'pending' | 'dispatched';
     styleUrl: './reports.component.css',
 })
 export class ReportsComponent {
-  protected readonly reports  = REPORTS;
-  protected readonly kftRows  = KFT_ROWS;
-  protected readonly stats    = REPORT_STATS;
-  selected = signal<ReportRow | null>(REPORTS[0]);
+  private readonly workflowStore = inject(LabWorkflowMockService);
+  protected readonly reports = computed<ReportRow[]>(() => this.workflowStore.reports().map(report => {
+    const sample = this.workflowStore.samples().find(item => item.id === report.sampleId);
+    return {
+      id: report.id, patientName: sample?.patientName ?? 'Unknown patient',
+      patientId: sample?.patientId ?? '—', sampleId: report.sampleId,
+      test: sample?.testIds.join(' + ') ?? '—',
+      date: new Date(report.generatedAt).toLocaleDateString('en-IN'),
+      status: report.status === 'dispatched' ? 'dispatched' : 'pending'
+    };
+  }));
+  protected readonly resultRows = computed(() => {
+    const selected = this.selected();
+    if (!selected) return [];
+    const result = this.workflowStore.results().find(item => item.sampleId === selected.sampleId);
+    return Object.entries(result?.values ?? {}).map(([name, value]) => ({ name, result: value || '—', unit: '—', ref: '—', flag: 'entered' }));
+  });
+  protected readonly stats = computed(() => REPORT_STATS.map(stat => stat.id === 'total'
+    ? { ...stat, value: String(this.reports().length) }
+    : stat.id === 'pending' ? { ...stat, value: String(this.pendingCount()) }
+    : stat.id === 'dispatched' ? { ...stat, value: String(this.reports().filter(report => report.status === 'dispatched').length) }
+    : stat.id === 'critical' ? { ...stat, value: '0' } : stat));
+  selected = signal<ReportRow | null>(null);
   query = signal('');
   statusFilter = signal<ReportStatusFilter>('all');
   page = signal(1);
@@ -69,7 +70,7 @@ export class ReportsComponent {
   filteredReports = computed(() => {
     const q = this.query().trim().toLowerCase();
     const status = this.statusFilter();
-    return this.reports.filter(r =>
+    return this.reports().filter(r =>
       (status === 'all' || r.status === status) &&
       (!q || r.patientName.toLowerCase().includes(q) || r.test.toLowerCase().includes(q) || r.id.toLowerCase().includes(q))
     );
@@ -89,7 +90,7 @@ export class ReportsComponent {
   rangeStart = computed(() => this.filteredReports().length === 0 ? 0 : (this.currentPage() - 1) * PAGE_SIZE + 1);
   rangeEnd   = computed(() => Math.min(this.currentPage() * PAGE_SIZE, this.filteredReports().length));
 
-  pendingCount = computed(() => this.reports.filter(r => r.status === 'pending').length);
+  pendingCount = computed(() => this.reports().filter(r => r.status === 'pending').length);
 
   setQuery(q: string): void {
     this.query.set(q);
@@ -107,6 +108,24 @@ export class ReportsComponent {
 
   prevPage(): void { this.goToPage(this.currentPage() - 1); }
   nextPage(): void { this.goToPage(this.currentPage() + 1); }
+
+  dispatchSelected(mode: string): void {
+    const selected = this.selected();
+    if (!selected) return;
+    try {
+      this.workflowStore.dispatchReport(selected.id, mode);
+      this.selected.set({ ...selected, status: 'dispatched' });
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : 'Unable to dispatch report.');
+    }
+  }
+
+  workflowStoreReviewer(): string {
+    const sampleId = this.selected()?.sampleId;
+    return this.workflowStore.results().find(result => result.sampleId === sampleId)?.reviewer ?? 'Validation record unavailable';
+  }
+
+  printReport(): void { window.print(); }
 
   initials(name: string) { return name.split(' ').map(w => w[0]).join('').slice(0,2); }
 }

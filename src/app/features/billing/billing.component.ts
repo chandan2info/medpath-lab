@@ -8,6 +8,7 @@ import { Router, RouterLink } from '@angular/router';
 import { NgClass, DatePipe, TitleCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
+import { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';
 import { PaymentMode } from '../../shared/models/lis.models';
 import { WorkflowStepperComponent, WorkflowStep } from '../../shared/components/workflow-stepper/workflow-stepper.component';
 
@@ -22,6 +23,7 @@ import { WorkflowStepperComponent, WorkflowStep } from '../../shared/components/
 export class BillingComponent implements OnInit {
   protected readonly flow   = inject(PatientFlowService);
   private   readonly router = inject(Router);
+  private readonly workflowStore = inject(LabWorkflowMockService);
 
   protected readonly payModes: { id: PaymentMode; icon: string; label: string }[] = [
     { id: 'cash',   icon: 'cash',        label: 'Cash'   },
@@ -30,14 +32,14 @@ export class BillingComponent implements OnInit {
     { id: 'credit', icon: 'clock',       label: 'Credit' },
   ];
 
-  /** Shared 4-step workflow stepper (Register → Test Order → Billing → Sample). */
+  /** Patient Workflow ends here. Sample Collection is handled under Lab Work. */
   protected readonly workflowSteps: WorkflowStep[] = [
     { label: 'Register',   icon: 'ti-user-plus' },
     { label: 'Test Order', icon: 'ti-test-pipe' },
+    { label: 'Review Order', icon: 'ti-clipboard-check' },
     { label: 'Billing',    icon: 'ti-receipt' },
-    { label: 'Sample',     icon: 'ti-droplet' },
   ];
-  protected readonly workflowActiveIndex = 2;
+  protected readonly workflowActiveIndex = 3;
 
   readonly today  = new Date();
   discountPct     = signal(0);
@@ -67,6 +69,20 @@ export class BillingComponent implements OnInit {
       this.router.navigate(['/dashboard/registration']);
     } else if (this.flow.selectedTests().length === 0) {
       this.router.navigate(['/dashboard/test-order']);
+    } else {
+      const orderId = this.flow.activeOrderId();
+      const existingInvoice = orderId
+        ? this.workflowStore.invoices().find(invoice => invoice.orderId === orderId)
+        : undefined;
+      if (existingInvoice) {
+        this.invoiceId = existingInvoice.id;
+        this.advance.set(existingInvoice.amountReceived);
+        const restoredDiscountPct = this.subtotal() > 0
+          ? Math.max(0, Math.min(100, ((this.subtotal() - existingInvoice.total) / this.subtotal()) * 100))
+          : 0;
+        this.discountPct.set(restoredDiscountPct);
+        this.flow.setDiscount(restoredDiscountPct);
+      }
     }
   }
 
@@ -125,11 +141,22 @@ export class BillingComponent implements OnInit {
   confirmPayment(): void {
     if (this.discountPct() > 0 && !this.discountReason()) return;
     this.saving.set(true);
-    setTimeout(() => {
+    try {
       this.flow.setDiscount(this.subtotal() > 0 ? (this.discAmt() / this.subtotal()) * 100 : 0);
+      const orderId = this.flow.ensureWorkflowOrder();
+      this.workflowStore.recordInvoice({
+        id: this.invoiceId,
+        orderId,
+        total: this.grandTotal(),
+        amountReceived: this.advance(),
+        paymentMode: this.payMode()
+      });
       this.saving.set(false);
       this.showReceipt.set(true);
-    }, 500);
+    } catch (error) {
+      this.saving.set(false);
+      window.alert(error instanceof Error ? error.message : 'Unable to save invoice.');
+    }
   }
 
   proceedToSample(): void {
