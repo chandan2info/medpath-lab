@@ -20,20 +20,21 @@ import { DatePipe, TitleCasePipe } from '@angular/common';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
 import { Priority } from '../../shared/models/lis.models';
 import { SampleTrackingService } from '../../core/services/sample-tracking.service';
+import { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';
 import { WorkflowStepperComponent, WorkflowStep } from '../../shared/components/workflow-stepper/workflow-stepper.component';
 
 const TUBE_COLORS: Record<string, string> = {
-  'Haematology':   '#2B8B3E',
-  'Biochemistry':  '#E24B4A',
-  'Endocrinology': '#9F4BA8',
-  'Urine':         '#C9A227',
+  'EDTA (Purple top)': '#9F4BA8',
+  'Fluoride (Grey top)': '#7B8794',
+  'SST (Red/Gold top)': '#E24B4A',
+  'Universal container': '#C9A227',
 };
 
 const TUBE_LABELS: Record<string, string> = {
-  '#2B8B3E': 'Green top (EDTA)',
-  '#E24B4A': 'Red top (SST)',
-  '#9F4BA8': 'Purple (EDTA)',
-  '#C9A227': 'Yellow (Urine)',
+  '#9F4BA8': 'Purple top (EDTA)',
+  '#7B8794': 'Grey top (Fluoride)',
+  '#E24B4A': 'Red/Gold top (SST)',
+  '#C9A227': 'Universal urine container',
 };
 
 /** Priority → colour language, matched to the existing status-pill palette
@@ -99,6 +100,7 @@ export class SampleCollectionComponent {
   readonly datePickerPosition = signal({ top: 0, left: 0, width: 320, maxHeight: 360 });
   private readonly router = inject(Router);
   private readonly sampleTracking = inject(SampleTrackingService);
+  private readonly workflowStore = inject(LabWorkflowMockService);
   readonly createdSampleId = signal<string | null>(null);
   private readonly initialCollectionDateTime = this.toDateTimeLocal(new Date());
   collectionDatePart = signal(this.initialCollectionDateTime.slice(0, 10));
@@ -155,7 +157,7 @@ export class SampleCollectionComponent {
 
     const groups: Record<string, string[]> = {};
     for (const t of tests) {
-      const color = TUBE_COLORS[t.category] ?? '#888';
+      const color = TUBE_COLORS[t.tubeType] ?? '#888';
       if (!groups[color]) groups[color] = [];
       groups[color].push(t.name);
     }
@@ -289,7 +291,7 @@ export class SampleCollectionComponent {
   }
 
   markCollected(): void {
-    if (!this.collectionFormValid() || this.collected()) return;
+    if (!this.collectionFormValid() || !this.allChecked() || this.collected()) return;
     const patient = this.flow.patient();
     const orderedTests = this.flow.selectedTests();
     if (!patient || orderedTests.length === 0) return;
@@ -306,7 +308,7 @@ export class SampleCollectionComponent {
       fastingStatus: patient.fasting.toLowerCase().replace(/\s+/g, '-') as 'fasting' | 'non-fasting' | 'unknown',
       tests: orderedTests.map(test => test.id),
       priority: this.flow.priority(),
-      status: 'processing',
+      status: 'pending',
       collectedAt: collectedDate.toISOString(),
       etaLabel: 'Pending',
       tubes: this.currentPatientTubes().map(tube => ({
@@ -315,6 +317,29 @@ export class SampleCollectionComponent {
         label: tube.label,
         tests: [...tube.tests],
       })),
+    });
+    const orderId = this.flow.ensureWorkflowOrder();
+    const visitId = this.flow.activeVisitId();
+    if (!visitId) throw new Error('Active visit is missing. Please return to Patient Workflow.');
+    this.workflowStore.createSample({
+      id: sample.id,
+      orderId,
+      visitId,
+      patientId: patient.id,
+      patientName: `${patient.firstName} ${patient.lastName}`.trim(),
+      testIds: orderedTests.map(test => test.id),
+      priority: this.flow.priority(),
+      collectedAt: collectedDate.toISOString(),
+      collector: this.collectorName().trim(),
+      checklist: CHECKLIST_ITEMS.map(item => item.id),
+      notes: this.notes().trim(),
+      specimenGroups: orderedTests.reduce((groups, test) => {
+        const key = test.tubeType;
+        const group = groups.find(item => item.tubeType === key);
+        if (group) group.testIds.push(test.id);
+        else groups.push({ tubeType: key, sampleType: test.sampleType, testIds: [test.id] });
+        return groups;
+      }, [] as Array<{tubeType:string;sampleType:string;testIds:string[]}>)
     });
     this.createdSampleId.set(sample.id);
     this.collectedAt.set(
