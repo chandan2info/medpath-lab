@@ -48,7 +48,7 @@
     <div class="demo-notice" role="status"><i class="ti ti-info-circle"></i> Preview only: no backend request was made and no clinical workflow state was changed. <button type="button" (click)="showDemoNotice.set(false)" aria-label="Dismiss notice"><i class="ti ti-x"></i></button></div>
   }
 
-  <div class="workspace" [class.workspace--left-collapsed]="leftCollapsed()" [class.workspace--workflow-collapsed]="workflowCollapsed()">
+  <div class="workspace workspace--simplified">
     <aside class="ordered-panel panel">
       <div class="panel-heading">
         <div><h2>Ordered Tests <span class="count-pill">{{ testCount() }}</span></h2><p>{{ completedTests() }} completed · {{ inProgressTests() }} in progress</p></div>
@@ -84,126 +84,56 @@
         </div>
       }
     </aside>
-
     <main class="result-panel">
       <section class="test-card panel">
         <div class="test-card-heading">
-          <div class="test-title"><i class="ti ti-flask-2"></i><div><h2>{{ selectedTest().name }}</h2><small>{{ selectedTest().code }} · {{ testStatusLabel(effectiveTestStatus(selectedTest())) }}</small></div></div>
-          <div class="entry-progress">{{ enteredCount() }} / {{ totalCount() }} parameters entered</div>
-          <div class="profile-select-wrap">
-            <button type="button" class="profile-select" (click)="toggleReferenceProfiles()" [attr.aria-expanded]="showReferenceProfiles()" aria-haspopup="listbox">
-              <i class="ti ti-adjustments-horizontal"></i> {{ selectedReferenceProfile() }} <i class="ti ti-chevron-down"></i>
-            </button>
-            @if (showReferenceProfiles()) {
-              <div class="profile-options" role="listbox" aria-label="Reference profile">
-                @for (profile of referenceProfiles; track profile) {
-                  <button type="button" role="option" [attr.aria-selected]="selectedReferenceProfile() === profile" [class.profile-option--selected]="selectedReferenceProfile() === profile" (click)="selectReferenceProfile(profile)">
-                    {{ profile }} @if (selectedReferenceProfile() === profile) { <i class="ti ti-check"></i> }
-                  </button>
-                }
-              </div>
-            }
+          <div class="test-title">
+            <i class="ti ti-flask-2"></i>
+            <div><h2>{{ selectedTest().shortName }}</h2><small>Renal function assessment · {{ totalCount() }} parameters</small></div>
+          </div>
+          <div class="test-heading-actions">
+            <span class="entry-progress">{{ enteredCount() }} / {{ totalCount() }} parameters</span>
           </div>
         </div>
         @if (hasCritical()) {
-          <div class="critical-alert" role="alert">
-            <div class="critical-alert-main">
-              <i class="ti ti-alert-triangle" aria-hidden="true"></i>
-              <div class="critical-alert-copy">
-                <strong>Critical Result Detected <span>({{ criticalCount() }} parameter{{ criticalCount() === 1 ? '' : 's' }})</span></strong>
-                @for (parameter of criticalParameters(); track parameter.id) { <p>{{ parameter.name }} = {{ parameter.value }} {{ parameter.unit }} — follow laboratory critical-value notification policy.</p> }
-                @if (showCriticalDetails()) { <p class="critical-detail">Notification status is not recorded in this UI preview.</p> }
-              </div>
+          <div class="critical-alert critical-alert--banner" role="alert">
+            <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+            <div class="critical-alert-copy">
+              <strong>Critical result detected — {{ criticalParameters()[0].name }} {{ criticalParameters()[0].value }} {{ criticalParameters()[0].unit }}</strong>
+              @if (criticalCount() > 1) { <small>And {{ criticalCount() - 1 }} more critical result(s)</small> }
             </div>
-            <div class="critical-alert-actions">
-              <span class="critical-alert-bell" [attr.aria-label]="criticalCount() + ' critical notification(s)'">
-                <i class="ti ti-bell"></i><b>{{ criticalCount() }}</b>
-              </span>
-              <button type="button" class="critical-action" (click)="toggleCriticalDetails()">Details</button>
-              @if (criticalParameters()[0]; as critical) { <button type="button" class="critical-action critical-action--solid" (click)="openNotification(critical)"><i class="ti ti-phone"></i> Record notification</button> }
-            </div>
+            <button type="button" class="critical-action critical-action--solid" (click)="openNotification(criticalParameters()[0])"><i class="ti ti-bell"></i> Record Notification</button>
           </div>
         }
         <div class="table-wrap">
-          <table class="parameter-table">
-            <thead><tr><th class="serial-column">#</th><th>Parameter</th><th>Result</th><th>Unit</th><th>Reference range</th><th>Flag</th><th>Actions</th></tr></thead>
+          <table class="parameter-table parameter-table--simplified">
+            <thead><tr><th class="serial-column">#</th><th>Parameter</th><th>Method</th><th>Result</th><th>Unit</th><th>Reference Range</th><th>Flag</th><th>Previous Result</th><th aria-label="Parameter actions"></th></tr></thead>
             <tbody>
               @for (parameter of selectedTest().parameters; track parameter.id; let i = $index) {
-                <tr>
+                <tr [class.parameter-row--critical]="parameter.flag === 'critical' && !!parameter.value">
                   <td class="serial-cell">{{ i + 1 }}</td>
-                  <td class="parameter-name"><strong>{{ parameter.name }}</strong><small>{{ parameter.method }}{{ parameter.isCalculated ? ' · Calculated' : '' }}</small></td>
+                  <td class="parameter-name"><strong>{{ parameter.name }}</strong><small>{{ parameter.method }}</small></td>
+                  <td class="method-cell">{{ parameter.method }}</td>
                   <td><input class="result-input" [class]="'result-input result-input--' + parameter.flag" [value]="parameter.value" [readonly]="parameter.isCalculated" [placeholder]="parameter.isCalculated ? 'Calculated' : 'Enter result'" (input)="updateResult(parameter.id, $any($event.target).value)" [attr.aria-label]="parameter.name + ' result'" /></td>
                   <td class="unit-cell">{{ parameter.unit || '—' }}</td>
-                  <td><div class="reference-copy">{{ parameter.range }}</div><div class="range-track"><span class="range-marker" [style.left.%]="rangePct(parameter)"></span></div></td>
+                  <td><div class="reference-copy">{{ parameter.range }}</div></td>
                   <td><span class="flag-pill" [class]="'flag-pill flag-pill--' + parameter.flag"><i></i>{{ flagLabel(parameter.flag) }}</span></td>
-                  <td><div class="row-actions">
-                    <button type="button" class="icon-button note-action" [class.has-note]="!!parameter.note" (click)="openNotes(parameter)" [attr.aria-label]="'Notes for ' + parameter.name" title="Parameter notes"><i class="ti ti-message-circle"></i></button>
-                    <div class="more-wrap"><button type="button" class="icon-button" (click)="toggleMore(parameter.id)" [attr.aria-expanded]="moreMenuId() === parameter.id" [attr.aria-label]="'More actions for ' + parameter.name" title="More actions"><i class="ti ti-dots"></i></button>
-                      @if (moreMenuId() === parameter.id) {
-                        <div class="more-menu" role="menu">
-                          <button type="button" role="menuitem" [disabled]="parameter.previousValue === undefined" (click)="restorePrevious(parameter)"><i class="ti ti-history"></i>Restore previous value</button>
-                          <button type="button" role="menuitem" (click)="clearResult(parameter)"><i class="ti ti-eraser"></i>Clear result…</button>
-                          <button type="button" role="menuitem" (click)="viewHistory(parameter)"><i class="ti ti-clock"></i>View result history</button>
-                        </div>
-                      }
-                    </div>
-                  </div></td>
+                  <td class="previous-result">{{ parameter.previousValue || '—' }}</td>
+                  <td><div class="row-actions"><button type="button" class="icon-button note-action" [class.has-note]="!!parameter.note" (click)="openNotes(parameter)" [attr.aria-label]="'Notes for ' + parameter.name" title="Parameter notes"><i class="ti ti-message-circle"></i></button><div class="more-wrap"><button type="button" class="icon-button" (click)="toggleMore(parameter.id)" [attr.aria-expanded]="moreMenuId() === parameter.id" [attr.aria-label]="'More actions for ' + parameter.name" title="More actions"><i class="ti ti-dots"></i></button>@if (moreMenuId() === parameter.id) { <div class="more-menu" role="menu"><button type="button" role="menuitem" [disabled]="parameter.previousValue === undefined" (click)="restorePrevious(parameter)"><i class="ti ti-history"></i>Restore previous value</button><button type="button" role="menuitem" (click)="clearResult(parameter)"><i class="ti ti-eraser"></i>Clear result…</button><button type="button" role="menuitem" (click)="viewHistory(parameter)"><i class="ti ti-clock"></i>View result history</button></div> }</div></div></td>
                 </tr>
               }
             </tbody>
           </table>
         </div>
-        <footer class="test-footer"><span><i class="ti ti-info-circle"></i> Clinical flags and ranges shown here are illustrative mock data.</span><span>Keyboard: Tab between fields · Enter to continue</span></footer>
+        <footer class="test-footer"><span><i class="ti ti-info-circle"></i> Reference ranges are for adults and may vary based on age, gender and lab policy.</span></footer>
       </section>
-
-      <div class="bottom-navigation"><button type="button" class="secondary-button" (click)="previousTest()" [disabled]="isFirstTest()"><i class="ti ti-chevron-left"></i> Previous test</button><span>{{ selectedTestPosition() }} of {{ testCount() }}</span><button type="button" class="secondary-button" (click)="nextTest()" [disabled]="isLastTest()">Next test <i class="ti ti-chevron-right"></i></button></div>
     </main>
-
-    <aside class="workflow-panel">
-      <section class="panel workflow-card">
-        <div class="panel-heading"><h2>Result Workflow</h2></div>
-        @if (!workflowCollapsed()) {
-          <div class="workflow-steps">
-            <div class="workflow-step workflow-step--done">
-              <span aria-hidden="true"><i class="ti ti-check"></i></span>
-              <div><strong>Result Entry</strong><small>All parameters entered</small></div>
-              <b>{{ enteredCount() }} / {{ totalCount() }}</b>
-            </div>
-            <div class="workflow-step workflow-step--active" aria-current="step">
-              <span aria-hidden="true"><i class="ti ti-circle-filled"></i></span>
-              <div><strong>Validation</strong><small>Result validation pending</small></div>
-              <b>Pending</b>
-            </div>
-            <div class="workflow-step workflow-step--upcoming">
-              <span aria-hidden="true"></span>
-              <div><strong>Authorization</strong><small>Pathologist approval pending</small></div>
-              <b>Pending</b>
-            </div>
-          </div>
-        }
-      </section>
-      <section class="panel summary-card">
-        <div class="panel-heading"><h2>Test Summary</h2></div>
-        <div class="summary-line"><span>Sample ID</span><strong>{{ sampleLabel() }}</strong></div>
-        <div class="summary-line"><span>Tests (this screen)</span><strong>{{ selectedTest().code }} ({{ totalCount() }} parameters)</strong></div>
-        <div class="summary-line"><span>Collected</span><strong>{{ collectedLabel() }}</strong></div>
-        <div class="summary-line"><span>Priority</span><strong class="priority-chip">{{ priorityLabel() }}</strong></div>
-        <h3>Flags ({{ selectedTest().code }})</h3>
-        <div class="flag-summary">
-          <div><i class="flag-dot flag-dot--normal"></i><strong>{{ normalCount() }}</strong><span>Normal</span></div>
-          <div><i class="flag-dot flag-dot--abnormal"></i><strong>{{ abnormalCount() }}</strong><span>Abnormal</span></div>
-          <div><i class="flag-dot flag-dot--critical"></i><strong>{{ criticalCount() }}</strong><span>Critical</span></div>
-        </div>
-      </section>
-      <section class="panel action-card">
-        <button type="button" class="primary-action" disabled title="Available after backend release workflow is integrated"><i class="ti ti-lock"></i> Finalize &amp; Generate Report</button>
-        <button type="button" class="outline-action" (click)="submitReviewDemo()"><i class="ti ti-user-check"></i> Submit for Review</button>
-        <button type="button" class="outline-action" (click)="validateDemo()"><i class="ti ti-shield-check"></i> Validate Results</button>
-        <button type="button" class="outline-action" (click)="saveDraft()"><i class="ti ti-device-floppy"></i> Save Draft (preview)</button>
-        <small class="action-disclaimer">Actions are visual previews only. No clinical workflow is submitted.</small>
-      </section>
-    </aside>
   </div>
+  <footer class="result-action-bar">
+    <div class="draft-state"><i class="ti ti-circle-check"></i><strong>Draft saved</strong><span>· just now</span><i class="ti ti-cloud"></i><span>Auto-save On</span></div>
+    <div class="test-navigation"><button type="button" class="secondary-button" (click)="previousTest()" [disabled]="isFirstTest()"><i class="ti ti-chevron-left"></i> Previous Test</button><span>{{ selectedTestPosition() }} of {{ testCount() }}</span><button type="button" class="secondary-button" (click)="nextTest()" [disabled]="isLastTest()">Next Test <i class="ti ti-chevron-right"></i></button></div>
+    <div class="result-actions"><button type="button" class="outline-action" (click)="saveDraft()"><i class="ti ti-device-floppy"></i> Save Draft</button><button type="button" class="primary-action" (click)="validateDemo()"><i class="ti ti-check"></i> Submit for Validation</button></div>
+  </footer>
 
   @if (noteDraft(); as draft) {
     <div class="modal-backdrop" (click)="closeNotes()">
