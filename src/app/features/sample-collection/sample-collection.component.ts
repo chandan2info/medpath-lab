@@ -15,10 +15,11 @@
 //  Screen 4b — Sample Tracking.)
 // ─────────────────────────────────────────────
 import { Component, signal, computed, inject, ChangeDetectionStrategy, HostListener, ElementRef } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { DatePipe, TitleCasePipe } from '@angular/common';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
 import { Priority } from '../../shared/models/lis.models';
+import { SampleTrackingService } from '../../core/services/sample-tracking.service';
 import { WorkflowStepperComponent, WorkflowStep } from '../../shared/components/workflow-stepper/workflow-stepper.component';
 
 const TUBE_COLORS: Record<string, string> = {
@@ -96,6 +97,9 @@ export class SampleCollectionComponent {
   datePickerOpen = signal(false);
   timePickerExpanded = signal(false);
   readonly datePickerPosition = signal({ top: 0, left: 0, width: 320, maxHeight: 360 });
+  private readonly router = inject(Router);
+  private readonly sampleTracking = inject(SampleTrackingService);
+  readonly createdSampleId = signal<string | null>(null);
   private readonly initialCollectionDateTime = this.toDateTimeLocal(new Date());
   collectionDatePart = signal(this.initialCollectionDateTime.slice(0, 10));
   collectionTimePart = signal(this.initialCollectionDateTime.slice(11, 16));
@@ -285,11 +289,43 @@ export class SampleCollectionComponent {
   }
 
   markCollected(): void {
-    if (!this.collectionFormValid()) return;
+    if (!this.collectionFormValid() || this.collected()) return;
+    const patient = this.flow.patient();
+    const orderedTests = this.flow.selectedTests();
+    if (!patient || orderedTests.length === 0) return;
+
+    const collectedDate = new Date(this.collectionDateTime());
+    const sample = this.sampleTracking.createFromCollection({
+      patientId: patient.id,
+      patientName: `${patient.firstName} ${patient.lastName}`.trim(),
+      dob: patient.dob,
+      gender: patient.gender.toLowerCase() as 'male' | 'female' | 'other',
+      refDoctor: patient.refDoctor,
+      mobile: patient.mobile,
+      visitType: patient.visitType.toLowerCase().replace(/\s+/g, '-') as 'walk-in' | 'appointment' | 'home-visit',
+      fastingStatus: patient.fasting.toLowerCase().replace(/\s+/g, '-') as 'fasting' | 'non-fasting' | 'unknown',
+      tests: orderedTests.map(test => test.id),
+      priority: this.flow.priority(),
+      status: 'processing',
+      collectedAt: collectedDate.toISOString(),
+      etaLabel: 'Pending',
+      tubes: this.currentPatientTubes().map(tube => ({
+        id: tube.id,
+        color: tube.color,
+        label: tube.label,
+        tests: [...tube.tests],
+      })),
+    });
+    this.createdSampleId.set(sample.id);
     this.collectedAt.set(
-      new Date(this.collectionDateTime()).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+      collectedDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
     );
     this.collected.set(true);
+  }
+
+  proceedToResultEntry(): void {
+    const sampleId = this.createdSampleId();
+    if (sampleId) this.router.navigate(['/dashboard/results', sampleId]);
   }
 
   @HostListener('document:click', ['$event'])

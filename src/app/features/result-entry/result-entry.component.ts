@@ -1,363 +1,345 @@
-import { Component, signal, computed, ChangeDetectionStrategy, inject, HostListener, ElementRef, OnInit } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  signal,
+  OnInit,
+} from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { DatePipe, NgClass, TitleCasePipe } from '@angular/common';
 import { map } from 'rxjs';
-import { NgClass, NgStyle, TitleCasePipe } from '@angular/common';
-import { ResultParameter, ResultFlag } from '../../shared/models/lis.models';
-import { ReportPreviewService } from '../../core/services/report-preview.service';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
 import { SampleTrackingService } from '../../core/services/sample-tracking.service';
+import { ResultFlag } from '../../shared/models/lis.models';
+import { ResultEntryDataService, MockOrderedTest, MockParameter, NoteDraft, NotificationDraft, TestFilter, TestStatus, flagFromValue } from '../../core/services/result-entry-data.service';
 
-/** Normalized shape the patient bar renders from, regardless of which
- *  source it came from (see `patient` getter below). */
-interface PatientBarView {
-  firstName: string;
-  lastName: string;
-  dob: string;
-  gender: string;
-  id: string;
-  refDoctor: string;
-}
-
-interface ParamRow extends ResultParameter {
-  editing: boolean;
-  editedBy?: string;
-  editedAt?: string;
-}
-
-interface TabDef {
-  key: string;
-  label: string;
-  cardTitle: string;
-  cardIcon: string;
-  params: ParamRow[];
-}
-
-const TABS: TabDef[] = [
-  {
-    key: 'kft',
-    label: 'KFT (Kidney function)',
-    cardTitle: 'Kidney function test (KFT)',
-    cardIcon: 'ti-test-pipe',
-    params: [
-      { id:'cr',  name:'Serum creatinine',      value:'2.4',  unit:'mg/dL',  refLow:0.7, refHigh:1.3,  refLabel:'0.7 – 1.3',  flag:'high',     editing:false, editedBy:'Ravi Anand', editedAt:'10:41 AM' },
-      { id:'bun', name:'Blood urea nitrogen',   value:'48',   unit:'mg/dL',  refLow:7,   refHigh:20,   refLabel:'7 – 20',     flag:'high',     editing:false, editedBy:'Ravi Anand', editedAt:'10:42 AM' },
-      { id:'k',   name:'Serum potassium (K⁺)',  value:'6.8',  unit:'mEq/L',  refLow:3.5, refHigh:5.0,  refLabel:'3.5 – 5.0',  flag:'critical', editing:false, editedBy:'Ravi Anand', editedAt:'10:43 AM' },
-      { id:'na',  name:'Serum sodium (Na⁺)',    value:'138',  unit:'mEq/L',  refLow:136, refHigh:145,  refLabel:'136 – 145',  flag:'normal',   editing:false, editedBy:'Ravi Anand', editedAt:'10:43 AM' },
-      { id:'ua',  name:'Serum uric acid',       value:'5.2',  unit:'mg/dL',  refLow:3.5, refHigh:7.2,  refLabel:'3.5 – 7.2',  flag:'normal',   editing:false, editedBy:'Ravi Anand', editedAt:'10:43 AM' },
-      { id:'egfr',name:'eGFR (CKD-EPI)',        value:'32',   unit:'mL/min', refLow:60,  refHigh:null, refLabel:'≥ 60',       flag:'low',      editing:false, editedBy:'Ravi Anand', editedAt:'10:44 AM' },
-    ],
-  },
-  {
-    key: 'urine',
-    label: 'Urine R/M',
-    cardTitle: 'Urine routine & microscopy',
-    cardIcon: 'ti-droplet',
-    params: [
-      { id:'u-ph',   name:'pH',                value:'6.0',   unit:'',     refLow:4.5, refHigh:8.0, refLabel:'4.5 – 8.0',  flag:'normal', editing:false, editedBy:'Ravi Anand', editedAt:'9:32 AM' },
-      { id:'u-sg',   name:'Specific gravity',  value:'1.02',  unit:'',     refLow:1.005, refHigh:1.03, refLabel:'1.005 – 1.030', flag:'normal', editing:false, editedBy:'Ravi Anand', editedAt:'9:32 AM' },
-      { id:'u-prot', name:'Protein',           value:'0',     unit:'mg/dL',refLow:0,   refHigh:15,  refLabel:'Negative',   flag:'normal', editing:false, editedBy:'Ravi Anand', editedAt:'9:33 AM' },
-      { id:'u-gluc', name:'Glucose',           value:'0',     unit:'mg/dL',refLow:0,   refHigh:15,  refLabel:'Negative',   flag:'normal', editing:false, editedBy:'Ravi Anand', editedAt:'9:33 AM' },
-      { id:'u-pus',  name:'Pus cells',         value:'4',     unit:'/hpf', refLow:0,   refHigh:5,   refLabel:'0 – 5',      flag:'normal', editing:false, editedBy:'Ravi Anand', editedAt:'9:34 AM' },
-      { id:'u-rbc',  name:'RBC',               value:'1',     unit:'/hpf', refLow:0,   refHigh:2,   refLabel:'0 – 2',      flag:'normal', editing:false, editedBy:'Ravi Anand', editedAt:'9:34 AM' },
-    ],
-  },
-  {
-    key: 'haem',
-    label: 'Haematology',
-    cardTitle: 'Haematology profile',
-    cardIcon: 'ti-microscope',
-    params: [
-      { id:'h-hb',   name:'Haemoglobin',       value:'13.5',   unit:'g/dL',    refLow:13,    refHigh:17,    refLabel:'13 – 17',        flag:'normal', editing:false, editedBy:'Ravi Anand', editedAt:'9:50 AM' },
-      { id:'h-wbc',  name:'Total WBC count',   value:'7800',   unit:'/µL',     refLow:4000,  refHigh:11000, refLabel:'4000 – 11000',   flag:'normal', editing:false, editedBy:'Ravi Anand', editedAt:'9:50 AM' },
-      { id:'h-plt',  name:'Platelet count',    value:'210000', unit:'/µL',     refLow:150000,refHigh:410000,refLabel:'150000 – 410000',flag:'normal', editing:false, editedBy:'Ravi Anand', editedAt:'9:51 AM' },
-      { id:'h-esr',  name:'ESR',               value:'18',     unit:'mm/hr',   refLow:0,     refHigh:15,    refLabel:'0 – 15',         flag:'high',   editing:false, editedBy:'Ravi Anand', editedAt:'9:51 AM' },
-      { id:'h-rbc',  name:'RBC count',         value:'4.8',    unit:'mil/µL',  refLow:4.5,   refHigh:5.5,   refLabel:'4.5 – 5.5',      flag:'normal', editing:false, editedBy:'Ravi Anand', editedAt:'9:52 AM' },
-    ],
-  },
-];
+const EMPTY_ORDERED_TEST: MockOrderedTest = {
+  id: '', code: '', name: 'Loading results', shortName: 'Loading results…',
+  status: 'PENDING', parameters: [],
+};
 
 @Component({
   selector: 'app-result-entry',
   standalone: true,
-  imports: [RouterLink, NgClass, NgStyle, TitleCasePipe],
+  imports: [RouterLink, NgClass, TitleCasePipe, DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
-    templateUrl: './result-entry.component.html',
-    styleUrl: './result-entry.component.css',
+  templateUrl: './result-entry.component.html',
+  styleUrl: './result-entry.component.css',
 })
 export class ResultEntryComponent implements OnInit {
-  private readonly router      = inject(Router);
-  private readonly route       = inject(ActivatedRoute);
-  private readonly previewSvc  = inject(ReportPreviewService);
-  private readonly host        = inject(ElementRef<HTMLElement>);
-  private readonly sampleSvc   = inject(SampleTrackingService);
-  protected readonly flow      = inject(PatientFlowService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  protected readonly flow = inject(PatientFlowService);
+  private readonly sampleSvc = inject(SampleTrackingService);
+  private readonly resultData = inject(ResultEntryDataService);
 
-  protected readonly tabs: TabDef[] = TABS;
-
-  /** `:sampleId` when Result Entry was opened from a specific row in
-   *  Sample Tracking; null when opened generically (e.g. from Sample
-   *  Collection's "Enter results" step, or the sidebar). Kept as a
-   *  signal (not just a snapshot read) so navigating from one sample
-   *  straight to another re-resolves the patient bar instead of reusing
-   *  the previous component instance's stale data. */
   private readonly sampleId = toSignal(
-    this.route.paramMap.pipe(map(m => m.get('sampleId'))),
-    { initialValue: this.route.snapshot.paramMap.get('sampleId') }
+    this.route.paramMap.pipe(map(params => params.get('sampleId'))),
+    { initialValue: this.route.snapshot.paramMap.get('sampleId') },
   );
+  readonly sample = computed(() => {
+    const routeSampleId = this.sampleId();
+    return routeSampleId ? this.sampleSvc.getById(routeSampleId) : undefined;
+  });
+  readonly patient = computed(() => {
+    const sample = this.sample();
+    const flowPatient = this.flow.patient();
+    if (!sample) return null;
+    const samePatient = flowPatient?.id === sample.patientId;
+    const [firstName, ...lastName] = sample.patientName.split(' ');
+    return {
+      firstName,
+      lastName: lastName.join(' '),
+      dob: sample.dob || (samePatient ? flowPatient.dob : ''),
+      gender: sample.gender || (samePatient ? flowPatient.gender : ''),
+      id: sample.patientId,
+      mobile: sample.mobile || (samePatient ? flowPatient.mobile : ''),
+      visitType: sample.visitType || (samePatient ? flowPatient.visitType : ''),
+      fasting: sample.fastingStatus || (samePatient ? flowPatient.fasting : ''),
+      refDoctor: sample.refDoctor || (samePatient ? flowPatient.refDoctor : ''),
+    };
+  });
+  readonly sampleLabel = computed(() => this.sample()?.id ?? 'Active sample');
+  readonly collectedLabel = computed(() => {
+    const collectedAt = this.sample()?.collectedAt?.trim();
+    if (!collectedAt) return '—';
 
-  /** The sample the user clicked in Sample Tracking, if any. */
-  sample = computed(() => this.sampleSvc.getById(this.sampleId()));
+    // Mock data currently stores a local time only (for example, "9:20 AM").
+    if (/^\\d{1,2}:\\d{2}\\s?(AM|PM)$/i.test(collectedAt)) {
+      return `Today, ${collectedAt.replace(/\\s+/g, ' ').toUpperCase()}`;
+    }
+
+    const collectedDate = new Date(collectedAt);
+    if (Number.isNaN(collectedDate.getTime())) return collectedAt;
+
+    const time = new Intl.DateTimeFormat('en-IN', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    }).format(collectedDate);
+    const isToday = collectedDate.toDateString() === new Date().toDateString();
+    if (isToday) return `Today, ${time}`;
+
+    return new Intl.DateTimeFormat('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    }).format(collectedDate);
+  });
+  readonly priorityLabel = computed(() => {
+    const priority = this.sample()?.priority;
+    if (priority === 'stat') return 'STAT';
+    if (priority === 'urgent') return 'URGENT';
+    if (priority === 'routine') return 'ROUTINE';
+    return '—';
+  });
+  readonly visitTypeLabel = computed(() => this.patient()?.visitType || '—');
+  readonly fastingLabel = computed(() => this.patient()?.fasting || 'Not specified');
+  readonly orderedTestsLabel = computed(() => {
+    // Use the same 12-test collection that drives the card count, not the
+    // sample's raw test-code list (which may contain extra/legacy entries).
+    const testCodes = this.tests().map(test => test.code);
+    if (!testCodes.length) return '—';
+    const visibleCodes = testCodes.slice(0, 5);
+    const remainingCount = testCodes.length - visibleCodes.length;
+    return remainingCount > 0
+      ? `${visibleCodes.join(' · ')} · +${remainingCount}`
+      : visibleCodes.join(' · ');
+  });
+  readonly patientInitials = computed(() => {
+    const p = this.patient();
+    return p ? (p.firstName[0] + (p.lastName[0] ?? '')).toUpperCase() : '?';
+  });
+  readonly patientAge = computed(() => {
+    const dob = this.patient()?.dob;
+    if (!dob) return '—';
+    const birthDate = new Date(`${dob}T00:00:00`);
+    if (Number.isNaN(birthDate.getTime())) return '—';
+    const today = new Date();
+    if (birthDate > today) return '—';
+    let years = today.getFullYear() - birthDate.getFullYear();
+    let months = today.getMonth() - birthDate.getMonth();
+    let days = today.getDate() - birthDate.getDate();
+    if (days < 0) { months -= 1; days += new Date(today.getFullYear(), today.getMonth(), 0).getDate(); }
+    if (months < 0) { years -= 1; months += 12; }
+    return `${years}y ${months}m ${days}d`;
+  });
+  readonly tests = signal<MockOrderedTest[]>([]);
+  readonly selectedTestId = signal('');
+  readonly testSearch = signal('');
+  readonly filter = signal<TestFilter>('ALL');
+  readonly referenceProfiles = ['Adult Male', 'Adult Female', 'Child', 'Senior Adult'] as const;
+  readonly selectedReferenceProfile = signal<string>('Adult Male');
+  readonly showReferenceProfiles = signal(false);
+  readonly showFilterMenu = signal(false);
+  readonly leftCollapsed = signal(false);
+  readonly workflowCollapsed = signal(false);
+  readonly noteDraft = signal<NoteDraft | null>(null);
+  readonly moreMenuId = signal<string | null>(null);
+  readonly showNotificationDialog = signal(false);
+  readonly notificationDraft = signal<NotificationDraft | null>(null);
+  readonly showCriticalDetails = signal(false);
+  readonly showDemoNotice = signal(false);
+  readonly demoNoticeMessage = signal('Mock workflow action saved locally for this sample. Backend API is not connected yet.');
+  readonly demoSavedState = signal<'idle' | 'unsaved'>('idle');
+  readonly expandedRight = signal(true);
+
+  readonly selectedTestIndex = computed(() => this.tests().findIndex(test => test.id === this.selectedTestId()));
+  readonly selectedTestPosition = computed(() => Math.max(0, this.selectedTestIndex()) + 1);
+  readonly isFirstTest = computed(() => this.selectedTestIndex() <= 0);
+  readonly isLastTest = computed(() => this.selectedTestIndex() < 0 || this.selectedTestIndex() >= this.tests().length - 1);
+  readonly selectedTest = computed(() => this.tests().find(test => test.id === this.selectedTestId()) ?? this.tests()[0] ?? EMPTY_ORDERED_TEST);
+  /**
+   * Derive workflow status from entered parameter values instead of relying
+   * on the initial demo status. This keeps the chips and list accurate after
+   * a result is entered or cleared.
+   */
+  effectiveTestStatus(test: MockOrderedTest): TestStatus {
+    const entered = test.parameters.filter(parameter => parameter.value.trim() !== '').length;
+    if (entered === 0) return 'PENDING';
+    if (entered === test.parameters.length) return 'COMPLETED';
+    return 'IN_PROGRESS';
+  }
+
+  readonly visibleTests = computed(() => {
+    const q = this.testSearch().trim().toLowerCase();
+    const selectedFilter = this.filter();
+    return this.tests().filter(test => {
+      const matchesStatus = selectedFilter === 'ALL' || this.effectiveTestStatus(test) === selectedFilter;
+      const searchable = [test.name, test.shortName, test.code].join(' ').toLowerCase();
+      return matchesStatus && (!q || searchable.includes(q));
+    });
+  });
+  readonly enteredCount = computed(() => this.selectedTest().parameters.filter(p => p.value.trim() !== '').length);
+  readonly totalCount = computed(() => this.selectedTest().parameters.length);
+  readonly normalCount = computed(() => this.selectedTest().parameters.filter(p => p.value && p.flag === 'normal').length);
+  readonly abnormalCount = computed(() => this.selectedTest().parameters.filter(p => p.value && (p.flag === 'high' || p.flag === 'low')).length);
+  readonly criticalCount = computed(() => this.selectedTest().parameters.filter(p => p.value && p.flag === 'critical').length);
+  readonly criticalParameters = computed(() => this.selectedTest().parameters.filter(p => p.flag === 'critical' && p.value));
+  readonly hasCritical = computed(() => this.criticalParameters().length > 0);
+  readonly activeParameter = computed(() => this.selectedTest().parameters.find(p => p.id === this.noteDraft()?.parameterId) ?? null);
+  readonly testCount = computed(() => this.tests().length);
+  readonly completedTests = computed(() => this.tests().filter(test => this.effectiveTestStatus(test) === 'COMPLETED').length);
+  readonly pendingTests = computed(() => this.tests().filter(test => this.effectiveTestStatus(test) === 'PENDING').length);
+  readonly inProgressTests = computed(() => this.tests().filter(test => this.effectiveTestStatus(test) === 'IN_PROGRESS').length);
 
   ngOnInit(): void {
-    // A sampleId that doesn't resolve (stale/typed-in link) sends the
-    // user back to the queue instead of silently showing a blank bar.
-    if (this.sampleId() && !this.sample()) {
-      this.router.navigate(['/dashboard/tracking']);
+    const routeSampleId=this.sampleId();
+    if(!routeSampleId){
+      const selectedPatient=this.flow.patient();
+      if(!selectedPatient){this.router.navigate(['/dashboard/tracking']);return;}
+      const patientSample=this.sampleSvc.getLatestByPatientId(selectedPatient.id);
+      if(patientSample)this.router.navigate(['/dashboard/results',patientSample.id],{replaceUrl:true});
+      else this.router.navigate(['/dashboard/collection'],{replaceUrl:true});
       return;
     }
-    // No sampleId at all means Result Entry was opened as a continuation
-    // of the single active registration (from Sample Collection or the
-    // sidebar) — same guard as Test Order/Billing/Sample Collection.
-    if (!this.sampleId() && !this.flow.patient()) {
-      this.router.navigate(['/dashboard/registration']);
-    }
-  }
-
-  /** Single normalized patient view for the bar — sourced from the
-   *  clicked Sample Tracking row when present, otherwise from
-   *  PatientFlowService (Registration/Test Order/Billing/Sample
-   *  Collection's shared active patient). Either way, this is real
-   *  data driving the page, never a hardcoded demo record. */
-  get patient(): PatientBarView | null {
-    const s = this.sample();
-    if (s) {
-      const [firstName, ...rest] = s.patientName.split(' ');
-      return { firstName, lastName: rest.join(' '), dob: s.dob ?? '', gender: s.gender ?? '', id: s.patientId, refDoctor: s.refDoctor ?? '—' };
-    }
-    const p = this.flow.patient();
-    if (p) {
-      return { firstName: p.firstName, lastName: p.lastName, dob: p.dob, gender: p.gender, id: p.id, refDoctor: p.refDoctor };
-    }
-    return null;
-  }
-
-  /** Sample id shown in the breadcrumb/meta row — the real clicked
-   *  sample's id when known, otherwise a placeholder since Sample
-   *  Collection doesn't yet hand off a generated sample id. */
-  get sampleLabel(): string {
-    return this.sample()?.id ?? 'SMP-2406-087';
-  }
-
-  /** Ordered tests shown under the patient name — the real sample's
-   *  tests when known, otherwise whatever's currently on the active
-   *  Test Order. */
-  get orderedTestsLabel(): string {
-    const s = this.sample();
-    if (s) return s.tests.join(' · ');
-    const tests = this.flow.selectedTests().map(t => t.id);
-    return tests.length ? tests.join(' · ') : '—';
-  }
-
-  /** STAT chip only appears when the actual sample/order is STAT priority. */
-  get isStat(): boolean {
-    return this.sample()?.priority === 'stat';
-  }
-
-  get patientInitials(): string {
-    const p = this.patient;
-    if (!p) return '?';
-    return (p.firstName[0] + (p.lastName[0] ?? '')).toUpperCase();
-  }
-
-  /** Detailed breakdown used in the patient info row, e.g. "9y 11m 2d". */
-  patientAgeBreakdown(): string {
-    const p = this.patient;
-    if (!p) return '';
-    return this.flow.formatAgeBreakdown(p.dob);
-  }
-
-  /** Raw Y/M/D parts for the colorized inline age breakdown (see .age-inline* in styles.css). */
-  ageParts(): { years: number; months: number; days: number } {
-    const p = this.patient;
-    if (!p) return { years: 0, months: 0, days: 0 };
-    return this.flow.calcAgeParts(p.dob);
-  }
-
-  /** Mirrors the male/female/genderless mapping used on Billing/Test
-   *  Order/Sample Collection, so the icon reads identically everywhere
-   *  a patient's gender appears. */
-  genderIcon(): string {
-    const g = (this.patient?.gender ?? '').toLowerCase();
-    if (g === 'male')   return 'ti-gender-male';
-    if (g === 'female') return 'ti-gender-female';
-    return 'ti-gender-genderless';
-  }
-
-  /** Pristine copy of every tab's data, used to power the reset controls. */
-  private readonly originalTabData: Record<string, ParamRow[]> =
-    Object.fromEntries(TABS.map(t => [t.key, t.params.map(p => ({ ...p }))]));
-
-  /** All tabs' data, keyed by tab key, so switching tabs never loses in-progress edits. */
-  private readonly tabData = signal<Record<string, ParamRow[]>>(
-    Object.fromEntries(TABS.map(t => [t.key, t.params.map(p => ({ ...p }))]))
-  );
-
-  activeTabKey = signal<string>(TABS[0].key);
-  activeTab = computed(() => this.tabs.find(t => t.key === this.activeTabKey())!);
-  params = computed(() => this.tabData()[this.activeTabKey()]);
-
-  /** Last saved timestamp, kept in sync so the autosave chip reflects real edits. */
-  lastSavedAt = signal(this.now());
-
-  hasCritical = computed(() => this.params().some(p => p.flag === 'critical'));
-  criticalParam = computed(() => this.params().find(p => p.flag === 'critical') ?? null);
-  enteredCount = computed(() => this.params().filter(p => p.value !== '').length);
-  pct = computed(() => Math.round(this.enteredCount() / this.params().length * 100));
-  normalCount  = computed(() => this.params().filter(p => p.flag === 'normal').length);
-  abnCount     = computed(() => this.params().filter(p => p.flag === 'high' || p.flag === 'low').length);
-  critCount    = computed(() => this.params().filter(p => p.flag === 'critical').length);
-
-  /** Header badge for the result card: reflects the ACTIVE tab's real data, not a fixed count. */
-  cardBadge = computed(() => {
-    if (this.critCount() > 0) return { style: 'danger', icon: 'ti-alert-octagon', text: this.critCount() + ' critical' };
-    if (this.abnCount() > 0)  return { style: 'warn',   icon: 'ti-alert-triangle', text: this.abnCount() + ' abnormal' };
-    return { style: 'ok', icon: 'ti-circle-check', text: 'All normal' };
-  });
-
-  /** True once at least one value on the active tab has been changed from its original entry. */
-  anyEdited = computed(() => this.params().some(p => p.editedBy === 'You'));
-
-  isRowEdited(p: ParamRow): boolean {
-    return p.editedBy === 'You';
-  }
-
-  selectTab(key: string): void {
-    this.activeTabKey.set(key);
-  }
-
-  private now(): string {
-    return new Date().toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' });
-  }
-
-  /** Position (0-100 percent) of the current value along the reference range, for the mini range bar. */
-  rangePct(p: ParamRow): number {
-    const v = parseFloat(p.value);
-    if (isNaN(v)) return 50;
-    const lo = p.refLow ?? 0;
-    if (p.refHigh === null) {
-      return v >= lo ? 70 : Math.max(4, Math.min(96, (v / (lo || 1)) * 70));
-    }
-    const hi = p.refHigh;
-    const span = hi - lo || 1;
-    const pct = ((v - lo) / span) * 100;
-    return Math.max(4, Math.min(96, pct));
-  }
-
-  statusIcon(f: ResultFlag): string {
-    return { normal: 'ti-check', high: 'ti-alert-triangle', low: 'ti-alert-triangle', critical: 'ti-x' }[f] ?? 'ti-check';
-  }
-
-  /** Ctrl+S saves the draft, Ctrl+Enter generates the report, from anywhere on the page. */
-  @HostListener('document:keydown', ['$event'])
-  onKeydown(ev: KeyboardEvent): void {
-    if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 's') {
-      ev.preventDefault();
-      this.saveDraft();
-    } else if ((ev.ctrlKey || ev.metaKey) && ev.key === 'Enter') {
-      ev.preventDefault();
-      this.navigateToPreview();
-    }
-  }
-
-  /** Left/Right arrow keys move focus between tabs, per the WAI-ARIA tabs pattern. */
-  onTabKeydown(ev: KeyboardEvent, index: number): void {
-    let nextIndex: number | null = null;
-    if (ev.key === 'ArrowRight') nextIndex = (index + 1) % this.tabs.length;
-    else if (ev.key === 'ArrowLeft') nextIndex = (index - 1 + this.tabs.length) % this.tabs.length;
-    else if (ev.key === 'Home') nextIndex = 0;
-    else if (ev.key === 'End') nextIndex = this.tabs.length - 1;
-    if (nextIndex === null) return;
-
-    ev.preventDefault();
-    const nextKey = this.tabs[nextIndex].key;
-    this.selectTab(nextKey);
-    const btn = this.host.nativeElement.querySelector(
-      '[data-tab-key="' + nextKey + '"]'
-    ) as HTMLButtonElement | null;
-    btn?.focus();
-  }
-
-  /** Enter on a result field moves focus to the same field on the next row. */
-  onResultKeydown(ev: KeyboardEvent, i: number): void {
-    if (ev.key !== 'Enter') return;
-    ev.preventDefault();
-    const selector = 'input[data-row-index="' + (i + 1) + '"]';
-    const next = this.host.nativeElement.querySelector(selector) as HTMLInputElement | null;
-    next?.focus();
-    next?.select();
-  }
-
-  saveDraft(): void {
-    this.lastSavedAt.set(this.now());
-  }
-
-  evalFlag(i: number): void {
-    const key = this.activeTabKey();
-    this.tabData.update(all => {
-      const rows = [...all[key]];
-      const p = { ...rows[i] };
-      const v = parseFloat(p.value);
-      if (isNaN(v)) { p.flag = 'normal'; }
-      else if (p.id === 'k' && v > 6.0) { p.flag = 'critical'; }
-      else if (p.refHigh !== null && v > p.refHigh) { p.flag = 'high'; }
-      else if (p.refLow !== null && v < p.refLow)   { p.flag = 'low';  }
-      else { p.flag = 'normal'; }
-      rows[i] = p;
-      return { ...all, [key]: rows };
+    const sample=this.sample();
+    if(!sample){this.router.navigate(['/dashboard/tracking']);return;}
+    this.resultData.loadForSample(sample,this.flow.allTests).subscribe({
+      next:record=>{
+        if(!record.tests.length){this.router.navigate(['/dashboard/tracking']);return;}
+        this.tests.set(record.tests);
+        this.selectedTestId.set(record.tests[0]?.id??'');
+        const age=this.patientAge();
+        const years=Number(age.match(/^[0-9]+/)?.[0]??0);
+        const gender=(sample.gender??'male').toLowerCase();
+        this.selectedReferenceProfile.set(years<18?'Child':years>=60?'Senior Adult':gender==='female'?'Adult Female':'Adult Male');
+      },
+      error:()=>this.router.navigate(['/dashboard/tracking']),
     });
   }
 
-  updateValue(i: number, value: string): void {
-    const key = this.activeTabKey();
-    this.tabData.update(all => {
-      const rows = [...all[key]];
-      rows[i] = { ...rows[i], value, editedBy: 'You', editedAt: this.now() };
-      return { ...all, [key]: rows };
-    });
-    this.evalFlag(i);
+  private persistResults(submit=false):void {
+    const sampleId=this.sample()?.id;if(!sampleId)return;
+    const record={sampleId,tests:this.tests(),workflowStatus:'DRAFT' as const,updatedAt:new Date().toISOString()};
+    const request=submit?this.resultData.submitForValidation(record):this.resultData.saveDraft(record);
+    request.subscribe({next:()=>this.demoSavedState.set('idle'),error:()=>{this.demoSavedState.set('unsaved');this.demoNoticeMessage.set('Unable to save results. Please retry.');this.showDemoNotice.set(true);}});
   }
-
-  /** Restore a single row to its original, unedited value — undoes a typo without touching the rest. */
-  resetRow(i: number): void {
-    const key = this.activeTabKey();
-    const original = this.originalTabData[key][i];
-    this.tabData.update(all => {
-      const rows = [...all[key]];
-      rows[i] = { ...original };
-      return { ...all, [key]: rows };
-    });
+  previousTest(): void {
+    const index = this.selectedTestIndex();
+    if (index > 0) this.selectTest(this.tests()[index - 1].id);
   }
+  nextTest(): void {
+    const index = this.selectedTestIndex();
+    if (index >= 0 && index < this.tests().length - 1) this.selectTest(this.tests()[index + 1].id);
+  }
+  selectTest(id: string): void {
+    this.selectedTestId.set(id);
+    this.moreMenuId.set(null);
+    this.noteDraft.set(null);
+  }
+  setFilter(value: TestFilter): void { this.filter.set(value); this.showFilterMenu.set(false); }
+  toggleFilterMenu(): void { this.showFilterMenu.update(open => !open); }
+  toggleReferenceProfiles(): void { this.showReferenceProfiles.update(open => !open); }
+  selectReferenceProfile(profile: string): void {
+    this.selectedReferenceProfile.set(profile);
+    this.showReferenceProfiles.set(false);
+  }
+  toggleLeftPanel(): void { this.leftCollapsed.update(value => !value); }
+  toggleWorkflow(): void { this.workflowCollapsed.update(value => !value); }
+  updateSearch(value: string): void { this.testSearch.set(value); }
+  clearOrderedFilters(): void { this.testSearch.set(''); this.filter.set('ALL'); this.showFilterMenu.set(false); }
 
-  /** Restore every row on the active tab back to its original values, after a confirmation. */
-  resetAll(): void {
-    if (!this.anyEdited()) return;
-    const confirmed = window.confirm('Reset all results in this section back to their original entries? This cannot be undone.');
-    if (!confirmed) return;
-    const key = this.activeTabKey();
-    this.tabData.update(all => ({
-      ...all,
-      [key]: this.originalTabData[key].map(p => ({ ...p })),
+  updateResult(parameterId: string, value: string): void {
+    this.updateParameter(parameterId, { value });
+    this.demoSavedState.set('unsaved');
+    this.persistResults();
+  }
+  private updateParameter(parameterId: string, patch: Partial<MockParameter>): void {
+    this.tests.update(tests => tests.map(test => test.id !== this.selectedTestId() ? test : {
+      ...test,
+      parameters: test.parameters.map(parameter => { if(parameter.id!==parameterId)return parameter; const updated={...parameter,...patch}; if(patch.value!==undefined)updated.flag=flagFromValue(updated.value,updated.range,updated.criticalLow,updated.criticalHigh); return updated; }),
     }));
   }
-
-  flagLabel(f: ResultFlag): string {
-    return { normal:'Normal', high:'High', low:'Low', critical:'Critical' }[f] ?? f;
+  resultClass(flag: ResultFlag): string { return flag; }
+  statusIcon(flag: ResultFlag): string {
+    return ({ normal:'ti-check', high:'ti-alert-triangle', low:'ti-alert-triangle', critical:'ti-x' } as const)[flag];
   }
-
-  navigateToPreview(): void {
-    // Stage the current result set so the preview reflects live edits
-    this.previewSvc.stage({ params: this.params() });
-    this.router.navigate(['/dashboard/report-preview']);
+  flagLabel(flag: ResultFlag): string { return ({normal:'Normal',high:'High',low:'Low',critical:'Critical'})[flag]; }
+  testEntered(test: MockOrderedTest): number { return test.parameters.filter(p => p.value.trim() !== '').length; }
+  testStatusLabel(status: TestStatus): string { return ({PENDING:'Pending',IN_PROGRESS:'In Progress',COMPLETED:'Completed'})[status]; }
+  ageBreakdown(): string { return this.patientAge(); }
+  rangePct(parameter: MockParameter): number {
+    const [low, high] = parameter.range.match(/[\d.]+/g)?.map(Number) ?? [];
+    const value = Number(parameter.value);
+    if (!Number.isFinite(value) || !Number.isFinite(low) || !Number.isFinite(high) || high <= low) return 50;
+    return Math.max(4, Math.min(96, ((value - low) / (high - low)) * 100));
   }
+  openNotes(parameter: MockParameter): void {
+    this.noteDraft.set({ parameterId: parameter.id, text: parameter.note ?? '' });
+    this.moreMenuId.set(null);
+  }
+  updateNote(value: string): void { this.noteDraft.update(draft => draft ? { ...draft, text: value } : null); }
+  saveNote(): void {
+    const draft = this.noteDraft();
+    if (!draft) return;
+    this.updateParameter(draft.parameterId, { note: draft.text.trim() || undefined });
+    this.persistResults();
+    this.noteDraft.set(null);
+  }
+  closeNotes(): void { this.noteDraft.set(null); }
+  toggleMore(id: string): void { this.moreMenuId.update(current => current === id ? null : id); }
+  restorePrevious(parameter: MockParameter): void {
+    if (parameter.previousValue === undefined) return;
+    this.updateParameter(parameter.id, { value: parameter.previousValue });
+    this.persistResults();
+    this.moreMenuId.set(null);
+  }
+  clearResult(parameter: MockParameter): void {
+    const confirmed = window.confirm(`Clear the result for "${parameter.name}"? This demo action only changes local mock data.`);
+    if (!confirmed) return;
+    this.updateParameter(parameter.id, { value: '' });
+    this.persistResults();
+    this.moreMenuId.set(null);
+  }
+  viewHistory(parameter: MockParameter): void {
+    window.alert(`Demo result history for ${parameter.name}: current value ${parameter.value || '—'}.`);
+    this.moreMenuId.set(null);
+  }
+  openNotification(parameter: MockParameter): void {
+    this.notificationDraft.set({ parameterId: parameter.id, recipient: this.patient()?.refDoctor ?? '', channel: 'Phone' });
+    this.showNotificationDialog.set(true);
+  }
+  closeNotification(): void { this.showNotificationDialog.set(false); }
+  updateRecipient(value: string): void { this.notificationDraft.update(d => d ? {...d, recipient:value}:null); }
+  confirmNotificationDemo(): void {
+    const draft=this.notificationDraft();
+    const sampleId=this.sample()?.id;
+    const parameter=this.tests().flatMap(test=>test.parameters).find(item=>item.id===draft?.parameterId);
+    if(draft&&sampleId&&parameter){
+      this.resultData.recordNotification({
+        sampleId,
+        tests:this.tests(),
+        workflowStatus:'DRAFT',
+        updatedAt:new Date().toISOString(),
+      },{
+        parameterId:parameter.id,
+        parameterName:parameter.name,
+        value:parameter.value,
+        unit:parameter.unit,
+        recipient:draft.recipient,
+        channel:draft.channel,
+      }).subscribe({error:()=>{this.demoNoticeMessage.set('Unable to record notification. Please retry.');this.showDemoNotice.set(true);}});
+    }
+    this.showNotificationDialog.set(false);
+    this.notificationDraft.set(null);
+    this.demoNoticeMessage.set('Critical result notification recorded locally for this sample.');
+    this.showDemoNotice.set(true);
+  }
+  saveDraft(): void { this.persistResults(); this.demoSavedState.set('idle'); this.demoNoticeMessage.set('Result draft saved locally for this sample.'); this.showDemoNotice.set(true); }
+  validateDemo(): void {
+    const incomplete=this.tests().filter(test=>test.parameters.some(parameter=>!parameter.value.trim()));
+    if(incomplete.length){this.demoNoticeMessage.set('Complete all required parameters before submitting for validation.');this.showDemoNotice.set(true);return;}
+    this.persistResults(true);
+    this.demoNoticeMessage.set('Results submitted for validation in the local mock workflow.');
+    this.showDemoNotice.set(true);
+  }
+  submitReviewDemo(): void { this.showDemoNotice.set(true); }
+  finalizeDemo(): void { this.showDemoNotice.set(true); }
+  toggleCriticalDetails(): void { this.showCriticalDetails.update(v => !v); }
 }

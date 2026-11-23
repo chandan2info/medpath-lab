@@ -257,10 +257,11 @@
               <div class="cc-time">at {{ collectedAt() }}</div>
             </div>
           </div>
-          <a routerLink="/dashboard/results" class="lis-btn lis-btn--primary collect-btn">
+          <button type="button" class="lis-btn lis-btn--primary collect-btn"
+            (click)="proceedToResultEntry()" [disabled]="!createdSampleId()">
             <i class="ti ti-writing" aria-hidden="true"></i>
             Proceed to Result Entry
-          </a>
+          </button>
           <button type="button" class="lis-btn lis-btn--secondary collect-btn print-btn"
             [class.print-btn--flash]="printFlash()" (click)="printLabels()">
             <i class="ti ti-printer" aria-hidden="true"></i>
