@@ -348,9 +348,8 @@ export class SampleCollectionComponent {
     this.collected.set(true);
   }
 
-  proceedToResultEntry(): void {
-    const sampleId = this.createdSampleId();
-    if (sampleId) this.router.navigate(['/dashboard/results', sampleId]);
+  openSampleTracking(): void {
+    if (this.createdSampleId()) this.router.navigate(['/dashboard/tracking']);
   }
 
   @HostListener('document:click', ['$event'])
