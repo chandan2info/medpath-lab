@@ -296,6 +296,9 @@ export class SampleCollectionComponent {
     const orderedTests = this.flow.selectedTests();
     if (!patient || orderedTests.length === 0) return;
 
+    const orderId = this.flow.ensureWorkflowOrder();
+    const visitId = this.flow.activeVisitId();
+    if (!visitId) throw new Error('Active visit is missing. Please return to Patient Workflow.');
     const collectedDate = new Date(this.collectionDateTime());
     const sample = this.sampleTracking.createFromCollection({
       patientId: patient.id,
@@ -318,9 +321,6 @@ export class SampleCollectionComponent {
         tests: [...tube.tests],
       })),
     });
-    const orderId = this.flow.ensureWorkflowOrder();
-    const visitId = this.flow.activeVisitId();
-    if (!visitId) throw new Error('Active visit is missing. Please return to Patient Workflow.');
     this.workflowStore.createSample({
       id: sample.id,
       orderId,
