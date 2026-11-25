@@ -12,7 +12,7 @@
 </div>
 
 <!-- Search bar -->
-<div class="ph-search" role="search">
+<div class="ph-search lis-search-control" role="search" [class.is-invalid]="searchQ().trim().length > 0 && filtered().length === 0">
   <i class="ti ti-search" aria-hidden="true"></i>
   <input type="search" placeholder="Search by name, phone or patient ID…"
     [value]="searchQ()" (input)="searchQ.set($any($event.target).value)" aria-label="Search patients" />
