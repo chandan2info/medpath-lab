@@ -3396,3 +3396,18 @@
     max-width: calc(100vw - 24px);
   }
 }
+
+/* Align the AM/PM segmented control with the select boxes on mobile.
+   Hour and Minute columns include a label above the select; the period
+   column does not, so bottom alignment alone places AM/PM one label-height
+   too low. Lift the period control by the label + gap height. */
+@media (max-width: 520px) {
+  .collect-panel .collection-time-picker__unit span {
+    line-height: 12px;
+  }
+
+  .collect-panel .collection-time-picker__period {
+    align-self: end;
+    margin-bottom: 15px;
+  }
+}
