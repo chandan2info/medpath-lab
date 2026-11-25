@@ -87,8 +87,7 @@
           (click)="selected.set(r)"
           (keydown.enter)="selected.set(r)"
           (keydown.space)="$event.preventDefault(); selected.set(r)"
-          (keydown.arrowdown)="focusReport($event, 1)"
-          (keydown.arrowup)="focusReport($event, -1)"
+          (keydown)="focusReport($event)"
           [attr.aria-selected]="selected()?.id === r.id"
         >
           <div class="rr-av" aria-hidden="true">{{ initials(r.patientName) }}</div>
