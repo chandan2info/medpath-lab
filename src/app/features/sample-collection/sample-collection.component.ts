@@ -22,6 +22,7 @@ import { Priority } from '../../shared/models/lis.models';
 import { SampleTrackingService } from '../../core/services/sample-tracking.service';
 import { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';
 import { WorkflowStepperComponent, WorkflowStep } from '../../shared/components/workflow-stepper/workflow-stepper.component';
+import { PatientCardComponent } from '../../shared/components/patient-card/patient-card.component';
 
 const TUBE_COLORS: Record<string, string> = {
   'EDTA (Purple top)': '#9F4BA8',
@@ -79,7 +80,7 @@ const TIMELINE_STEPS: WorkflowStep[] = [
 @Component({
   selector: 'app-sample-collection',
   standalone: true,
-  imports: [RouterLink, DatePipe, TitleCasePipe, WorkflowStepperComponent],
+  imports: [RouterLink, DatePipe, TitleCasePipe, WorkflowStepperComponent, PatientCardComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './sample-collection.component.html',
   styleUrl: './sample-collection.component.css',

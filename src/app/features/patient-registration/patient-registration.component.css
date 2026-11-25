@@ -1247,3 +1247,10 @@
   .reg-card .visit-type-field .lis-seg__opt,
   .reg-card .sample-collection-field .lis-seg__opt { flex: 1 1 100%; }
 }
+
+
+/* Existing patient confirmation uses the shared identity and metadata card. */
+.existing-patient-selection { display:flex; flex-direction:column; gap:10px; padding:12px; border:1px solid var(--border-color); border-radius:12px; background:var(--body-bg); }
+.existing-patient-selection__eyebrow { display:flex; align-items:center; gap:6px; color:var(--lis-primary-deep,#085041); font-size:10px; font-weight:750; text-transform:uppercase; letter-spacing:.05em; }
+.existing-patient-selection__actions { display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:8px; }
+@media(max-width:600px) { .existing-patient-selection__actions { justify-content:stretch; } .existing-patient-selection__actions button { flex:1 1 auto; } }
