@@ -7,7 +7,7 @@ import {
   effect,
   inject,
 } from '@angular/core';
-import { CursorPreferenceService } from '../../core/services/cursor-preference.service';
+import { CursorPreferenceService } from '../../../core/services/cursor-preference.service';
 
 @Component({
   selector: 'app-custom-cursor',
