@@ -84,56 +84,54 @@
   white-space: nowrap;
 }
 
-/* Icon-only desktop sidebar toggle, centered on the sidebar edge.
-   Uses the active palette token so light/dark and palette changes stay in sync. */
+/* Floating circular sidebar toggle, overlapping the sidebar divider. */
 .sidebar-toggle-btn {
   position: absolute;
-  left: -20px;
+  left: -19px;
   top: 50%;
-  z-index: 5;
+  z-index: 20;
   display: inline-flex;
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   align-items: center;
   justify-content: center;
   margin: 0;
   padding: 0;
   appearance: none;
-  border: 0 !important;
-  border-radius: 0;
+  border: 0;
+  border-radius: 50%;
   outline: none;
-  background: transparent !important;
-  color: var(--lis-primary, var(--primary));
-  box-shadow: none !important;
+  background: var(--lis-primary, var(--primary)) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
   cursor: pointer;
   transform: translateY(-50%);
-  transition: color 160ms ease, filter 160ms ease, transform 160ms ease;
+  transition: background 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
 
 .sidebar-toggle-btn i {
   display: block;
-  font-size: 27px;
+  font-size: 22px;
   font-weight: 700;
   line-height: 1;
   color: currentColor;
-  transition: color 160ms ease, transform 180ms ease;
+  transition: transform 180ms ease;
 }
 
 .sidebar-toggle-btn:hover {
-  color: var(--lis-primary, var(--primary));
-  background: transparent !important;
-  border: 0 !important;
-  box-shadow: none !important;
-  filter: brightness(1.16);
+  background: var(--lis-primary, var(--primary)) !important;
+  color: #ffffff !important;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.24);
+  filter: brightness(1.08);
 }
 
 .sidebar-toggle-btn:active {
-  transform: translateY(-50%) scale(0.92);
+  transform: translateY(-50%) scale(0.94);
 }
 
 .sidebar-toggle-btn:focus-visible {
-  outline: none;
-  filter: drop-shadow(0 0 4px var(--lis-primary, var(--primary)));
+  outline: 2px solid var(--lis-primary, var(--primary));
+  outline-offset: 3px;
 }
 
 /* Responsive topbar layout */
