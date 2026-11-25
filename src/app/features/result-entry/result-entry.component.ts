@@ -24,7 +24,7 @@ const EMPTY_ORDERED_TEST: MockOrderedTest = {
 @Component({
   selector: 'app-result-entry',
   standalone: true,
-  imports: [RouterLink, NgClass, TitleCasePipe, DatePipe],
+  imports: [RouterLink, NgClass, TitleCasePipe, DatePipe, PatientCardComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './result-entry.component.html',
   styleUrls: ['./result-entry.component.css', './result-entry-queue-overrides.css'],
