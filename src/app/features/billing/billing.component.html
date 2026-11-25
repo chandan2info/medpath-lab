@@ -76,27 +76,7 @@
 
     <!-- Patient details stay in the left content column; billing actions align beside them. -->
     @if (patient) {
-      <section class="patient-summary lis-card" aria-label="Patient information">
-        <div class="pat-avatar" aria-hidden="true">{{ patientInitials }}</div>
-        <div class="patient-main">
-          <div class="patient-name-line">
-            <strong>{{ patient.firstName }} {{ patient.lastName }}</strong>
-            <span class="patient-id">{{ patient.id }}</span>
-          </div>
-          <div class="patient-meta">
-            <span><i class="ti {{ genderIcon() }}" aria-hidden="true"></i>{{ patient.gender | titlecase }}</span>
-            <span><i class="ti ti-cake" aria-hidden="true"></i>{{ patientAgeBreakdown() }}</span>
-            <span><i class="ti ti-calendar" aria-hidden="true"></i>DOB {{ patient.dob | date:'dd MMM yyyy' }}</span>
-            <span><i class="ti ti-phone" aria-hidden="true"></i>{{ patient.mobile }}</span>
-          </div>
-        </div>
-        <div class="patient-visit-meta">
-          <span><i class="ti {{ visitTypeIcon() }}" aria-hidden="true"></i><small>Visit</small><strong>{{ patient.visitType | titlecase }}</strong></span>
-          <span><i class="ti ti-clipboard-heart" aria-hidden="true"></i><small>Fasting</small><strong>{{ patient.fasting || 'Unknown' }}</strong></span>
-          <span><i class="ti ti-stethoscope" aria-hidden="true"></i><small>Referred by</small><strong>{{ patient.refDoctor || 'Self / Walk-in' }}</strong></span>
-        </div>
-        
-      </section>
+      <lis-patient-card [patient]="patient!" variant="compact" />
     }
 
     <!-- Ordered tests (read-only) -->

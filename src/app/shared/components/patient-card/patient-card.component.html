@@ -1,0 +1,30 @@
+<section class="patient-card lis-card"
+  [class.patient-card--compact]="variant() === 'compact'"
+  [class.patient-card--collection]="variant() === 'collection'"
+  aria-label="Patient information">
+  <div class="patient-card__identity">
+    <div class="patient-card__avatar-wrap" [class.patient-card__avatar-wrap--done]="collected()">
+      <div class="patient-card__avatar" aria-hidden="true">{{ initials() }}</div>
+    </div>
+    <div class="patient-card__identity-copy">
+      <div class="patient-card__name-row">
+        <strong class="patient-card__name">{{ patient().firstName }} {{ patient().lastName }}</strong>
+        <span class="patient-card__id lis-mono">{{ patient().id }}</span>
+      </div>
+      <div class="patient-card__demographics">
+        <span><i class="ti {{ genderIcon() }}" aria-hidden="true"></i>{{ patient().gender | titlecase }}</span>
+        <span><i class="ti ti-cake" aria-hidden="true"></i>{{ age() }}</span>
+        <span><i class="ti ti-calendar" aria-hidden="true"></i>DOB {{ patient().dob | date:'dd MMM yyyy' }}</span>
+        <span><i class="ti ti-phone" aria-hidden="true"></i>{{ patient().mobile }}</span>
+      </div>
+    </div>
+  </div>
+  <div class="patient-card__metadata">
+    <div class="patient-card__fact"><i class="ti {{ visitIcon() }}" aria-hidden="true"></i><span>Visit</span><strong>{{ patient().visitType | titlecase }}</strong></div>
+    <div class="patient-card__fact"><i class="ti ti-droplet-half-2" aria-hidden="true"></i><span>Fasting</span><strong>{{ patient().fasting || 'Not specified' }}</strong></div>
+    <div class="patient-card__fact"><i class="ti ti-stethoscope" aria-hidden="true"></i><span>Referred by</span><strong>{{ patient().refDoctor || 'Self / Walk-in' }}</strong></div>
+    @if (priority()) {
+      <div class="patient-card__fact patient-card__fact--priority"><i class="ti ti-flag" aria-hidden="true"></i><span>Priority</span><strong [class.priority-urgent]="priority() === 'urgent'" [class.priority-stat]="priority() === 'stat'">{{ priority() | titlecase }}</strong></div>
+    }
+  </div>
+</section>
