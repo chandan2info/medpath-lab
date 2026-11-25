@@ -6384,7 +6384,7 @@ button:disabled.is-loading {
     .monaco-editor,
     .cm-content
   ) {
-    cursor: text !important;
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='32' viewBox='0 0 24 32'%3E%3Cpath d='M6 5 H18 M12 5 V27 M6 27 H18' fill='none' stroke='%23ffffff' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='M6 5 H18 M12 5 V27 M6 27 H18' fill='none' stroke='%238b5cf6' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") 12 16, text !important;
   }
 
   /* Disabled controls and true drag handles retain their semantic states. */
