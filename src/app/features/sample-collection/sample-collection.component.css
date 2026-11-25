@@ -3344,3 +3344,37 @@
     touch-action: manipulation;
   }
 }
+
+/* Date picker responsive fix for compact desktop/tablet widths.
+   Between 821px and 1100px the form grid was still a scroll container.
+   A fixed-position popup nested in that scroll container can be clipped,
+   even when its z-index is higher than adjacent cards. */
+@media (max-width: 1100px) {
+  .collect-panel {
+    position: relative;
+    z-index: 20;
+    overflow: visible !important;
+  }
+
+  .collect-panel .cp-form,
+  .collect-panel .collection-field-grid {
+    overflow: visible !important;
+    max-height: none;
+  }
+
+  .collect-panel .collection-field--wide,
+  .collect-panel .collection-datetime-control {
+    position: relative;
+  }
+
+  .collect-panel .collection-datetime-control {
+    z-index: 1001;
+  }
+
+  .collect-panel .collection-datetime-trigger {
+    position: relative;
+    z-index: 1002;
+    pointer-events: auto;
+    touch-action: manipulation;
+  }
+}
