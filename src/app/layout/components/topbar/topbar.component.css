@@ -101,7 +101,7 @@
   border: 0;
   border-radius: 50%;
   outline: none;
-  background: var(--lis-primary, var(--primary)) !important;
+  background: #6657e8 !important;
   color: #ffffff !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
   cursor: pointer;
@@ -119,9 +119,9 @@
 }
 
 .sidebar-toggle-btn:hover {
-  background: var(--lis-primary, var(--primary)) !important;
+  background: #7568f0 !important;
   color: #ffffff !important;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.24);
+  box-shadow: 0 3px 12px rgba(102, 87, 232, 0.30);
   filter: brightness(1.08);
 }
 
@@ -130,8 +130,25 @@
 }
 
 .sidebar-toggle-btn:focus-visible {
-  outline: 2px solid var(--lis-primary, var(--primary));
+  outline: 2px solid #8a80f4;
   outline-offset: 3px;
+}
+
+/* Reference-matched dark mode: charcoal floating control on navy. */
+[data-theme="dark"] .pc-topbar .sidebar-toggle-btn {
+  background: #34363b !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.34);
+}
+
+[data-theme="dark"] .pc-topbar .sidebar-toggle-btn:hover {
+  background: #41444b !important;
+  color: #ffffff !important;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.42);
+}
+
+[data-theme="dark"] .pc-topbar .sidebar-toggle-btn:focus-visible {
+  outline-color: rgba(255, 255, 255, 0.55);
 }
 
 /* Responsive topbar layout */
