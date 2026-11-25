@@ -133,6 +133,10 @@ export class ResultEntryDataService {
     });
   }
 
+  getSavedRecord(sampleId: string): ResultEntryRecord | null {
+    return this.read(sampleId);
+  }
+
   saveDraft(record: ResultEntryRecord): Observable<ResultEntryRecord> {
     const existing = this.read(record.sampleId);
     const next = { ...existing, ...record, notifications: existing?.notifications ?? [], workflowStatus: 'DRAFT' as const, updatedAt: new Date().toISOString() };
