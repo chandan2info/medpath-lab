@@ -3471,3 +3471,95 @@
     margin-bottom: 0 !important;
   }
 }
+
+/* Definitive collection time row layout.
+   The markup has exactly three children (Hour, Minute, AM/PM). Earlier
+   overrides left conflicting 4-column and fixed 68px select sizing rules.
+   Use one 3-column grid and identical control heights at every breakpoint. */
+.collect-panel .collection-time-picker {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(104px, 0.9fr) !important;
+  align-items: end !important;
+  column-gap: 8px !important;
+  row-gap: 0 !important;
+  width: 100%;
+  min-width: 0;
+}
+
+.collect-panel .collection-time-picker__unit {
+  display: grid !important;
+  grid-template-rows: 12px 38px !important;
+  align-content: end !important;
+  align-self: end !important;
+  gap: 4px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+}
+
+.collect-panel .collection-time-picker__unit > span {
+  display: block !important;
+  height: 12px !important;
+  min-height: 12px !important;
+  line-height: 12px !important;
+  margin: 0 !important;
+}
+
+.collect-panel .collection-time-picker__unit select,
+.collect-panel .collection-time-picker__unit select[aria-label] {
+  appearance: none;
+  -webkit-appearance: none;
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  margin: 0 !important;
+  padding: 0 30px 0 10px !important;
+  box-sizing: border-box !important;
+  background-position: right 10px center !important;
+  background-repeat: no-repeat !important;
+}
+
+.collect-panel .collection-time-picker__period {
+  display: flex !important;
+  align-self: end !important;
+  align-items: center !important;
+  justify-content: stretch !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  margin: 0 !important;
+  padding: 3px !important;
+  box-sizing: border-box !important;
+}
+
+.collect-panel .collection-time-picker__period button {
+  flex: 1 1 0 !important;
+  width: 50% !important;
+  min-width: 0 !important;
+  height: 30px !important;
+  min-height: 30px !important;
+  margin: 0 !important;
+  padding: 0 4px !important;
+  box-sizing: border-box !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+@media (max-width: 520px) {
+  .collect-panel .collection-time-picker {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(96px, 0.9fr) !important;
+    column-gap: 6px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .collect-panel .collection-time-picker {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(88px, 0.9fr) !important;
+    column-gap: 5px !important;
+  }
+}
