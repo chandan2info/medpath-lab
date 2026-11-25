@@ -63,7 +63,7 @@
               <td class="row-actions">
                 @if (row.invoice.balanceDue > 0) { <button type="button" class="small-action small-action--primary" (click)="openPayment(row)">Collect</button> }
                 @if (row.readyReportCount > 0) { <button type="button" class="small-action small-action--secondary" (click)="markReportDelivered(row)">Mark delivered</button> }
-                @if (row.invoice.balanceDue === 0 && row.readyReportCount === 0) { <span class="muted">—</span> }
+                @if (row.invoice.amountReceived === 0 && row.invoice.payments.length === 0) { <button type="button" class="icon-action icon-action--danger" [attr.aria-label]="'Delete invoice ' + row.invoice.id" title="Delete unpaid invoice" (click)="requestDelete(row)"><i class="ti ti-trash"></i></button> }
               </td>
             </tr>
           } @empty {
@@ -86,6 +86,26 @@
       <label for="payment-mode">Payment method</label>
       <select id="payment-mode" [ngModel]="paymentMode()" (ngModelChange)="paymentMode.set($event)"><option value="cash">Cash</option><option value="upi">UPI</option><option value="card">Card</option><option value="credit">Credit</option></select>
       <footer><button type="button" class="secondary-action" (click)="closePayment()">Cancel</button><button type="button" class="primary-action" [disabled]="savingPayment()" (click)="confirmPayment()">{{ savingPayment() ? 'Saving...' : 'Confirm payment' }}</button></footer>
+    </section>
+  </div>
+}
+
+@if (pendingDelete(); as deleting) {
+  <div class="payment-backdrop" role="presentation" (click)="cancelDelete()">
+    <section class="payment-dialog confirm-delete-dialog" role="alertdialog" aria-modal="true" aria-labelledby="delete-title" aria-describedby="delete-description" (click)="$event.stopPropagation()">
+      <div class="delete-icon"><i class="ti ti-alert-triangle"></i></div>
+      <span class="dialog-kicker">DELETE INVOICE</span>
+      <h2 id="delete-title">Are you sure?</h2>
+      <p id="delete-description">You are about to delete invoice <strong>{{ deleting.invoice.id }}</strong> for <strong>{{ deleting.patientName }}</strong>.</p>
+      <div class="delete-summary">
+        <div><span>Invoice amount</span><strong>{{ deleting.invoice.total | currency:'INR':'symbol':'1.2-2' }}</strong></div>
+        <div><span>Payment received</span><strong>{{ deleting.invoice.amountReceived | currency:'INR':'symbol':'1.2-2' }}</strong></div>
+      </div>
+      <p class="delete-note"><i class="ti ti-info-circle"></i> Only this unpaid invoice will be removed. The patient, test order and lab records will remain unchanged. This action cannot be undone.</p>
+      <footer>
+        <button type="button" class="secondary-action" (click)="cancelDelete()">Keep invoice</button>
+        <button type="button" class="danger-action" (click)="confirmDelete()"><i class="ti ti-trash"></i> Delete invoice</button>
+      </footer>
     </section>
   </div>
 }
