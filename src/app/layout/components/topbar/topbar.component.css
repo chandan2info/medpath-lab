@@ -1,56 +1,109 @@
-.lis-topbar { border-bottom: 0.5px solid var(--border-color); }
+.lis-topbar {
+  border-bottom: 0.5px solid var(--border-color);
+}
 
-    .notification-btn { position: relative; }
-    .notif-dot {
-      position: absolute; top: 6px; right: 6px;
-      width: 8px; height: 8px; border-radius: 50%;
-      background: #E24B4A;
-      border: 2px solid var(--topbar-bg, #fff);
-    }
-    .topbar-divider {
-      width: 1px; height: 28px;
-      background: var(--border-color); margin: 0 4px;
-    }
-    .lis-topbar-cta {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 8px 16px;
-      background: var(--lis-primary, #1D9E75);
-      color: #fff;
-      border-radius: 8px;
-      font-size: 13px; font-weight: 500;
-      text-decoration: none;
-      transition: filter 0.15s;
-      i { font-size: 15px; }
-      &:hover { filter: brightness(1.08); }
-    }
-    .lis-topbar-avatar {
-      width: 32px; height: 32px; border-radius: 50%;
-      background: var(--lis-primary-xlight, #E1F5EE);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 12px; font-weight: 500;
-      color: var(--lis-primary-deep, #085041);
-    }
-    .topbar-avatar-btn {
-      display: flex; align-items: center; gap: 9px;
-      background: none; border: none;
-      padding: 5px 8px 5px 5px;
-      border-radius: 8px; cursor: pointer;
-      transition: background 0.12s; color: var(--text-primary);
-      &:hover { background: var(--body-bg); }
-    }
-    .avatar-name { font-size: 13px; font-weight: 500; color: var(--text-primary); margin: 0; line-height: 1.3; }
-    .avatar-role { font-size: 11px; color: var(--text-secondary); margin: 0; }
-    .avatar-chevron { font-size: 14px; color: var(--text-secondary); }
-    .search-kbd {
-      font-size: 10px; font-weight: 600;
-      background: var(--body-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 4px; padding: 2px 5px;
-      color: var(--text-secondary);
-      font-family: var(--font-family); white-space: nowrap;
-    }
+.notification-btn {
+  position: relative;
+}
 
-/* Responsive topbar layout — preserve existing controls and theme styling. */
+.notif-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #E24B4A;
+  border: 2px solid var(--topbar-bg, #fff);
+}
+
+.topbar-divider {
+  width: 1px;
+  height: 28px;
+  background: var(--border-color);
+  margin: 0 4px;
+}
+
+.lis-topbar-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--lis-primary, #1D9E75);
+  color: #fff;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: filter 0.15s;
+}
+
+.lis-topbar-cta i { font-size: 15px; }
+.lis-topbar-cta:hover { filter: brightness(1.08); }
+
+.lis-topbar-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--lis-primary-xlight, #E1F5EE);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--lis-primary-deep, #085041);
+}
+
+.topbar-avatar-btn {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: none;
+  border: none;
+  padding: 5px 8px 5px 5px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.12s;
+  color: var(--text-primary);
+}
+
+.topbar-avatar-btn:hover { background: var(--body-bg); }
+.avatar-name { font-size: 13px; font-weight: 500; color: var(--text-primary); margin: 0; line-height: 1.3; }
+.avatar-role { font-size: 11px; color: var(--text-secondary); margin: 0; }
+.avatar-chevron { font-size: 14px; color: var(--text-secondary); }
+
+.search-kbd {
+  font-size: 10px;
+  font-weight: 600;
+  background: var(--body-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 2px 5px;
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  white-space: nowrap;
+}
+
+/* The toggle keeps its footprint; only the icon and surface respond. */
+.sidebar-toggle-btn {
+  border: 1px solid transparent;
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.sidebar-toggle-btn:hover {
+  border-color: var(--border-color);
+  transform: translateY(-1px);
+}
+
+.sidebar-toggle-btn:active {
+  transform: translateY(0);
+}
+
+.sidebar-toggle-btn i {
+  transition: transform var(--transition-sidebar);
+}
+
+/* Responsive topbar layout */
 @media (max-width: 1023px) {
   .pc-topbar {
     min-width: 0;
@@ -64,9 +117,7 @@
     flex: 1 1 220px;
   }
 
-  .pc-topbar .topbar-spacer {
-    flex: 0 1 24px;
-  }
+  .pc-topbar .topbar-spacer { flex: 0 1 24px; }
 
   .pc-topbar .topbar-actions {
     flex: 0 0 auto;
@@ -81,12 +132,8 @@
     padding-left: 12px;
   }
 
-  /* The spacer must not compete with the search field on narrow screens. */
-  .pc-topbar .topbar-spacer {
-    display: none;
-  }
+  .pc-topbar .topbar-spacer { display: none; }
 
-  /* Re-enable search on phones; the global 480px rule previously hid it. */
   .pc-topbar .topbar-search {
     display: flex;
     flex: 1 1 0;
@@ -102,9 +149,7 @@
     min-width: 0;
   }
 
-  .pc-topbar .topbar-actions {
-    gap: 2px;
-  }
+  .pc-topbar .topbar-actions { gap: 2px; }
 }
 
 @media (max-width: 480px) {
@@ -121,14 +166,8 @@
     padding-left: 7px;
   }
 
-  .pc-topbar .topbar-search input {
-    min-width: 0;
-  }
-
-  .pc-topbar .topbar-actions {
-    flex: 0 0 auto;
-    gap: 1px;
-  }
+  .pc-topbar .topbar-search input { min-width: 0; }
+  .pc-topbar .topbar-actions { flex: 0 0 auto; gap: 1px; }
 }
 
 @media (max-width: 360px) {
@@ -143,4 +182,3 @@
     padding-left: 5px;
   }
 }
-
