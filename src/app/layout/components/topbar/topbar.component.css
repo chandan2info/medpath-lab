@@ -79,6 +79,8 @@
 .lis-topbar .topbar-actions {
   display: flex;
   flex: 0 0 auto;
+  margin-left: auto;
+  justify-content: flex-end;
   align-items: center;
   gap: 10px;
   min-width: 0;
@@ -224,6 +226,16 @@
 
 @media (max-width: 480px) {
   .lis-topbar { gap: 5px; padding-left: 8px; padding-right: 8px; }
+  /* Keep the action cluster anchored to the right edge on narrow screens. */
+  .lis-topbar .topbar-actions {
+    flex: 0 0 auto;
+    flex-shrink: 0;
+    margin-left: auto;
+    justify-content: flex-end;
+    white-space: nowrap;
+  }
+  .lis-topbar .topbar-icon-btn,
+  .lis-topbar app-user-chip { flex-shrink: 0; }
   .lis-topbar .topbar-search { padding: 0 9px; }
   .lis-topbar .search-kbd,
   .lis-topbar .lis-topbar-cta { display: none; }
