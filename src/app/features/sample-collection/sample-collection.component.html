@@ -30,27 +30,7 @@
   <!-- ════════════════════════════════════════════════
        Patient summary — identity + status dominate
        ════════════════════════════════════════════════ -->
-  <section class="patient-summary lis-card" role="region" aria-label="Current patient sample collection">
-    <div class="patient-identity">
-      <div class="ps-av-wrap" [class.ps-av-wrap--done]="collected()">
-        <div class="pat-av" aria-hidden="true">{{ patientInitials }}</div>
-      </div>
-      <div class="patient-identity__name">
-        <div class="pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
-        <span class="lis-mono patient-id">{{ patient.id }}</span>
-      </div>
-    </div>
-    <div class="patient-fact"><i class="ti ti-user patient-fact__icon" aria-hidden="true"></i><span class="patient-fact__label">Age</span><strong>{{ ageParts().years }}y {{ ageParts().months }}m {{ ageParts().days }}d</strong></div>
-    <div class="patient-fact"><i class="ti ti-calendar-event patient-fact__icon" aria-hidden="true"></i><span class="patient-fact__label">DOB</span><strong>{{ patient.dob | date:'dd MMM yyyy' }}</strong></div>
-    <div class="patient-fact"><i class="ti {{ genderIcon() }} patient-fact__icon" aria-hidden="true"></i><span class="patient-fact__label">Sex</span><strong>{{ patient.gender | titlecase }}</strong></div>
-    <div class="patient-fact"><i class="ti ti-phone patient-fact__icon" aria-hidden="true"></i><span class="patient-fact__label">Mobile</span><strong>{{ patient.mobile }}</strong></div>
-    <div class="patient-fact"><i class="ti ti-walk patient-fact__icon" aria-hidden="true"></i><span class="patient-fact__label">Visit</span><strong>Walk-in</strong></div>
-    <div class="patient-fact"><i class="ti ti-droplet-half-2 patient-fact__icon" aria-hidden="true"></i><span class="patient-fact__label">Fasting</span><strong>{{ patient.fasting || 'Unknown' }}</strong></div>
-    <div class="patient-fact patient-fact--priority">
-      <i class="ti ti-flag patient-fact__icon" aria-hidden="true"></i><span class="patient-fact__label">Priority</span>
-      <span class="prio-badge" [style.color]="priorityStyle().color" [style.background]="priorityStyle().bg" [style.border-color]="priorityStyle().color">{{ flow.priority() | titlecase }}</span>
-    </div>
-  </section>
+  <lis-patient-card [patient]="patient!" variant="collection" [priority]="flow.priority()" [collected]="collected()" />
 
   <!-- ════════════════════════════════════════════════
        Sample cards + Collection panel

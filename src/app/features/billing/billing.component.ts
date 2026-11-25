@@ -11,11 +11,12 @@ import { PatientFlowService } from '../../core/services/patient-flow.service';
 import { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';
 import { PaymentMode } from '../../shared/models/lis.models';
 import { WorkflowStepperComponent, WorkflowStep } from '../../shared/components/workflow-stepper/workflow-stepper.component';
+import { PatientCardComponent } from '../../shared/components/patient-card/patient-card.component';
 
 @Component({
   selector: 'app-billing',
   standalone: true,
-  imports: [RouterLink, NgClass, FormsModule, DatePipe, TitleCasePipe, WorkflowStepperComponent],
+  imports: [RouterLink, NgClass, FormsModule, DatePipe, TitleCasePipe, WorkflowStepperComponent, PatientCardComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './billing.component.html',
   styleUrl: './billing.component.css',

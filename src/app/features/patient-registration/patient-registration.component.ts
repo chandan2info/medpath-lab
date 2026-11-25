@@ -12,12 +12,13 @@ import { DatePipe, NgClass } from '@angular/common';
 import { PatientFlowService, RegisteredPatient, KnownPatientRecord } from '../../core/services/patient-flow.service';
 import { DobDatePickerComponent } from '../../shared/components/dob-date-picker/dob-date-picker.component';
 import { WorkflowStepperComponent, WorkflowStep } from '../../shared/components/workflow-stepper/workflow-stepper.component';
+import { PatientCardComponent } from '../../shared/components/patient-card/patient-card.component';
 
 
 @Component({
   selector: 'app-patient-registration',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, NgClass, DatePipe, DobDatePickerComponent, WorkflowStepperComponent],
+  imports: [ReactiveFormsModule, RouterLink, NgClass, DatePipe, DobDatePickerComponent, WorkflowStepperComponent, PatientCardComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './patient-registration.component.html',
   styleUrl: './patient-registration.component.css',
