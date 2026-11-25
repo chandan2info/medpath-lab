@@ -1,4 +1,4 @@
-import { Component, signal, computed, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, signal, computed, ChangeDetectionStrategy, inject, ElementRef } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgClass } from '@angular/common';
 import { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';
@@ -38,6 +38,7 @@ type ReportStatusFilter = 'all' | 'pending' | 'dispatched';
     styleUrl: './reports.component.css',
 })
 export class ReportsComponent {
+  private readonly host = inject(ElementRef<HTMLElement>);
   private readonly workflowStore = inject(LabWorkflowMockService);
   protected readonly reports = computed<ReportRow[]>(() => this.workflowStore.reports().map(report => {
     const sample = this.workflowStore.samples().find(item => item.id === report.sampleId);
@@ -91,6 +92,20 @@ export class ReportsComponent {
   rangeEnd   = computed(() => Math.min(this.currentPage() * PAGE_SIZE, this.filteredReports().length));
 
   pendingCount = computed(() => this.reports().filter(r => r.status === 'pending').length);
+
+  focusReport(event: Event): void {
+    const keyboardEvent = event as KeyboardEvent;
+    if (keyboardEvent.key !== 'ArrowDown' && keyboardEvent.key !== 'ArrowUp') return;
+    keyboardEvent.preventDefault();
+    const direction: -1 | 1 = keyboardEvent.key === 'ArrowDown' ? 1 : -1;
+    const root = this.host.nativeElement as HTMLElement;
+    const rows = Array.from(root.querySelectorAll('.report-row[role="option"]')) as HTMLElement[];
+    const current = rows.indexOf(keyboardEvent.currentTarget as HTMLElement);
+    const next = Math.max(0, Math.min(rows.length - 1, current + direction));
+    rows[next]?.focus();
+    const report = this.pagedReports()[next];
+    if (report) this.selected.set(report);
+  }
 
   setQuery(q: string): void {
     this.query.set(q);

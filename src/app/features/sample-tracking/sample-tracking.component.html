@@ -50,7 +50,7 @@
   </div>
 </div>
 
-<div class="result-count">{{ sortedSamples().length }} of {{ totalCount() }} samples</div>
+<div class="result-count" role="status" aria-live="polite">{{ sortedSamples().length }} of {{ totalCount() }} samples</div>
 
 <div class="tracking-body">
   <!-- Sample table -->
@@ -117,7 +117,7 @@
           <tr>
             <td colspan="7" class="tbl-empty">
               <i class="ti ti-search-off" aria-hidden="true"></i>
-              <span>No samples match "{{ searchQ() }}"{{ activeFilter() !== 'all' ? ' in this filter' : '' }}.</span>
+              <span role="status" aria-live="polite">No samples match "{{ searchQ() }}"{{ activeFilter() !== 'all' ? ' in this filter' : '' }}.</span>
               <button type="button" class="tbl-empty__clear" (click)="clearFilters()">
                 Clear search &amp; filters
               </button>
@@ -128,6 +128,7 @@
             <tr (click)="selectSample(s)"
               (keydown.enter)="selectSample(s)"
               (keydown.space)="$event.preventDefault(); selectSample(s)"
+              (keydown)="focusSample($event)"
               tabindex="0"
               [class.row--selected]="selectedSample()?.id === s.id"
               [attr.aria-selected]="selectedSample()?.id === s.id">

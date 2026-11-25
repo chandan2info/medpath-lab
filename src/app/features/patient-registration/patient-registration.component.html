@@ -120,7 +120,7 @@
 
           @if (patientSearchResults().length > 0) {
             <div class="patient-search-state">
-              <div class="patient-search-state__heading">
+              <div class="patient-search-state__heading" role="status" aria-live="polite">
                 <strong>{{ patientSearchResults().length }} matching patient{{ patientSearchResults().length === 1 ? '' : 's' }}</strong>
                 <span>Select the correct record to continue.</span>
               </div>
@@ -654,7 +654,7 @@
         </button>
         <button type="button" class="lis-btn lis-btn--primary save-btn"
           (click)="saveAndContinue()"
-          [disabled]="saving()"
+          [disabled]="saving()" [attr.aria-busy]="saving()"
           title="Ctrl+Enter">
           @if (saving()) {
             <i class="ti ti-loader-2 spin" aria-hidden="true"></i> Saving…

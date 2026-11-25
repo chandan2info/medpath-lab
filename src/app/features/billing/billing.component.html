@@ -89,7 +89,7 @@
 
       @if (flow.selectedTests().length === 0) {
         <div class="empty-tests">
-          No tests selected.
+          <span role="status" aria-live="polite">No tests selected.</span>
           <a routerLink="/dashboard/test-order" class="lis-link">Add tests →</a>
         </div>
       }
@@ -306,7 +306,7 @@
           </button>
         </div>
         <button type="button" class="lis-btn lis-btn--primary lis-btn--full confirm-btn"
-          (click)="confirmPayment()" [disabled]="saving() || flow.selectedTests().length === 0">
+          (click)="confirmPayment()" [disabled]="saving() || flow.selectedTests().length === 0" [attr.aria-busy]="saving()">
           @if (saving()) { <i class="ti ti-loader-2 spin" aria-hidden="true"></i> Processing… }
           @else { <i class="ti ti-check" aria-hidden="true"></i> Confirm &amp; Print Receipt }
         </button>
