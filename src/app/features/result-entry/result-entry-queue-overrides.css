@@ -22,3 +22,9 @@
 .result-queue-top-card__hint{display:flex;align-items:center;gap:8px;flex:0 0 auto;max-width:100%;padding:8px 12px;border:1px solid var(--border-color);border-radius:20px;color:var(--text-secondary);font-size:11px;white-space:nowrap}
 .result-queue-top-card__hint i{color:var(--lis-primary)}
 @media(max-width:640px){.result-queue-top-card{align-items:flex-start;flex-direction:column;gap:10px;padding:12px}.result-queue-top-card__hint{white-space:normal}.result-queue-top-card .page-title{font-size:18px}}
+
+/* Custom tooltip for remaining ordered tests: anchored above the +N chip. */
+.queue-test-tags__more{position:relative;display:inline-flex;align-items:center;cursor:help}
+.queue-test-tooltip{position:absolute;z-index:1000;left:50%;bottom:calc(100% + 9px);top:auto;transform:translate(-50%,4px);display:block;width:max-content;max-width:min(320px,70vw);padding:8px 11px;border:1px solid var(--border-color);border-radius:8px;background:var(--card-bg);color:var(--text-primary);box-shadow:0 8px 24px rgba(0,0,0,.16);font-size:11px;font-weight:500;line-height:1.5;white-space:normal;overflow-wrap:anywhere;text-align:left;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .14s ease,transform .14s ease}
+.queue-test-tooltip:after{content:"";position:absolute;top:100%;left:50%;width:7px;height:7px;background:var(--card-bg);border-right:1px solid var(--border-color);border-bottom:1px solid var(--border-color);transform:translate(-50%,-4px) rotate(45deg)}
+.queue-test-tags__more:hover .queue-test-tooltip,.queue-test-tags__more:focus-visible .queue-test-tooltip{opacity:1;visibility:visible;transform:translate(-50%,0)}
