@@ -25,7 +25,7 @@
 .patient-card__fact--priority>strong { justify-self:start; padding:2px 7px; border-radius:20px; background:var(--lis-primary-xlight,#E1F5EE); color:var(--lis-primary-deep,#085041); font-size:9px; }
 .patient-card__fact--priority>strong.priority-urgent { background:#FAEEDA; color:#633806; }
 .patient-card__fact--priority>strong.priority-stat { background:#FCEBEB; color:#791F1F; }
-.patient-card--compact { grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:12px; min-height:0; padding:10px 12px; }
+.patient-card--compact { grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:12px; min-height:0; margin-bottom:0; padding:10px 12px; }
 .patient-card--compact .patient-card__metadata { border-left:1px solid var(--border-color); border-top:0; padding-top:0; }
 .patient-card--compact .patient-card__avatar { width:36px; height:36px; }
 .patient-card--compact .patient-card__fact { padding:0 5px; }
