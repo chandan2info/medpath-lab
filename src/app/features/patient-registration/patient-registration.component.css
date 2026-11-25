@@ -1309,3 +1309,148 @@
   }
 }
 
+/* ── Registration clinical step: fluid width + viewport-aware height ──
+   Keep the form content-driven (never lock it to the viewport), but let the
+   card use spare vertical space on taller screens and keep the action bar at
+   the bottom. On short screens the document scrolls naturally. */
+.reg-form-wrap {
+  width: 100%;
+  max-width: min(1200px, 100%);
+  min-width: 0;
+}
+
+.reg-form-wrap > form {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: max(0px, calc(100dvh - 250px));
+}
+
+.reg-form-wrap > form > .reg-card {
+  flex: 1 0 auto;
+  min-width: 0;
+}
+
+.reg-form-wrap > form > .form-actions {
+  flex: 0 0 auto;
+  margin-top: auto;
+}
+
+/* Tighten the clinical profile and section rhythm as the available height
+   decreases, without shrinking controls below comfortable touch sizes. */
+@media (max-height: 820px) and (min-width: 701px) {
+  .reg-card .patient-recap {
+    margin-top: 8px;
+    margin-bottom: 10px;
+    padding: 12px 14px;
+  }
+
+  .patient-recap__details {
+    margin-top: 10px;
+    padding-top: 10px;
+    gap: 7px;
+  }
+
+  .patient-recap .patient-recap__detail {
+    min-height: 42px;
+    padding: 6px 9px;
+  }
+
+  .reg-card .field-group {
+    margin-top: 12px;
+    margin-bottom: 12px;
+  }
+
+  .reg-card .form-grid--visit {
+    row-gap: 10px;
+  }
+
+  .reg-card .form-grid--visit textarea {
+    min-height: 54px;
+  }
+
+  .form-actions {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .form-actions .lis-btn {
+    height: 46px;
+  }
+}
+
+/* Tablet: let the profile summary and visit controls use the available
+   width without forcing the desktop three-column minimums. */
+@media (max-width: 1180px) {
+  .reg-form-wrap {
+    max-width: 100%;
+  }
+
+  .reg-card .form-grid--visit {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  }
+
+  .reg-card .sample-collection-field--tablet-full {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Mobile: remove desktop card gutters, stack visit controls, and keep the
+   action buttons reachable without imposing a fixed page height. */
+@media (max-width: 700px) {
+  .reg-form-wrap > form {
+    min-height: 0;
+  }
+
+  .reg-card .patient-recap {
+    margin: 10px 12px 12px;
+    padding: 12px;
+  }
+
+  .patient-recap__details {
+    gap: 7px;
+    margin-top: 10px;
+    padding-top: 10px;
+  }
+
+  .reg-card .form-grid--visit {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    padding: 12px 14px;
+  }
+
+  .reg-card .sample-collection-field--tablet-full {
+    grid-column: auto;
+  }
+
+  .form-actions {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .form-actions .lis-btn {
+    min-height: 44px;
+    height: auto;
+    padding: 10px 14px;
+  }
+
+  .save-btn {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+}
+
+@media (max-width: 460px) {
+  .patient-recap__details {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .reg-card .patient-recap .recap-edit {
+    width: auto;
+    justify-content: center;
+  }
+
+  .form-actions .lis-btn {
+    font-size: 12px;
+  }
+}
