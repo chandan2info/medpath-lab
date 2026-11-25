@@ -34,13 +34,16 @@ export class PatientCardComponent {
     return `${years}y ${months}m ${days}d`;
   }
   visitType(): string {
-    return 'visitType' in this.patient() ? this.patient().visitType : 'Walk-in';
+    const patient = this.patient();
+    return 'visitType' in patient ? patient.visitType : 'Walk-in';
   }
   fasting(): string {
-    return 'fasting' in this.patient() ? this.patient().fasting : 'Not specified';
+    const patient = this.patient();
+    return 'fasting' in patient ? patient.fasting : 'Not specified';
   }
   refDoctor(): string {
-    return 'refDoctor' in this.patient() ? this.patient().refDoctor : 'Self / Walk-in';
+    const patient = this.patient();
+    return 'refDoctor' in patient ? patient.refDoctor : 'Self / Walk-in';
   }
   genderIcon(): string {
     switch (this.patient().gender.toLowerCase()) {
