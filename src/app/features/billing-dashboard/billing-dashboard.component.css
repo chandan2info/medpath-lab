@@ -309,3 +309,24 @@ tbody tr:hover{background:color-mix(in srgb,var(--lis-primary,#1d9e75) 3%,transp
  .table-footer{align-items:flex-start;flex-direction:column}
  .pagination{align-self:flex-end}
 }
+
+
+/* Recent is a workspace view; New Invoice is the primary action on the right. */
+.billing-tabs .billing-create-link{
+  margin-left:auto;
+  min-height:30px;
+  padding:0 12px;
+  border:1px solid var(--lis-primary,#1d9e75);
+  border-radius:7px;
+  background:var(--lis-primary,#1d9e75);
+  color:#fff;
+  font-weight:700;
+}
+.billing-tabs .billing-create-link:hover{
+  background:color-mix(in srgb,var(--lis-primary,#1d9e75) 88%,#000);
+  color:#fff;
+}
+@media(max-width:560px){
+  .billing-tabs{flex-wrap:wrap}
+  .billing-tabs .billing-create-link{margin-left:auto}
+}
