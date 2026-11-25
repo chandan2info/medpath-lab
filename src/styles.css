@@ -6284,3 +6284,59 @@ button:disabled.is-loading {
 .lis-search-control.is-invalid>i:first-child{color:var(--lis-danger,#e24b4a)}
 .lis-search-control button{flex-shrink:0}
 @media(prefers-reduced-motion:reduce){.lis-search-control{transition:none}}
+
+
+/* Keep interaction-specific cursors above the global custom cursor rule.
+   Limit these desktop pointer cues to devices that actually have a fine pointer. */
+@media (hover: hover) and (pointer: fine) {
+  html.cursor-custom-enabled body :is(
+    [draggable="true"],
+    .drag-handle,
+    .cdk-drag-handle
+  ) {
+    cursor: grab;
+  }
+
+  html.cursor-custom-enabled body :is(
+    [draggable="true"],
+    .drag-handle,
+    .cdk-drag-handle
+  ):active,
+  html.cursor-custom-enabled body .cdk-drag-dragging {
+    cursor: grabbing;
+  }
+
+  html.cursor-custom-enabled body :is(
+    [aria-busy="true"],
+    .is-loading,
+    .loading,
+    button:disabled.is-loading
+  ) {
+    cursor: progress;
+  }
+
+  html.cursor-custom-enabled body :is([aria-wait="true"], .cursor-wait) {
+    cursor: wait;
+  }
+
+  html.cursor-custom-enabled body :is(.cursor-move, [aria-grabbed="true"]) {
+    cursor: move;
+  }
+
+  html.cursor-custom-enabled body :is(.cursor-crosshair, [role="application"].precision-mode) {
+    cursor: crosshair;
+  }
+
+  html.cursor-custom-enabled body :is(.cursor-help, [title]:not(a):not(button)) {
+    cursor: help;
+  }
+
+  /* ApexCharts exposes its own clickable legend and toolbar elements. */
+  html.cursor-custom-enabled body :is(
+    .apexcharts-legend-series,
+    .apexcharts-toolbar > div,
+    .apexcharts-menu-item
+  ) {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M10 15 V7.5 C10 5.5 13 5.5 13 7.5 V14 V5.5 C13 3.5 16 3.5 16 5.5 V14 V7 C16 5 19 5 19 7 V15 V10 C19 8 22 8 22 10 V20 C22 26 18 29 13 27 C10 26 8 23 6 20 L4.5 17.5 C3.5 15.5 6 13.5 8 15.5 L10 18 Z' fill='%238b5cf6' stroke='%23ffffff' stroke-width='1.7' stroke-linejoin='round'/%3E%3C/svg%3E") 10 5, pointer;
+  }
+}
