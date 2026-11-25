@@ -1,45 +1,23 @@
 <div class="result-page">
-  <header class="page-header">
-    <div class="page-header__left">
-      <div class="page-header__title-row">
-        <div class="page-header__icon" aria-hidden="true"><i class="ti ti-clipboard-list"></i></div>
-        <div>
-          <h1 class="page-title">Result Entry</h1>
-          <nav aria-label="Breadcrumb"><ol class="breadcrumb">
-            <li><a routerLink="/dashboard/home">Home</a></li>
-            <li><a routerLink="/dashboard/tracking">Tracking</a></li>
-            <li aria-current="page">{{ patient()?.firstName }} {{ patient()?.lastName }} — {{ sampleLabel() }}</li>
-          </ol></nav>
-        </div>
+  <section class="result-top-card lis-card" aria-label="Result entry">
+    <div class="result-top-layout">
+      <div class="result-top-heading">
+        <h1 class="page-title">Result Entry</h1>
+        <nav aria-label="Breadcrumb"><ol class="breadcrumb">
+          <li><a routerLink="/dashboard/home">Home</a></li>
+          <li><a routerLink="/dashboard/tracking">Tracking</a></li>
+          <li aria-current="page">{{ patient()?.firstName }} {{ patient()?.lastName }} — {{ sampleLabel() }}</li>
+        </ol></nav>
+      </div>
+      <div class="save-state" [class.save-state--dirty]="demoSavedState() === 'unsaved'" aria-live="polite">
+        <i class="ti" [ngClass]="demoSavedState() === 'unsaved' ? 'ti-cloud-upload' : 'ti-info-circle'"></i>
+        {{ demoSavedState() === 'unsaved' ? 'Demo changes not saved' : 'UI preview · mock data only' }}
       </div>
     </div>
-    <div class="save-state" [class.save-state--dirty]="demoSavedState() === 'unsaved'" aria-live="polite">
-      <i class="ti" [ngClass]="demoSavedState() === 'unsaved' ? 'ti-cloud-upload' : 'ti-info-circle'"></i>
-      {{ demoSavedState() === 'unsaved' ? 'Demo changes not saved' : 'UI preview · mock data only' }}
-    </div>
-  </header>
+  </section>
 
   @if (patient(); as p) {
-    <section class="patient-summary patient-summary--result" aria-label="Patient information">
-      <div class="pat-avatar" aria-hidden="true">{{ patientInitials() }}</div>
-      <div class="patient-main">
-        <div class="patient-name-line">
-          <strong>{{ p.firstName }} {{ p.lastName }}</strong>
-          <span class="patient-id">{{ p.id }}</span>
-        </div>
-        <div class="patient-meta">
-          <span><i class="ti ti-user" aria-hidden="true"></i>{{ p.gender | titlecase }}</span>
-          <span><i class="ti ti-cake" aria-hidden="true"></i>{{ patientAge() }}</span>
-          <span><i class="ti ti-calendar" aria-hidden="true"></i>DOB {{ p.dob ? (p.dob | date:'dd MMM yyyy') : '—' }}</span>
-          <span><i class="ti ti-phone" aria-hidden="true"></i>{{ p.mobile || '—' }}</span>
-        </div>
-      </div>
-      <div class="patient-visit-meta">
-        <span><i class="ti ti-walk" aria-hidden="true"></i><small>Visit</small><strong>{{ visitTypeLabel() | titlecase }}</strong></span>
-        <span><i class="ti ti-clipboard-heart" aria-hidden="true"></i><small>Fasting</small><strong>{{ fastingLabel() | titlecase }}</strong></span>
-        <span><i class="ti ti-stethoscope" aria-hidden="true"></i><small>Referred by</small><strong>{{ p.refDoctor || 'Self / Walk-in' }}</strong></span>
-      </div>
-    </section>
+    <lis-patient-card [patient]="$any(p)" />
   }
 
   @if (showDemoNotice()) {
