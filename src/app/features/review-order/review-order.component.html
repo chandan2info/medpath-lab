@@ -11,7 +11,7 @@
 }
 
 @if(flow.selectedTests().length===0){
-  <div class="lis-card empty-review"><i class="ti ti-clipboard-x"></i><h2>No tests selected</h2><p>Return to the catalogue and add at least one test.</p><a routerLink="/dashboard/test-order" class="lis-btn lis-btn--primary">Back to Test Selection</a></div>
+  <div class="lis-card empty-review"><i class="ti ti-clipboard-x"></i><h2 role="status" aria-live="polite">No tests selected</h2><p>Return to the catalogue and add at least one test.</p><a routerLink="/dashboard/test-order" class="lis-btn lis-btn--primary">Back to Test Selection</a></div>
 }@else{
   <div class="priority-alert-row">
   <section class="lis-card priority-card">
@@ -70,7 +70,7 @@
             <span class="test-type-icon"><i class="ti ti-microscope"></i></span>
             <div class="test-copy"><strong>{{t.name}}</strong><small>{{t.id}} · {{t.category}}</small><span class="test-spec">{{t.sampleType}} · {{t.tubeType}}</span></div>
             <div class="test-values"><strong>₹{{t.price}}</strong><small>{{t.tatHours}}h TAT</small></div>
-            <button type="button" class="remove-btn" (click)="flow.toggleTest(t.id)" [attr.aria-label]="'Remove '+t.name"><i class="ti ti-trash"></i></button>
+            <button type="button" class="remove-btn" (click)="removeTest(t.id, t.name)" [attr.aria-label]="'Remove '+t.name"><i class="ti ti-trash"></i></button>
           </article>
         }
       </div>
@@ -105,7 +105,7 @@
     </div>
     <div class="review-actions">
       <a routerLink="/dashboard/test-order" class="back-action"><i class="ti ti-arrow-left"></i> Back</a>
-      <button type="button" class="lis-btn lis-btn--primary continue-btn" (click)="continueToBilling()" [disabled]="saving()">
+      <button type="button" class="lis-btn lis-btn--primary continue-btn" (click)="continueToBilling()" [disabled]="saving()" [attr.aria-busy]="saving()">
         @if(saving()){<i class="ti ti-loader-2 spin"></i> Saving…}@else{<i class="ti ti-file-invoice"></i> Save Order & Continue to Billing <i class="ti ti-arrow-right"></i>}
       </button>
     </div>

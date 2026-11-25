@@ -30,13 +30,16 @@
   <div class="lis-card patient-list">
     <div class="lis-card__header">
       <h2 class="lis-card__title">All Patients</h2>
-      <span class="list-count">{{ filtered().length }} records</span>
+      <span class="list-count" role="status" aria-live="polite">{{ filtered().length }} matching records</span>
     </div>
     <div role="list" aria-label="Patient list">
       @for (p of filtered(); track p.id) {
         <div class="pat-item" role="listitem"
           [class.pat-item--selected]="selectedPatient()?.id === p.id"
           (click)="selectedPatient.set(p)"
+          (keydown.enter)="selectedPatient.set(p)"
+          (keydown.space)="$event.preventDefault(); selectedPatient.set(p)"
+          tabindex="0"
           [attr.aria-selected]="selectedPatient()?.id === p.id"
         >
           <div class="pi-av" [class]="p.avatarClass" aria-hidden="true">{{ p.initials }}</div>
@@ -46,6 +49,8 @@
           </div>
           <div class="pi-visits">{{ p.visitCount }} visit{{ p.visitCount !== 1 ? 's' : '' }}</div>
         </div>
+      } @empty {
+        <div role="listitem"><span role="status" aria-live="polite">No patients match this search.</span></div>
       }
     </div>
   </div>
@@ -159,12 +164,12 @@
           <div class="timeline-end">No more records</div>
         </div>
       } @else if (activeTab() === 'Test trends') {
-        <div class="tab-empty-state" role="region" aria-label="Test trends">
+        <div class="tab-empty-state" role="status" aria-live="polite" aria-label="Test trends">
           <i class="ti ti-chart-line" aria-hidden="true"></i>
           <p>Test trend charts will appear here once multiple visits are recorded.</p>
         </div>
       } @else {
-        <div class="tab-empty-state" role="region" aria-label="Documents">
+        <div class="tab-empty-state" role="status" aria-live="polite" aria-label="Documents">
           <i class="ti ti-files" aria-hidden="true"></i>
           <p>No documents uploaded for this patient yet.</p>
         </div>

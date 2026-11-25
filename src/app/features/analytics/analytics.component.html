@@ -31,7 +31,7 @@
     </button>
   }
   <span class="an-range-bar__spacer"></span>
-  <div class="an-collect" [class.an-collect--loading]="data.loading()">
+  <div class="an-collect" [class.an-collect--loading]="data.loading()" [attr.aria-busy]="data.loading()">
     <i class="ti ti-wallet" aria-hidden="true"></i>
     <span>Collection rate <strong>{{ data.collectionRatePct() }}%</strong></span>
     <span class="an-collect__sep">·</span>
@@ -156,7 +156,7 @@
           </li>
         }
         @if (data.departmentTat().length === 0) {
-          <li class="an-empty">No department matches this filter.</li>
+          <li class="an-empty" role="status" aria-live="polite">No department matches this filter.</li>
         }
       </ul>
     </div>
