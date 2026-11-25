@@ -33,7 +33,7 @@ interface BillingRow {
 export class BillingDashboardComponent {
   private readonly store = inject(LabWorkflowMockService);
   private readonly flow = inject(PatientFlowService);
-  readonly activeView = signal<BillingView>('invoices');
+  readonly activeView = signal<BillingView>('overview');
   readonly query = signal('');
   readonly paymentFilter = signal<PaymentFilter>('all');
   readonly dateFilter = signal<DateFilter>('30');
@@ -82,6 +82,7 @@ export class BillingDashboardComponent {
         .some(value => value.toLowerCase().includes(term));
       if (!matches) return false;
       if (view === 'outstanding' && row.invoice.balanceDue <= 0) return false;
+      if (view === 'overview' && !this.rows().slice(0, 5).some(recent => recent.invoice.id === row.invoice.id)) return false;
       const payment = this.paymentFilter();
       if (payment === 'paid' && row.invoice.status !== 'paid') return false;
       if (payment === 'partial' && row.invoice.status !== 'partial') return false;
