@@ -1026,3 +1026,19 @@
     grid-column: auto;
   }
 }
+
+
+/* Two-column mobile statistics: keep separators aligned with the grid. */
+@media (max-width: 600px) {
+  .lp-stat:not(:last-child) {
+    border-bottom: 0;
+  }
+
+  .lp-stat:nth-child(-n + 2) {
+    border-bottom: 1px solid #EEF2F6;
+  }
+
+  :host-context([data-theme="dark"]) .lp-stat:nth-child(-n + 2) {
+    border-bottom-color: rgba(148,163,184,0.16);
+  }
+}
