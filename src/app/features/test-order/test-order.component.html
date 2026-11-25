@@ -19,7 +19,7 @@
       <button type="button" role="tab" class="catalogue-tab" [class.catalogue-tab--active]="activeView()==='recent'" [attr.aria-selected]="activeView()==='recent'" (click)="setView('recent')"><i class="ti ti-history"></i> Recently Ordered</button>
       <button type="button" role="tab" class="catalogue-tab" [class.catalogue-tab--active]="activeView()==='favorites'" [attr.aria-selected]="activeView()==='favorites'" (click)="setView('favorites')"><i class="ti ti-heart"></i> Favorites</button>
     </div>
-    <div class="search-bar-wrap">
+    <div class="search-bar-wrap lis-search-control" [class.is-invalid]="testQuery().trim().length > 0 && (activeView() === 'packages' ? filteredPackages().length === 0 : visibleTests().length === 0)">
       <i class="ti ti-search search-ico" aria-hidden="true"></i>
       <input #searchInput type="search" class="search-input" [placeholder]="searchPlaceholder()" [value]="testQuery()" (input)="testQuery.set($any($event.target).value); highlightedIndex.set(-1)" aria-label="Search catalogue" />
       @if (testQuery()) { <button type="button" class="search-clear" (click)="clearSearch()" aria-label="Clear search"><i class="ti ti-x"></i></button> }
