@@ -1,4 +1,71 @@
 <div class="result-page">
+  @if (isQueueView()) {
+    <header class="page-header result-queue-header">
+      <div class="page-header__left">
+        <div class="page-header__title-row">
+          <div class="page-header__icon" aria-hidden="true"><i class="ti ti-clipboard-list"></i></div>
+          <div>
+            <h1 class="page-title">Result Entry</h1>
+            <nav aria-label="Breadcrumb"><ol class="breadcrumb"><li><a routerLink="/dashboard/home">Home</a></li><li aria-current="page">Result Entry</li></ol></nav>
+          </div>
+        </div>
+      </div>
+      <div class="save-state"><i class="ti ti-info-circle"></i> Select an eligible sample to enter results</div>
+    </header>
+
+    <section class="result-queue-kpis" aria-label="Result entry queue summary">
+      <button type="button" class="queue-kpi queue-kpi--ready" [class.queue-kpi--active]="queueFilter() === 'READY'" (click)="setQueueFilter('READY')">
+        <i class="ti ti-clipboard-check"></i><span><strong>{{ queueCounts().ready }}</strong><small>Ready for entry</small></span>
+      </button>
+      <button type="button" class="queue-kpi queue-kpi--draft" [class.queue-kpi--active]="queueFilter() === 'DRAFT'" (click)="setQueueFilter('DRAFT')">
+        <i class="ti ti-pencil"></i><span><strong>{{ queueCounts().draft }}</strong><small>Drafts in progress</small></span>
+      </button>
+      <button type="button" class="queue-kpi queue-kpi--validation" [class.queue-kpi--active]="queueFilter() === 'VALIDATION'" (click)="setQueueFilter('VALIDATION')">
+        <i class="ti ti-shield-check"></i><span><strong>{{ queueCounts().validation }}</strong><small>Awaiting validation</small></span>
+      </button>
+      <button type="button" class="queue-kpi queue-kpi--muted" [class.queue-kpi--active]="queueFilter() === 'NOT_READY'" (click)="setQueueFilter('NOT_READY')">
+        <i class="ti ti-hourglass"></i><span><strong>{{ queueCounts().notReady }}</strong><small>Not ready yet</small></span>
+      </button>
+    </section>
+
+    <section class="result-queue-panel panel">
+      <div class="result-queue-toolbar">
+        <div>
+          <h2>Sample work queue</h2>
+          <p>Choose a patient and sample. Only ready or critical samples can be opened for result entry.</p>
+        </div>
+        <label class="result-queue-search"><i class="ti ti-search"></i><input type="search" placeholder="Search patient, ID, order or test..." [value]="queueSearch()" (input)="setQueueSearch($any($event.target).value)" aria-label="Search result entry queue">@if (queueSearch()) { <button type="button" (click)="setQueueSearch('')" aria-label="Clear search"><i class="ti ti-x"></i></button> }</label>
+      </div>
+      <div class="result-queue-filters" role="group" aria-label="Filter result entry queue">
+        <button type="button" [class.active]="queueFilter() === 'ALL'" (click)="setQueueFilter('ALL')">All <span>{{ queueCounts().all }}</span></button>
+        <button type="button" [class.active]="queueFilter() === 'READY'" (click)="setQueueFilter('READY')">Ready for entry <span>{{ queueCounts().ready }}</span></button>
+        <button type="button" [class.active]="queueFilter() === 'DRAFT'" (click)="setQueueFilter('DRAFT')">Drafts <span>{{ queueCounts().draft }}</span></button>
+        <button type="button" [class.active]="queueFilter() === 'VALIDATION'" (click)="setQueueFilter('VALIDATION')">Awaiting validation <span>{{ queueCounts().validation }}</span></button>
+        <button type="button" [class.active]="queueFilter() === 'NOT_READY'" (click)="setQueueFilter('NOT_READY')">Not ready <span>{{ queueCounts().notReady }}</span></button>
+      </div>
+      <div class="result-queue-table-wrap">
+        <table class="result-queue-table">
+          <thead><tr><th>Patient</th><th>Order / Sample ID</th><th>Ordered tests</th><th>Collected</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody>
+            @for (row of queueRows(); track row.sample.id) {
+              <tr>
+                <td><div class="queue-patient"><span class="queue-avatar">{{ row.sample.patientName.split(' ')[0][0] }}{{ row.sample.patientName.split(' ').length > 1 ? row.sample.patientName.split(' ').at(-1)?.[0] : '' }}</span><span><strong>{{ row.sample.patientName }}</strong><small>{{ row.sample.patientId }} · {{ row.sample.gender || '—' | titlecase }}</small></span></div></td>
+                <td><strong class="queue-order-id">{{ row.sample.id }}</strong><small class="queue-subline">{{ row.sample.priority | titlecase }} priority</small></td>
+                <td><div class="queue-test-tags">@for (test of row.sample.tests; track test) { <span>{{ test }}</span> }</div></td>
+                <td>{{ row.sample.collectedAt || '—' }}</td>
+                <td><span class="queue-status" [class.queue-status--ready]="row.state === 'READY'" [class.queue-status--draft]="row.state === 'DRAFT'" [class.queue-status--validation]="row.state === 'VALIDATION'" [class.queue-status--waiting]="row.state === 'NOT_READY'">{{ row.state === 'READY' ? 'Ready for entry' : row.state === 'DRAFT' ? 'Draft in progress' : row.state === 'VALIDATION' ? 'Awaiting validation' : (row.sample.status | titlecase) }}</span></td>
+                <td><button type="button" class="queue-enter-button" [disabled]="row.state === 'NOT_READY' || row.state === 'VALIDATION'" (click)="openQueueSample(row.sample)"><i class="ti" [ngClass]="row.state === 'DRAFT' ? 'ti-player-play' : 'ti-writing'"></i>{{ row.state === 'DRAFT' ? 'Resume' : row.state === 'VALIDATION' ? 'Submitted' : row.state === 'NOT_READY' ? 'Unavailable' : 'Enter results' }}</button></td>
+              </tr>
+            } @empty {
+              <tr><td colspan="6"><div class="result-queue-empty"><i class="ti ti-inbox"></i><strong>No matching samples</strong><span>Try another filter or search term.</span></div></td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <footer class="result-queue-footer"><span><i class="ti ti-info-circle"></i> Result entry is enabled only after the sample is marked Ready or Critical in Sample Tracking.</span><a routerLink="/dashboard/tracking">Open Sample Tracking <i class="ti ti-arrow-up-right"></i></a></footer>
+    </section>
+  } @else {
+
   <header class="page-header">
     <div class="page-header__left">
       <div class="page-header__title-row">
@@ -150,5 +217,6 @@
         <footer><button type="button" class="secondary-button" (click)="closeNotification()">Cancel</button><button type="button" class="primary-action" (click)="confirmNotificationDemo()">Record in preview</button></footer>
       </section>
     </div>
+  }
   }
 </div>
