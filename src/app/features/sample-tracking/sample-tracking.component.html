@@ -28,12 +28,13 @@
 </div>
 
 <div class="tracking-toolbar">
-  <div class="ts-search" role="search">
+  <div class="ts-search" role="search" [class.ts-search--invalid]="searchQ().trim().length > 0 && sortedSamples().length === 0">
     <i class="ti ti-search" aria-hidden="true"></i>
     <input type="text" placeholder="Search by patient name or sample ID…"
       [value]="searchQ()"
       (input)="searchQ.set($any($event.target).value)"
-      aria-label="Search samples" />
+      aria-label="Search samples"
+      [attr.aria-invalid]="searchQ().trim().length > 0 && sortedSamples().length === 0" />
     @if (searchQ()) {
       <button type="button" class="ts-clear" [class.ts-clear--spin]="clearSpin()" (click)="clearSearch()" aria-label="Clear search">
         <i class="ti ti-x" aria-hidden="true"></i>
