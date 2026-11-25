@@ -10,17 +10,29 @@ export class SidebarService {
     this.collapsed.update(value => !value);
   }
 
-  /** Mobile/tablet: open the off-canvas navigation. */
+  private collapsedBeforeMobile = false;
+
+  /** Mobile/tablet: open a full-width navigation drawer, even if desktop
+   * navigation was previously collapsed to an icon rail. */
   toggleMobile(): void {
-    this.mobileOpen.update(value => !value);
+    if (this.mobileOpen()) {
+      this.closeMobile();
+    } else {
+      this.openMobile();
+    }
   }
 
   openMobile(): void {
+    if (this.mobileOpen()) return;
+    this.collapsedBeforeMobile = this.collapsed();
+    this.collapsed.set(false);
     this.mobileOpen.set(true);
   }
 
   closeMobile(): void {
+    if (!this.mobileOpen()) return;
     this.mobileOpen.set(false);
+    this.collapsed.set(this.collapsedBeforeMobile);
   }
 
   collapse(): void {
