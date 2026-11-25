@@ -1,5 +1,5 @@
 import {
-  Component, inject, ChangeDetectionStrategy, OnInit, OnDestroy
+  Component, inject, ChangeDetectionStrategy, OnInit, OnDestroy, HostListener
 } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { NgClass, AsyncPipe } from '@angular/common';
@@ -64,4 +64,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
     this.sub = this.nav$.badges$.subscribe(b => this.badges = b);
   }
   ngOnDestroy(): void { this.sub.unsubscribe(); }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.sidebar.closeMobile();
+  }
 }
