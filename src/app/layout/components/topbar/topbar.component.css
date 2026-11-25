@@ -234,3 +234,13 @@
   .lis-topbar .topbar-search,
   .lis-topbar .topbar-actions * { transition: none !important; }
 }
+
+/* The header search uses the same shared neutral/focus/invalid border
+   states as page searches while retaining its compact pill silhouette. */
+.lis-topbar .topbar-search.lis-search-control {
+  border-radius: 999px !important;
+  background: var(--bg-surface-alt) !important;
+}
+.lis-topbar .topbar-search.lis-search-control:focus-within {
+  background: var(--bg-surface) !important;
+}
