@@ -146,7 +146,7 @@
     <div class="modal-backdrop" (click)="closeNotification()">
       <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="notification-title" (click)="$event.stopPropagation()">
         <header><div><h2 id="notification-title">Record Critical Notification</h2><p>Demo interaction — no notification will be sent</p></div><button type="button" class="icon-button" (click)="closeNotification()" aria-label="Close dialog"><i class="ti ti-x"></i></button></header>
-        <div class="dialog-content"><label for="notification-recipient">Referring physician / recipient</label><input id="notification-recipient" [value]="notificationDraft()?.recipient || ''" (input)="updateRecipient($any($event.target).value)" /><p>Critical result: {{ activeParameter()?.name || criticalParameters()[0]?.name }} · {{ activeParameter()?.value || criticalParameters()[0]?.value }}</p></div>
+        <div class="dialog-content"><label for="notification-recipient">Referring physician / recipient</label><input id="notification-recipient" [value]="notificationDraft()?.recipient || ''" (input)="updateRecipient($any($event.target).value)" /><p>Critical result: {{ activeParameter()?.name || criticalParameters()[0].name }} · {{ activeParameter()?.value || criticalParameters()[0].value }}</p></div>
         <footer><button type="button" class="secondary-button" (click)="closeNotification()">Cancel</button><button type="button" class="primary-action" (click)="confirmNotificationDemo()">Record in preview</button></footer>
       </section>
     </div>
