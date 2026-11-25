@@ -128,8 +128,7 @@
             <tr (click)="selectSample(s)"
               (keydown.enter)="selectSample(s)"
               (keydown.space)="$event.preventDefault(); selectSample(s)"
-              (keydown.arrowdown)="focusSample($event, 1)"
-              (keydown.arrowup)="focusSample($event, -1)"
+              (keydown)="focusSample($event)"
               tabindex="0"
               [class.row--selected]="selectedSample()?.id === s.id"
               [attr.aria-selected]="selectedSample()?.id === s.id">
