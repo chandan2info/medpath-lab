@@ -56,3 +56,20 @@ tbody tr:hover{background:color-mix(in srgb,var(--lis-primary,#1d9e75) 3%,transp
 .secondary-action{border:1px solid var(--border-color);background:transparent;color:var(--text-primary)}.payment-dialog .primary-action:disabled{opacity:.6;cursor:wait}
 @media(max-width:900px){.metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){.billing-heading{align-items:flex-start;flex-direction:column}.billing-heading .primary-action{width:100%}.metric-grid{gap:8px}.metric-card{padding:11px}.metric-card>strong{font-size:21px}.worklist-heading{align-items:flex-start;flex-direction:column}.table-toolbar{align-items:flex-start;flex-direction:column}.search-field{width:100%}.billing-tabs{padding:0 8px}.billing-tabs button{padding:11px 9px;font-size:11px}th,td{padding:10px 9px}}
+/* Invoice deletion and confirmation */
+.icon-action{display:grid;place-items:center;width:29px;height:29px;flex:0 0 auto;border:1px solid var(--border-color);border-radius:7px;background:var(--body-bg);font-size:14px;cursor:pointer}
+.icon-action--danger{color:#c24141;border-color:rgba(194,65,65,.2)}
+.icon-action--danger:hover{background:rgba(194,65,65,.1);border-color:rgba(194,65,65,.45)}
+.confirm-delete-dialog{max-width:430px}
+.delete-icon{display:grid;place-items:center;width:42px;height:42px;margin-bottom:13px;border-radius:12px;background:rgba(194,65,65,.1);color:#c24141;font-size:21px}
+.confirm-delete-dialog h2{margin:5px 0 8px;font-size:20px}
+.confirm-delete-dialog>p{margin:0;color:var(--text-secondary);font-size:12px;line-height:1.6}
+.confirm-delete-dialog>p strong{color:var(--text-primary)}
+.delete-summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0;padding:12px;border:1px solid var(--border-color);border-radius:9px;background:var(--body-bg)}
+.delete-summary div{display:flex;flex-direction:column;gap:4px}
+.delete-summary span{color:var(--text-secondary);font-size:10px}
+.delete-summary strong{font-size:13px;font-variant-numeric:tabular-nums}
+.confirm-delete-dialog .delete-note{display:flex;align-items:flex-start;gap:7px;padding:10px;border-radius:8px;background:rgba(210,138,32,.09);color:var(--text-secondary);font-size:10px}
+.delete-note i{color:#c18425;font-size:14px;flex:0 0 auto}
+.danger-action{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:38px;padding:0 14px;border:0;border-radius:9px;background:#c24141;color:#fff;font-size:12px;font-weight:650;cursor:pointer}
+.danger-action:hover{background:#a83232}
