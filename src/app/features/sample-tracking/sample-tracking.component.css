@@ -501,9 +501,8 @@
 }
 
 
-/* Compact workspace sizing: remove viewport-filling host/body rules that
-   made the sample area taller than needed. Keep the list naturally sized,
-   with a shorter cap and internal scrolling for longer queues. */
+/* Compact workspace sizing: slightly reduce the current workspace height
+   while retaining internal scrolling for longer queues. */
 @media (min-width:1001px){
   :host{
     display:block;
@@ -519,15 +518,15 @@
   }
   .sample-table-wrap{
     height:auto;
-    min-height:403px;
-    max-height:min(69.12dvh,691px);
+    min-height:395px;
+    max-height:min(67.74dvh,677px);
     overflow:auto;
   }
   .detail-panel{
     position:static;
     height:auto;
-    min-height:403px;
-    max-height:min(69.12dvh,691px);
+    min-height:395px;
+    max-height:min(67.74dvh,677px);
     overflow-y:auto;
   }
 }
@@ -536,12 +535,12 @@
   .tracking-body{height:auto;min-height:0;flex:initial;align-items:start}
   .sample-table-wrap{
     height:auto;
-    min-height:374px;
-    max-height:min(63.36dvh,605px);
+    min-height:367px;
+    max-height:min(62.09dvh,593px);
     overflow:auto;
   }
   .detail-panel{height:auto;min-height:0;max-height:none;overflow:visible}
 }
 @media (max-width:700px){
-  .sample-table-wrap{min-height:331px;max-height:66.24dvh}
+  .sample-table-wrap{min-height:324px;max-height:64.92dvh}
 }
