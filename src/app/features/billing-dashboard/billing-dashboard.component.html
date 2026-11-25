@@ -35,7 +35,6 @@
 
     <nav class="billing-tabs" aria-label="Billing views">
       <button type="button" [class.active]="activeView() === 'overview'" (click)="setView('overview')"><i class="ti ti-layout-dashboard"></i> Overview</button>
-      <button type="button" [class.active]="activeView() === 'collection'" (click)="setView('collection')"><i class="ti ti-file-check"></i> Report Collection @if (readyCount()) { <span class="tab-count">{{ readyCount() }}</span> }</button>
       <button type="button" [class.active]="activeView() === 'outstanding'" (click)="setView('outstanding')"><i class="ti ti-wallet"></i> Outstanding @if (pendingPaymentCount()) { <span class="tab-count">{{ pendingPaymentCount() }}</span> }</button>
       <button type="button" [class.active]="activeView() === 'invoices'" (click)="setView('invoices')"><i class="ti ti-receipt"></i> All Invoices</button>
     </nav>
@@ -60,14 +59,16 @@
               <td class="money" [class.amount-warning]="row.invoice.balanceDue > 0">{{ row.invoice.balanceDue | currency:'INR':'symbol':'1.0-0' }}</td>
               <td><span class="status-pill" [ngClass]="'status-pill--' + row.invoice.status">{{ statusLabel(row) }}</span></td>
               <td>@if (row.readyReportCount) { <span class="status-pill status-pill--ready">{{ row.readyReportCount }} ready</span> } @else if (row.reportCount) { <span class="status-pill status-pill--neutral">Delivered</span> } @else { <span class="muted">Not ready</span> }</td>
-              <td class="row-actions actions-column">
+              <td class="actions-column">
+                <div class="row-actions">
                 @if (row.invoice.balanceDue > 0) { <button type="button" class="small-action small-action--primary" (click)="openPayment(row)">Collect</button> }
                 @if (row.readyReportCount > 0) { <button type="button" class="small-action small-action--secondary" (click)="markReportDelivered(row)">Mark delivered</button> }
                 @if (row.invoice.amountReceived === 0 && row.invoice.payments.length === 0) { <button type="button" class="icon-action icon-action--danger" [attr.aria-label]="'Delete invoice ' + row.invoice.id" title="Delete unpaid invoice" (click)="requestDelete(row)"><i class="ti ti-trash"></i></button> }
+                </div>
               </td>
             </tr>
           } @empty {
-            <tr><td colspan="8"><div class="empty-state"><span class="empty-icon"><i class="ti ti-receipt-off"></i></span><strong>{{ activeView() === 'collection' ? 'No reports ready for collection' : activeView() === 'outstanding' ? 'No outstanding payments' : 'No billing records yet' }}</strong><p>{{ activeView() === 'collection' ? 'Approved reports will appear here when generated.' : activeView() === 'outstanding' ? 'All recorded invoices are currently settled.' : 'Invoices created during patient registration will appear here.' }}</p>@if (activeView() === 'overview' || activeView() === 'invoices') { <a routerLink="/dashboard/billing/new">Create the first invoice</a> }</div></td></tr>
+            <tr><td colspan="8"><div class="empty-state"><span class="empty-icon"><i class="ti ti-receipt-off"></i></span><strong>{{ activeView() === 'outstanding' ? 'No outstanding payments' : activeView() === 'overview' ? 'No recent invoices' : 'No billing records yet' }}</strong><p>{{ activeView() === 'outstanding' ? 'All recorded invoices are currently settled.' : activeView() === 'overview' ? 'Recently created invoices will appear here.' : 'Invoices created during patient registration will appear here.' }}</p>@if (activeView() === 'overview' || activeView() === 'invoices') { <a routerLink="/dashboard/billing/new">Create the first invoice</a> }</div></td></tr>
           }
         </tbody>
       </table>
