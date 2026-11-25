@@ -62,3 +62,9 @@
 .pc-sidebar.lis-sidebar .sidebar-brand .mobile-close-btn {
   display: none !important;
 }
+
+
+/* The brand row shares the sidebar surface; avoid a darker logo strip. */
+.pc-sidebar.lis-sidebar .sidebar-brand {
+  background: var(--lis-sb-bg) !important;
+}
