@@ -216,21 +216,40 @@ export class SampleCollectionComponent {
   private positionDatePicker(): void {
     const hostElement = this.hostRef.nativeElement as HTMLElement;
     const trigger = hostElement.querySelector('.collection-datetime-trigger') as HTMLElement | null;
-    const card = hostElement.querySelector('.collect-panel') as HTMLElement | null;
-    if (!trigger || !card) return;
+    const control = hostElement.querySelector('.collection-datetime-control') as HTMLElement | null;
+    if (!trigger || !control) return;
 
     const triggerRect = trigger.getBoundingClientRect();
-    const cardRect = card.getBoundingClientRect();
-    const width = Math.max(260, Math.min(320, cardRect.width - 24));
-    const left = Math.max(cardRect.left + 12, Math.min(triggerRect.left, cardRect.right - width - 12));
-    const belowTop = triggerRect.bottom + 8;
-    const belowSpace = cardRect.bottom - belowTop - 12;
-    const aboveSpace = triggerRect.top - cardRect.top - 20;
-    const placeAbove = belowSpace < 300 && aboveSpace > belowSpace;
-    const maxHeight = Math.max(240, Math.min(390, placeAbove ? aboveSpace : belowSpace));
-    const top = placeAbove
-      ? Math.max(cardRect.top + 12, triggerRect.top - maxHeight - 8)
-      : belowTop;
+    const controlRect = control.getBoundingClientRect();
+    const viewportWidth = document.documentElement.clientWidth || window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const edge = 12;
+    const gap = 8;
+    const width = Math.max(0, Math.min(340, viewportWidth - edge * 2));
+    const desiredLeft = Math.max(edge, Math.min(triggerRect.left, viewportWidth - width - edge));
+
+    const belowSpace = Math.max(0, viewportHeight - triggerRect.bottom - edge - gap);
+    const aboveSpace = Math.max(0, triggerRect.top - edge - gap);
+    const preferredHeight = Math.min(440, viewportHeight - edge * 2);
+    const placeAbove = belowSpace < Math.min(360, preferredHeight) && aboveSpace > belowSpace;
+    const availableSpace = placeAbove ? aboveSpace : belowSpace;
+    const maxHeight = Math.max(120, Math.min(preferredHeight, availableSpace));
+
+    // Compact layouts use an absolutely positioned popup anchored to this
+    // control, so convert viewport coordinates into the control's coordinate
+    // space. This avoids fixed-position containing-block issues caused by
+    // transformed/contained ancestors in the responsive application shell.
+    const compactLayout = viewportWidth <= 1100;
+    const left = compactLayout
+      ? desiredLeft - controlRect.left
+      : desiredLeft;
+    const top = compactLayout
+      ? (placeAbove
+          ? triggerRect.top - controlRect.top - maxHeight - gap
+          : triggerRect.bottom - controlRect.top + gap)
+      : (placeAbove
+          ? triggerRect.top - maxHeight - gap
+          : triggerRect.bottom + gap);
 
     this.datePickerPosition.set({ top, left, width, maxHeight });
   }
