@@ -14,16 +14,21 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   private activeDialog: HTMLElement | null = null;
   private returnFocus: HTMLElement | null = null;
 
+  // ElementRef.nativeElement is typed as any; keep DOM queries strongly typed.
+  private get root(): HTMLElement {
+    return this.host.nativeElement as HTMLElement;
+  }
+
   ngAfterViewInit(): void {
     this.observer = new MutationObserver(() => this.syncDialogFocus());
-    this.observer.observe(this.host.nativeElement, { childList: true, subtree: true });
+    this.observer.observe(this.root, { childList: true, subtree: true });
     this.syncDialogFocus();
   }
 
   ngOnDestroy(): void { this.observer?.disconnect(); }
 
   private syncDialogFocus(): void {
-    const dialog = this.host.nativeElement.querySelector<HTMLElement>('[role="dialog"][aria-modal="true"]');
+    const dialog = this.root.querySelector<HTMLElement>('[role="dialog"][aria-modal="true"]');
     if (dialog && dialog !== this.activeDialog) {
       this.returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
       this.activeDialog = dialog;
@@ -51,7 +56,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   @HostListener('document:keydown', ['$event'])
   onDocumentKeydown(event: KeyboardEvent): void {
-    const dialog = this.host.nativeElement.querySelector<HTMLElement>('[role="dialog"][aria-modal="true"]');
+    const dialog = this.root.querySelector<HTMLElement>('[role="dialog"][aria-modal="true"]');
     if (dialog) {
       if (event.key === 'Escape') {
         const close = dialog.querySelector<HTMLElement>('[data-dialog-close], button[aria-label*="close" i], button[title*="close" i]');
@@ -80,13 +85,13 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     const target = event.target as Node | null;
-    const popups = this.host.nativeElement.querySelectorAll<HTMLElement>(
+    const popups = this.root.querySelectorAll<HTMLElement>(
       '.alert-popover, .collection-datetime-popover, .filter-popover, .more-menu, .search-suggestions, .dropdown-menu, .drafts-panel'
     );
     for (const popup of Array.from(popups)) {
       if (!target || popup.contains(target)) continue;
       if (popup.classList.contains('drafts-panel')) {
-        const trigger = this.host.nativeElement.querySelector<HTMLElement>('.drafts-toggle');
+        const trigger = this.root.querySelector<HTMLElement>('.drafts-toggle');
         if (!trigger?.contains(target)) trigger?.click();
         continue;
       }
@@ -100,7 +105,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   }
 
   private dismissOpenPopover(): void {
-    const popup = this.host.nativeElement.querySelector<HTMLElement>(
+    const popup = this.root.querySelector<HTMLElement>(
       '.alert-popover, .collection-datetime-popover, .filter-popover, .more-menu, .search-suggestions, .dropdown-menu, .drafts-panel'
     );
     if (!popup) return;
@@ -109,7 +114,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     ) ?? popup.parentElement;
     const close = popup.querySelector<HTMLElement>('[data-popover-close], button[aria-label*="close" i], button[title*="close" i]');
     const trigger = popup.classList.contains('drafts-panel')
-      ? this.host.nativeElement.querySelector<HTMLElement>('.drafts-toggle')
+      ? this.root.querySelector<HTMLElement>('.drafts-toggle')
       : wrapper?.querySelector<HTMLElement>('button[aria-expanded="true"]');
     if (close) close.click(); else if (trigger) trigger.click();
     trigger?.focus();
