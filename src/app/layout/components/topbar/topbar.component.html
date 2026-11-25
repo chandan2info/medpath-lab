@@ -1,75 +1,69 @@
 <header
-      class="pc-topbar lis-topbar"
-      [ngClass]="{ 'sidebar-collapsed': sidebar.collapsed() }"
-      role="banner"
+  class="pc-topbar lis-topbar"
+  [ngClass]="{ 'sidebar-collapsed': sidebar.collapsed() }"
+  role="banner"
+>
+  <!-- One responsive navigation toggle: divider control on desktop, drawer control on mobile. -->
+  <button
+    type="button"
+    class="sidebar-toggle-btn"
+    (click)="sidebar.toggleResponsive()"
+    [attr.aria-label]="sidebar.isMobileViewport() ? (sidebar.mobileOpen() ? 'Close navigation' : 'Open navigation') : (sidebar.collapsed() ? 'Expand navigation' : 'Collapse navigation')"
+    [attr.title]="sidebar.isMobileViewport() ? (sidebar.mobileOpen() ? 'Close navigation' : 'Open navigation') : (sidebar.collapsed() ? 'Expand navigation' : 'Collapse navigation')"
+    [attr.aria-expanded]="sidebar.responsiveExpanded()"
+    aria-controls="lab-navigation"
+  >
+    <i
+      class="ti"
+      [ngClass]="sidebar.isMobileViewport() ? (sidebar.mobileOpen() ? 'ti-chevron-left' : 'ti-chevron-right') : (sidebar.collapsed() ? 'ti-chevron-right' : 'ti-chevron-left')"
+      aria-hidden="true"
+    ></i>
+  </button>
+
+  <!-- Search -->
+  <div class="topbar-search lis-search" role="search">
+    <label for="lis-search" class="sr-only">Search patient, sample ID, test</label>
+    <i class="ti ti-search search-icon" aria-hidden="true"></i>
+    <input
+      id="lis-search"
+      type="search"
+      placeholder="Search patient, sample ID, test…"
+      autocomplete="off"
+      [value]="searchQuery()"
+      (input)="searchQuery.set($any($event.target).value)"
+      aria-label="Search patient, sample ID, or test"
+    />
+    <kbd class="search-kbd" aria-hidden="true">⌘K</kbd>
+  </div>
+
+  <div class="topbar-spacer" aria-hidden="true"></div>
+
+  <!-- Actions -->
+  <div class="topbar-actions" role="group" aria-label="Header actions">
+    <button
+      type="button"
+      class="topbar-icon-btn"
+      (click)="theme.toggle()"
+      [attr.aria-label]="'Switch to ' + (theme.theme() === 'dark' ? 'light' : 'dark') + ' mode'"
     >
-      <!-- Mobile hamburger -->
-      <button
-        class="topbar-icon-btn lg:hidden"
-        (click)="sidebar.toggleMobile()"
-        aria-label="Open navigation"
-      >
-        <i class="ti ti-menu-2" aria-hidden="true"></i>
-      </button>
+      @if (theme.theme() === 'light') {
+        <i class="ti ti-moon" aria-hidden="true"></i>
+      } @else {
+        <i class="ti ti-sun" aria-hidden="true"></i>
+      }
+    </button>
 
-      <!-- Desktop sidebar toggle -->
-      <button
-        class="topbar-icon-btn hidden lg:flex"
-        (click)="sidebar.toggle()"
-        [attr.aria-label]="sidebar.collapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
-      >
-        <i class="ti ti-layout-sidebar" aria-hidden="true"></i>
-      </button>
+    <button type="button" class="topbar-icon-btn notification-btn" aria-label="Alerts (4 unread)">
+      <i class="ti ti-bell" aria-hidden="true"></i>
+      <span class="notif-dot" aria-hidden="true"></span>
+    </button>
 
-      <!-- Search -->
-      <div class="topbar-search lis-search" role="search">
-        <label for="lis-search" class="sr-only">Search patient, sample ID, test</label>
-        <i class="ti ti-search search-icon" aria-hidden="true"></i>
-        <input
-          id="lis-search"
-          type="search"
-          placeholder="Search patient, sample ID, test…"
-          autocomplete="off"
-          [value]="searchQuery()"
-          (input)="searchQuery.set($any($event.target).value)"
-          aria-label="Search patient, sample ID, or test"
-        />
-        <kbd class="search-kbd" aria-hidden="true">⌘K</kbd>
-      </div>
+    <a routerLink="/dashboard/registration" class="lis-topbar-cta" aria-label="Register new patient">
+      <i class="ti ti-plus" aria-hidden="true"></i>
+      New patient
+    </a>
 
-      <div class="topbar-spacer" aria-hidden="true"></div>
-
-      <!-- Actions -->
-      <div class="topbar-actions" role="group" aria-label="Header actions">
-
-        <!-- Theme toggle -->
-        <button
-          class="topbar-icon-btn"
-          (click)="theme.toggle()"
-          [attr.aria-label]="'Switch to ' + (theme.theme() === 'dark' ? 'light' : 'dark') + ' mode'"
-        >
-          @if (theme.theme() === 'light') {
-            <i class="ti ti-moon" aria-hidden="true"></i>
-          } @else {
-            <i class="ti ti-sun" aria-hidden="true"></i>
-          }
-        </button>
-
-        <!-- Notifications -->
-        <button class="topbar-icon-btn notification-btn" aria-label="Alerts (4 unread)">
-          <i class="ti ti-bell" aria-hidden="true"></i>
-          <span class="notif-dot" aria-hidden="true"></span>
-        </button>
-
-        <!-- New Patient CTA -->
-        <a routerLink="/dashboard/registration" class="lis-topbar-cta" aria-label="Register new patient">
-          <i class="ti ti-plus" aria-hidden="true"></i>
-          New patient
-        </a>
-
-        <div class="topbar-divider" aria-hidden="true"></div>
-
-        <!-- Operator -->
-        <app-user-chip variant="topbar" align="right"></app-user-chip>
-      </div>
-    </header>
+    <div class="topbar-divider" aria-hidden="true"></div>
+    <app-user-chip variant="topbar" align="right"></app-user-chip>
+  </div>
+</header>

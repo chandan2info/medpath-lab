@@ -8,24 +8,7 @@
 </div>
 
 @if (patient) {
-  <section class="patient-summary lis-card" aria-label="Patient information">
-    <div class="pat-avatar" aria-hidden="true">{{ patientInitials }}</div>
-    <div class="patient-main">
-      <div class="patient-name-line"><strong>{{ patient.firstName }} {{ patient.lastName }}</strong><span class="patient-id">{{ patient.id }}</span></div>
-      <div class="patient-meta">
-        <span><i class="ti ti-user" aria-hidden="true"></i>{{ patient.gender | titlecase }}</span>
-        <span><i class="ti ti-cake" aria-hidden="true"></i>{{ patientAgeBreakdown() }}</span>
-        <span><i class="ti ti-calendar" aria-hidden="true"></i>DOB {{ patient.dob | date:'dd MMM yyyy' }}</span>
-        <span><i class="ti ti-phone" aria-hidden="true"></i>{{ patient.mobile }}</span>
-      </div>
-    </div>
-    <div class="patient-visit-meta">
-      <span><i class="ti ti-walk" aria-hidden="true"></i><small>Visit</small><strong>{{ patient.visitType | titlecase }}</strong></span>
-      <span><i class="ti ti-clipboard-heart" aria-hidden="true"></i><small>Fasting</small><strong>{{ patient.fasting || 'Not specified' }}</strong></span>
-      <span><i class="ti ti-stethoscope" aria-hidden="true"></i><small>Referred by</small><strong>{{ patient.refDoctor || 'Self / Walk-in' }}</strong></span>
-    </div>
-    <a routerLink="/dashboard/registration" class="lis-btn lis-btn--secondary lis-btn--sm patient-edit"><i class="ti ti-edit"></i> Edit</a>
-  </section>
+  <lis-patient-card [patient]="patient!" />
 }
 
 <section class="catalogue-shell lis-card">
@@ -52,14 +35,14 @@
     }
     <div class="list-heading">
       <strong>{{ viewHeading() }}</strong>
-      <span>{{ activeView()==='packages' ? filteredPackages().length + ' packages' : visibleTests().length + ' tests' }}</span>
+      <span role="status" aria-live="polite">{{ activeView()==='packages' ? filteredPackages().length + ' matching packages' : visibleTests().length + ' matching tests' }}</span>
     </div>
   </div>
 
   <div class="test-list" [class.test-list--packages]="activeView()==='packages'" role="region" [attr.aria-label]="viewHeading()" tabindex="0">
     @if (activeView()==='packages') {
       @if (filteredPackages().length===0) {
-        <div class="empty-tests"><i class="ti ti-package-off"></i>No packages match “{{ testQuery() }}”</div>
+        <div class="empty-tests" role="status" aria-live="polite"><i class="ti ti-package-off"></i>No packages match “{{ testQuery() }}”</div>
       }
       @for (pkg of filteredPackages(); track pkg.id) {
         <article class="package-row" [class.package-row--selected]="isPackageSelected(pkg)">
@@ -75,10 +58,10 @@
       }
     } @else {
       @if (visibleTests().length===0) {
-        <div class="empty-tests"><i class="ti ti-search-off"></i>No tests match “{{ testQuery() }}”</div>
+        <div class="empty-tests" role="status" aria-live="polite"><i class="ti ti-search-off"></i>No tests match “{{ testQuery() }}”</div>
       }
       @for (t of visibleTests(); track t.id; let i = $index) {
-        <button type="button" class="test-row" role="listitem" [class.test-row--selected]="isSelected(t.id)" [class.test-row--highlighted]="highlightedIndex() === i" (click)="toggle(t)" [attr.aria-pressed]="isSelected(t.id)">
+        <button type="button" class="test-row" [class.test-row--selected]="isSelected(t.id)" [class.test-row--highlighted]="highlightedIndex() === i" (click)="toggle(t)" [attr.aria-pressed]="isSelected(t.id)">
           <span class="test-check" aria-hidden="true"><i class="ti" [class.ti-check]="isSelected(t.id)" [class.ti-plus]="!isSelected(t.id)"></i></span>
           <span class="test-icon" aria-hidden="true"><i class="ti {{ testIcon(t) }}"></i></span>
           <span class="test-info"><span class="test-title">{{ t.name }} <small>{{ t.id }}</small></span><span class="test-description">{{ t.category }} · {{ t.sampleType }}</span><span class="test-meta"><span><i class="ti ti-test-pipe"></i> Specimen: {{ t.sampleType }}</span><span><i class="ti ti-flask-2"></i> Container: {{ t.tubeType }}</span><span><i class="ti ti-clock"></i> TAT: {{ t.tatHours }} hours</span></span></span>
@@ -94,7 +77,7 @@
   <section class="drafts-panel lis-card" aria-label="Saved order drafts">
     <header class="drafts-panel-head"><div><strong>Saved drafts</strong><span>{{ flow.orderDrafts().length }} saved</span></div><button type="button" class="drafts-close" (click)="draftsOpen.set(false)" aria-label="Close drafts"><i class="ti ti-x"></i></button></header>
     @if (flow.orderDrafts().length === 0) {
-      <div class="drafts-empty">No saved drafts yet. Your order will be saved automatically as you select tests.</div>
+      <div class="drafts-empty" role="status" aria-live="polite">No saved drafts yet. Your order will be saved automatically as you select tests.</div>
     } @else {
       <div class="drafts-list">
         @for (draft of flow.orderDrafts(); track draft.id) {
@@ -119,8 +102,8 @@
 <div class="selection-footer lis-card">
   <div class="selection-count"><strong>{{ flow.selectedTests().length }} tests selected</strong><span>Subtotal · ₹{{ flow.orderTotal().toLocaleString('en-IN') }}</span><small class="autosave-state" [class.autosave-state--saved]="autoSaveState() === 'saved'" [class.autosave-state--error]="autoSaveState() === 'error'">@if (autoSaveState() === 'saved') { <i class="ti ti-cloud-check"></i> Saved automatically } @else if (autoSaveState() === 'error') { <i class="ti ti-alert-circle"></i> Autosave issue } @else { <i class="ti ti-cloud"></i> Changes save automatically }</small></div>
   <div class="selection-actions">
-    <button type="button" class="lis-btn lis-btn--secondary drafts-toggle" (click)="toggleDrafts()"><i class="ti ti-folder-open"></i> Drafts <span>{{ flow.orderDrafts().length }}</span></button>
-    <button type="button" class="lis-btn lis-btn--secondary" (click)="saveDraft()" [disabled]="savingDraft()"><i class="ti ti-device-floppy"></i>{{ draftSaved() ? 'Draft saved' : 'Save as draft' }}</button>
+    <button type="button" class="lis-btn lis-btn--secondary drafts-toggle" (click)="toggleDrafts()" [attr.aria-expanded]="draftsOpen()"><i class="ti ti-folder-open"></i> Drafts <span>{{ flow.orderDrafts().length }}</span></button>
+    <button type="button" class="lis-btn lis-btn--secondary" (click)="saveDraft()" [disabled]="savingDraft()" [attr.aria-busy]="savingDraft()"><i class="ti ti-device-floppy"></i>{{ draftSaved() ? 'Draft saved' : 'Save as draft' }}</button>
     <button type="button" class="lis-btn lis-btn--primary review-btn" (click)="goToReview()" ><i class="ti ti-clipboard-check"></i> Review Order <i class="ti ti-arrow-right"></i></button>
   </div>
 </div>

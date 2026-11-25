@@ -25,3 +25,17 @@
 
       &:focus { top: 0; }
     }
+
+@media (max-width: 768px) {
+  .lis-page-content {
+    padding: 12px;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 480px) {
+  .lis-page-content {
+    padding: 10px;
+  }
+}

@@ -6,13 +6,14 @@ import { FormsModule } from '@angular/forms';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
 import { LabTest, TestPackage } from '../../shared/models/lis.models';
 import { WorkflowStepperComponent, WorkflowStep } from '../../shared/components/workflow-stepper/workflow-stepper.component';
+import { PatientCardComponent } from '../../shared/components/patient-card/patient-card.component';
 
 type CatalogueView = 'catalogue' | 'packages' | 'recent' | 'favorites';
 
 @Component({
   selector: 'app-test-order',
   standalone: true,
-  imports: [RouterLink, FormsModule, TitleCasePipe, DatePipe, WorkflowStepperComponent],
+  imports: [RouterLink, FormsModule, TitleCasePipe, DatePipe, WorkflowStepperComponent, PatientCardComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './test-order.component.html',
   styleUrl: './test-order.component.css'
@@ -143,6 +144,10 @@ export class TestOrderComponent implements OnInit {
   }
 
   deleteDraft(id: string): void {
+    const draft = this.flow.orderDrafts().find(item => item.id === id);
+    if (!draft) return;
+    const patientName = `${draft.patient.firstName} ${draft.patient.lastName}`.trim();
+    if (!window.confirm(`Delete the saved order draft for ${patientName}? This cannot be undone.`)) return;
     this.flow.deleteOrderDraft(id);
     this.showFeedback('Draft deleted.', 'success');
   }

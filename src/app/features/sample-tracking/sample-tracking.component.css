@@ -133,3 +133,87 @@
 }
 .det-rejection { background: var(--pill-critical-bg, #FCEBEB); color: var(--pill-critical-color, #791F1F); }
 .det-error { background: var(--pill-critical-bg, #FCEBEB); color: var(--pill-critical-color, #791F1F); }
+
+
+/* Responsive sample tracking detail: keep the table scrollable and
+   move the detail card into normal document flow on compact screens. */
+@media (max-width: 1000px) {
+  .detail-panel {
+    position: static;
+    top: auto;
+    max-height: none;
+    overflow: visible;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .page-header {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .tracking-toolbar {
+    align-items: stretch;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .ts-search {
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+  }
+
+  .filter-pills {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 2px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .filter-pill {
+    flex: 0 0 auto;
+  }
+
+  .tracking-body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .sample-table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .sample-tbl {
+    min-width: 600px;
+  }
+
+  .detail-panel {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .det-actions {
+    position: static;
+  }
+}
+
+@media (max-width: 380px) {
+  .det-identity,
+  .det-cell,
+  .tube-list {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+}

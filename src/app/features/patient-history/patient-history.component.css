@@ -293,3 +293,80 @@
 }
 .tab-empty-state i { font-size: 36px; opacity: 0.35; }
 .tab-empty-state p { font-size: 13px; margin: 0; line-height: 1.6; }
+
+
+/* Responsive patient history: preserve the existing panels and tabs,
+   allowing them to stack and scroll instead of squeezing horizontally. */
+@media (max-width: 640px) {
+  .page-header {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .ph-search {
+    flex-wrap: wrap;
+    padding: 9px 10px;
+  }
+
+  .ph-search input {
+    min-width: 0;
+    width: 0;
+  }
+
+  .ph-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .pd-header {
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .pd-info {
+    flex: 1 1 calc(100% - 60px);
+  }
+
+  .pd-stats {
+    flex: 1 1 100%;
+    width: 100%;
+    margin-left: 0;
+    flex-wrap: wrap;
+  }
+
+  .pd-stat {
+    flex: 1 1 72px;
+    min-width: 0;
+    padding: 8px 10px;
+  }
+
+  .tab-bar {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 8px;
+  }
+
+  .tab {
+    flex: 0 0 auto;
+  }
+
+  .vc-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 380px) {
+  .pd-header {
+    padding: 10px;
+  }
+
+  .pd-meta {
+    flex-wrap: wrap;
+  }
+
+  .vc-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

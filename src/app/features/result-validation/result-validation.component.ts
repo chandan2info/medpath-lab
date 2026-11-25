@@ -39,6 +39,7 @@ export class ResultValidationComponent {
   reject(sampleId: string): void {
     const note = this.reviewNote().trim();
     if (!note) { this.notice.set('Add a review note before rejecting results.'); return; }
+    if (!window.confirm('Return these results for correction? The report cannot be generated until they are reviewed again.')) return;
     try {
       this.store.reviewResults(sampleId, 'Demo Pathologist', false, note);
       this.sampleTracking.updateStatus(sampleId, 'pending');

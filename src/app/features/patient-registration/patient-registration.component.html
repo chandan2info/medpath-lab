@@ -120,7 +120,7 @@
 
           @if (patientSearchResults().length > 0) {
             <div class="patient-search-state">
-              <div class="patient-search-state__heading">
+              <div class="patient-search-state__heading" role="status" aria-live="polite">
                 <strong>{{ patientSearchResults().length }} matching patient{{ patientSearchResults().length === 1 ? '' : 's' }}</strong>
                 <span>Select the correct record to continue.</span>
               </div>
@@ -155,28 +155,13 @@
             </div>
           } @else if (selectedExistingPatient()) {
             @if (selectedExistingPatient(); as patient) {
-            <div class="patient-identity-card" role="status">
-              <div class="patient-identity-card__top">
-                <div class="patient-identity-card__avatar" aria-hidden="true">
-                  {{ patient.firstName.charAt(0) }}{{ patient.lastName.charAt(0) }}
-                </div>
-                <div class="patient-identity-card__heading">
-                  <span class="patient-identity-card__eyebrow"><i class="ti ti-circle-check"></i> Existing patient selected</span>
-                  <strong>{{ patient.name }}</strong>
-                  <span class="patient-identity-card__id lis-mono">{{ patient.id }}</span>
-                </div>
-                <span class="patient-identity-card__status"><i class="ti ti-shield-check"></i> Verified selection</span>
-              </div>
-              <div class="patient-identity-card__facts">
-                <div class="patient-identity-card__fact"><i class="ti ti-calendar"></i><span><small>Date of birth</small><strong>{{ patient.dob | date:'dd MMM yyyy' }}</strong></span></div>
-                <div class="patient-identity-card__fact"><i class="ti ti-gender-bigender"></i><span><small>Gender</small><strong>{{ patient.gender }}</strong></span></div>
-                <div class="patient-identity-card__fact"><i class="ti ti-phone"></i><span><small>Mobile number</small><strong>+91 {{ patient.mobile }}</strong></span></div>
-                <div class="patient-identity-card__fact"><i class="ti ti-droplet"></i><span><small>Blood group</small><strong>{{ patient.bloodGroup || 'Not recorded' }}</strong></span></div>
-              </div>
-              <div class="patient-identity-card__actions">
+            <div class="existing-patient-selection" role="status">
+              <span class="existing-patient-selection__eyebrow"><i class="ti ti-circle-check" aria-hidden="true"></i> Existing patient selected</span>
+              <lis-patient-card [patient]="selectedExistingPatient()!" />
+              <div class="existing-patient-selection__actions">
                 <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="editSelectedPatient()"><i class="ti ti-edit" aria-hidden="true"></i> Edit details</button>
                 <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="clearExistingPatientSelection()">Change patient</button>
-                <button type="button" class="lis-btn lis-btn--primary lis-btn--sm" (click)="nextStep()">Continue to Clinical <i class="ti ti-arrow-right"></i></button>
+                <button type="button" class="lis-btn lis-btn--primary lis-btn--sm" (click)="nextStep()">Continue to Clinical <i class="ti ti-arrow-right" aria-hidden="true"></i></button>
               </div>
             </div>
             }
@@ -669,7 +654,7 @@
         </button>
         <button type="button" class="lis-btn lis-btn--primary save-btn"
           (click)="saveAndContinue()"
-          [disabled]="saving()"
+          [disabled]="saving()" [attr.aria-busy]="saving()"
           title="Ctrl+Enter">
           @if (saving()) {
             <i class="ti ti-loader-2 spin" aria-hidden="true"></i> Saving…

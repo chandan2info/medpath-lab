@@ -3,7 +3,8 @@ import {Router,RouterLink} from '@angular/router';
 import {DatePipe,TitleCasePipe} from '@angular/common';
 import {PatientFlowService} from '../../core/services/patient-flow.service';
 import {WorkflowStepperComponent,WorkflowStep} from '../../shared/components/workflow-stepper/workflow-stepper.component';
-@Component({selector:'app-review-order',standalone:true,imports:[RouterLink,TitleCasePipe,DatePipe,WorkflowStepperComponent],changeDetection:ChangeDetectionStrategy.OnPush,templateUrl:'./review-order.component.html',styleUrl:'./review-order.component.css'})
+import { PatientCardComponent } from '../../shared/components/patient-card/patient-card.component';
+@Component({selector:'app-review-order',standalone:true,imports:[RouterLink,TitleCasePipe,DatePipe,WorkflowStepperComponent,PatientCardComponent],changeDetection:ChangeDetectionStrategy.OnPush,templateUrl:'./review-order.component.html',styleUrl:'./review-order.component.css'})
 export class ReviewOrderComponent implements OnInit{
  protected readonly flow=inject(PatientFlowService);private readonly router=inject(Router);private readonly elementRef=inject(ElementRef<HTMLElement>);saving=signal(false);
  alertsOpen=signal(false);
@@ -25,5 +26,6 @@ export class ReviewOrderComponent implements OnInit{
  setAlertFilter(filter:'all'|'action'|'warning'|'info'):void{this.alertFilter.set(filter);}
  @HostListener('document:click',['$event']) onDocumentClick(event:MouseEvent):void{if(this.alertsOpen()&&!this.elementRef.nativeElement.querySelector('.alert-popover-host')?.contains(event.target as Node))this.closeAlerts();}
  @HostListener('document:keydown.escape') onEscape():void{this.closeAlerts();}
+ removeTest(testId:string,testName:string):void{if(!window.confirm('Remove '+testName+' from this order?'))return;this.flow.toggleTest(testId);}
  continueToBilling():void{if(!this.flow.selectedTests().length||this.saving())return;this.saving.set(true);setTimeout(()=>{this.saving.set(false);this.router.navigate(['/dashboard/billing']);},350);}
 }
