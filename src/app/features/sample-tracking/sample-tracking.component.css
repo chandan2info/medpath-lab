@@ -217,3 +217,157 @@
     padding-left: 10px;
   }
 }
+
+
+/* ── Sample Tracking workspace redesign ────────────────────────────── */
+:host{min-width:0}
+.page-header{
+  align-items:center;
+  padding:16px 18px;
+  margin-bottom:14px;
+  background:var(--card-bg);
+  border:1px solid var(--border-color);
+  border-radius:12px;
+}
+.page-title{font-size:22px;font-weight:650;letter-spacing:-.02em}
+.header-actions{align-items:center;flex-wrap:wrap}
+.header-actions .lis-btn{min-height:34px}
+
+/* Search and status filters share a compact, responsive control bar. */
+.tracking-toolbar{
+  gap:12px;
+  padding:12px;
+  margin-bottom:10px;
+  border:1px solid var(--border-color);
+  border-radius:12px;
+}
+.ts-search{flex:0 1 320px;max-width:360px;min-width:220px;min-height:38px}
+.ts-search input{min-width:0;font-size:13px}
+.filter-pills{
+  flex:1 1 480px;
+  min-width:0;
+  flex-wrap:nowrap;
+  overflow-x:auto;
+  padding:2px 1px 5px;
+  scrollbar-width:thin;
+  -webkit-overflow-scrolling:touch;
+}
+.filter-pill{flex:0 0 auto;padding:7px 11px;font-size:11px;white-space:nowrap}
+.filter-pill--active{font-weight:700;box-shadow:inset 0 0 0 1px var(--lis-primary-mid,#5DCAA5)}
+.result-count{
+  display:flex;align-items:center;justify-content:space-between;
+  margin:0 2px 9px;font-size:11px;letter-spacing:.01em
+}
+
+/* Main work area: independently scrollable queue + selected-sample details. */
+.tracking-body{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(290px,330px);
+  gap:12px;
+  align-items:stretch;
+  min-width:0;
+}
+.sample-table-wrap{
+  min-width:0;
+  max-height:calc(100dvh - 390px);
+  min-height:320px;
+  overflow:auto;
+  border:1px solid var(--border-color);
+  border-radius:12px;
+  scrollbar-gutter:stable;
+  overscroll-behavior:contain;
+}
+.sample-tbl{width:100%;min-width:760px;table-layout:auto;font-size:12px}
+.sample-tbl thead{position:sticky;top:0;z-index:3}
+.sample-tbl th{
+  position:sticky;top:0;z-index:3;
+  padding:12px 11px;
+  background:var(--body-bg);
+  font-size:10px;font-weight:700;letter-spacing:.055em;
+  border-bottom:1px solid var(--border-color);
+}
+.sample-tbl td{padding:12px 11px;font-size:12px;line-height:1.45}
+.sample-tbl th:first-child,.sample-tbl td:first-child{padding-left:15px}
+.sample-tbl tbody tr{min-height:58px}
+.sample-tbl tbody tr.row--selected td{
+  background:var(--lis-primary-xlight,#E1F5EE);
+  box-shadow:inset 0 1px 0 rgba(29,158,117,.12),inset 0 -1px 0 rgba(29,158,117,.12)
+}
+.sample-tbl tbody tr.row--selected td:first-child{box-shadow:inset 3px 0 0 var(--lis-primary,#1D9E75),inset 0 1px 0 rgba(29,158,117,.12),inset 0 -1px 0 rgba(29,158,117,.12)}
+.tbl-sub{font-size:10px;line-height:1.4}
+.tbl-tests{
+  max-width:250px;
+  min-width:150px;
+  font-size:11px;
+  line-height:1.5;
+}
+.tube-dots{gap:4px}
+.tube-dot{width:13px;height:27px;flex:0 0 13px}
+.th-sort{font-size:10px;font-weight:700}
+
+/* Detail card gets its own scroll region on wide screens. */
+.detail-panel{
+  position:sticky;
+  top:12px;
+  min-width:0;
+  max-height:calc(100dvh - 390px);
+  overflow-y:auto;
+  border:1px solid var(--border-color);
+  border-radius:12px;
+  scrollbar-width:thin;
+  overscroll-behavior:contain;
+}
+.det-identity{padding:14px}
+.det-av{width:38px;height:38px;font-size:13px}
+.det-name{font-size:14px}
+.det-meta{font-size:10px;line-height:1.45}
+.det-cell{padding:10px 12px}
+.det-cell-lbl{font-size:9px;font-weight:700;letter-spacing:.06em}
+.det-cell-val{font-size:12px;line-height:1.4}
+.det-section{padding:12px 14px 5px;font-size:10px;font-weight:700}
+.tube-list{gap:7px;padding:8px 12px 12px}
+.tube-row{padding:9px 10px;gap:8px}
+.tube-label-sm{font-size:11px}
+.tube-tests-sm{font-size:10px;line-height:1.45}
+.tube-id{font-size:9px}
+.det-actions{padding:12px;gap:8px}
+.det-actions .lis-btn{min-height:36px;font-size:12px}
+
+/* Medium screens: give the queue full width and move details below it. */
+@media(max-width:1180px){
+  .tracking-body{grid-template-columns:minmax(0,1fr)}
+  .sample-table-wrap{max-height:48dvh;min-height:280px}
+  .detail-panel{position:static;max-height:none;overflow:visible}
+}
+
+/* Mobile/tablet: controls wrap, filter chips scroll, table scrolls inside its card. */
+@media(max-width:700px){
+  .page-header{padding:13px;align-items:flex-start}
+  .page-title{font-size:19px}
+  .header-actions{width:100%;display:flex}
+  .header-actions .lis-btn{flex:1 1 auto;justify-content:center}
+  .tracking-toolbar{padding:10px;gap:9px}
+  .ts-search{flex:1 1 100%;max-width:none;min-width:0;width:100%}
+  .filter-pills{flex:1 1 100%;width:100%;overflow-x:auto}
+  .sample-table-wrap{max-height:52dvh;min-height:240px;border-radius:10px}
+  .sample-tbl{min-width:740px}
+  .sample-tbl th{padding:10px 9px}
+  .sample-tbl td{padding:10px 9px;font-size:11px}
+  .detail-panel{max-height:none}
+  .det-identity{padding:12px}
+  .det-actions{position:static}
+}
+@media(max-width:420px){
+  .page-header{gap:9px}
+  .header-actions{gap:6px}
+  .header-actions .lis-btn{font-size:11px;padding:7px 9px}
+  .result-count{font-size:10px}
+  .det-grid{grid-template-columns:1fr 1fr}
+  .tube-row{align-items:flex-start}
+  .tube-id{max-width:90px;overflow-wrap:anywhere;text-align:right}
+}
+
+/* Respect reduced-motion preferences for row and filter interactions. */
+@media(prefers-reduced-motion:reduce){
+  .sample-tbl tbody tr{transition:none}
+}
