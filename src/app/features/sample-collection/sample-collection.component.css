@@ -3507,8 +3507,8 @@
 
 .collect-panel .collection-time-picker__unit select,
 .collect-panel .collection-time-picker__unit select[aria-label] {
-  appearance: none;
-  -webkit-appearance: none;
+  appearance: auto;
+  -webkit-appearance: menulist;
   display: block !important;
   width: 100% !important;
   min-width: 0 !important;
