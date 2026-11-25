@@ -435,3 +435,67 @@
 @media(prefers-reduced-motion:reduce){
   .ts-search{transition:none}
 }
+
+
+/* Final layout correction: size the component from the app content viewport,
+   then let the work area consume the remaining flex space. This avoids a
+   guessed fixed table height and removes the bottom gap on desktop. */
+@media (min-width:1001px){
+  :host{
+    display:flex;
+    flex-direction:column;
+    min-height:calc(100dvh - var(--header-height,56px) - 48px);
+    height:auto;
+  }
+  .page-header,
+  .tracking-toolbar,
+  .result-count{
+    flex:0 0 auto;
+  }
+  .tracking-body{
+    flex:1 1 auto;
+    height:auto;
+    min-height:360px;
+    min-width:0;
+    align-items:stretch;
+  }
+  .sample-table-wrap,
+  .detail-panel{
+    height:100%;
+    min-height:0;
+    max-height:none;
+  }
+  .sample-table-wrap{
+    overflow:auto;
+  }
+  .detail-panel{
+    position:static;
+    overflow-y:auto;
+  }
+}
+@media(max-width:1000px){
+  :host{
+    display:block;
+    min-height:0;
+    height:auto;
+  }
+  .tracking-body{
+    display:grid;
+    height:auto;
+    min-height:0;
+    flex:initial;
+  }
+  .sample-table-wrap{
+    height:auto;
+    max-height:48dvh;
+    min-height:260px;
+  }
+  .detail-panel{
+    height:auto;
+    max-height:none;
+    overflow:visible;
+  }
+}
+@media(max-width:640px){
+  .sample-table-wrap{max-height:52dvh;min-height:230px}
+}
