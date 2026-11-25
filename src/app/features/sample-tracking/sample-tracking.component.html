@@ -28,7 +28,7 @@
 </div>
 
 <div class="tracking-toolbar">
-  <div class="ts-search" role="search" [class.ts-search--invalid]="searchQ().trim().length > 0 && sortedSamples().length === 0">
+  <div class="ts-search lis-search-control" role="search" [class.ts-search--invalid]="searchQ().trim().length > 0 && sortedSamples().length === 0">
     <i class="ti ti-search" aria-hidden="true"></i>
     <input type="text" placeholder="Search by patient name or sample ID…"
       [value]="searchQ()"
