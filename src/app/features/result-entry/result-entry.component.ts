@@ -27,7 +27,7 @@ const EMPTY_ORDERED_TEST: MockOrderedTest = {
   imports: [RouterLink, NgClass, TitleCasePipe, DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './result-entry.component.html',
-  styleUrl: './result-entry.component.css',
+  styleUrls: ['./result-entry.component.css', './result-entry-queue-overrides.css'],
 })
 export class ResultEntryComponent implements OnInit {
   private readonly router = inject(Router);
