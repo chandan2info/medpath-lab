@@ -371,3 +371,67 @@
 @media(prefers-reduced-motion:reduce){
   .sample-tbl tbody tr{transition:none}
 }
+
+
+/* Fill the available viewport with the queue instead of leaving unused space below it. */
+@media(min-width:1181px){
+  .tracking-body{
+    height:calc(100dvh - 340px);
+    min-height:420px;
+    align-items:stretch;
+  }
+  .sample-table-wrap{
+    height:100%;
+    max-height:none;
+    min-height:0;
+    overflow:auto;
+  }
+  .detail-panel{
+    height:100%;
+    max-height:none;
+    min-height:0;
+    overflow-y:auto;
+  }
+}
+
+/* The search field owns the complete focus and validation outline. */
+.ts-search{
+  box-sizing:border-box;
+  position:relative;
+  border:1px solid var(--border-color);
+  transition:border-color .16s ease,box-shadow .16s ease,background-color .16s ease;
+}
+.ts-search:focus-within{
+  border-color:var(--lis-primary,#1D9E75);
+  outline:none;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--lis-primary,#1D9E75) 22%,transparent);
+}
+.ts-search input{
+  min-width:0;
+  width:100%;
+  outline:none!important;
+  box-shadow:none!important;
+  border:0!important;
+}
+.ts-search input:focus,
+.ts-search input:focus-visible{
+  outline:none!important;
+  box-shadow:none!important;
+}
+.ts-search--invalid,
+.ts-search--invalid:focus-within{
+  border-color:var(--lis-danger,#E24B4A)!important;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--lis-danger,#E24B4A) 18%,transparent)!important;
+}
+.ts-search--invalid i{color:var(--lis-danger,#E24B4A)}
+@media(max-width:1180px){
+  .tracking-body{height:auto;min-height:0}
+  .sample-table-wrap{height:auto;max-height:48dvh;min-height:280px}
+  .detail-panel{height:auto;max-height:none}
+}
+@media(max-width:700px){
+  .sample-table-wrap{max-height:52dvh;min-height:240px}
+}
+@media(prefers-reduced-motion:reduce){
+  .ts-search{transition:none}
+}
