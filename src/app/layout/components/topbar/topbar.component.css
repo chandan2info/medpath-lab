@@ -1,99 +1,21 @@
+/* MedPath LIS — unified, responsive application header. */
 .lis-topbar {
-  border-bottom: 0.5px solid var(--border-color);
+  background: var(--lis-sb-bg, var(--bg-surface)) !important;
+  border-bottom: 1px solid var(--lis-sb-sep, var(--border-color));
+  box-shadow: none !important;
 }
 
-.notification-btn {
-  position: relative;
-}
-
-.notif-dot {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #E24B4A;
-  border: 2px solid var(--topbar-bg, #fff);
-}
-
-.topbar-divider {
-  width: 1px;
-  height: 28px;
-  background: var(--border-color);
-  margin: 0 4px;
-}
-
-.lis-topbar-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  background: var(--lis-primary, #1D9E75);
-  color: #fff;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  text-decoration: none;
-  transition: filter 0.15s;
-}
-
-.lis-topbar-cta i { font-size: 15px; }
-.lis-topbar-cta:hover { filter: brightness(1.08); }
-
-.lis-topbar-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--lis-primary-xlight, #E1F5EE);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--lis-primary-deep, #085041);
-}
-
-.topbar-avatar-btn {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  background: none;
-  border: none;
-  padding: 5px 8px 5px 5px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.12s;
-  color: var(--text-primary);
-}
-
-.topbar-avatar-btn:hover { background: var(--body-bg); }
-.avatar-name { font-size: 13px; font-weight: 500; color: var(--text-primary); margin: 0; line-height: 1.3; }
-.avatar-role { font-size: 11px; color: var(--text-secondary); margin: 0; }
-.avatar-chevron { font-size: 14px; color: var(--text-secondary); }
-
-.search-kbd {
-  font-size: 10px;
-  font-weight: 600;
-  background: var(--body-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  padding: 2px 5px;
-  color: var(--text-secondary);
-  font-family: var(--font-family);
-  white-space: nowrap;
-}
-
-/* Floating toggle sits exactly over the sidebar/topbar boundary. */
+/* Floating sidebar control: compact, theme-aware, and centered on divider. */
 .sidebar-toggle-btn {
   position: absolute;
-  left: -20px;
+  left: -15px;
   top: 50%;
   z-index: 30;
   display: inline-flex;
-  width: 40px;
-  height: 40px;
-  flex: 0 0 40px;
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  flex: 0 0 30px;
   align-items: center;
   justify-content: center;
   margin: 0;
@@ -101,10 +23,9 @@
   appearance: none;
   border: 0 !important;
   border-radius: 50%;
-  outline: none;
-  background: #6657e8 !important;
+  background: var(--primary) !important;
   color: #ffffff !important;
-  box-shadow: 0 2px 7px rgba(55, 45, 150, 0.24);
+  box-shadow: 0 2px 7px rgba(20, 35, 55, 0.22);
   cursor: pointer;
   transform: translateY(-50%);
   transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
@@ -113,17 +34,15 @@
 .sidebar-toggle-btn i {
   display: block;
   margin: 0;
-  font-size: 23px;
+  font-size: 19px;
   font-weight: 700;
   line-height: 1;
-  color: currentColor !important;
-  transition: transform 160ms ease;
+  color: #ffffff !important;
 }
 
 .sidebar-toggle-btn:hover {
-  background: #7568f0 !important;
-  color: #ffffff !important;
-  box-shadow: 0 3px 11px rgba(102, 87, 232, 0.34);
+  background: var(--primary-dark) !important;
+  box-shadow: 0 3px 9px rgba(20, 35, 55, 0.28);
 }
 
 .sidebar-toggle-btn:active {
@@ -131,111 +50,210 @@
 }
 
 .sidebar-toggle-btn:focus-visible {
-  outline: 2px solid #8a80f4 !important;
-  outline-offset: 3px;
+  outline: 2px solid var(--primary) !important;
+  outline-offset: 2px;
 }
 
-/* Dark mode uses the charcoal circular control from the reference. */
-[data-theme="dark"] .pc-topbar .sidebar-toggle-btn {
-  background: #34363b !important;
-  color: #ffffff !important;
-  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.36);
+/* Search: pill shape with a calm, low-contrast surface. */
+.lis-topbar .topbar-search {
+  height: 38px;
+  min-width: 220px;
+  max-width: 420px;
+  padding: 0 14px;
+  gap: 9px;
+  border-radius: 999px !important;
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--border-color);
+  box-shadow: inset 0 1px 1px rgba(15, 23, 42, 0.035);
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
 }
 
-[data-theme="dark"] .pc-topbar .sidebar-toggle-btn:hover {
-  background: #41444b !important;
-  color: #ffffff !important;
-  box-shadow: 0 3px 11px rgba(0, 0, 0, 0.44);
+.lis-topbar .topbar-search:focus-within {
+  border-color: var(--primary);
+  background: var(--bg-surface);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 14%, transparent);
 }
 
-[data-theme="dark"] .pc-topbar .sidebar-toggle-btn:focus-visible {
-  outline-color: rgba(255, 255, 255, 0.58) !important;
+.lis-topbar .topbar-search input {
+  min-width: 0;
+  font-size: 13px;
 }
 
-/* Responsive topbar layout */
+.lis-topbar .search-kbd {
+  border-radius: 6px;
+  padding: 3px 6px;
+}
+
+/* Actions: consistent hit areas and intentional breathing room. */
+.lis-topbar .topbar-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.lis-topbar .topbar-icon-btn {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 17px;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.lis-topbar .topbar-icon-btn:hover {
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  color: var(--primary);
+}
+
+.notification-btn {
+  position: relative;
+}
+
+.notif-dot {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #E24B4A;
+  border: 2px solid var(--lis-sb-bg, var(--bg-surface));
+}
+
+.lis-topbar .lis-topbar-cta {
+  display: inline-flex;
+  height: 36px;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 14px;
+  border-radius: 9px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: filter 150ms ease, transform 150ms ease;
+}
+
+.lis-topbar .lis-topbar-cta i {
+  font-size: 15px;
+}
+
+.lis-topbar .lis-topbar-cta:hover {
+  filter: brightness(1.06);
+}
+
+.lis-topbar .lis-topbar-cta:active {
+  transform: translateY(1px);
+}
+
+.lis-topbar .topbar-divider {
+  width: 1px;
+  height: 24px;
+  flex: 0 0 1px;
+  margin: 0 2px;
+  background: var(--lis-sb-sep, var(--border-color));
+}
+
+.lis-topbar .topbar-avatar-btn {
+  gap: 9px;
+  padding: 3px 5px;
+  border-radius: 10px;
+}
+
+/* Keep the header balanced as the available width decreases. */
+@media (max-width: 1200px) {
+  .lis-topbar .topbar-actions { gap: 7px; }
+  .lis-topbar .topbar-search { max-width: 340px; }
+}
+
 @media (max-width: 1023px) {
-  .pc-topbar {
-    min-width: 0;
-    padding-right: 16px;
+  .lis-topbar {
+    left: 0 !important;
     padding-left: 16px;
+    padding-right: 16px;
     box-sizing: border-box;
   }
 
-  .pc-topbar .topbar-search {
+  .lis-topbar .topbar-search {
+    flex: 1 1 180px;
     min-width: 0;
-    flex: 1 1 220px;
+    max-width: none;
   }
 
-  .pc-topbar .topbar-spacer { flex: 0 1 24px; }
-
-  .pc-topbar .topbar-actions {
-    flex: 0 0 auto;
-    min-width: 0;
-  }
+  .lis-topbar .topbar-spacer { flex: 0 1 12px; }
 }
 
 @media (max-width: 768px) {
-  .pc-topbar {
+  .lis-topbar {
     gap: 8px;
-    padding-right: 12px;
     padding-left: 12px;
+    padding-right: 12px;
   }
 
-  .pc-topbar .topbar-spacer { display: none; }
-
-  .pc-topbar .topbar-search {
-    display: flex;
-    flex: 1 1 0;
-    width: auto;
+  .lis-topbar .topbar-spacer { display: none; }
+  .lis-topbar .topbar-search {
+    flex: 1 1 120px;
     min-width: 0;
-    max-width: none;
-    padding-right: 9px;
-    padding-left: 9px;
+    height: 36px;
+    padding: 0 12px;
   }
 
-  .pc-topbar .topbar-search input {
-    width: 100%;
-    min-width: 0;
+  .lis-topbar .topbar-actions { gap: 5px; }
+  .lis-topbar .topbar-divider { display: none; }
+}
+
+@media (max-width: 640px) {
+  .lis-topbar .topbar-actions { gap: 3px; }
+  .lis-topbar .topbar-icon-btn {
+    width: 32px;
+    height: 32px;
+    flex-basis: 32px;
   }
 
-  .pc-topbar .topbar-actions { gap: 2px; }
+  .lis-topbar .lis-topbar-cta {
+    width: 32px;
+    min-width: 32px;
+    height: 32px;
+    min-height: 32px;
+    padding: 0;
+    gap: 0;
+    font-size: 0;
+  }
+
+  .lis-topbar .lis-topbar-cta i { font-size: 16px; }
+  .lis-topbar .topbar-avatar-btn { padding: 2px; }
+  .lis-topbar .avatar-name,
+  .lis-topbar .avatar-role,
+  .lis-topbar .avatar-chevron { display: none; }
+  .lis-topbar .topbar-search { flex: 1 1 70px; }
 }
 
 @media (max-width: 480px) {
-  .pc-topbar {
+  .lis-topbar {
     gap: 5px;
-    padding-right: 8px;
     padding-left: 8px;
+    padding-right: 8px;
   }
 
-  .pc-topbar .topbar-search {
-    flex: 1 1 48px;
-    min-width: 0;
-    padding-right: 7px;
-    padding-left: 7px;
-  }
-
-  .pc-topbar .topbar-search input { min-width: 0; }
-  .pc-topbar .topbar-actions { flex: 0 0 auto; gap: 1px; }
+  .lis-topbar .topbar-search { padding: 0 9px; }
+  .lis-topbar .search-kbd { display: none; }
+  .lis-topbar .lis-topbar-cta { display: none; }
 }
-
-@media (max-width: 360px) {
-  .pc-topbar {
-    gap: 3px;
-    padding-right: 6px;
-    padding-left: 6px;
-  }
-
-  .pc-topbar .topbar-search {
-    padding-right: 5px;
-    padding-left: 5px;
-  }
-}
-
 
 @media (prefers-reduced-motion: reduce) {
-  .pc-topbar .sidebar-toggle-btn,
-  .pc-topbar .sidebar-toggle-btn i {
+  .lis-topbar .sidebar-toggle-btn,
+  .lis-topbar .topbar-search,
+  .lis-topbar .topbar-actions * {
     transition: none !important;
   }
 }
