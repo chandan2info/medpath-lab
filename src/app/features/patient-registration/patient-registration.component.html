@@ -110,7 +110,7 @@
               <h3>Find Patient</h3>
               <p>Search by Patient ID, mobile number or name before creating a new profile.</p>
             </div>
-            <div class="patient-search-panel__input">
+            <div class="patient-search-panel__input lis-search-control" [class.is-invalid]="searchAttempted() && patientSearchQuery().trim().length >= 2 && patientSearchResults().length === 0">
               <input id="patientSearch" type="search" [value]="patientSearchQuery()"
                 (input)="searchExistingPatients($any($event.target).value)"
                 placeholder="Enter patient ID, mobile number or name"
