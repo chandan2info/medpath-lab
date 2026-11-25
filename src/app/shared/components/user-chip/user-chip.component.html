@@ -52,6 +52,25 @@
 
       <div class="chip-menu-sep" role="separator"></div>
 
+      <div class="chip-menu-setting">
+        <span class="chip-menu-setting-copy">
+          <i class="ti ti-pointer" aria-hidden="true"></i>
+          <span>Custom cursor</span>
+        </span>
+        <button
+          type="button"
+          class="cursor-switch"
+          role="switch"
+          [attr.aria-checked]="cursorPreference.enabled()"
+          [attr.aria-label]="'Custom cursor ' + (cursorPreference.enabled() ? 'on' : 'off')"
+          (click)="cursorPreference.toggle()"
+        >
+          <span class="cursor-switch-thumb"></span>
+        </button>
+      </div>
+
+      <div class="chip-menu-sep" role="separator"></div>
+
       <button type="button" class="chip-menu-item danger" role="menuitem" (click)="signOut()">
         <i class="ti ti-logout" aria-hidden="true"></i>
         Sign out
