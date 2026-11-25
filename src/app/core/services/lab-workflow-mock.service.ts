@@ -140,6 +140,17 @@ export class LabWorkflowMockService {
     return updated;
   }
 
+  /** Remove an unpaid demo invoice. Orders, visits and lab records are deliberately retained. */
+  deleteUnpaidInvoice(invoiceId: string): void {
+    const current = this.state();
+    const invoice = current.invoices.find(item => item.id === invoiceId);
+    if (!invoice) throw new Error('Invoice not found.');
+    if (invoice.amountReceived > 0 || invoice.payments.length > 0) {
+      throw new Error('This invoice has recorded payments and cannot be deleted. Preserve its payment history.');
+    }
+    this.persist({ ...current, invoices: current.invoices.filter(item => item.id !== invoiceId) });
+  }
+
   createSample(input: Omit<MockLabSample,'id'|'status'> & { id?: string }): MockLabSample {
     const current = this.state();
     if (current.samples.some(s => s.orderId === input.orderId)) {
