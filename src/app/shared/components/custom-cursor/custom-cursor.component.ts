@@ -192,7 +192,6 @@ export class CustomCursorComponent implements AfterViewInit {
     this.document.removeEventListener('mouseleave', this.onDocumentLeave);
     this.document.removeEventListener('mouseenter', this.onDocumentEnter);
     this.view?.removeEventListener('blur', this.onWindowBlur);
-    this.finePointer?.removeEventListener('change', this.onCapabilityChange);
   }
 
   private cleanup(): void {
