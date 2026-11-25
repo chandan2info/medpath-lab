@@ -20,9 +20,9 @@
     </div>
   </div>
   <div class="patient-card__metadata">
-    <div class="patient-card__fact"><i class="ti {{ visitIcon() }}" aria-hidden="true"></i><span>Visit</span><strong>{{ patient().visitType | titlecase }}</strong></div>
-    <div class="patient-card__fact"><i class="ti ti-droplet-half-2" aria-hidden="true"></i><span>Fasting</span><strong>{{ patient().fasting || 'Not specified' }}</strong></div>
-    <div class="patient-card__fact"><i class="ti ti-stethoscope" aria-hidden="true"></i><span>Referred by</span><strong>{{ patient().refDoctor || 'Self / Walk-in' }}</strong></div>
+    <div class="patient-card__fact"><i class="ti {{ visitIcon() }}" aria-hidden="true"></i><span>Visit</span><strong>{{ visitType() | titlecase }}</strong></div>
+    <div class="patient-card__fact"><i class="ti ti-droplet-half-2" aria-hidden="true"></i><span>Fasting</span><strong>{{ fasting() }}</strong></div>
+    <div class="patient-card__fact"><i class="ti ti-stethoscope" aria-hidden="true"></i><span>Referred by</span><strong>{{ refDoctor() }}</strong></div>
     @if (priority()) {
       <div class="patient-card__fact patient-card__fact--priority"><i class="ti ti-flag" aria-hidden="true"></i><span>Priority</span><strong [class.priority-urgent]="priority() === 'urgent'" [class.priority-stat]="priority() === 'stat'">{{ priority() | titlecase }}</strong></div>
     }
