@@ -12,7 +12,7 @@ import { map } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
 import { SampleTrackingService } from '../../core/services/sample-tracking.service';
-import { ResultFlag } from '../../shared/models/lis.models';
+import { ResultFlag, Sample } from '../../shared/models/lis.models';
 import { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';
 import { ResultEntryDataService, MockOrderedTest, MockParameter, NoteDraft, NotificationDraft, TestFilter, TestStatus, flagFromValue } from '../../core/services/result-entry-data.service';
 
@@ -36,6 +36,39 @@ export class ResultEntryComponent implements OnInit {
   private readonly sampleSvc = inject(SampleTrackingService);
   private readonly resultData = inject(ResultEntryDataService);
   private readonly workflowStore = inject(LabWorkflowMockService);
+
+  readonly isQueueView = computed(() => !this.sampleId());
+  readonly queueSearch = signal('');
+  readonly queueFilter = signal<'ALL' | 'READY' | 'DRAFT' | 'VALIDATION' | 'NOT_READY'>('READY');
+  readonly queueSamples = computed(() => this.sampleSvc.samples());
+  readonly queueRows = computed(() => {
+    const query = this.queueSearch().trim().toLowerCase();
+    const filter = this.queueFilter();
+    return this.queueSamples().map(sample => {
+      const saved = this.resultData.getSavedRecord(sample.id);
+      const state = saved?.workflowStatus === 'SUBMITTED_FOR_VALIDATION'
+        ? 'VALIDATION' as const
+        : saved?.workflowStatus === 'DRAFT'
+          ? 'DRAFT' as const
+          : sample.status === 'ready' || sample.status === 'critical'
+            ? 'READY' as const
+            : 'NOT_READY' as const;
+      return { sample, state, saved };
+    }).filter(row => {
+      const matchesFilter = filter === 'ALL' || row.state === filter;
+      const searchable = [row.sample.patientName, row.sample.patientId, row.sample.id, ...row.sample.tests].join(' ').toLowerCase();
+      return matchesFilter && (!query || searchable.includes(query));
+    });
+  });
+  readonly queueCounts = computed(() => {
+    const rows = this.queueSamples().map(sample => {
+      const saved = this.resultData.getSavedRecord(sample.id);
+      return saved?.workflowStatus === 'SUBMITTED_FOR_VALIDATION' ? 'VALIDATION'
+        : saved?.workflowStatus === 'DRAFT' ? 'DRAFT'
+        : sample.status === 'ready' || sample.status === 'critical' ? 'READY' : 'NOT_READY';
+    });
+    return { all: rows.length, ready: rows.filter(s => s === 'READY').length, draft: rows.filter(s => s === 'DRAFT').length, validation: rows.filter(s => s === 'VALIDATION').length, notReady: rows.filter(s => s === 'NOT_READY').length };
+  });
 
   private readonly sampleId = toSignal(
     this.route.paramMap.pipe(map(params => params.get('sampleId'))),
@@ -192,14 +225,8 @@ export class ResultEntryComponent implements OnInit {
 
   ngOnInit(): void {
     const routeSampleId=this.sampleId();
-    if(!routeSampleId){
-      const selectedPatient=this.flow.patient();
-      if(!selectedPatient){this.router.navigate(['/dashboard/tracking']);return;}
-      const patientSample=this.sampleSvc.getLatestByPatientId(selectedPatient.id);
-      if(patientSample)this.router.navigate(['/dashboard/results',patientSample.id],{replaceUrl:true});
-      else this.router.navigate(['/dashboard/collection'],{replaceUrl:true});
-      return;
-    }
+    // Sidebar access opens the work queue. A sample-specific route opens the workspace.
+    if(!routeSampleId) return;
     const sample=this.sample();
     if(!sample){this.router.navigate(['/dashboard/tracking']);return;}
     if(sample.status !== 'ready' && sample.status !== 'critical'){
