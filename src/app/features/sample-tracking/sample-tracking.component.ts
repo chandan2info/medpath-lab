@@ -86,10 +86,14 @@ export class SampleTrackingComponent {
     return this.sort.apply(rows);
   });
 
-  focusSample(event: KeyboardEvent, direction: -1 | 1): void {
-    event.preventDefault();
-    const rows = Array.from(this.host.nativeElement.querySelectorAll<HTMLElement>('.sample-tbl tbody tr[tabindex="0"]'));
-    const current = rows.indexOf(event.currentTarget as HTMLElement);
+  focusSample(event: Event): void {
+    const keyboardEvent = event as KeyboardEvent;
+    if (keyboardEvent.key !== 'ArrowDown' && keyboardEvent.key !== 'ArrowUp') return;
+    keyboardEvent.preventDefault();
+    const direction: -1 | 1 = keyboardEvent.key === 'ArrowDown' ? 1 : -1;
+    const root = this.host.nativeElement as HTMLElement;
+    const rows = Array.from(root.querySelectorAll('.sample-tbl tbody tr[tabindex="0"]')) as HTMLElement[];
+    const current = rows.indexOf(keyboardEvent.currentTarget as HTMLElement);
     const next = Math.max(0, Math.min(rows.length - 1, current + direction));
     rows[next]?.focus();
     const sample = this.sortedSamples()[next];
