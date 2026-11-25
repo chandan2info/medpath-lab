@@ -1042,3 +1042,72 @@
     border-bottom-color: rgba(148,163,184,0.16);
   }
 }
+
+
+/* Hero/login layout correction:
+   The hero must return to one column at the original 960px breakpoint.
+   Keep the login card at its intended readable width instead of squeezing
+   it into a second grid track on tablets and phones. */
+@media (min-width: 961px) {
+  .lp-hero-wrap {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  }
+
+  .lp-login-card {
+    width: 100%;
+    max-width: 440px;
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 960px) {
+  .lp-hero-wrap {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: 30px;
+  }
+
+  .lp-hero-copy {
+    width: 100%;
+    max-width: 560px;
+    padding-right: 0;
+    text-align: center;
+    align-items: center;
+  }
+
+  .lp-sub {
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .lp-trust,
+  .lp-hero-btns {
+    justify-content: center;
+  }
+
+  .lp-login-card {
+    width: 100%;
+    max-width: 440px;
+    margin: 0 auto;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 600px) {
+  .lp-hero-wrap {
+    padding-right: 18px;
+    padding-left: 18px;
+    gap: 24px;
+  }
+
+  .lp-login-card {
+    max-width: 100%;
+    padding: 24px 20px;
+  }
+}
+
+@media (max-width: 380px) {
+  .lp-login-card {
+    padding: 22px 16px;
+  }
+}
