@@ -330,3 +330,39 @@ tbody tr:hover{background:color-mix(in srgb,var(--lis-primary,#1d9e75) 3%,transp
   .billing-tabs{flex-wrap:wrap}
   .billing-tabs .billing-create-link{margin-left:auto}
 }
+
+
+/* Readability and reliable row-level action visibility */
+.invoice-table{min-width:900px;table-layout:auto}
+.invoice-table th{font-size:12px!important;padding:12px 13px!important;line-height:1.35}
+.invoice-table td{font-size:13px!important;padding:13px!important;line-height:1.4}
+.invoice-table .invoice-id,.invoice-table .patient-name{font-size:13px!important;font-weight:700}
+.invoice-table .cell-subtitle{font-size:11px!important;line-height:1.35}
+.invoice-table .money{font-size:13px!important;font-weight:650}
+.invoice-table .status-pill{font-size:10px!important;padding:5px 9px!important}
+.invoice-table .actions-column{width:160px!important;min-width:160px!important}
+.invoice-table td.actions-column{display:table-cell!important;visibility:visible!important;opacity:1!important;overflow:visible!important}
+.invoice-table .row-actions{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:7px!important;width:auto!important;min-width:0!important;white-space:nowrap!important;visibility:visible!important;opacity:1!important}
+.billing-collect-button{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;
+ min-width:86px;min-height:34px;padding:0 11px!important;border:1px solid #079b78!important;
+ border-radius:7px!important;background:#079b78!important;color:#fff!important;
+ font:600 12px/1.2 inherit!important;white-space:nowrap!important;cursor:pointer!important;
+ visibility:visible!important;opacity:1!important;position:relative!important;z-index:1
+}
+.billing-collect-button i{font-size:14px!important}
+.billing-collect-button:hover{background:#087f65!important;border-color:#087f65!important}
+.billing-delete-button{
+ display:inline-grid!important;place-items:center!important;flex:0 0 32px!important;
+ width:32px!important;height:32px!important;border:1px solid rgba(194,65,65,.35)!important;
+ border-radius:7px!important;background:rgba(194,65,65,.08)!important;color:#d45b5b!important;
+ font-size:15px!important;cursor:pointer!important;visibility:visible!important;opacity:1!important
+}
+.billing-delete-button:hover{background:rgba(194,65,65,.16)!important;border-color:#d45b5b!important}
+.billing-settled-label{display:inline-flex;align-items:center;gap:4px;padding:6px 8px;border-radius:7px;background:rgba(19,132,95,.12);color:#13845f;font-size:11px;font-weight:700;white-space:nowrap}
+@media(max-width:640px){
+ .invoice-table th{font-size:11px!important}
+ .invoice-table td{font-size:12px!important;padding:11px!important}
+ .invoice-table .invoice-id,.invoice-table .patient-name,.invoice-table .money{font-size:12px!important}
+ .invoice-table .cell-subtitle{font-size:10px!important}
+}
