@@ -160,7 +160,7 @@ import { CursorPreferenceService } from '../../core/services/cursor-preference.s
     .color-picker-preview { width:26px; height:26px; border-radius:7px; background:var(--picker-color); box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); }
     .color-picker:focus-within { outline:2px solid var(--primary-deeper); outline-offset:2px; }
     .color-value { font-size:12px; color:var(--text-secondary); min-width:64px; }
-    .reset-color { border:0; background:transparent; color:var(--primary-deeper); font:600 12px inherit; cursor:pointer; padding:6px; }
+    .reset-color { border:0; background:transparent; color:var(--primary-deeper); font:inherit; font-size:12px; font-weight:600; cursor:pointer; padding:6px; }
     .cursor-presets { display:flex; flex-wrap:wrap; gap:14px; margin-top:18px; }
     .color-preset { display:flex; flex-direction:column; align-items:center; gap:5px; padding:4px; border:1px solid transparent; border-radius:9px; background:transparent; cursor:pointer; }
     .color-preset span { width:22px; height:22px; border-radius:50%; background:var(--preset-color); box-shadow:0 0 0 1px var(--border),inset 0 0 0 2px var(--bg-surface); }
