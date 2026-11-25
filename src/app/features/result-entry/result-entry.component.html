@@ -1,20 +1,18 @@
 <div class="result-page">
   @if (isQueueView()) {
-    <header class="page-header result-queue-page-header">
-      <div class="page-header__left">
-        <div class="page-header__title-row">
-          <div class="page-header__icon" aria-hidden="true"><i class="ti ti-clipboard-list"></i></div>
-          <div>
-            <h1 class="page-title">Result Entry</h1>
-            <nav aria-label="Breadcrumb"><ol class="breadcrumb">
-              <li><a routerLink="/dashboard/home">Home</a></li>
-              <li aria-current="page">Result Entry</li>
-            </ol></nav>
-          </div>
+    <section class="result-queue-top-card" aria-label="Result Entry page heading">
+      <div class="result-queue-top-card__title">
+        <div class="result-queue-top-card__icon" aria-hidden="true"><i class="ti ti-clipboard-list"></i></div>
+        <div class="result-queue-top-card__copy">
+          <h1 class="page-title">Result Entry</h1>
+          <nav aria-label="Breadcrumb"><ol class="breadcrumb">
+            <li><a routerLink="/dashboard/home">Home</a></li>
+            <li aria-current="page">Result Entry</li>
+          </ol></nav>
         </div>
       </div>
-      <div class="save-state"><i class="ti ti-info-circle"></i> Select an eligible sample to enter results</div>
-    </header>
+      <div class="result-queue-top-card__hint"><i class="ti ti-info-circle" aria-hidden="true"></i><span>Select an eligible sample to enter results</span></div>
+    </section>
 
     <section class="result-queue-kpis" aria-label="Result entry queue summary">
       <div class="queue-kpi queue-kpi--ready" aria-label="Ready for entry">
