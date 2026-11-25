@@ -1,33 +1,34 @@
 <div class="result-page">
   @if (isQueueView()) {
-    <section class="result-queue-top-card lis-card" aria-label="Result entry">
-      <div class="result-queue-top-card__heading">
-        <div>
-          <h1 class="page-title">Result Entry</h1>
-          <nav aria-label="Breadcrumb">
-            <ol class="breadcrumb">
+    <header class="page-header result-queue-page-header">
+      <div class="page-header__left">
+        <div class="page-header__title-row">
+          <div class="page-header__icon" aria-hidden="true"><i class="ti ti-clipboard-list"></i></div>
+          <div>
+            <h1 class="page-title">Result Entry</h1>
+            <nav aria-label="Breadcrumb"><ol class="breadcrumb">
               <li><a routerLink="/dashboard/home">Home</a></li>
               <li aria-current="page">Result Entry</li>
-            </ol>
-          </nav>
+            </ol></nav>
+          </div>
         </div>
-        <div class="result-queue-hint"><i class="ti ti-info-circle" aria-hidden="true"></i><span>Select an eligible sample to enter results</span></div>
       </div>
-    </section>
+      <div class="save-state"><i class="ti ti-info-circle"></i> Select an eligible sample to enter results</div>
+    </header>
 
     <section class="result-queue-kpis" aria-label="Result entry queue summary">
-      <button type="button" class="queue-kpi queue-kpi--ready" [class.queue-kpi--active]="queueFilter() === 'READY'" (click)="setQueueFilter('READY')">
-        <i class="ti ti-clipboard-check"></i><span><strong>{{ queueCounts().ready }}</strong><small>Ready for entry</small></span>
-      </button>
-      <button type="button" class="queue-kpi queue-kpi--draft" [class.queue-kpi--active]="queueFilter() === 'DRAFT'" (click)="setQueueFilter('DRAFT')">
-        <i class="ti ti-pencil"></i><span><strong>{{ queueCounts().draft }}</strong><small>Drafts in progress</small></span>
-      </button>
-      <button type="button" class="queue-kpi queue-kpi--validation" [class.queue-kpi--active]="queueFilter() === 'VALIDATION'" (click)="setQueueFilter('VALIDATION')">
-        <i class="ti ti-shield-check"></i><span><strong>{{ queueCounts().validation }}</strong><small>Awaiting validation</small></span>
-      </button>
-      <button type="button" class="queue-kpi queue-kpi--muted" [class.queue-kpi--active]="queueFilter() === 'NOT_READY'" (click)="setQueueFilter('NOT_READY')">
-        <i class="ti ti-hourglass"></i><span><strong>{{ queueCounts().notReady }}</strong><small>Not ready yet</small></span>
-      </button>
+      <div class="queue-kpi queue-kpi--ready" aria-label="Ready for entry">
+        <i aria-hidden="true" class="ti ti-clipboard-check"></i><span><strong>{{ queueCounts().ready }}</strong><small>Ready for entry</small></span>
+      </div>
+      <div class="queue-kpi queue-kpi--draft" aria-label="Drafts in progress">
+        <i aria-hidden="true" class="ti ti-pencil"></i><span><strong>{{ queueCounts().draft }}</strong><small>Drafts in progress</small></span>
+      </div>
+      <div class="queue-kpi queue-kpi--validation" aria-label="Awaiting validation">
+        <i aria-hidden="true" class="ti ti-shield-check"></i><span><strong>{{ queueCounts().validation }}</strong><small>Awaiting validation</small></span>
+      </div>
+      <div class="queue-kpi queue-kpi--muted" aria-label="Not ready yet">
+        <i aria-hidden="true" class="ti ti-hourglass"></i><span><strong>{{ queueCounts().notReady }}</strong><small>Not ready yet</small></span>
+      </div>
     </section>
 
     <section class="result-queue-panel panel">
@@ -39,11 +40,11 @@
         <label class="result-queue-search"><i class="ti ti-search"></i><input type="search" placeholder="Search patient, ID, order or test..." [value]="queueSearch()" (input)="setQueueSearch($any($event.target).value)" aria-label="Search result entry queue">@if (queueSearch()) { <button type="button" (click)="setQueueSearch('')" aria-label="Clear search"><i class="ti ti-x"></i></button> }</label>
       </div>
       <div class="result-queue-filters" role="group" aria-label="Filter result entry queue">
-        <button type="button" [class.active]="queueFilter() === 'ALL'" (click)="setQueueFilter('ALL')">All <span>{{ queueCounts().all }}</span></button>
-        <button type="button" [class.active]="queueFilter() === 'READY'" (click)="setQueueFilter('READY')">Ready for entry <span>{{ queueCounts().ready }}</span></button>
-        <button type="button" [class.active]="queueFilter() === 'DRAFT'" (click)="setQueueFilter('DRAFT')">Drafts <span>{{ queueCounts().draft }}</span></button>
-        <button type="button" [class.active]="queueFilter() === 'VALIDATION'" (click)="setQueueFilter('VALIDATION')">Awaiting validation <span>{{ queueCounts().validation }}</span></button>
-        <button type="button" [class.active]="queueFilter() === 'NOT_READY'" (click)="setQueueFilter('NOT_READY')">Not ready <span>{{ queueCounts().notReady }}</span></button>
+        <button type="button" [class.filter-chip--active]="queueFilter() === 'ALL'" (click)="setQueueFilter('ALL')">All <span>{{ queueCounts().all }}</span></button>
+        <button type="button" [class.filter-chip--active]="queueFilter() === 'READY'" (click)="setQueueFilter('READY')">Ready for entry <span>{{ queueCounts().ready }}</span></button>
+        <button type="button" [class.filter-chip--active]="queueFilter() === 'DRAFT'" (click)="setQueueFilter('DRAFT')">Drafts <span>{{ queueCounts().draft }}</span></button>
+        <button type="button" [class.filter-chip--active]="queueFilter() === 'VALIDATION'" (click)="setQueueFilter('VALIDATION')">Awaiting validation <span>{{ queueCounts().validation }}</span></button>
+        <button type="button" [class.filter-chip--active]="queueFilter() === 'NOT_READY'" (click)="setQueueFilter('NOT_READY')">Not ready <span>{{ queueCounts().notReady }}</span></button>
       </div>
       <div class="result-queue-table-wrap">
         <table class="result-queue-table">
