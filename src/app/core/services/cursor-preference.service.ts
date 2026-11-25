@@ -120,19 +120,29 @@ export class CursorPreferenceService {
         html.cursor-custom-enabled body * {
           cursor: url("${arrow}") 4 3, auto !important;
         }
+
+        /* Match the specificity of the global cursor overrides so the
+           selected hand color wins on hovered controls and their children. */
         html.cursor-custom-enabled body :is(
-          a, button:not(:disabled), [role="button"], [role="tab"], [role="menuitem"],
-          [role="option"], [role="link"], [role="switch"], [role="checkbox"],
-          [role="radio"], [role="treeitem"], summary, select, label[for],
+          button:not(:disabled):not([aria-disabled="true"]),
+          a,
+          [role="button"]:not([aria-disabled="true"]),
+          [role="link"], [role="tab"], [role="menuitem"], [role="option"],
+          [role="switch"], [role="checkbox"], [role="radio"], [role="treeitem"],
+          summary, select, label[for],
           input[type="button"], input[type="submit"], input[type="reset"],
           input[type="checkbox"], input[type="radio"], input[type="range"],
-          .clickable, .lis-btn, [ng-reflect-router-link]
+          .clickable, .lis-btn, .cursor-pointer, [ng-reflect-router-link],
+          .apexcharts-legend-series, .apexcharts-toolbar > div, .apexcharts-menu-item
         ),
         html.cursor-custom-enabled body :is(
-          a, button:not(:disabled), [role="button"], [role="tab"], [role="menuitem"],
-          [role="option"], [role="link"], [role="switch"], [role="checkbox"],
-          [role="radio"], [role="treeitem"], summary, select, label[for],
-          .clickable, .lis-btn, [ng-reflect-router-link]
+          button:not(:disabled):not([aria-disabled="true"]),
+          a,
+          [role="button"]:not([aria-disabled="true"]),
+          [role="link"], [role="tab"], [role="menuitem"], [role="option"],
+          [role="switch"], [role="checkbox"], [role="radio"], [role="treeitem"],
+          summary, select, label[for],
+          .clickable, .lis-btn, .cursor-pointer, [ng-reflect-router-link]
         ) * {
           cursor: url("${hand}") 10 5, pointer !important;
         }
