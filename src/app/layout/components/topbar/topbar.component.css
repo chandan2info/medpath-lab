@@ -5,8 +5,9 @@
   box-shadow: none !important;
 }
 
-/* Floating sidebar control: compact, theme-aware, and centered on divider. */
-.sidebar-toggle-btn {
+/* A single toggle is used at every breakpoint. On desktop it floats on
+   the sidebar divider; on mobile it becomes the in-flow drawer control. */
+.lis-topbar .sidebar-toggle-btn {
   position: absolute;
   left: -10px;
   top: 50%;
@@ -24,32 +25,29 @@
   border: 0 !important;
   border-radius: 50%;
   background: var(--primary) !important;
-  color: #ffffff !important;
-  box-shadow: 0 2px 7px rgba(20, 35, 55, 0.22);
+  color: #fff !important;
+  box-shadow: 0 2px 7px rgba(20, 35, 55, .22);
   cursor: pointer;
   transform: translateY(-50%);
   transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
 
-.sidebar-toggle-btn i {
+.lis-topbar .sidebar-toggle-btn i {
   display: block;
   margin: 0;
   font-size: 15px;
   font-weight: 700;
   line-height: 1;
-  color: #ffffff !important;
+  color: #fff !important;
 }
 
-.sidebar-toggle-btn:hover {
+.lis-topbar .sidebar-toggle-btn:hover {
   background: var(--primary-dark) !important;
-  box-shadow: 0 3px 9px rgba(20, 35, 55, 0.28);
+  box-shadow: 0 3px 9px rgba(20, 35, 55, .28);
 }
 
-.sidebar-toggle-btn:active {
-  transform: translateY(-50%) scale(0.94);
-}
-
-.sidebar-toggle-btn:focus-visible {
+.lis-topbar .sidebar-toggle-btn:active { transform: translateY(-50%) scale(.94); }
+.lis-topbar .sidebar-toggle-btn:focus-visible {
   outline: 2px solid var(--primary) !important;
   outline-offset: 2px;
 }
@@ -65,7 +63,7 @@
   border-radius: 999px !important;
   background: var(--bg-surface-alt);
   border: 1px solid var(--border-color);
-  box-shadow: inset 0 1px 1px rgba(15, 23, 42, 0.035);
+  box-shadow: inset 0 1px 1px rgba(15, 23, 42, .035);
   transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
 }
 
@@ -75,17 +73,9 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 14%, transparent);
 }
 
-.lis-topbar .topbar-search input {
-  min-width: 0;
-  font-size: 13px;
-}
+.lis-topbar .topbar-search input { min-width: 0; font-size: 13px; }
+.lis-topbar .search-kbd { border-radius: 6px; padding: 3px 6px; }
 
-.lis-topbar .search-kbd {
-  border-radius: 6px;
-  padding: 3px 6px;
-}
-
-/* Actions: consistent hit areas and intentional breathing room. */
 .lis-topbar .topbar-actions {
   display: flex;
   flex: 0 0 auto;
@@ -113,11 +103,8 @@
   color: var(--primary);
 }
 
-.notification-btn {
-  position: relative;
-}
-
-.notif-dot {
+.lis-topbar .notification-btn { position: relative; }
+.lis-topbar .notif-dot {
   position: absolute;
   top: 5px;
   right: 5px;
@@ -145,17 +132,9 @@
   transition: filter 150ms ease, transform 150ms ease;
 }
 
-.lis-topbar .lis-topbar-cta i {
-  font-size: 15px;
-}
-
-.lis-topbar .lis-topbar-cta:hover {
-  filter: brightness(1.06);
-}
-
-.lis-topbar .lis-topbar-cta:active {
-  transform: translateY(1px);
-}
+.lis-topbar .lis-topbar-cta i { font-size: 15px; }
+.lis-topbar .lis-topbar-cta:hover { filter: brightness(1.06); }
+.lis-topbar .lis-topbar-cta:active { transform: translateY(1px); }
 
 .lis-topbar .topbar-divider {
   width: 1px;
@@ -171,7 +150,6 @@
   border-radius: 10px;
 }
 
-/* Keep the header balanced as the available width decreases. */
 @media (max-width: 1200px) {
   .lis-topbar .topbar-actions { gap: 7px; }
   .lis-topbar .topbar-search { max-width: 340px; }
@@ -180,27 +158,34 @@
 @media (max-width: 1023px) {
   .lis-topbar {
     left: 0 !important;
-    padding-left: 16px;
-    padding-right: 16px;
+    padding-left: 12px;
+    padding-right: 12px;
     box-sizing: border-box;
   }
 
+  .lis-topbar .sidebar-toggle-btn {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    flex: 0 0 28px;
+    transform: none;
+  }
+
+  .lis-topbar .sidebar-toggle-btn i { font-size: 17px; }
+  .lis-topbar .sidebar-toggle-btn:active { transform: scale(.94); }
   .lis-topbar .topbar-search {
     flex: 1 1 180px;
     min-width: 0;
     max-width: none;
   }
-
   .lis-topbar .topbar-spacer { flex: 0 1 12px; }
 }
 
 @media (max-width: 768px) {
-  .lis-topbar {
-    gap: 8px;
-    padding-left: 12px;
-    padding-right: 12px;
-  }
-
+  .lis-topbar { gap: 8px; padding-left: 12px; padding-right: 12px; }
   .lis-topbar .topbar-spacer { display: none; }
   .lis-topbar .topbar-search {
     flex: 1 1 120px;
@@ -209,7 +194,6 @@
     min-height: 32px;
     padding: 0 12px;
   }
-
   .lis-topbar .topbar-actions { gap: 5px; }
   .lis-topbar .topbar-divider { display: none; }
 }
@@ -221,7 +205,6 @@
     height: 32px;
     flex-basis: 32px;
   }
-
   .lis-topbar .lis-topbar-cta {
     width: 32px;
     min-width: 32px;
@@ -231,7 +214,6 @@
     gap: 0;
     font-size: 0;
   }
-
   .lis-topbar .lis-topbar-cta i { font-size: 16px; }
   .lis-topbar .topbar-avatar-btn { padding: 2px; }
   .lis-topbar .avatar-name,
@@ -241,36 +223,14 @@
 }
 
 @media (max-width: 480px) {
-  .lis-topbar {
-    gap: 5px;
-    padding-left: 8px;
-    padding-right: 8px;
-  }
-
+  .lis-topbar { gap: 5px; padding-left: 8px; padding-right: 8px; }
   .lis-topbar .topbar-search { padding: 0 9px; }
-  .lis-topbar .search-kbd { display: none; }
+  .lis-topbar .search-kbd,
   .lis-topbar .lis-topbar-cta { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .lis-topbar .sidebar-toggle-btn,
   .lis-topbar .topbar-search,
-  .lis-topbar .topbar-actions * {
-    transition: none !important;
-  }
-}
-
-
-/* Desktop: hide the mobile hamburger so only the floating divider toggle remains. */
-@media (min-width: 1024px) {
-  .lis-topbar .topbar-mobile-nav-btn {
-    display: none !important;
-  }
-}
-
-/* Compact mobile opener remains available below desktop breakpoint. */
-@media (max-width: 1023px) {
-  .lis-topbar .topbar-mobile-nav-btn {
-    display: inline-flex !important;
-  }
+  .lis-topbar .topbar-actions * { transition: none !important; }
 }
