@@ -17,8 +17,8 @@ export class CursorPreferenceService {
     const view = this.document.defaultView;
     if (view) {
       const onStorage = (event: StorageEvent): void => {
-        if (event.key !== STORAGE_KEY || event.newValue === null) return;
-        const enabled = event.newValue === 'true';
+        if (event.key !== STORAGE_KEY) return;
+        const enabled = event.newValue === null || event.newValue === 'true';
         this.enabled.set(enabled);
         this.apply(enabled);
       };
