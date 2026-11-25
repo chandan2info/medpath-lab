@@ -4809,6 +4809,108 @@
   color: #9BA6CE !important;
 }
 
+/* ───────────────────────────────────────────────────────────
+   SIDEBAR INTERACTION POLISH
+   Layout and motion only: all surfaces and colors come from the
+   existing sidebar tokens above, so light/dark themes stay intact.
+   ─────────────────────────────────────────────────────────── */
+.pc-sidebar.lis-sidebar {
+  will-change: width, transform;
+  contain: layout paint;
+}
+
+.pc-sidebar.lis-sidebar .sidebar-brand {
+  position: relative;
+  overflow: hidden;
+}
+
+.pc-sidebar.lis-sidebar .sidebar-nav {
+  padding: 12px 6px 16px;
+  overscroll-behavior: contain;
+}
+
+.pc-sidebar.lis-sidebar .nav-caption {
+  margin-top: 5px !important;
+  transition: opacity var(--transition-fast), padding var(--transition-sidebar);
+}
+
+.pc-sidebar.lis-sidebar .nav-item a,
+.pc-sidebar.lis-sidebar .nav-item a:link,
+.pc-sidebar.lis-sidebar .nav-item a:visited {
+  isolation: isolate;
+  transform: translateZ(0);
+  transition:
+    background-color 220ms cubic-bezier(0.2, 0.75, 0.25, 1),
+    color 180ms ease,
+    box-shadow 220ms ease !important;
+}
+
+/* Soft moving sheen follows the pointer without shifting the icon or label. */
+.pc-sidebar.lis-sidebar .nav-item a::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 15%,
+    rgba(255,255,255,0.055) 42%,
+    rgba(255,255,255,0.015) 58%,
+    transparent 82%
+  );
+  transform: translateX(-105%);
+  transition: transform 520ms cubic-bezier(0.2, 0.75, 0.25, 1), opacity 180ms ease;
+}
+
+.pc-sidebar.lis-sidebar .nav-item a:hover::after {
+  opacity: 1;
+  transform: translateX(105%);
+}
+
+.pc-sidebar.lis-sidebar .nav-item a .nav-icon,
+.pc-sidebar.lis-sidebar .nav-item a .nav-label,
+.pc-sidebar.lis-sidebar .nav-item a .nav-badge {
+  transform: none !important;
+}
+
+.pc-sidebar.lis-sidebar .nav-icon {
+  transition: color 180ms ease, filter 220ms ease !important;
+}
+
+.pc-sidebar.lis-sidebar .nav-item a:hover .nav-icon,
+.pc-sidebar.lis-sidebar .nav-item a.active .nav-icon {
+  transform: none !important;
+}
+
+.pc-sidebar.lis-sidebar .sidebar-footer {
+  margin-top: auto;
+}
+
+/* Collapsed mode gets centered targets with the exact same palette. */
+.pc-sidebar.lis-sidebar.collapsed .sidebar-brand {
+  justify-content: center !important;
+}
+
+.pc-sidebar.lis-sidebar.collapsed .nav-caption {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pc-sidebar.lis-sidebar,
+  .pc-sidebar.lis-sidebar *,
+  .pc-topbar .sidebar-toggle-btn {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .pc-sidebar.lis-sidebar .nav-item a::after {
+    display: none !important;
+  }
+}
+
 /* ═══════════════════════════════════════════════════════════
    COLLAPSED SIDEBAR — icon-only mode (72px wide)
    Circular icon buttons with glow on active, ring on hover
@@ -5795,3 +5897,132 @@
   }
 }
 
+
+
+/* ═══════════════════════════════════════════════════════════════
+   LIS INTERACTION BASELINE
+   Shared interaction states for workflow screens. Uses existing
+   theme tokens; intentionally does not redefine colors or typography.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Consistent keyboard focus visibility without changing resting styles. */
+.pc-page-content :is(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--lis-primary, var(--primary));
+  outline-offset: 2px;
+  z-index: 1;
+}
+.pc-page-content :is(button, a, input, select, textarea):focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Common button states: primary/secondary/destructive variants retain
+   their component colors; this layer only standardizes interaction. */
+.pc-page-content button,
+.pc-page-content [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+}
+.pc-page-content button:disabled,
+.pc-page-content button[aria-disabled="true"],
+.pc-page-content [role="button"][aria-disabled="true"] {
+  cursor: not-allowed !important;
+  opacity: .56;
+  box-shadow: none !important;
+  transform: none !important;
+}
+.pc-page-content button[aria-busy="true"],
+.pc-page-content button.is-loading {
+  cursor: progress;
+  pointer-events: none;
+}
+.pc-page-content button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Search fields: consistent control height while preserving each page's
+   existing border, radius, background and typography. */
+.pc-page-content :is(.search-input, .search-box, .ts-search, .search-wrap,
+  .search-field, .report-search, .catalogue-search) {
+  min-height: 38px;
+  box-sizing: border-box;
+}
+.pc-page-content :is(.search-input, .search-box, .ts-search, .search-wrap,
+  .search-field, .report-search, .catalogue-search) input {
+  min-width: 0;
+  min-height: 24px;
+  box-sizing: border-box;
+}
+.pc-page-content input[type="search"] {
+  min-width: 0;
+}
+.pc-page-content :is(.search-clear, .ts-clear, .search-reset, .clear-search) {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  min-height: 28px;
+}
+
+/* Popup layers stay above cards and tables, and remain viewport-safe. */
+.pc-page-content :is(.alert-popover, .filter-popover, .collection-datetime-popover,
+  .more-menu, .drafts-panel, .dropdown-menu, .search-suggestions) {
+  z-index: var(--z-modal, 400);
+  max-width: min( min( calc(100vw - 24px), 440px ), 100%);
+  box-sizing: border-box;
+}
+.pc-page-content :is(.alert-popover, .filter-popover, .collection-datetime-popover,
+  .more-menu, .dropdown-menu, .search-suggestions) :is(button, a, input, select) {
+  max-width: 100%;
+}
+.pc-page-content :is(.receipt-overlay, .success-overlay) {
+  z-index: var(--z-modal, 400);
+  padding: clamp(12px, 3vw, 28px);
+  box-sizing: border-box;
+}
+.pc-page-content :is(.dialog, .receipt-card, .success-card) {
+  max-width: min(100%, 560px);
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+/* Table/list interaction states. Keep existing selected colors; add
+   predictable hover and focus affordances to rows that are selectable. */
+.pc-page-content :is(.sample-tbl, .result-table, .report-table) tbody tr,
+.pc-page-content :is(.report-row, .test-item, .sample-row, .queue-row)[tabindex] {
+  transition: background-color .14s ease, box-shadow .14s ease;
+}
+.pc-page-content :is(.sample-tbl, .result-table, .report-table) tbody tr:hover,
+.pc-page-content :is(.report-row, .test-item, .sample-row, .queue-row):hover {
+  background-color: var(--lis-primary-xlight, var(--primary-xlight));
+}
+.pc-page-content :is(.report-row, .test-item, .sample-row, .queue-row):focus-visible {
+  outline: 2px solid var(--lis-primary, var(--primary));
+  outline-offset: -2px;
+}
+.pc-page-content :is(.report-row, .test-item, .sample-row, .queue-row)[aria-selected="true"],
+.pc-page-content :is(.report-row, .test-item, .sample-row, .queue-row).is-selected {
+  box-shadow: inset 3px 0 0 var(--lis-primary, var(--primary));
+}
+
+/* Empty/loading feedback should not collapse the surrounding work area. */
+.pc-page-content :is(.reports-empty, .empty-tests, .empty-state, .tbl-empty,
+  .empty-review, .no-results) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.pc-page-content [role="status"][aria-live],
+.pc-page-content [aria-live="polite"] {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 600px) {
+  .pc-page-content :is(.alert-popover, .filter-popover, .collection-datetime-popover,
+    .more-menu, .dropdown-menu, .search-suggestions) {
+    max-width: calc(100vw - 24px);
+  }
+  .pc-page-content :is(.dialog, .receipt-card, .success-card) {
+    width: 100%;
+    max-width: 100%;
+  }
+}

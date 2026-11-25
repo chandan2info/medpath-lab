@@ -74,17 +74,20 @@
         (click)="setStatusFilter('dispatched')" [attr.aria-pressed]="statusFilter() === 'dispatched'">Dispatched</button>
     </div>
 
-    <div role="list" aria-label="Report list" class="report-rows">
+    <div role="listbox" aria-label="Report list" class="report-rows">
       @if (filteredReports().length === 0) {
-        <div class="reports-empty" role="status">
+        <div class="reports-empty" role="status" aria-live="polite">
           <i class="ti ti-file-off" aria-hidden="true"></i>
           <span>No reports found.</span>
         </div>
       }
       @for (r of pagedReports(); track r.id) {
-        <div class="report-row" role="listitem"
+        <div class="report-row" role="option" tabindex="0"
           [class.report-row--selected]="selected()?.id === r.id"
           (click)="selected.set(r)"
+          (keydown.enter)="selected.set(r)"
+          (keydown.space)="$event.preventDefault(); selected.set(r)"
+          (keydown)="focusReport($event)"
           [attr.aria-selected]="selected()?.id === r.id"
         >
           <div class="rr-av" aria-hidden="true">{{ initials(r.patientName) }}</div>
@@ -105,7 +108,7 @@
     </div>
 
     <div class="report-pagination">
-      <span>
+      <span role="status" aria-live="polite">
         @if (filteredReports().length === 0) {
           No reports match
         } @else {

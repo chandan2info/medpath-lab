@@ -3314,3 +3314,277 @@
     padding-inline: 2px;
   }
 }
+
+/* Mobile tap fix: keep Collection Details above adjacent workflow panels.
+   The date trigger was inside a lower stacking context on narrow layouts,
+   allowing neighbouring card layers to intercept taps before they reached it. */
+@media (max-width: 820px) {
+  .collect-panel {
+    position: relative;
+    z-index: 20;
+  }
+
+  .collect-panel .collection-field-grid,
+  .collect-panel .collection-field--wide,
+  .collect-panel .collection-datetime-control {
+    position: relative;
+  }
+
+  .collect-panel .collection-datetime-control {
+    z-index: 1001;
+  }
+
+  .collect-panel .collection-datetime-trigger {
+    position: relative;
+    z-index: 1002;
+    display: flex;
+    width: 100%;
+    min-height: 44px;
+    pointer-events: auto;
+    touch-action: manipulation;
+  }
+}
+
+/* Date picker responsive fix for compact desktop/tablet widths.
+   Between 821px and 1100px the form grid was still a scroll container.
+   A fixed-position popup nested in that scroll container can be clipped,
+   even when its z-index is higher than adjacent cards. */
+@media (max-width: 1100px) {
+  .collect-panel {
+    position: relative;
+    z-index: 20;
+    overflow: visible !important;
+  }
+
+  .collect-panel .cp-form,
+  .collect-panel .collection-field-grid {
+    overflow: visible !important;
+    max-height: none;
+  }
+
+  .collect-panel .collection-field--wide,
+  .collect-panel .collection-datetime-control {
+    position: relative;
+  }
+
+  .collect-panel .collection-datetime-control {
+    z-index: 1001;
+  }
+
+  .collect-panel .collection-datetime-trigger {
+    position: relative;
+    z-index: 1002;
+    pointer-events: auto;
+    touch-action: manipulation;
+  }
+}
+
+/* Compact-width date picker: use the control as the containing block.
+   This avoids fixed-position popovers being trapped by transformed app-shell
+   ancestors when Chrome is resized to a narrow window. */
+@media (max-width: 1100px) {
+  .collect-panel .collection-datetime-control {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .collect-panel .collection-datetime-popover {
+    position: absolute !important;
+    inset: auto !important;
+    z-index: 1200;
+    box-sizing: border-box;
+    max-width: calc(100vw - 24px);
+  }
+}
+
+/* Align the AM/PM segmented control with the select boxes on mobile.
+   Hour and Minute columns include a label above the select; the period
+   column does not, so bottom alignment alone places AM/PM one label-height
+   too low. Lift the period control by the label + gap height. */
+@media (max-width: 520px) {
+  .collect-panel .collection-time-picker__unit span {
+    line-height: 12px;
+  }
+
+  .collect-panel .collection-time-picker__period {
+    align-self: end;
+    margin-bottom: 15px;
+  }
+}
+
+/* Final time controls alignment and select-arrow fit — all viewport sizes.
+   Keep the AM/PM segmented control on the same control baseline as Hour and
+   Minute. Do not offset it with a mobile-only margin. */
+.collect-panel .collection-time-picker {
+  align-items: end !important;
+}
+
+.collect-panel .collection-time-picker__unit {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 3px;
+}
+
+.collect-panel .collection-time-picker__unit > span {
+  display: block;
+  min-height: 12px;
+  line-height: 12px;
+}
+
+.collect-panel .collection-time-picker__unit select {
+  display: block;
+  width: 100% !important;
+  max-width: 100%;
+  min-width: 0;
+  height: 32px;
+  min-height: 32px;
+  box-sizing: border-box;
+  padding-left: 7px;
+  padding-right: 26px;
+  background-position: right 7px center;
+}
+
+.collect-panel .collection-time-picker__period {
+  align-self: end !important;
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+  min-height: 32px;
+  margin: 0 !important;
+  padding: 2px;
+  box-sizing: border-box;
+}
+
+.collect-panel .collection-time-picker__period button {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 26px;
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+
+/* Remove the earlier mobile-only lift; baseline alignment is shared above. */
+@media (max-width: 520px) {
+  .collect-panel .collection-time-picker__period {
+    margin-bottom: 0 !important;
+  }
+}
+
+/* Definitive collection time row layout.
+   The markup has exactly three children (Hour, Minute, AM/PM). Earlier
+   overrides left conflicting 4-column and fixed 68px select sizing rules.
+   Use one 3-column grid and identical control heights at every breakpoint. */
+.collect-panel .collection-time-picker {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(104px, 0.9fr) !important;
+  align-items: end !important;
+  column-gap: 8px !important;
+  row-gap: 0 !important;
+  width: 100%;
+  min-width: 0;
+}
+
+.collect-panel .collection-time-picker__unit {
+  display: grid !important;
+  grid-template-rows: 12px 38px !important;
+  align-content: end !important;
+  align-self: end !important;
+  gap: 4px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+}
+
+.collect-panel .collection-time-picker__unit > span {
+  display: block !important;
+  height: 12px !important;
+  min-height: 12px !important;
+  line-height: 12px !important;
+  margin: 0 !important;
+}
+
+.collect-panel .collection-time-picker__unit select,
+.collect-panel .collection-time-picker__unit select[aria-label] {
+  appearance: auto;
+  -webkit-appearance: menulist;
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  margin: 0 !important;
+  padding: 0 30px 0 10px !important;
+  box-sizing: border-box !important;
+  background-position: right 10px center !important;
+  background-repeat: no-repeat !important;
+}
+
+.collect-panel .collection-time-picker__period {
+  display: flex !important;
+  align-self: end !important;
+  align-items: center !important;
+  justify-content: stretch !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  margin: 0 !important;
+  padding: 3px !important;
+  box-sizing: border-box !important;
+}
+
+.collect-panel .collection-time-picker__period button {
+  flex: 1 1 0 !important;
+  width: 50% !important;
+  min-width: 0 !important;
+  height: 30px !important;
+  min-height: 30px !important;
+  margin: 0 !important;
+  padding: 0 4px !important;
+  box-sizing: border-box !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+@media (max-width: 520px) {
+  .collect-panel .collection-time-picker {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(96px, 0.9fr) !important;
+    column-gap: 6px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .collect-panel .collection-time-picker {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(88px, 0.9fr) !important;
+    column-gap: 5px !important;
+  }
+}
+
+/* Give the native select indicator a deliberate right inset.
+   Replace the platform-edge arrow with a theme-matched chevron so it has
+   consistent breathing room in Chrome on macOS, Windows and mobile. */
+.collect-panel .collection-time-picker__unit select,
+.collect-panel .collection-time-picker__unit select[aria-label] {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  padding-right: 38px !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='m2.5 4.5 3.5 3 3.5-3' fill='none' stroke='%23cbd5e1' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 12px center !important;
+  background-size: 12px 12px !important;
+}
+
+/* Center the date/time popover footer action labels. The shared lis-btn
+   style inherits left alignment, so explicitly center both footer buttons. */
+.collect-panel .collection-datetime-popover__actions .lis-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  line-height: 1.2 !important;
+  white-space: nowrap;
+}

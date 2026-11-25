@@ -6,7 +6,7 @@
 //  entered right after billing, see Screen 4a —
 //  Sample Collection.)
 // ─────────────────────────────────────────────
-import { Component, signal, computed, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, signal, computed, ChangeDetectionStrategy, inject, ElementRef } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { StatusPillComponent } from '../../shared/components/status-pill/status-pill.component';
 import { Sample, SampleStatus } from '../../shared/models/lis.models';
@@ -42,6 +42,7 @@ const FILTER_OPTS: { label: string; value: SampleStatus | 'all' | 'stat-priority
   styleUrl: './sample-tracking.component.css',
 })
 export class SampleTrackingComponent {
+  private readonly host = inject(ElementRef<HTMLElement>);
   private readonly svc = inject(SampleTrackingService);
 
   protected readonly filterOpts  = FILTER_OPTS;
@@ -85,6 +86,20 @@ export class SampleTrackingComponent {
     return this.sort.apply(rows);
   });
 
+  focusSample(event: Event): void {
+    const keyboardEvent = event as KeyboardEvent;
+    if (keyboardEvent.key !== 'ArrowDown' && keyboardEvent.key !== 'ArrowUp') return;
+    keyboardEvent.preventDefault();
+    const direction: -1 | 1 = keyboardEvent.key === 'ArrowDown' ? 1 : -1;
+    const root = this.host.nativeElement as HTMLElement;
+    const rows = Array.from(root.querySelectorAll('.sample-tbl tbody tr[tabindex="0"]')) as HTMLElement[];
+    const current = rows.indexOf(keyboardEvent.currentTarget as HTMLElement);
+    const next = Math.max(0, Math.min(rows.length - 1, current + direction));
+    rows[next]?.focus();
+    const sample = this.sortedSamples()[next];
+    if (sample) this.selectSample(sample);
+  }
+
   selectSample(s: Sample): void { this.selectedSample.set(s); this.actionError.set(''); }
 
   private runSampleAction(action: (id: string) => Sample | undefined): void {
@@ -105,6 +120,7 @@ export class SampleTrackingComponent {
   rejectSample(): void {
     const reason = window.prompt('Enter the specimen rejection reason:');
     if (!reason?.trim()) return;
+    if (!window.confirm('Reject this specimen and return it for recollection?')) return;
     this.runSampleAction(id => this.svc.rejectSample(id, reason));
   }
   requestRecollection(): void { this.runSampleAction(id => this.svc.requestRecollection(id)); }
