@@ -1,0 +1,91 @@
+<div class="billing-page">
+  <header class="billing-heading">
+    <div>
+      <div class="eyebrow"><i class="ti ti-wallet"></i> FINANCE & PATIENT SERVICES</div>
+      <h1>Billing Overview</h1>
+      <p>Manage invoices, collect outstanding payments and hand over approved reports.</p>
+    </div>
+    <a class="primary-action" routerLink="/dashboard/billing/new"><i class="ti ti-plus"></i> New Invoice</a>
+  </header>
+
+  <section class="metric-grid" aria-label="Billing summary">
+    <article class="metric-card">
+      <div class="metric-top"><span>Invoices</span><span class="metric-icon metric-icon--blue"><i class="ti ti-file-invoice"></i></span></div>
+      <strong>{{ invoiceCount() }}</strong><small>Recorded in this workspace</small>
+    </article>
+    <article class="metric-card">
+      <div class="metric-top"><span>Collected</span><span class="metric-icon metric-icon--green"><i class="ti ti-circle-check"></i></span></div>
+      <strong>{{ collectedAmount() | currency:'INR':'symbol':'1.0-0' }}</strong><small>Payments received</small>
+    </article>
+    <article class="metric-card">
+      <div class="metric-top"><span>Outstanding</span><span class="metric-icon metric-icon--amber"><i class="ti ti-alert-circle"></i></span></div>
+      <strong class="amount-warning">{{ outstandingAmount() | currency:'INR':'symbol':'1.0-0' }}</strong><small>{{ pendingPaymentCount() }} invoices with a balance</small>
+    </article>
+    <article class="metric-card">
+      <div class="metric-top"><span>Reports ready</span><span class="metric-icon metric-icon--teal"><i class="ti ti-file-check"></i></span></div>
+      <strong>{{ readyCount() }}</strong><small>Orders with reports ready</small>
+    </article>
+  </section>
+
+  <section class="worklist-card">
+    <div class="worklist-heading">
+      <div><h2>Billing workspace</h2><p>Choose a task to see the patients and invoices that need attention.</p></div>
+      <a routerLink="/dashboard/billing/new" class="text-action"><i class="ti ti-plus"></i> Create invoice</a>
+    </div>
+
+    <nav class="billing-tabs" aria-label="Billing views">
+      <button type="button" [class.active]="activeView() === 'overview'" (click)="setView('overview')"><i class="ti ti-layout-dashboard"></i> Overview</button>
+      <button type="button" [class.active]="activeView() === 'collection'" (click)="setView('collection')"><i class="ti ti-file-check"></i> Report Collection @if (readyCount()) { <span class="tab-count">{{ readyCount() }}</span> }</button>
+      <button type="button" [class.active]="activeView() === 'outstanding'" (click)="setView('outstanding')"><i class="ti ti-wallet"></i> Outstanding @if (pendingPaymentCount()) { <span class="tab-count">{{ pendingPaymentCount() }}</span> }</button>
+      <button type="button" [class.active]="activeView() === 'invoices'" (click)="setView('invoices')"><i class="ti ti-receipt"></i> All Invoices</button>
+    </nav>
+
+    <div class="table-toolbar">
+      <label class="search-field"><i class="ti ti-search"></i><input type="search" aria-label="Search billing records" placeholder="Search patient, patient ID, invoice or test..." [ngModel]="query()" (ngModelChange)="query.set($event)" />@if (query()) { <button type="button" aria-label="Clear search" (click)="query.set('')"><i class="ti ti-x"></i></button> }</label>
+      <span class="result-count">{{ filteredRows().length }} records</span>
+    </div>
+
+    @if (feedback()) { <div class="feedback" role="status"><i class="ti ti-info-circle"></i>{{ feedback() }}<button type="button" aria-label="Dismiss message" (click)="feedback.set('')"><i class="ti ti-x"></i></button></div> }
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Patient / Invoice</th><th>Tests</th><th>Invoice total</th><th>Paid</th><th>Balance</th><th>Payment</th><th>Reports</th><th>Actions</th></tr></thead>
+        <tbody>
+          @for (row of filteredRows(); track row.invoice.id) {
+            <tr>
+              <td><div class="patient-name">{{ row.patientName }}</div><div class="muted mono">{{ row.patientId }} · {{ row.invoice.id }}</div><div class="muted">{{ row.createdAt | date:'dd MMM yyyy' }}</div></td>
+              <td><div class="test-summary">{{ row.tests.slice(0, 2).join(', ') || 'Tests not linked' }}</div>@if (row.tests.length > 2) { <small class="muted">+{{ row.tests.length - 2 }} more</small> }</td>
+              <td class="money">{{ row.invoice.total | currency:'INR':'symbol':'1.0-0' }}</td>
+              <td class="money">{{ row.invoice.amountReceived | currency:'INR':'symbol':'1.0-0' }}</td>
+              <td class="money" [class.amount-warning]="row.invoice.balanceDue > 0">{{ row.invoice.balanceDue | currency:'INR':'symbol':'1.0-0' }}</td>
+              <td><span class="status-pill" [ngClass]="'status-pill--' + row.invoice.status">{{ statusLabel(row) }}</span></td>
+              <td>@if (row.readyReportCount) { <span class="status-pill status-pill--ready">{{ row.readyReportCount }} ready</span> } @else if (row.reportCount) { <span class="status-pill status-pill--neutral">Delivered</span> } @else { <span class="muted">Not ready</span> }</td>
+              <td class="row-actions">
+                @if (row.invoice.balanceDue > 0) { <button type="button" class="small-action small-action--primary" (click)="openPayment(row)">Collect</button> }
+                @if (row.readyReportCount > 0) { <button type="button" class="small-action small-action--secondary" (click)="markReportDelivered(row)">Mark delivered</button> }
+                @if (row.invoice.balanceDue === 0 && row.readyReportCount === 0) { <span class="muted">—</span> }
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="8"><div class="empty-state"><span class="empty-icon"><i class="ti ti-receipt-off"></i></span><strong>{{ activeView() === 'collection' ? 'No reports ready for collection' : activeView() === 'outstanding' ? 'No outstanding payments' : 'No billing records yet' }}</strong><p>{{ activeView() === 'collection' ? 'Approved reports will appear here when generated.' : activeView() === 'outstanding' ? 'All recorded invoices are currently settled.' : 'Invoices created during patient registration will appear here.' }}</p>@if (activeView() === 'overview' || activeView() === 'invoices') { <a routerLink="/dashboard/billing/new">Create the first invoice</a> }</div></td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+@if (selectedRow(); as selected) {
+  <div class="payment-backdrop" role="presentation" (click)="closePayment()">
+    <section class="payment-dialog" role="dialog" aria-modal="true" aria-labelledby="payment-title" (click)="$event.stopPropagation()">
+      <header><div><span class="dialog-kicker">RECEIVE PAYMENT</span><h2 id="payment-title">Collect balance</h2></div><button type="button" class="close-dialog" aria-label="Close payment dialog" (click)="closePayment()"><i class="ti ti-x"></i></button></header>
+      <div class="dialog-patient"><strong>{{ selected.patientName }}</strong><span>{{ selected.patientId }} · {{ selected.invoice.id }}</span></div>
+      <div class="balance-line"><span>Outstanding balance</span><strong>{{ selected.invoice.balanceDue | currency:'INR':'symbol':'1.2-2' }}</strong></div>
+      <label for="payment-amount">Amount received</label>
+      <div class="amount-input"><span>₹</span><input id="payment-amount" type="number" min="0.01" [max]="selected.invoice.balanceDue" step="0.01" [ngModel]="paymentAmount()" (ngModelChange)="paymentAmount.set($event)" /></div>
+      <label for="payment-mode">Payment method</label>
+      <select id="payment-mode" [ngModel]="paymentMode()" (ngModelChange)="paymentMode.set($event)"><option value="cash">Cash</option><option value="upi">UPI</option><option value="card">Card</option><option value="credit">Credit</option></select>
+      <footer><button type="button" class="secondary-action" (click)="closePayment()">Cancel</button><button type="button" class="primary-action" [disabled]="savingPayment()" (click)="confirmPayment()">{{ savingPayment() ? 'Saving...' : 'Confirm payment' }}</button></footer>
+    </section>
+  </div>
+}
