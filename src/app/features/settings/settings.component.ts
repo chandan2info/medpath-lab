@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { ThemeService, Palette } from '../../core/services/theme.service';
+import { CursorPreferenceService } from '../../core/services/cursor-preference.service';
 
 @Component({
   selector: 'app-settings',
@@ -21,14 +22,10 @@ import { ThemeService, Palette } from '../../core/services/theme.service';
 
       <div class="theme-grid" role="radiogroup" aria-label="Color theme">
         @for (option of theme.paletteOptions; track option.id) {
-          <button
-            type="button"
-            class="theme-option"
+          <button type="button" class="theme-option"
             [class.active]="theme.palette() === option.id"
-            role="radio"
-            [attr.aria-checked]="theme.palette() === option.id"
-            (click)="selectPalette(option.id)"
-          >
+            role="radio" [attr.aria-checked]="theme.palette() === option.id"
+            (click)="selectPalette(option.id)">
             <span class="theme-swatches" aria-hidden="true">
               <span class="swatch" [style.background]="option.swatches.primary"></span>
               <span class="swatch" [style.background]="option.swatches.accent"></span>
@@ -50,16 +47,64 @@ import { ThemeService, Palette } from '../../core/services/theme.service';
           <span class="theme-label">Dark mode</span>
           <span class="theme-desc">Switch between light and dark backgrounds.</span>
         </div>
-        <button
-          type="button"
-          class="mode-toggle"
-          role="switch"
-          [attr.aria-checked]="theme.theme() === 'dark'"
-          (click)="theme.toggle()"
-        >
+        <button type="button" class="mode-toggle" role="switch"
+          [attr.aria-checked]="theme.theme() === 'dark'" (click)="theme.toggle()">
           <i class="ti" [class.ti-sun]="theme.theme() === 'light'" [class.ti-moon]="theme.theme() === 'dark'" aria-hidden="true"></i>
           {{ theme.theme() === 'dark' ? 'Dark' : 'Light' }}
         </button>
+      </div>
+    </section>
+
+    <section class="settings-card cursor-card" aria-labelledby="cursor-heading">
+      <div class="settings-card-head">
+        <i class="ti ti-pointer settings-card-icon" aria-hidden="true"></i>
+        <div>
+          <h2 id="cursor-heading" class="settings-card-title">Custom cursor</h2>
+          <p class="settings-card-sub">Personalize the arrow and pointer-hand colors. Changes apply instantly and are saved on this device.</p>
+        </div>
+      </div>
+
+      <div class="cursor-enable-row">
+        <div class="mode-row-text">
+          <span class="theme-label">Enable custom cursor</span>
+          <span class="theme-desc">Use the MedPath cursor instead of the browser default on desktop.</span>
+        </div>
+        <button type="button" class="mode-toggle" role="switch"
+          [class.switch-active]="cursor.enabled()"
+          [attr.aria-checked]="cursor.enabled()"
+          (click)="cursor.toggle()">
+          <span class="switch-dot" aria-hidden="true"></span>
+          {{ cursor.enabled() ? 'On' : 'Off' }}
+        </button>
+      </div>
+
+      <div class="cursor-color-row">
+        <div class="cursor-color-copy">
+          <span class="theme-label">Cursor color</span>
+          <span class="theme-desc">Choose a color for both the arrow and clickable hand.</span>
+        </div>
+        <div class="color-picker-control">
+          <label class="color-picker" [style.--picker-color]="cursor.color()" for="cursor-color">
+            <input id="cursor-color" type="color" [value]="cursor.color()" (input)="onCursorColorInput($event)" aria-label="Choose custom cursor color">
+            <span class="color-picker-preview" aria-hidden="true"></span>
+          </label>
+          <code class="color-value">{{ cursor.color() }}</code>
+          <button type="button" class="reset-color" (click)="cursor.resetColor()">Reset</button>
+        </div>
+      </div>
+
+      <div class="cursor-presets" aria-label="Preset cursor colors">
+        @for (color of cursorColors; track color.value) {
+          <button type="button" class="color-preset"
+            [style.--preset-color]="color.value"
+            [class.selected]="cursor.color() === color.value"
+            [attr.aria-label]="'Set cursor color to ' + color.label"
+            [attr.aria-pressed]="cursor.color() === color.value"
+            (click)="cursor.setColor(color.value)">
+            <span></span>
+            <small>{{ color.label }}</small>
+          </button>
+        }
       </div>
     </section>
 
@@ -70,133 +115,86 @@ import { ThemeService, Palette } from '../../core/services/theme.service';
     </div>`,
   styles: [`
     :host { display:block; }
-
     .page-header { margin-bottom:14px; }
-    .page-title  { font-size:20px; font-weight:500; color:var(--text-primary); margin:0; }
-
+    .page-title { font-size:20px; font-weight:500; color:var(--text-primary); margin:0; }
     .settings-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-card);
-      padding: var(--space-6);
-      margin-bottom: var(--space-6);
+      background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius-lg);
+      box-shadow:var(--shadow-card); padding:var(--space-6); margin-bottom:var(--space-6);
     }
-
-    .settings-card-head {
-      display:flex;
-      align-items:flex-start;
-      gap: var(--space-3);
-      margin-bottom: var(--space-5);
-    }
-    .settings-card-icon {
-      font-size: 22px;
-      color: var(--primary-deeper);
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
+    .settings-card-head { display:flex; align-items:flex-start; gap:var(--space-3); margin-bottom:var(--space-5); }
+    .settings-card-icon { font-size:22px; color:var(--primary-deeper); flex-shrink:0; margin-top:2px; }
     .settings-card-title { font-size:15px; font-weight:600; color:var(--text-primary); margin:0 0 2px; }
-    .settings-card-sub   { font-size:13px; color:var(--text-secondary); margin:0; max-width:520px; }
-
-    .theme-grid {
-      display:grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: var(--space-3);
-    }
-
+    .settings-card-sub { font-size:13px; color:var(--text-secondary); margin:0; max-width:520px; }
+    .theme-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:var(--space-3); }
     .theme-option {
-      position: relative;
-      display:flex;
-      align-items:center;
-      gap: var(--space-3);
-      text-align:left;
-      padding: var(--space-3) var(--space-4);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-md);
-      background: var(--bg-surface-alt);
-      cursor: pointer;
-      transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
-      font-family: inherit;
+      position:relative; display:flex; align-items:center; gap:var(--space-3); text-align:left;
+      padding:var(--space-3) var(--space-4); border:1.5px solid var(--border); border-radius:var(--radius-md);
+      background:var(--bg-surface-alt); cursor:pointer; transition:border-color var(--transition-fast),box-shadow var(--transition-fast),transform var(--transition-fast); font-family:inherit;
     }
-    .theme-option:hover {
-      border-color: var(--primary-light);
-      transform: translateY(-1px);
-    }
-    .theme-option:focus-visible {
-      outline: 2px solid var(--primary-deeper);
-      outline-offset: 2px;
-    }
-    .theme-option.active {
-      border-color: var(--primary-deeper);
-      box-shadow: 0 0 0 3px var(--primary-xlight);
-      background: var(--bg-surface);
-    }
-
-    .theme-swatches {
-      display:flex;
-      flex-shrink:0;
-    }
-    .swatch {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      border: 2px solid var(--bg-surface);
-      box-shadow: 0 0 0 1px var(--border);
-    }
-    .swatch + .swatch { margin-left: -7px; }
-
-    .theme-text { display:flex; flex-direction:column; gap:1px; min-width:0; }
+    .theme-option:hover { border-color:var(--primary-light); transform:translateY(-1px); }
+    .theme-option:focus-visible { outline:2px solid var(--primary-deeper); outline-offset:2px; }
+    .theme-option.active { border-color:var(--primary-deeper); box-shadow:0 0 0 3px var(--primary-xlight); background:var(--bg-surface); }
+    .theme-swatches { display:flex; flex-shrink:0; }
+    .swatch { width:18px; height:18px; border-radius:50%; border:2px solid var(--bg-surface); box-shadow:0 0 0 1px var(--border); }
+    .swatch + .swatch { margin-left:-7px; }
+    .theme-text,.cursor-color-copy,.mode-row-text { display:flex; flex-direction:column; gap:1px; min-width:0; }
     .theme-label { font-size:13px; font-weight:600; color:var(--text-primary); }
-    .theme-desc  { font-size:11.5px; color:var(--text-secondary); }
-
-    .theme-check {
-      position:absolute;
-      top:8px;
-      right:8px;
-      font-size:16px;
-      color: var(--primary-deeper);
+    .theme-desc { font-size:11.5px; color:var(--text-secondary); }
+    .theme-check { position:absolute; top:8px; right:8px; font-size:16px; color:var(--primary-deeper); }
+    .mode-row,.cursor-enable-row,.cursor-color-row {
+      display:flex; align-items:center; justify-content:space-between; gap:var(--space-4);
+      margin-top:var(--space-5); padding-top:var(--space-5); border-top:1px solid var(--border);
     }
-
-    .mode-row {
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: var(--space-4);
-      margin-top: var(--space-5);
-      padding-top: var(--space-5);
-      border-top: 1px solid var(--border);
-    }
-    .mode-row-text { display:flex; flex-direction:column; gap:1px; }
-
     .mode-toggle {
-      display:flex;
-      align-items:center;
-      gap: var(--space-2);
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-primary);
-      background: var(--bg-surface-alt);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 8px 14px;
-      cursor: pointer;
-      transition: border-color var(--transition-fast), background var(--transition-fast);
-      font-family: inherit;
+      display:flex; align-items:center; gap:var(--space-2); font-size:13px; font-weight:600;
+      color:var(--text-primary); background:var(--bg-surface-alt); border:1.5px solid var(--border);
+      border-radius:var(--radius-md); padding:8px 14px; cursor:pointer; transition:border-color var(--transition-fast),background var(--transition-fast); font-family:inherit;
     }
-    .mode-toggle:hover { border-color: var(--primary-light); }
-    .mode-toggle i { font-size: 16px; color: var(--theme-icon-color, var(--primary-deeper)); }
-
-    .placeholder-page { display:flex; flex-direction:column; align-items:center; justify-content:center;
-      padding:60px 20px; gap:14px; text-align:center; }
-    .placeholder-icon { font-size:48px; color:var(--lis-primary,#1D9E75); opacity:0.35; }
+    .mode-toggle:hover { border-color:var(--primary-light); }
+    .mode-toggle i { font-size:16px; color:var(--theme-icon-color,var(--primary-deeper)); }
+    .switch-dot { width:8px; height:8px; border-radius:50%; background:var(--text-secondary); }
+    .switch-active .switch-dot { background:var(--color-success); }
+    .color-picker-control { display:flex; align-items:center; gap:10px; }
+    .color-picker { width:38px; height:38px; display:grid; place-items:center; padding:4px; border:1px solid var(--border); border-radius:10px; background:var(--bg-surface-alt); cursor:pointer; }
+    .color-picker input { position:absolute; width:1px; height:1px; opacity:0; }
+    .color-picker-preview { width:26px; height:26px; border-radius:7px; background:var(--picker-color); box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); }
+    .color-picker:focus-within { outline:2px solid var(--primary-deeper); outline-offset:2px; }
+    .color-value { font-size:12px; color:var(--text-secondary); min-width:64px; }
+    .reset-color { border:0; background:transparent; color:var(--primary-deeper); font:600 12px inherit; cursor:pointer; padding:6px; }
+    .cursor-presets { display:flex; flex-wrap:wrap; gap:14px; margin-top:18px; }
+    .color-preset { display:flex; flex-direction:column; align-items:center; gap:5px; padding:4px; border:1px solid transparent; border-radius:9px; background:transparent; cursor:pointer; }
+    .color-preset span { width:22px; height:22px; border-radius:50%; background:var(--preset-color); box-shadow:0 0 0 1px var(--border),inset 0 0 0 2px var(--bg-surface); }
+    .color-preset small { font-size:10px; color:var(--text-secondary); }
+    .color-preset.selected { border-color:var(--primary-deeper); background:var(--primary-xlight); }
+    .placeholder-page { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 20px; gap:14px; text-align:center; }
+    .placeholder-icon { font-size:48px; color:var(--lis-primary,#1D9E75); opacity:.35; }
     .placeholder-title { font-size:18px; font-weight:500; color:var(--text-primary); margin:0; }
-    .placeholder-sub   { font-size:13px; color:var(--text-secondary); margin:0; max-width:360px; }
+    .placeholder-sub { font-size:13px; color:var(--text-secondary); margin:0; max-width:360px; }
+    @media(max-width:560px) {
+      .settings-card { padding:16px; }
+      .cursor-enable-row,.cursor-color-row { align-items:flex-start; flex-direction:column; }
+      .color-picker-control { flex-wrap:wrap; }
+    }
   `]
 })
 export class SettingsComponent {
   protected readonly theme = inject(ThemeService);
+  protected readonly cursor = inject(CursorPreferenceService);
+  protected readonly cursorColors = [
+    { label: 'Violet', value: '#8b5cf6' },
+    { label: 'Teal', value: '#0d9488' },
+    { label: 'Blue', value: '#2563eb' },
+    { label: 'Rose', value: '#e11d48' },
+    { label: 'Amber', value: '#d97706' },
+    { label: 'Black', value: '#171717' },
+  ];
 
   protected selectPalette(id: Palette): void {
     this.theme.setPalette(id);
+  }
+
+  protected onCursorColorInput(event: Event): void {
+    const input = event.target;
+    if (input instanceof HTMLInputElement) this.cursor.setColor(input.value);
   }
 }
