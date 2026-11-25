@@ -42,3 +42,77 @@
   .patient-card__metadata { grid-template-columns:repeat(2,minmax(0,1fr)); row-gap:5px; }
   .patient-card__fact { min-height:38px; }
 }
+
+
+/* Compact patient identity and fact cards on narrow devices. */
+@media (max-width: 520px) {
+  .patient-card__identity {
+    align-items: flex-start;
+  }
+
+  .patient-card__identity-copy,
+  .patient-card__name-row {
+    min-width: 0;
+  }
+
+  .patient-card__name {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .patient-card__id {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .patient-card__metadata {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .patient-card__fact {
+    min-width: 0;
+    padding-inline: 6px;
+  }
+
+  .patient-card__fact > span,
+  .patient-card__fact > strong {
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 380px) {
+  .patient-card {
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .patient-card__identity {
+    gap: 8px;
+  }
+
+  .patient-card__avatar {
+    width: 34px;
+    height: 34px;
+  }
+
+  .patient-card__demographics {
+    gap: 5px 8px;
+  }
+
+  .patient-card__demographics span {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .patient-card__metadata {
+    gap: 4px;
+  }
+
+  .patient-card__fact {
+    grid-template-columns: 13px minmax(0, 1fr);
+    column-gap: 4px;
+    padding-inline: 4px;
+  }
+}
