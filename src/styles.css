@@ -6134,46 +6134,46 @@
 }
 
 /* Default pointer */
-html,
-body,
-body * {
+html.cursor-custom-enabled,
+html.cursor-custom-enabled body,
+html.cursor-custom-enabled body * {
   cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M5 3 L5 25 L11 19 L16 29 L21 26 L16 16 L25 16 Z' fill='%238b5cf6' stroke='%23ffffff' stroke-width='1.8' stroke-linejoin='round'/%3E%3C/svg%3E") 4 3, auto;
 }
 
 /* Clickable controls: custom violet hand */
-a,
-button,
-[role="button"],
-[role="tab"],
-[role="menuitem"],
-[role="option"],
-summary,
-select,
-label[for],
-input[type="checkbox"],
-input[type="radio"],
-input[type="range"],
-.clickable,
-.lis-btn,
-[ng-reflect-router-link] {
+html.cursor-custom-enabled a,
+html.cursor-custom-enabled button,
+html.cursor-custom-enabled [role="button"],
+html.cursor-custom-enabled [role="tab"],
+html.cursor-custom-enabled [role="menuitem"],
+html.cursor-custom-enabled [role="option"],
+html.cursor-custom-enabled summary,
+html.cursor-custom-enabled select,
+html.cursor-custom-enabled label[for],
+html.cursor-custom-enabled input[type="checkbox"],
+html.cursor-custom-enabled input[type="radio"],
+html.cursor-custom-enabled input[type="range"],
+html.cursor-custom-enabled .clickable,
+html.cursor-custom-enabled .lis-btn,
+html.cursor-custom-enabled [ng-reflect-router-link] {
   cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M10 15 V7.5 C10 5.5 13 5.5 13 7.5 V14 V5.5 C13 3.5 16 3.5 16 5.5 V14 V7 C16 5 19 5 19 7 V15 V10 C19 8 22 8 22 10 V20 C22 26 18 29 13 27 C10 26 8 23 6 20 L4.5 17.5 C3.5 15.5 6 13.5 8 15.5 L10 18 Z' fill='%238b5cf6' stroke='%23ffffff' stroke-width='1.7' stroke-linejoin='round'/%3E%3C/svg%3E") 10 5, pointer;
 }
 
 /* Text entry and selection */
-input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
-textarea,
-[contenteditable="true"],
-[role="textbox"],
-.CodeMirror,
-.monaco-editor,
-.cm-content {
+html.cursor-custom-enabled input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+html.cursor-custom-enabled textarea,
+html.cursor-custom-enabled [contenteditable="true"],
+html.cursor-custom-enabled [role="textbox"],
+html.cursor-custom-enabled .CodeMirror,
+html.cursor-custom-enabled .monaco-editor,
+html.cursor-custom-enabled .cm-content {
   cursor: text;
 }
 
 /* Native semantic cursor states */
-:disabled,
-[disabled],
-[aria-disabled="true"] {
+html.cursor-custom-enabled :disabled,
+html.cursor-custom-enabled [disabled],
+html.cursor-custom-enabled [aria-disabled="true"] {
   cursor: not-allowed;
 }
 
