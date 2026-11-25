@@ -13,6 +13,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
 import { SampleTrackingService } from '../../core/services/sample-tracking.service';
 import { ResultFlag, Sample } from '../../shared/models/lis.models';
+import { PatientCardComponent } from '../../shared/components/patient-card/patient-card.component';
 import { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';
 import { ResultEntryDataService, MockOrderedTest, MockParameter, NoteDraft, NotificationDraft, TestFilter, TestStatus, flagFromValue } from '../../core/services/result-entry-data.service';
 
