@@ -6462,23 +6462,3 @@ button:disabled.is-loading {
     cursor: progress !important;
   }
 }
-
-
-/* Animated dual-layer cursor takes over only after its fine-pointer component
-   has mounted. Keep text-entry fields native so the I-beam remains available. */
-@media (hover: hover) and (pointer: fine) {
-  html.cursor-dual-layer-active,
-  html.cursor-dual-layer-active body,
-  html.cursor-dual-layer-active body * {
-    cursor: none !important;
-  }
-
-  html.cursor-dual-layer-active body :is(
-    input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]),
-    textarea,
-    [contenteditable="true"],
-    [role="textbox"]
-  ) {
-    cursor: text !important;
-  }
-}
