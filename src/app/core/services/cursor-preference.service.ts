@@ -107,6 +107,9 @@ export class CursorPreferenceService {
     const hand = this.cursorDataUri(
       `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M12 2.5 C10.9 2.5 10 3.4 10 4.5 V14 L8.1 12.1 C7.3 11.3 6 11.3 5.2 12.1 C4.4 12.9 4.4 14.2 5.2 15 L12.2 22 C13.4 23.2 15 23.8 16.7 23.8 H18 C21.3 23.8 24 21.1 24 17.8 V11 C24 9.9 23.1 9 22 9 C21.4 9 20.9 9.3 20.5 9.7 C20.2 8.7 19.3 8 18.3 8 C17.7 8 17.2 8.3 16.8 8.7 C16.5 7.7 15.6 7 14.6 7 C14 7 13.5 7.3 13.1 7.7 V4.5 C13.1 3.4 12 2.5 12 2.5 Z" fill="${color}" stroke="#ffffff" stroke-width="1.7" stroke-linejoin="round"/></svg>`
     );
+    const textCursor = this.cursorDataUri(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32"><path d="M6 5 H18 M12 5 V27 M6 27 H18" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/><path d="M6 5 H18 M12 5 V27 M6 27 H18" fill="none" stroke="${color}" stroke-width="2.4" stroke-linecap="round"/></svg>`
+    );
 
     if (!this.colorStyle) {
       this.colorStyle = this.document.createElement('style');
@@ -123,6 +126,16 @@ export class CursorPreferenceService {
 
         /* Match the specificity of the global cursor overrides so the
            selected hand color wins on hovered controls and their children. */
+        /* Search and other text inputs use a colored I-beam, not the old
+           hard-coded violet cursor from the global stylesheet. */
+        html.cursor-custom-enabled body :is(
+          input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+          textarea, [contenteditable="true"], [role="textbox"],
+          .CodeMirror, .monaco-editor, .cm-content
+        ) {
+          cursor: url("${textCursor}") 12 16, text !important;
+        }
+
         html.cursor-custom-enabled body :is(
           button:not(:disabled):not([aria-disabled="true"]),
           a,
