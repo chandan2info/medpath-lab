@@ -3411,3 +3411,63 @@
     margin-bottom: 15px;
   }
 }
+
+/* Final time controls alignment and select-arrow fit — all viewport sizes.
+   Keep the AM/PM segmented control on the same control baseline as Hour and
+   Minute. Do not offset it with a mobile-only margin. */
+.collect-panel .collection-time-picker {
+  align-items: end !important;
+}
+
+.collect-panel .collection-time-picker__unit {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 3px;
+}
+
+.collect-panel .collection-time-picker__unit > span {
+  display: block;
+  min-height: 12px;
+  line-height: 12px;
+}
+
+.collect-panel .collection-time-picker__unit select {
+  display: block;
+  width: 100% !important;
+  max-width: 100%;
+  min-width: 0;
+  height: 32px;
+  min-height: 32px;
+  box-sizing: border-box;
+  padding-left: 7px;
+  padding-right: 26px;
+  background-position: right 7px center;
+}
+
+.collect-panel .collection-time-picker__period {
+  align-self: end !important;
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+  min-height: 32px;
+  margin: 0 !important;
+  padding: 2px;
+  box-sizing: border-box;
+}
+
+.collect-panel .collection-time-picker__period button {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 26px;
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+
+/* Remove the earlier mobile-only lift; baseline alignment is shared above. */
+@media (max-width: 520px) {
+  .collect-panel .collection-time-picker__period {
+    margin-bottom: 0 !important;
+  }
+}
