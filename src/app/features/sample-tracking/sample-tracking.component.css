@@ -544,3 +544,23 @@
 @media (max-width:700px){
   .sample-table-wrap{min-height:324px;max-height:64.92dvh}
 }
+
+/* Keep the detail card stationary; scroll only the assigned-tubes list. */
+.detail-panel{
+  max-height:none!important;
+  overflow:visible!important;
+}
+.tube-list{
+  max-height:190px;
+  overflow-y:auto;
+  overflow-x:hidden;
+  overscroll-behavior:contain;
+  scrollbar-width:thin;
+  scrollbar-color:var(--border-color) transparent;
+}
+.tube-list::-webkit-scrollbar{width:6px}
+.tube-list::-webkit-scrollbar-track{background:transparent}
+.tube-list::-webkit-scrollbar-thumb{
+  background:var(--border-color);
+  border-radius:6px;
+}
