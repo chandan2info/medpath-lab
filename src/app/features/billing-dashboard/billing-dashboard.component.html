@@ -43,8 +43,14 @@
               <td class="money" [class.amount-warning]="row.invoice.balanceDue > 0">{{ row.invoice.balanceDue | currency:'INR':'symbol':'1.0-0' }}</td>
               <td><span class="status-pill" [ngClass]="'status-pill--' + row.invoice.status">{{ statusLabel(row) }}</span></td>
               <td class="actions-column"><div class="row-actions">
-                @if (row.invoice.balanceDue > 0) { <button type="button" class="small-action small-action--primary" (click)="openPayment(row)"><i class="ti ti-cash"></i> Collect</button> }
-                @if (row.invoice.amountReceived === 0 && row.invoice.payments.length === 0) { <button type="button" class="icon-action icon-action--danger" [attr.aria-label]="'Delete invoice ' + row.invoice.id" title="Delete unpaid invoice" (click)="requestDelete(row)"><i class="ti ti-trash"></i></button> }
+                @if (row.invoice.balanceDue > 0) {
+                  <button type="button" class="billing-collect-button" (click)="openPayment(row)" [attr.aria-label]="'Collect payment for invoice ' + row.invoice.id"><i class="ti ti-cash"></i><span>Collect</span></button>
+                } @else {
+                  <span class="billing-settled-label"><i class="ti ti-check"></i> Settled</span>
+                }
+                @if (row.invoice.amountReceived === 0 && row.invoice.payments.length === 0) {
+                  <button type="button" class="billing-delete-button" [attr.aria-label]="'Delete invoice ' + row.invoice.id" title="Delete unpaid invoice" (click)="requestDelete(row)"><i class="ti ti-trash"></i></button>
+                }
               </div></td>
             </tr>
           } @empty {
