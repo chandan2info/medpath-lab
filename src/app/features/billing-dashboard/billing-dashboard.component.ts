@@ -11,6 +11,8 @@ interface BillingRow {
   invoice: MockInvoice;
   patientName: string;
   patientId: string;
+  orderId: string;
+  visitId: string;
   tests: string[];
   reportCount: number;
   readyReportCount: number;
@@ -55,6 +57,8 @@ export class BillingDashboardComponent {
         invoice,
         patientName: sample?.patientName ?? visit?.patientName ?? order?.patientId ?? 'Patient details unavailable',
         patientId: sample?.patientId ?? visit?.patientId ?? order?.patientId ?? '—',
+        orderId: invoice.orderId,
+        visitId: visit?.id ?? sample?.visitId ?? '—',
         tests,
         reportCount: sampleReports.length,
         readyReportCount: sampleReports.filter(report => report.status === 'generated').length,
