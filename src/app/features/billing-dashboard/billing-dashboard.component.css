@@ -153,3 +153,80 @@ tbody tr:hover{background:color-mix(in srgb,var(--lis-primary,#1d9e75) 3%,transp
 .row-actions .small-action{display:inline-flex;align-items:center;justify-content:center;min-height:28px;visibility:visible;opacity:1}
 .table-wrap thead th.actions-column{position:sticky;right:0;z-index:5;background:var(--body-bg)}
 @media(max-width:640px){.billing-title-card{padding:12px 14px;min-height:0}.metric-card{padding:9px}.metric-card>strong{font-size:19px}.worklist-heading{padding:12px}.billing-tabs button{padding:9px 10px}}
+
+
+/* Final billing workspace polish: distinct active tab, no full-width divider,
+   and normal table flow for reliable row actions. */
+.billing-tabs{
+  border-bottom:0 !important;
+  gap:8px;
+  padding:6px 14px 10px;
+}
+.billing-tabs button{
+  min-height:34px;
+  padding:7px 12px !important;
+  border:1px solid transparent !important;
+  border-radius:8px;
+  background:transparent;
+  color:var(--text-secondary);
+  transition:background .16s ease,color .16s ease,border-color .16s ease;
+}
+.billing-tabs button.active{
+  color:var(--lis-primary,#1d9e75) !important;
+  background:color-mix(in srgb,var(--lis-primary,#1d9e75) 13%,transparent) !important;
+  border-color:color-mix(in srgb,var(--lis-primary,#1d9e75) 30%,transparent) !important;
+  box-shadow:inset 3px 0 0 var(--lis-primary,#1d9e75);
+}
+.billing-tabs button:not(.active):hover{
+  background:color-mix(in srgb,var(--text-primary) 6%,transparent);
+  border-color:var(--border-color) !important;
+}
+/* Do not pin the final table column over the row content; keep it in normal
+   table flow so the actions remain visible and clickable at every row. */
+.table-wrap .actions-column,
+.table-wrap td.actions-column,
+.table-wrap thead th.actions-column{
+  position:static !important;
+  right:auto !important;
+  z-index:auto !important;
+  min-width:190px;
+  width:190px;
+  background:inherit;
+  box-shadow:none !important;
+}
+.table-wrap thead th.actions-column{
+  background:color-mix(in srgb,var(--body-bg) 70%,transparent);
+}
+.table-wrap tbody td.actions-column{
+  padding:10px 12px;
+}
+.table-wrap .row-actions{
+  display:inline-flex !important;
+  align-items:center;
+  justify-content:flex-start;
+  gap:7px;
+  min-width:0;
+  width:max-content;
+  max-width:none;
+  white-space:nowrap;
+}
+.table-wrap .row-actions button.small-action,
+.table-wrap .row-actions button.icon-action{
+  display:inline-flex !important;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 auto;
+  min-height:30px;
+  visibility:visible !important;
+  opacity:1 !important;
+  position:relative;
+  color:var(--text-primary);
+}
+.table-wrap .row-actions button.small-action--primary{
+  color:#fff !important;
+  background:var(--lis-primary,#1d9e75) !important;
+  border-color:var(--lis-primary,#1d9e75) !important;
+}
+.table-wrap .row-actions button.icon-action--danger{
+  color:#c24141 !important;
+}
