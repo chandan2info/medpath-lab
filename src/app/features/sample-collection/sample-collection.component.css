@@ -2864,3 +2864,453 @@
     width: 60px !important;
   }
 }
+
+
+/* ── Responsive pass: Sample Collection cards and workstation ──
+   Preserve the current theme, typography and card styling. These rules
+   only change grid sizing, wrapping, stacking and control fit. */
+.sample-top-layout,
+.sample-top-heading,
+.sample-top-layout > *,
+.patient-summary,
+.patient-summary .pat-info-row,
+.patient-summary .pat-id-main,
+.cp-layout,
+.specimen-panel,
+.collect-panel,
+.tube-card2,
+.tc-body,
+.tc-main,
+.tc-heading,
+.tc-heading__copy,
+.tc-barcode-row,
+.tc-barcode,
+.tc-actions,
+.checklist-card,
+.checklist-grid,
+.checklist-item,
+.collection-field-grid,
+.collection-actions {
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.sample-top-heading .breadcrumb {
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+
+.patient-summary .pat-info-row {
+  flex-wrap: wrap;
+}
+
+.patient-summary .pat-id-main {
+  min-width: 0;
+}
+
+.patient-summary .pat-detail-row {
+  min-width: 0;
+}
+
+.patient-summary .pat-detail-item {
+  min-width: 0;
+}
+
+.tube-card2 {
+  width: 100%;
+}
+
+.tc-heading__copy {
+  flex: 1 1 0%;
+}
+
+.tc-label,
+.tc-tests,
+.bc-num,
+.checklist-label {
+  overflow-wrap: anywhere;
+}
+
+.tc-tests {
+  line-height: 1.45;
+}
+
+.tc-barcode-row {
+  flex-wrap: wrap;
+}
+
+.tc-barcode {
+  max-width: 100%;
+}
+
+.bc-num {
+  max-width: 100%;
+}
+
+.tc-actions {
+  flex-wrap: wrap;
+}
+
+.tc-action-btn {
+  min-width: 0;
+  white-space: normal;
+}
+
+.collect-panel .collection-field-grid > *,
+.collect-panel .lis-field,
+.collect-panel .lis-field input,
+.collect-panel .lis-field select,
+.collect-panel .lis-field textarea {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.collect-panel .collection-datetime-control,
+.collect-panel .collection-datetime-trigger {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.collect-panel .collection-datetime-trigger span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.collect-panel .condition-options {
+  max-width: 100%;
+}
+
+.collect-panel .condition-option {
+  min-width: 0;
+  white-space: normal;
+}
+
+.collect-panel .condition-option span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.collect-panel .collection-actions {
+  min-width: 0;
+}
+
+.collect-panel .collection-actions .collect-btn {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.checklist-item {
+  text-align: left;
+}
+
+.checklist-label {
+  min-width: 0;
+  line-height: 1.35;
+}
+
+@media (max-width: 1100px) {
+  .cp-layout {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .specimen-panel,
+  .collect-panel {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+  }
+
+  .specimen-panel {
+    max-height: 520px;
+  }
+
+  .tube-cards {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: 440px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .collect-panel {
+    overflow: visible;
+  }
+
+  .collect-panel .cp-form {
+    flex: initial;
+    min-height: 0;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .checklist-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .sample-top-card {
+    padding: 12px;
+  }
+
+  .sample-top-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .sample-top-heading {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .sample-top-layout .timeline-card {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .patient-summary .pat-info-row {
+    align-items: flex-start;
+    gap: 10px;
+    padding: 11px;
+  }
+
+  .patient-summary .pat-detail-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px 10px;
+  }
+
+  .patient-summary .pat-detail-item {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .cp-layout {
+    gap: 12px;
+  }
+
+  .specimen-panel {
+    max-height: 480px;
+  }
+
+  .tube-cards {
+    padding: 9px;
+  }
+
+  .tc-body {
+    padding: 10px;
+  }
+
+  .tc-heading {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .tc-required {
+    margin-left: auto;
+  }
+
+  .tc-barcode-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .tc-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+    gap: 6px;
+    padding-top: 9px;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .tc-action-btn {
+    width: 100%;
+    min-height: 36px;
+    padding: 5px 6px;
+    justify-content: center;
+    gap: 5px;
+    font-size: 11px;
+  }
+
+  .collect-panel .cp-form {
+    padding: 10px 12px 12px;
+  }
+
+  .collect-panel .collection-field-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .collect-panel .collection-field--wide {
+    grid-column: 1 / -1;
+  }
+
+  .collect-panel .condition-options {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px 10px !important;
+  }
+
+  .collect-panel .condition-option {
+    white-space: normal;
+  }
+
+  .collect-panel .collection-actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .collect-panel .collection-actions .collect-btn {
+    min-height: 42px;
+    height: auto;
+    padding: 8px 10px;
+  }
+
+  .checklist-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .checklist-item {
+    min-height: 44px;
+    padding: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sample-top-card {
+    padding: 10px;
+  }
+
+  .sample-top-heading .page-title {
+    font-size: 19px;
+  }
+
+  .patient-summary .pat-info-row {
+    gap: 9px;
+    padding: 10px;
+  }
+
+  .patient-summary .pat-detail-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .specimen-panel {
+    max-height: none;
+  }
+
+  .tube-cards {
+    max-height: none;
+    overflow: visible;
+    padding: 8px;
+  }
+
+  .tc-heading {
+    gap: 7px;
+  }
+
+  .tc-heading__copy {
+    flex-basis: calc(100% - 36px);
+  }
+
+  .tc-required {
+    margin-left: 0;
+  }
+
+  .tc-barcode-row {
+    gap: 8px;
+  }
+
+  .tc-barcode {
+    width: 100%;
+  }
+
+  .bc-bars--lg {
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .tc-actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .tc-action-btn {
+    flex-direction: column;
+    min-height: 48px;
+    padding: 5px 3px;
+    line-height: 1.2;
+  }
+
+  .collect-panel .collection-field-grid {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 11px;
+  }
+
+  .collect-panel .collection-field--wide {
+    grid-column: auto;
+  }
+
+  .collect-panel .condition-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .collect-panel .collection-datetime-popover {
+    max-width: calc(100vw - 20px);
+  }
+
+  .collect-panel .collection-time-picker {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(84px, .9fr) !important;
+    gap: 5px;
+  }
+
+  .collect-panel .collection-time-picker__period {
+    min-width: 0;
+  }
+
+  .checklist-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .checklist-item {
+    min-height: 42px;
+  }
+
+  .checklist-count {
+    margin-left: auto;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 360px) {
+  .sample-top-card,
+  .patient-summary .pat-info-row,
+  .collect-panel .cp-form {
+    padding-right: 9px;
+    padding-left: 9px;
+  }
+
+  .tc-body {
+    padding: 9px;
+  }
+
+  .tc-action-btn span {
+    font-size: 10px;
+  }
+
+  .collect-panel .collection-time-picker {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(76px, .85fr) !important;
+  }
+
+  .collect-panel .collection-time-picker__period button {
+    padding-inline: 2px;
+  }
+}
