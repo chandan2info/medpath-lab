@@ -13,9 +13,10 @@
 
   <section class="billing-workspace">
     <nav class="billing-tabs" aria-label="Billing views">
-      <a routerLink="/dashboard/billing/new" class="billing-tab-link"><i class="ti ti-plus"></i> New Invoice</a>
+      <button type="button" [class.active]="activeView() === 'overview'" (click)="setView('overview')"><i class="ti ti-clock"></i> Recent</button>
       <button type="button" [class.active]="activeView() === 'invoices'" (click)="setView('invoices')"><i class="ti ti-file-invoice"></i> All Invoices</button>
       <button type="button" [class.active]="activeView() === 'outstanding'" (click)="setView('outstanding')"><i class="ti ti-wallet"></i> Outstanding <span class="tab-count">{{ pendingPaymentCount() }}</span></button>
+      <a routerLink="/dashboard/billing/new" class="billing-tab-link billing-create-link"><i class="ti ti-plus"></i> New Invoice</a>
     </nav>
 
     <div class="table-toolbar">
