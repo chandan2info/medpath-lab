@@ -20,7 +20,7 @@
     </nav>
 
     <div class="table-toolbar">
-      <label class="search-field"><i class="ti ti-search"></i><input type="search" aria-label="Search billing records" placeholder="Search by patient name, mobile, or invoice no..." [ngModel]="query()" (ngModelChange)="updateQuery($event)" />@if (query()) { <button type="button" aria-label="Clear search" (click)="updateQuery('')"><i class="ti ti-x"></i></button> }</label>
+      <label class="search-field lis-search-control" [class.is-invalid]="query().trim().length > 0 && filteredRows().length === 0"><i class="ti ti-search"></i><input type="search" aria-label="Search billing records" placeholder="Search by patient name, mobile, or invoice no..." [ngModel]="query()" (ngModelChange)="updateQuery($event)" />@if (query()) { <button type="button" aria-label="Clear search" (click)="updateQuery('')"><i class="ti ti-x"></i></button> }</label>
       <div class="toolbar-filters">
         <label class="filter-select"><i class="ti ti-filter"></i><select aria-label="Filter by payment status" [ngModel]="paymentFilter()" (ngModelChange)="updatePaymentFilter($event)"><option value="all">All Payments</option><option value="paid">Paid</option><option value="partial">Partially Paid</option><option value="unpaid">Unpaid</option></select><i class="ti ti-chevron-down"></i></label>
         <label class="filter-select"><i class="ti ti-calendar"></i><select aria-label="Filter by date" [ngModel]="dateFilter()" (ngModelChange)="updateDateFilter($event)"><option value="7">Last 7 Days</option><option value="30">Last 30 Days</option><option value="all">All Time</option></select><i class="ti ti-chevron-down"></i></label>
