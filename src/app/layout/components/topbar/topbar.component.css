@@ -49,3 +49,98 @@
       color: var(--text-secondary);
       font-family: var(--font-family); white-space: nowrap;
     }
+
+/* Responsive topbar layout — preserve existing controls and theme styling. */
+@media (max-width: 1023px) {
+  .pc-topbar {
+    min-width: 0;
+    padding-right: 16px;
+    padding-left: 16px;
+    box-sizing: border-box;
+  }
+
+  .pc-topbar .topbar-search {
+    min-width: 0;
+    flex: 1 1 220px;
+  }
+
+  .pc-topbar .topbar-spacer {
+    flex: 0 1 24px;
+  }
+
+  .pc-topbar .topbar-actions {
+    flex: 0 0 auto;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .pc-topbar {
+    gap: 8px;
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  /* The spacer must not compete with the search field on narrow screens. */
+  .pc-topbar .topbar-spacer {
+    display: none;
+  }
+
+  /* Re-enable search on phones; the global 480px rule previously hid it. */
+  .pc-topbar .topbar-search {
+    display: flex;
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    padding-right: 9px;
+    padding-left: 9px;
+  }
+
+  .pc-topbar .topbar-search input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .pc-topbar .topbar-actions {
+    gap: 2px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pc-topbar {
+    gap: 5px;
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+
+  .pc-topbar .topbar-search {
+    flex: 1 1 48px;
+    min-width: 0;
+    padding-right: 7px;
+    padding-left: 7px;
+  }
+
+  .pc-topbar .topbar-search input {
+    min-width: 0;
+  }
+
+  .pc-topbar .topbar-actions {
+    flex: 0 0 auto;
+    gap: 1px;
+  }
+}
+
+@media (max-width: 360px) {
+  .pc-topbar {
+    gap: 3px;
+    padding-right: 6px;
+    padding-left: 6px;
+  }
+
+  .pc-topbar .topbar-search {
+    padding-right: 5px;
+    padding-left: 5px;
+  }
+}
+
