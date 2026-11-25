@@ -3378,3 +3378,21 @@
     touch-action: manipulation;
   }
 }
+
+/* Compact-width date picker: use the control as the containing block.
+   This avoids fixed-position popovers being trapped by transformed app-shell
+   ancestors when Chrome is resized to a narrow window. */
+@media (max-width: 1100px) {
+  .collect-panel .collection-datetime-control {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .collect-panel .collection-datetime-popover {
+    position: absolute !important;
+    inset: auto !important;
+    z-index: 1200;
+    box-sizing: border-box;
+    max-width: calc(100vw - 24px);
+  }
+}
