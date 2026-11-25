@@ -11,11 +11,11 @@
   <div class="wb-left">
     <div class="wb-greet">Good morning, {{ session.operator()?.name?.split(' ')?.[0] ?? 'Operator' }}.</div>
     <div class="wb-sub">
-      {{ dash.stats().samples }} samples logged today · {{ dash.kpis()[2]?.value ?? '—' }} reports ready to dispatch ·
+      {{ dash.stats().samples }} samples logged today · {{ dash.kpis()[2].value ?? '—' }} reports ready to dispatch ·
       {{ statPendingCount() }} STAT pending.
     </div>
     <div class="wb-pills" aria-label="Today's operational highlights">
-      <span class="wb-pill"><i class="ti ti-users" aria-hidden="true"></i> {{ dash.kpis()[0]?.value ?? '—' }} patients today</span>
+      <span class="wb-pill"><i class="ti ti-users" aria-hidden="true"></i> {{ dash.kpis()[0].value ?? '—' }} patients today</span>
       <span class="wb-pill"><i class="ti ti-bolt" aria-hidden="true"></i> {{ statPendingCount() }} STAT pending</span>
       <span class="wb-pill"><i class="ti ti-certificate" aria-hidden="true"></i> NABL Accredited</span>
     </div>
