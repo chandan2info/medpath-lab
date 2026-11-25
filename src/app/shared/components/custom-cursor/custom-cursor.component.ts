@@ -91,6 +91,8 @@ export class CustomCursorComponent implements AfterViewInit {
     this.pointerX = event.clientX;
     this.pointerY = event.clientY;
     this.visible = true;
+    this.host.nativeElement.classList.remove('is-hidden');
+    this.host.nativeElement.classList.add('is-visible');
     this.renderDot();
     this.scheduleFrame();
   };
@@ -135,7 +137,9 @@ export class CustomCursorComponent implements AfterViewInit {
 
   private readonly onDocumentLeave = (): void => this.hide();
   private readonly onDocumentEnter = (): void => {
-    if (this.active) this.visible = true;
+    if (!this.active) return;
+    this.visible = true;
+    this.host.nativeElement.classList.remove('is-hidden');
   };
   private readonly onWindowBlur = (): void => this.hide();
 
@@ -173,6 +177,7 @@ export class CustomCursorComponent implements AfterViewInit {
 
   private hide(): void {
     this.visible = false;
+    this.host.nativeElement.classList.remove('is-visible');
     this.host.nativeElement.classList.add('is-hidden');
     if (this.frame && this.view) this.view.cancelAnimationFrame(this.frame);
     this.frame = 0;
@@ -192,6 +197,7 @@ export class CustomCursorComponent implements AfterViewInit {
 
   private cleanup(): void {
     this.removeListeners();
+    this.finePointer?.removeEventListener('change', this.onCapabilityChange);
     if (this.frame && this.view) this.view.cancelAnimationFrame(this.frame);
     this.document.documentElement.classList.remove('cursor-dual-layer-active');
   }
