@@ -54,12 +54,25 @@ describe('CursorPreferenceService', () => {
     expect(document.documentElement.classList.contains('cursor-custom-enabled')).toBeFalse();
   });
 
-  it('re-enables the default preference when it is cleared in another tab', () => {
+  it('re-enables the default preference when its key is removed in another tab', () => {
     const service = TestBed.inject(CursorPreferenceService);
     service.setEnabled(false);
 
     window.dispatchEvent(new StorageEvent('storage', {
       key: storageKey,
+      newValue: null,
+    }));
+
+    expect(service.enabled()).toBeTrue();
+    expect(document.documentElement.classList.contains('cursor-custom-enabled')).toBeTrue();
+  });
+
+  it('re-enables the default preference when local storage is cleared in another tab', () => {
+    const service = TestBed.inject(CursorPreferenceService);
+    service.setEnabled(false);
+
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: null,
       newValue: null,
     }));
 
