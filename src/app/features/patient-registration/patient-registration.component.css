@@ -1254,3 +1254,58 @@
 .existing-patient-selection__eyebrow { display:flex; align-items:center; gap:6px; color:var(--lis-primary-deep,#085041); font-size:10px; font-weight:750; text-transform:uppercase; letter-spacing:.05em; }
 .existing-patient-selection__actions { display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:8px; }
 @media(max-width:600px) { .existing-patient-selection__actions { justify-content:stretch; } .existing-patient-selection__actions button { flex:1 1 auto; } }
+
+/* ── Responsive registration page header ─────────────────────────────
+   Keep the title/breadcrumb and shared workflow stepper in the same
+   visual hierarchy. On narrower content areas, move the stepper to its
+   own row and let it scroll inside its own bounds instead of widening
+   the page.
+   ─────────────────────────────────────────────────────────────────── */
+.page-header {
+  min-width: 0;
+  gap: 12px 16px;
+}
+
+.page-header__left,
+.page-header__title-row,
+.page-header__title-row > div {
+  min-width: 0;
+}
+
+.page-header > lis-workflow-stepper {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (max-width: 900px) {
+  .page-header {
+    align-items: flex-start;
+  }
+
+  .page-header > lis-workflow-stepper {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .page-header {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .page-header__title-row {
+    align-items: flex-start;
+    gap: 9px;
+  }
+
+  .page-header__title-row > div {
+    overflow-wrap: anywhere;
+  }
+
+  .page-header > lis-workflow-stepper {
+    width: 100%;
+  }
+}
+
