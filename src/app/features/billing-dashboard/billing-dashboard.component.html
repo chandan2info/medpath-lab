@@ -1,5 +1,5 @@
 <div class="billing-page">
-  <header class="billing-heading">
+  <header class="billing-heading billing-title-card">
     <div>
       <div class="eyebrow"><i class="ti ti-wallet"></i> FINANCE & PATIENT SERVICES</div>
       <h1>Billing Overview</h1>
@@ -49,18 +49,18 @@
 
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Patient / Invoice</th><th>Tests</th><th>Invoice total</th><th>Paid</th><th>Balance</th><th>Payment</th><th>Reports</th><th>Actions</th></tr></thead>
+        <thead><tr><th>Patient / Invoice</th><th>Tests</th><th>Invoice total</th><th>Paid</th><th>Balance</th><th>Payment</th><th>Reports</th><th class="actions-column">Actions</th></tr></thead>
         <tbody>
           @for (row of filteredRows(); track row.invoice.id) {
             <tr>
-              <td><div class="patient-name">{{ row.patientName }}</div><div class="muted mono">{{ row.patientId }} · {{ row.invoice.id }}</div><div class="muted">{{ row.createdAt | date:'dd MMM yyyy' }}</div></td>
+              <td><div class="patient-name">{{ row.patientName }}</div><div class="muted mono">{{ row.patientId }} · {{ row.invoice.id }}</div><div class="muted mono">Order {{ row.orderId }} · Visit {{ row.visitId }}</div><div class="muted">{{ row.createdAt | date:'dd MMM yyyy' }}</div></td>
               <td><div class="test-summary">{{ row.tests.slice(0, 2).join(', ') || 'Tests not linked' }}</div>@if (row.tests.length > 2) { <small class="muted">+{{ row.tests.length - 2 }} more</small> }</td>
               <td class="money">{{ row.invoice.total | currency:'INR':'symbol':'1.0-0' }}</td>
               <td class="money">{{ row.invoice.amountReceived | currency:'INR':'symbol':'1.0-0' }}</td>
               <td class="money" [class.amount-warning]="row.invoice.balanceDue > 0">{{ row.invoice.balanceDue | currency:'INR':'symbol':'1.0-0' }}</td>
               <td><span class="status-pill" [ngClass]="'status-pill--' + row.invoice.status">{{ statusLabel(row) }}</span></td>
               <td>@if (row.readyReportCount) { <span class="status-pill status-pill--ready">{{ row.readyReportCount }} ready</span> } @else if (row.reportCount) { <span class="status-pill status-pill--neutral">Delivered</span> } @else { <span class="muted">Not ready</span> }</td>
-              <td class="row-actions">
+              <td class="row-actions actions-column">
                 @if (row.invoice.balanceDue > 0) { <button type="button" class="small-action small-action--primary" (click)="openPayment(row)">Collect</button> }
                 @if (row.readyReportCount > 0) { <button type="button" class="small-action small-action--secondary" (click)="markReportDelivered(row)">Mark delivered</button> }
                 @if (row.invoice.amountReceived === 0 && row.invoice.payments.length === 0) { <button type="button" class="icon-action icon-action--danger" [attr.aria-label]="'Delete invoice ' + row.invoice.id" title="Delete unpaid invoice" (click)="requestDelete(row)"><i class="ti ti-trash"></i></button> }
