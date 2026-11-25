@@ -54,3 +54,11 @@
   margin-left: auto !important;
   margin-right: auto !important;
 }
+
+
+/* The brand strip contains no close control; the desktop chevron owns
+   sidebar collapse and mobile dismissal uses the backdrop. */
+.pc-sidebar.lis-sidebar .sidebar-brand > button,
+.pc-sidebar.lis-sidebar .sidebar-brand .mobile-close-btn {
+  display: none !important;
+}
