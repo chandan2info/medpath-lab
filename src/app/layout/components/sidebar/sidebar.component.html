@@ -9,6 +9,7 @@
 }
 
 <nav
+  id="lab-navigation"
   class="pc-sidebar lis-sidebar"
   [ngClass]="{
     'collapsed': sidebar.collapsed(),
@@ -56,7 +57,6 @@
             routerLinkActive="active"
             [attr.aria-label]="entry.label"
             [attr.title]="sidebar.collapsed() ? entry.label : null"
-            [attr.aria-current]="null"
             (click)="sidebar.closeMobile()"
           >
             <span class="nav-icon" aria-hidden="true">
