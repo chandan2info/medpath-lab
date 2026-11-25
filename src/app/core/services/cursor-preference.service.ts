@@ -17,7 +17,8 @@ export class CursorPreferenceService {
     const view = this.document.defaultView;
     if (view) {
       const onStorage = (event: StorageEvent): void => {
-        if (event.key !== STORAGE_KEY) return;
+        // A null key is emitted when another tab calls localStorage.clear().
+        if (event.key !== null && event.key !== STORAGE_KEY) return;
         const enabled = event.newValue === null || event.newValue === 'true';
         this.enabled.set(enabled);
         this.apply(enabled);
