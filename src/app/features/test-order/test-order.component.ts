@@ -144,6 +144,10 @@ export class TestOrderComponent implements OnInit {
   }
 
   deleteDraft(id: string): void {
+    const draft = this.flow.orderDrafts().find(item => item.id === id);
+    if (!draft) return;
+    const patientName = `${draft.patient.firstName} ${draft.patient.lastName}`.trim();
+    if (!window.confirm(`Delete the saved order draft for ${patientName}? This cannot be undone.`)) return;
     this.flow.deleteOrderDraft(id);
     this.showFeedback('Draft deleted.', 'success');
   }

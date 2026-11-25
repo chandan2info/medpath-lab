@@ -68,7 +68,8 @@
           }
         </div>
         <div class="test-list" aria-label="Ordered test list">
-          @for (test of visibleTests(); track test.id) {
+          <span class="sr-only" role="status" aria-live="polite">{{ visibleTests().length }} matching tests</span>
+        @for (test of visibleTests(); track test.id) {
             <button type="button" class="test-item" [class.test-item--selected]="selectedTestId() === test.id" (click)="selectTest(test.id)" [attr.aria-current]="selectedTestId() === test.id ? 'true' : null">
               <span class="test-state" [class.test-state--complete]="effectiveTestStatus(test) === 'COMPLETED'" [class.test-state--progress]="effectiveTestStatus(test) === 'IN_PROGRESS'">
                 <i class="ti" [ngClass]="test.status === 'COMPLETED' ? 'ti-check' : test.status === 'IN_PROGRESS' ? 'ti-circle-dot' : 'ti-circle'"></i>
@@ -77,7 +78,7 @@
               <span class="test-status" [class.test-status--complete]="test.status === 'COMPLETED'" [class.test-status--progress]="test.status === 'IN_PROGRESS'">{{ testStatusLabel(effectiveTestStatus(test)) }}</span>
             </button>
           } @empty {
-            <div class="empty-state"><i class="ti ti-search-off"></i><strong>No matching tests</strong><span>Change the search or status filter</span></div>
+            <div class="empty-state" role="status" aria-live="polite"><i class="ti ti-search-off"></i><strong>No matching tests</strong><span>Change the search or status filter</span></div>
           }
         </div>
       }
