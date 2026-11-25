@@ -3577,3 +3577,14 @@
   background-position: right 12px center !important;
   background-size: 12px 12px !important;
 }
+
+/* Center the date/time popover footer action labels. The shared lis-btn
+   style inherits left alignment, so explicitly center both footer buttons. */
+.collect-panel .collection-datetime-popover__actions .lis-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  line-height: 1.2 !important;
+  white-space: nowrap;
+}
