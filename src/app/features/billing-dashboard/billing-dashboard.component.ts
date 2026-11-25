@@ -7,6 +7,8 @@ import { PatientFlowService } from '../../core/services/patient-flow.service';
 
 type BillingView = 'overview' | 'outstanding' | 'invoices';
 type PaymentMode = 'cash' | 'upi' | 'card' | 'credit';
+type PaymentFilter = 'all' | 'paid' | 'partial' | 'unpaid';
+type DateFilter = 'all' | '7' | '30';
 interface BillingRow {
   invoice: MockInvoice;
   patientName: string;
@@ -31,8 +33,12 @@ interface BillingRow {
 export class BillingDashboardComponent {
   private readonly store = inject(LabWorkflowMockService);
   private readonly flow = inject(PatientFlowService);
-  readonly activeView = signal<BillingView>('overview');
+  readonly activeView = signal<BillingView>('invoices');
   readonly query = signal('');
+  readonly paymentFilter = signal<PaymentFilter>('all');
+  readonly dateFilter = signal<DateFilter>('30');
+  readonly currentPage = signal(1);
+  readonly pageSize = 3;
   readonly selectedRow = signal<BillingRow | null>(null);
   readonly pendingDelete = signal<BillingRow | null>(null);
   readonly paymentAmount = signal(0);
@@ -75,19 +81,43 @@ export class BillingDashboardComponent {
       const matches = !term || [row.patientName, row.patientId, row.invoice.id, ...row.tests]
         .some(value => value.toLowerCase().includes(term));
       if (!matches) return false;
-      if (view === 'outstanding') return row.invoice.balanceDue > 0;
-      if (view === 'overview') return this.rows().slice(0, 5).some(recent => recent.invoice.id === row.invoice.id);
+      if (view === 'outstanding' && row.invoice.balanceDue <= 0) return false;
+      const payment = this.paymentFilter();
+      if (payment === 'paid' && row.invoice.status !== 'paid') return false;
+      if (payment === 'partial' && row.invoice.status !== 'partial') return false;
+      if (payment === 'unpaid' && row.invoice.status !== 'unpaid') return false;
+      const days = this.dateFilter();
+      if (days !== 'all') {
+        const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - Number(days));
+        if (new Date(row.createdAt).getTime() < cutoff.getTime()) return false;
+      }
       return true;
     });
   });
 
-  readonly invoiceCount = computed(() => this.rows().length);
+  readonly visibleRows = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize;
+    return this.filteredRows().slice(start, start + this.pageSize);
+  });
+  readonly pageCount = computed(() => Math.max(1, Math.ceil(this.filteredRows().length / this.pageSize)));
+  readonly paginationLabel = computed(() => {
+    const total = this.filteredRows().length;
+    if (!total) return 'Showing 0 records';
+    const start = (this.currentPage() - 1) * this.pageSize + 1;
+    return `Showing ${start}–${Math.min(start + this.pageSize - 1, total)} of ${total} records`;
+  });
+
+  readonly invoiceCount = computed(() => this.rows().filter(row => new Date(row.createdAt).toDateString() === new Date().toDateString()).length);
   readonly collectedAmount = computed(() => this.rows().reduce((sum, row) => sum + row.invoice.amountReceived, 0));
   readonly outstandingAmount = computed(() => this.rows().reduce((sum, row) => sum + row.invoice.balanceDue, 0));
   readonly readyCount = computed(() => this.rows().filter(row => row.readyReportCount > 0).length);
   readonly pendingPaymentCount = computed(() => this.rows().filter(row => row.invoice.balanceDue > 0).length);
 
-  setView(view: BillingView): void { this.activeView.set(view); this.query.set(''); this.feedback.set(''); }
+  setView(view: BillingView): void { this.activeView.set(view); this.query.set(''); this.currentPage.set(1); this.feedback.set(''); }
+  updateQuery(value: string): void { this.query.set(value); this.currentPage.set(1); }
+  updatePaymentFilter(value: PaymentFilter): void { this.paymentFilter.set(value); this.currentPage.set(1); }
+  updateDateFilter(value: DateFilter): void { this.dateFilter.set(value); this.currentPage.set(1); }
+  setPage(page: number): void { this.currentPage.set(Math.min(Math.max(1, page), this.pageCount())); }
 
   openPayment(row: BillingRow): void {
     if (row.invoice.balanceDue <= 0) return;
