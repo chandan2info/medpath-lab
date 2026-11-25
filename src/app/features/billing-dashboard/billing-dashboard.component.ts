@@ -5,7 +5,7 @@ import { RouterLink } from '@angular/router';
 import { LabWorkflowMockService, MockInvoice } from '../../core/services/lab-workflow-mock.service';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
 
-type BillingView = 'overview' | 'collection' | 'outstanding' | 'invoices';
+type BillingView = 'overview' | 'outstanding' | 'invoices';
 type PaymentMode = 'cash' | 'upi' | 'card' | 'credit';
 interface BillingRow {
   invoice: MockInvoice;
@@ -75,8 +75,8 @@ export class BillingDashboardComponent {
       const matches = !term || [row.patientName, row.patientId, row.invoice.id, ...row.tests]
         .some(value => value.toLowerCase().includes(term));
       if (!matches) return false;
-      if (view === 'collection') return row.readyReportCount > 0;
       if (view === 'outstanding') return row.invoice.balanceDue > 0;
+      if (view === 'overview') return this.rows().slice(0, 5).some(recent => recent.invoice.id === row.invoice.id);
       return true;
     });
   });
