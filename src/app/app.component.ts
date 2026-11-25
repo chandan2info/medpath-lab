@@ -1,10 +1,11 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { CustomCursorComponent } from './shared/components/custom-cursor/custom-cursor.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, CustomCursorComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
 })
