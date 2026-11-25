@@ -1454,3 +1454,50 @@
     font-size: 12px;
   }
 }
+
+/* Registration action buttons: consistent, content-safe control height.
+   Override the earlier 52px desktop and auto-height mobile declarations so
+   Back/Cancel and the primary action remain visually balanced everywhere. */
+.reg-form-wrap .form-actions .lis-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px !important;
+  min-height: 44px !important;
+  max-height: 44px;
+  box-sizing: border-box;
+  padding: 0 18px !important;
+  line-height: 1 !important;
+  font-size: 14px;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.reg-form-wrap .form-actions .lis-btn i {
+  flex: 0 0 auto;
+  line-height: 1;
+}
+
+.reg-form-wrap .form-actions .save-btn {
+  min-width: 180px;
+  justify-content: center;
+}
+
+@media (max-width: 700px) {
+  .reg-form-wrap .form-actions {
+    align-items: center;
+  }
+
+  .reg-form-wrap .form-actions .lis-btn {
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px;
+    padding: 0 14px !important;
+    font-size: 13px;
+  }
+
+  .reg-form-wrap .form-actions .save-btn {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+}
