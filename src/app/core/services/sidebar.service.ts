@@ -10,9 +10,19 @@ export class SidebarService {
     this.collapsed.update(value => !value);
   }
 
+  /** Whether the shared header control is currently in mobile drawer mode. */
+  isMobileViewport(): boolean {
+    return typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches;
+  }
+
+  /** Expanded state for the shared header control at the current breakpoint. */
+  responsiveExpanded(): boolean {
+    return this.isMobileViewport() ? this.mobileOpen() : !this.collapsed();
+  }
+
   /** Route the single header control to desktop collapse or mobile drawer behavior. */
   toggleResponsive(): void {
-    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches) {
+    if (this.isMobileViewport()) {
       this.toggleMobile();
       return;
     }
