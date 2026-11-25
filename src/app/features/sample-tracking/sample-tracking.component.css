@@ -519,15 +519,15 @@
   }
   .sample-table-wrap{
     height:auto;
-    min-height:280px;
-    max-height:min(48dvh,480px);
+    min-height:336px;
+    max-height:min(57.6dvh,576px);
     overflow:auto;
   }
   .detail-panel{
     position:static;
     height:auto;
-    min-height:280px;
-    max-height:min(48dvh,480px);
+    min-height:336px;
+    max-height:min(57.6dvh,576px);
     overflow-y:auto;
   }
 }
@@ -536,12 +536,12 @@
   .tracking-body{height:auto;min-height:0;flex:initial;align-items:start}
   .sample-table-wrap{
     height:auto;
-    min-height:260px;
-    max-height:min(44dvh,420px);
+    min-height:312px;
+    max-height:min(52.8dvh,504px);
     overflow:auto;
   }
   .detail-panel{height:auto;min-height:0;max-height:none;overflow:visible}
 }
 @media (max-width:700px){
-  .sample-table-wrap{min-height:230px;max-height:46dvh}
+  .sample-table-wrap{min-height:276px;max-height:55.2dvh}
 }
