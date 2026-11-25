@@ -8,14 +8,14 @@
     type="button"
     class="sidebar-toggle-btn"
     (click)="sidebar.toggleResponsive()"
-    [attr.aria-label]="sidebar.mobileOpen() ? 'Close navigation' : (sidebar.collapsed() ? 'Expand navigation' : 'Collapse navigation')"
-    [attr.title]="sidebar.mobileOpen() ? 'Close navigation' : (sidebar.collapsed() ? 'Expand navigation' : 'Collapse navigation')"
-    [attr.aria-expanded]="sidebar.mobileOpen() || !sidebar.collapsed()"
+    [attr.aria-label]="sidebar.isMobileViewport() ? (sidebar.mobileOpen() ? 'Close navigation' : 'Open navigation') : (sidebar.collapsed() ? 'Expand navigation' : 'Collapse navigation')"
+    [attr.title]="sidebar.isMobileViewport() ? (sidebar.mobileOpen() ? 'Close navigation' : 'Open navigation') : (sidebar.collapsed() ? 'Expand navigation' : 'Collapse navigation')"
+    [attr.aria-expanded]="sidebar.responsiveExpanded()"
     aria-controls="lab-navigation"
   >
     <i
       class="ti"
-      [ngClass]="(sidebar.mobileOpen() || sidebar.collapsed()) ? 'ti-chevron-right' : 'ti-chevron-left'"
+      [ngClass]="sidebar.isMobileViewport() ? (sidebar.mobileOpen() ? 'ti-chevron-left' : 'ti-chevron-right') : (sidebar.collapsed() ? 'ti-chevron-right' : 'ti-chevron-left')"
       aria-hidden="true"
     ></i>
   </button>
