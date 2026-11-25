@@ -49,7 +49,7 @@
           <tbody>
             @for (row of queueRows(); track row.sample.id) {
               <tr>
-                <td><div class="queue-patient"><span class="queue-avatar">{{ row.sample.patientName.split(' ')[0][0] }}{{ row.sample.patientName.split(' ').length > 1 ? row.sample.patientName.split(' ').at(-1)?.[0] : '' }}</span><span><strong>{{ row.sample.patientName }}</strong><small>{{ row.sample.patientId }} · {{ row.sample.gender || '—' | titlecase }}</small></span></div></td>
+                <td><div class="queue-patient"><span class="queue-avatar">{{ queueInitials(row.sample) }}</span><span><strong>{{ row.sample.patientName }}</strong><small>{{ row.sample.patientId }} · {{ row.sample.gender || '—' | titlecase }}</small></span></div></td>
                 <td><strong class="queue-order-id">{{ row.sample.id }}</strong><small class="queue-subline">{{ row.sample.priority | titlecase }} priority</small></td>
                 <td><div class="queue-test-tags">@for (test of row.sample.tests; track test) { <span>{{ test }}</span> }</div></td>
                 <td>{{ row.sample.collectedAt || '—' }}</td>
