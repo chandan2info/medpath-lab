@@ -10,6 +10,15 @@ export class SidebarService {
     this.collapsed.update(value => !value);
   }
 
+  /** Route the single header control to desktop collapse or mobile drawer behavior. */
+  toggleResponsive(): void {
+    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches) {
+      this.toggleMobile();
+      return;
+    }
+    this.toggle();
+  }
+
   private collapsedBeforeMobile = false;
 
   /** Mobile/tablet: open a full-width navigation drawer, even if desktop
