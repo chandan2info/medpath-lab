@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { DatePipe, TitleCasePipe } from '@angular/common';
-import { RegisteredPatient } from '../../../core/services/patient-flow.service';
+import { RegisteredPatient, KnownPatientRecord } from '../../../core/services/patient-flow.service';
 
 @Component({
   selector: 'lis-patient-card',
@@ -11,7 +11,7 @@ import { RegisteredPatient } from '../../../core/services/patient-flow.service';
   styleUrl: './patient-card.component.css',
 })
 export class PatientCardComponent {
-  readonly patient = input.required<RegisteredPatient>();
+  readonly patient = input.required<RegisteredPatient | KnownPatientRecord>();
   readonly variant = input<'standard' | 'compact' | 'collection'>('standard');
   readonly priority = input<string | null>(null);
   readonly collected = input(false);
@@ -33,6 +33,15 @@ export class PatientCardComponent {
     if (months < 0) { years--; months += 12; }
     return `${years}y ${months}m ${days}d`;
   }
+  visitType(): string {
+    return 'visitType' in this.patient() ? this.patient().visitType : 'Walk-in';
+  }
+  fasting(): string {
+    return 'fasting' in this.patient() ? this.patient().fasting : 'Not specified';
+  }
+  refDoctor(): string {
+    return 'refDoctor' in this.patient() ? this.patient().refDoctor : 'Self / Walk-in';
+  }
   genderIcon(): string {
     switch (this.patient().gender.toLowerCase()) {
       case 'male': return 'ti-gender-male';
@@ -41,7 +50,7 @@ export class PatientCardComponent {
     }
   }
   visitIcon(): string {
-    const visit = this.patient().visitType.toLowerCase();
+    const visit = this.visitType().toLowerCase();
     return visit.includes('home') ? 'ti-home' : visit.includes('appointment') ? 'ti-calendar-event' : 'ti-walk';
   }
 }
