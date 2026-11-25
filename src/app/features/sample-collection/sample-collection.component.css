@@ -3563,3 +3563,17 @@
     column-gap: 5px !important;
   }
 }
+
+/* Give the native select indicator a deliberate right inset.
+   Replace the platform-edge arrow with a theme-matched chevron so it has
+   consistent breathing room in Chrome on macOS, Windows and mobile. */
+.collect-panel .collection-time-picker__unit select,
+.collect-panel .collection-time-picker__unit select[aria-label] {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  padding-right: 38px !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='m2.5 4.5 3.5 3 3.5-3' fill='none' stroke='%23cbd5e1' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 12px center !important;
+  background-size: 12px 12px !important;
+}
