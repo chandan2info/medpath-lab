@@ -3,32 +3,19 @@
   [ngClass]="{ 'sidebar-collapsed': sidebar.collapsed() }"
   role="banner"
 >
-  <!-- Mobile/tablet navigation opener -->
+  <!-- One responsive navigation toggle: divider control on desktop, drawer control on mobile. -->
   <button
     type="button"
-    class="topbar-icon-btn topbar-mobile-nav-btn lg:hidden"
-    (click)="sidebar.openMobile()"
-    aria-label="Open navigation"
-    title="Open navigation"
-    [attr.aria-expanded]="sidebar.mobileOpen()"
-    aria-controls="lab-navigation"
-  >
-    <i class="ti ti-menu-2" aria-hidden="true"></i>
-  </button>
-
-  <!-- Desktop: single expand/collapse control -->
-  <button
-    type="button"
-    class="hidden lg:flex sidebar-toggle-btn"
-    (click)="sidebar.toggle()"
-    [attr.aria-label]="sidebar.collapsed() ? 'Expand navigation' : 'Collapse navigation'"
-    [attr.title]="sidebar.collapsed() ? 'Expand navigation' : 'Collapse navigation'"
-    [attr.aria-expanded]="!sidebar.collapsed()"
+    class="sidebar-toggle-btn"
+    (click)="sidebar.toggleResponsive()"
+    [attr.aria-label]="sidebar.mobileOpen() ? 'Close navigation' : (sidebar.collapsed() ? 'Expand navigation' : 'Collapse navigation')"
+    [attr.title]="sidebar.mobileOpen() ? 'Close navigation' : (sidebar.collapsed() ? 'Expand navigation' : 'Collapse navigation')"
+    [attr.aria-expanded]="sidebar.mobileOpen() || !sidebar.collapsed()"
     aria-controls="lab-navigation"
   >
     <i
       class="ti"
-      [ngClass]="sidebar.collapsed() ? 'ti-chevron-right' : 'ti-chevron-left'"
+      [ngClass]="(sidebar.mobileOpen() || sidebar.collapsed()) ? 'ti-chevron-right' : 'ti-chevron-left'"
       aria-hidden="true"
     ></i>
   </button>
