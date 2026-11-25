@@ -32,6 +32,7 @@ export class BillingDashboardComponent {
   readonly activeView = signal<BillingView>('overview');
   readonly query = signal('');
   readonly selectedRow = signal<BillingRow | null>(null);
+  readonly pendingDelete = signal<BillingRow | null>(null);
   readonly paymentAmount = signal(0);
   readonly paymentMode = signal<PaymentMode>('cash');
   readonly feedback = signal('');
@@ -39,19 +40,21 @@ export class BillingDashboardComponent {
 
   readonly rows = computed<BillingRow[]>(() => {
     const orders = this.store.orders();
+    const visits = this.store.visits();
     const samples = this.store.samples();
     const reports = this.store.reports();
     return this.store.invoices().map(invoice => {
       const order = orders.find(item => item.id === invoice.orderId);
       const sample = samples.find(item => item.orderId === invoice.orderId);
+      const visit = order ? visits.find(item => item.id === order.visitId) : undefined;
       const sampleReports = sample ? reports.filter(item => item.sampleId === sample.id) : [];
       const tests = (order?.testIds ?? sample?.testIds ?? []).map(id =>
         this.flow.allTests.find(test => test.id === id)?.name ?? id
       );
       return {
         invoice,
-        patientName: sample?.patientName ?? order?.patientId ?? 'Patient details unavailable',
-        patientId: sample?.patientId ?? order?.patientId ?? '—',
+        patientName: sample?.patientName ?? visit?.patientName ?? order?.patientId ?? 'Patient details unavailable',
+        patientId: sample?.patientId ?? visit?.patientId ?? order?.patientId ?? '—',
         tests,
         reportCount: sampleReports.length,
         readyReportCount: sampleReports.filter(report => report.status === 'generated').length,
@@ -107,6 +110,28 @@ export class BillingDashboardComponent {
     } catch (error) {
       this.feedback.set(error instanceof Error ? error.message : 'Unable to record payment.');
     } finally { this.savingPayment.set(false); }
+  }
+
+  requestDelete(row: BillingRow): void {
+    if (row.invoice.amountReceived > 0 || row.invoice.payments.length > 0) {
+      this.feedback.set('Invoices with recorded payments cannot be deleted. Their payment history must be retained.');
+      return;
+    }
+    this.pendingDelete.set(row);
+  }
+
+  cancelDelete(): void { this.pendingDelete.set(null); }
+
+  confirmDelete(): void {
+    const row = this.pendingDelete();
+    if (!row) return;
+    try {
+      this.store.deleteUnpaidInvoice(row.invoice.id);
+      this.pendingDelete.set(null);
+      this.feedback.set('Invoice ' + row.invoice.id + ' was deleted. The patient order and lab records were kept.');
+    } catch (error) {
+      this.feedback.set(error instanceof Error ? error.message : 'Unable to delete invoice.');
+    }
   }
 
   markReportDelivered(row: BillingRow): void {
