@@ -84,39 +84,47 @@
   white-space: nowrap;
 }
 
-/* The desktop toggle is anchored to the sidebar/topbar boundary. */
+/* Icon-only desktop sidebar toggle, centered on the sidebar edge.
+   Uses the active palette token so light/dark and palette changes stay in sync. */
 .sidebar-toggle-btn {
   position: absolute;
-  left: -22px;
+  left: -20px;
   top: 50%;
-  z-index: 2;
+  z-index: 5;
   display: inline-flex;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   align-items: center;
   justify-content: center;
   margin: 0;
   padding: 0;
-  border: 0;
+  appearance: none;
+  border: 0 !important;
   border-radius: 0;
-  background: transparent;
+  outline: none;
+  background: transparent !important;
   color: var(--lis-primary, var(--primary));
-  box-shadow: none;
+  box-shadow: none !important;
+  cursor: pointer;
   transform: translateY(-50%);
-  transition: color var(--transition-fast), transform var(--transition-fast);
+  transition: color 160ms ease, filter 160ms ease, transform 160ms ease;
 }
 
 .sidebar-toggle-btn i {
-  font-size: 23px;
+  display: block;
+  font-size: 27px;
+  font-weight: 700;
   line-height: 1;
-  transition: color var(--transition-fast), transform var(--transition-sidebar);
+  color: currentColor;
+  transition: color 160ms ease, transform 180ms ease;
 }
 
 .sidebar-toggle-btn:hover {
-  color: var(--primary-dark, var(--lis-primary, var(--primary)));
-  background: transparent;
-  border: 0;
-  box-shadow: none;
+  color: var(--lis-primary, var(--primary));
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  filter: brightness(1.16);
 }
 
 .sidebar-toggle-btn:active {
@@ -124,8 +132,8 @@
 }
 
 .sidebar-toggle-btn:focus-visible {
-  outline: 2px solid var(--lis-primary, var(--primary));
-  outline-offset: -2px;
+  outline: none;
+  filter: drop-shadow(0 0 4px var(--lis-primary, var(--primary)));
 }
 
 /* Responsive topbar layout */
@@ -213,22 +221,21 @@
    right edge is the only separator; no second divider is introduced. */
 @media (min-width: 1024px) {
   .pc-topbar .sidebar-toggle-btn {
-    left: -22px;
-    border: 0;
-    background: transparent;
-    box-shadow: none;
+    left: -20px;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
   }
 
   .pc-topbar .sidebar-toggle-btn:hover {
-    border: 0;
-    background: transparent;
-    box-shadow: none;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .pc-topbar .sidebar-toggle-btn,
-  .pc-topbar .sidebar-toggle-btn::before,
   .pc-topbar .sidebar-toggle-btn i {
     transition: none !important;
   }
