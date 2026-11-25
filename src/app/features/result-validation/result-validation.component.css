@@ -1,1 +1,52 @@
 .validation-page{max-width:1120px;margin:0 auto;padding:28px;color:#172b4d}.page-header{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:24px}.page-header h1{margin:4px 0;font-size:26px}.page-header p{margin:4px 0;color:#64748b}.eyebrow{font-size:11px;font-weight:700;letter-spacing:.12em;color:#2563eb}.page-header a{color:#2563eb;text-decoration:none;font-weight:600}.validation-list,.approved-list{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:20px;margin-bottom:20px}.section-heading{display:flex;justify-content:space-between;align-items:center}.section-heading h2,.approved-list h2{font-size:17px;margin:0 0 16px}.section-heading span{color:#64748b;font-size:13px}.validation-card{display:flex;justify-content:space-between;gap:20px;padding:16px 0;border-top:1px solid #edf2f7}.record{display:flex;flex-direction:column;gap:6px}.record span,.record small,.muted{color:#64748b}.actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;max-width:480px}.actions textarea{width:100%;min-height:64px;padding:9px;border:1px solid #cbd5e1;border-radius:8px}.actions button,.approved-row button{border:1px solid #cbd5e1;background:#fff;border-radius:8px;padding:8px 12px;cursor:pointer}.actions .approve{background:#15803d;color:#fff;border-color:#15803d}.actions .reject{color:#b91c1c;border-color:#fecaca}.approved-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid #edf2f7}.approved-row span:nth-child(2){color:#64748b}.notice{padding:12px 14px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;margin-bottom:16px}.empty-state{text-align:center;padding:36px;color:#64748b}.empty-state strong{color:#334155}@media(max-width:700px){.page-header,.validation-card,.approved-row{align-items:flex-start;flex-direction:column}.actions{max-width:none;width:100%}}
+
+@media (max-width: 700px) {
+  .validation-page {
+    width: 100%;
+    max-width: 100%;
+    padding: 14px;
+    box-sizing: border-box;
+  }
+
+  .validation-list,
+  .approved-list {
+    padding: 14px;
+    min-width: 0;
+  }
+
+  .section-heading {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .validation-card,
+  .approved-row {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .record {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .actions,
+  .actions textarea {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 380px) {
+  .validation-page {
+    padding: 10px;
+  }
+
+  .validation-list,
+  .approved-list {
+    padding: 11px;
+  }
+}

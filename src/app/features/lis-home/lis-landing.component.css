@@ -482,3 +482,632 @@
 
     /* Restore display font for landing page headings only */
     h1, h2 { font-family: 'Instrument Serif', Georgia, serif; }
+
+/* ================================================================
+   LANDING PAGE RESPONSIVENESS
+   Layout-only overrides. Preserve the existing colors, typography,
+   component styling and desktop composition.
+   ================================================================ */
+
+.lp-nav,
+.lp-nav-brand,
+.lp-nav-right,
+.lp-hero-wrap,
+.lp-hero-copy,
+.lp-login-card,
+.lp-section,
+.lp-cat-grid,
+.lp-stats-band,
+.lp-why-grid,
+.lp-cta-band,
+.lp-footer,
+.lp-footer-grid {
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.lp-nav-brand > div:last-child {
+  min-width: 0;
+}
+
+.lp-brand-name,
+.lp-brand-tag {
+  overflow-wrap: anywhere;
+}
+
+.lp-hero-wrap {
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+}
+
+.lp-hero-copy,
+.lp-login-card {
+  min-width: 0;
+}
+
+.lp-field,
+.lp-field input {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.lp-remember-row {
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+
+.lp-check,
+.lp-forgot {
+  min-width: 0;
+}
+
+.lp-secure-row {
+  flex-wrap: wrap;
+  text-align: center;
+}
+
+.lp-demo-hint {
+  overflow-wrap: anywhere;
+}
+
+.lp-cat-grid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.lp-cat-card {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.lp-cat-name,
+.lp-cat-desc,
+.lp-why-title,
+.lp-why-desc,
+.lp-cta-title,
+.lp-cta-sub,
+.lp-fc-contact {
+  overflow-wrap: anywhere;
+}
+
+.lp-cta-band > div:nth-child(2) {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.lp-cta-btn {
+  flex: 0 0 auto;
+}
+
+.lp-footer-grid > div {
+  min-width: 0;
+}
+
+.lp-footer-bottom > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 900px) {
+  .lp-nav {
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+
+  .lp-link {
+    padding-right: 9px;
+    padding-left: 9px;
+    font-size: 12px;
+  }
+
+  .lp-link::after {
+    right: 9px;
+    left: 9px;
+  }
+
+  .lp-nav-right {
+    gap: 8px;
+  }
+
+  .lp-hero {
+    min-height: 0;
+  }
+
+  .lp-hero-wrap {
+    width: 100%;
+  }
+
+  .lp-section {
+    padding: 68px 24px 60px;
+  }
+
+  .lp-section#why {
+    padding-top: 68px;
+    padding-bottom: 60px;
+  }
+
+  .lp-cat-grid {
+    gap: 18px;
+  }
+
+  .lp-stats-band {
+    width: calc(100% - 40px);
+  }
+
+  .lp-cta-band {
+    width: calc(100% - 40px);
+  }
+
+  .lp-footer {
+    padding: 52px 24px 28px;
+  }
+}
+
+@media (max-width: 768px) {
+  .lp-nav {
+    height: 64px;
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .lp-nav-brand {
+    flex: 1 1 auto;
+  }
+
+  .lp-nav-right {
+    flex: 0 0 auto;
+    margin-left: 12px;
+  }
+
+  .lp-mobile-menu {
+    top: 64px;
+    max-height: calc(100dvh - 64px);
+    overflow-y: auto;
+    box-sizing: border-box;
+  }
+
+  .lp-hero-wrap {
+    padding: 42px 24px 56px;
+    gap: 28px;
+  }
+
+  .lp-hero-copy {
+    max-width: 620px;
+    padding-right: 0;
+  }
+
+  .lp-login-card {
+    width: 100%;
+  }
+
+  .lp-section {
+    padding: 60px 22px 54px;
+  }
+
+  .lp-section#why {
+    padding-top: 60px;
+    padding-bottom: 54px;
+  }
+
+  .lp-section-sub {
+    margin-bottom: 30px;
+  }
+
+  .lp-cat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    min-height: 0;
+  }
+
+  .lp-cat-card {
+    min-height: 220px;
+    padding: 22px 14px 18px;
+  }
+
+  .lp-cat-name {
+    font-size: 15px;
+  }
+
+  .lp-stats-band {
+    width: calc(100% - 32px);
+    margin-bottom: 22px;
+    padding: 20px;
+  }
+
+  .lp-why-grid {
+    gap: 16px;
+  }
+
+  .lp-why-card {
+    min-height: 0;
+    padding: 26px 22px;
+  }
+
+  .lp-cta-band {
+    width: calc(100% - 32px);
+    padding: 22px;
+  }
+
+  .lp-footer {
+    padding: 44px 22px 26px;
+  }
+}
+
+@media (max-width: 600px) {
+  .lp-nav {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .lp-nav-brand {
+    gap: 8px;
+  }
+
+  .lp-brand-name {
+    font-size: 12px;
+  }
+
+  .lp-brand-tag {
+    font-size: 9px;
+  }
+
+  .lp-nav-right {
+    gap: 6px;
+    margin-left: 8px;
+  }
+
+  .lp-hero-wrap {
+    padding: 34px 18px 46px;
+    gap: 24px;
+  }
+
+  .lp-h1 {
+    font-size: 36px;
+    line-height: 1.12;
+  }
+
+  .lp-sub {
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  .lp-trust {
+    width: 100%;
+    justify-content: center;
+    gap: 10px 16px;
+  }
+
+  .lp-trust-item {
+    font-size: 12px;
+  }
+
+  .lp-hero-btns {
+    width: 100%;
+    gap: 10px;
+  }
+
+  .lp-login-card {
+    max-width: 100%;
+    padding: 24px 20px;
+  }
+
+  .lp-lc-sub {
+    overflow-wrap: anywhere;
+  }
+
+  .lp-section,
+  .lp-section#why {
+    padding: 48px 16px 44px;
+  }
+
+  .lp-section-title,
+  .lp-section#why .lp-section-title {
+    font-size: 27px;
+  }
+
+  .lp-section-sub,
+  .lp-section#why .lp-section-sub {
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 26px;
+  }
+
+  .lp-cat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .lp-cat-card {
+    min-height: 210px;
+    padding: 20px 12px 16px;
+    border-radius: 18px;
+  }
+
+  .lp-cat-icon {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 14px;
+  }
+
+  .lp-cat-icon i {
+    font-size: 29px;
+  }
+
+  .lp-cat-name {
+    font-size: 14px;
+  }
+
+  .lp-cat-desc {
+    font-size: 12px;
+  }
+
+  .lp-cat-arrow {
+    width: 36px;
+    height: 36px;
+  }
+
+  .lp-stats-band {
+    width: calc(100% - 24px);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  .lp-stat {
+    min-width: 0;
+    min-height: 76px;
+    padding: 12px 8px;
+  }
+
+  .lp-stat-main {
+    gap: 7px;
+    flex-wrap: wrap;
+  }
+
+  .lp-stat-icon {
+    font-size: 21px;
+  }
+
+  .lp-stat-val {
+    font-size: clamp(19px, 5vw, 25px);
+    overflow-wrap: anywhere;
+  }
+
+  .lp-stat-lbl {
+    font-size: 12px;
+  }
+
+  .lp-why-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .lp-why-card {
+    padding: 22px 20px;
+    border-radius: 18px;
+  }
+
+  .lp-why-title {
+    font-size: 18px;
+  }
+
+  .lp-why-desc {
+    font-size: 14px;
+  }
+
+  .lp-cta-band {
+    width: calc(100% - 24px);
+    padding: 20px;
+    gap: 12px;
+    border-radius: 18px;
+  }
+
+  .lp-cta-band > div:nth-child(2) {
+    flex-basis: calc(100% - 62px);
+  }
+
+  .lp-cta-btn {
+    width: 100%;
+    justify-content: center;
+    margin-left: 0;
+  }
+
+  .lp-footer {
+    padding: 38px 18px 22px;
+  }
+
+  .lp-footer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 26px 18px;
+  }
+
+  .lp-footer-grid > div:first-child,
+  .lp-footer-grid > div:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .lp-footer-name {
+    font-size: 17px;
+  }
+
+  .lp-fc-title {
+    font-size: 15px;
+  }
+
+  .lp-fc-link,
+  .lp-fc-contact {
+    font-size: 13px;
+  }
+
+  .lp-footer-bottom {
+    align-items: flex-start;
+    flex-direction: column;
+    font-size: 12px;
+  }
+
+  .lp-footer-policy {
+    gap: 10px 14px;
+  }
+
+  .lp-footer-policy a {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .lp-brand-tag {
+    display: none;
+  }
+
+  .lp-hero-wrap {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  .lp-h1 {
+    font-size: 32px;
+  }
+
+  .lp-eyebrow {
+    font-size: 11px;
+    padding: 5px 9px;
+  }
+
+  .lp-trust {
+    gap: 9px 12px;
+  }
+
+  .lp-login-card {
+    padding: 22px 16px;
+  }
+
+  .lp-remember-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .lp-section,
+  .lp-section#why {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .lp-cat-grid {
+    gap: 10px;
+  }
+
+  .lp-cat-card {
+    padding-right: 9px;
+    padding-left: 9px;
+  }
+
+  .lp-stats-band,
+  .lp-cta-band {
+    width: calc(100% - 20px);
+  }
+
+  .lp-stat {
+    padding-right: 5px;
+    padding-left: 5px;
+  }
+
+  .lp-stat-main {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .lp-footer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lp-footer-grid > div:first-child,
+  .lp-footer-grid > div:last-child {
+    grid-column: auto;
+  }
+}
+
+
+/* Two-column mobile statistics: keep separators aligned with the grid. */
+@media (max-width: 600px) {
+  .lp-stat:not(:last-child) {
+    border-bottom: 0;
+  }
+
+  .lp-stat:nth-child(-n + 2) {
+    border-bottom: 1px solid #EEF2F6;
+  }
+
+  :host-context([data-theme="dark"]) .lp-stat:nth-child(-n + 2) {
+    border-bottom-color: rgba(148,163,184,0.16);
+  }
+}
+
+
+/* Hero/login layout correction:
+   The hero must return to one column at the original 960px breakpoint.
+   Keep the login card at its intended readable width instead of squeezing
+   it into a second grid track on tablets and phones. */
+@media (min-width: 961px) {
+  .lp-hero-wrap {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  }
+
+  .lp-login-card {
+    width: 100%;
+    max-width: 440px;
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 960px) {
+  .lp-hero-wrap {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: 30px;
+  }
+
+  .lp-hero-copy {
+    width: 100%;
+    max-width: 560px;
+    padding-right: 0;
+    text-align: center;
+    align-items: center;
+  }
+
+  .lp-sub {
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .lp-trust,
+  .lp-hero-btns {
+    justify-content: center;
+  }
+
+  .lp-login-card {
+    width: 100%;
+    max-width: 440px;
+    margin: 0 auto;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 600px) {
+  .lp-hero-wrap {
+    padding-right: 18px;
+    padding-left: 18px;
+    gap: 24px;
+  }
+
+  .lp-login-card {
+    max-width: 100%;
+    padding: 24px 20px;
+  }
+}
+
+@media (max-width: 380px) {
+  .lp-login-card {
+    padding: 22px 16px;
+  }
+}

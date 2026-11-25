@@ -1,4 +1,4 @@
-<div class="wfs-timeline" [class.wfs-timeline--dense]="dense()" role="list" [attr.aria-label]="ariaLabel()">
+<div class="wfs-timeline" [class.wfs-timeline--dense]="dense()" [style.--wfs-step-count]="steps().length" role="list" [attr.aria-label]="ariaLabel()">
   <!-- Single continuous connector track (dot-center to dot-center) so the
        trail is always visually joined, never a series of separate segments
        with gaps between them. -->
