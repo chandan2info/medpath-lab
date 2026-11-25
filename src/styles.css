@@ -6236,3 +6236,33 @@ button:disabled.is-loading {
 .cursor-nw-resize { cursor: nw-resize; }
 .cursor-se-resize { cursor: se-resize; }
 .cursor-sw-resize { cursor: sw-resize; }
+
+/* ── Shared LIS search field system ──────────────────────────────────
+   Consistent default, focus and no-results borders across feature pages.
+   Search wrappers keep their page-specific sizing/layout; this owns only
+   the visual border, focus ring, icon and validation state. */
+.lis-search-control{
+  box-sizing:border-box;
+  border:1px solid var(--border-color,#d7dee8)!important;
+  border-radius:9px!important;
+  background:var(--body-bg,#fff)!important;
+  transition:border-color .16s ease,box-shadow .16s ease,background-color .16s ease;
+}
+.lis-search-control:focus-within{
+  border-color:var(--lis-primary,#1d9e75)!important;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--lis-primary,#1d9e75) 14%,transparent)!important;
+  outline:none;
+}
+.lis-search-control input{
+  min-width:0;
+  color:var(--text-primary);
+}
+.lis-search-control input::placeholder{color:var(--text-secondary);opacity:.78}
+.lis-search-control.is-invalid,
+.lis-search-control.is-invalid:focus-within{
+  border-color:var(--lis-danger,#e24b4a)!important;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--lis-danger,#e24b4a) 13%,transparent)!important;
+}
+.lis-search-control.is-invalid>i:first-child{color:var(--lis-danger,#e24b4a)}
+.lis-search-control button{flex-shrink:0}
+@media(prefers-reduced-motion:reduce){.lis-search-control{transition:none}}
