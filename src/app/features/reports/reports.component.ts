@@ -93,10 +93,14 @@ export class ReportsComponent {
 
   pendingCount = computed(() => this.reports().filter(r => r.status === 'pending').length);
 
-  focusReport(event: KeyboardEvent, direction: -1 | 1): void {
-    event.preventDefault();
-    const rows = Array.from(this.host.nativeElement.querySelectorAll<HTMLElement>('.report-row[role="option"]'));
-    const current = rows.indexOf(event.currentTarget as HTMLElement);
+  focusReport(event: Event): void {
+    const keyboardEvent = event as KeyboardEvent;
+    if (keyboardEvent.key !== 'ArrowDown' && keyboardEvent.key !== 'ArrowUp') return;
+    keyboardEvent.preventDefault();
+    const direction: -1 | 1 = keyboardEvent.key === 'ArrowDown' ? 1 : -1;
+    const root = this.host.nativeElement as HTMLElement;
+    const rows = Array.from(root.querySelectorAll('.report-row[role="option"]')) as HTMLElement[];
+    const current = rows.indexOf(keyboardEvent.currentTarget as HTMLElement);
     const next = Math.max(0, Math.min(rows.length - 1, current + direction));
     rows[next]?.focus();
     const report = this.pagedReports()[next];
