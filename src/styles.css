@@ -6237,6 +6237,16 @@ button:disabled.is-loading {
 .cursor-se-resize { cursor: se-resize; }
 .cursor-sw-resize { cursor: sw-resize; }
 
+/* Touch-first devices do not have a persistent pointer. Keep their
+   native cursor behavior even when the desktop custom cursor is enabled. */
+@media (hover: none), (pointer: coarse) {
+  html.cursor-custom-enabled,
+  html.cursor-custom-enabled body,
+  html.cursor-custom-enabled body * {
+    cursor: auto !important;
+  }
+}
+
 /* ── Shared LIS search field system ──────────────────────────────────
    Consistent default, focus and no-results borders across feature pages.
    Search wrappers keep their page-specific sizing/layout; this owns only
