@@ -6340,3 +6340,73 @@ button:disabled.is-loading {
     cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M10 15 V7.5 C10 5.5 13 5.5 13 7.5 V14 V5.5 C13 3.5 16 3.5 16 5.5 V14 V7 C16 5 19 5 19 7 V15 V10 C19 8 22 8 22 10 V20 C22 26 18 29 13 27 C10 26 8 23 6 20 L4.5 17.5 C3.5 15.5 6 13.5 8 15.5 L10 18 Z' fill='%238b5cf6' stroke='%23ffffff' stroke-width='1.7' stroke-linejoin='round'/%3E%3C/svg%3E") 10 5, pointer;
   }
 }
+
+
+/* ── Cursor consistency overrides ───────────────────────────────────
+   Keep the custom cursor visible on controls even when component styles
+   define their own cursor. Text fields get a matching custom I-beam;
+   actual drag handles are the only elements that use grab/grabbing. */
+@media (hover: hover) and (pointer: fine) {
+  html.cursor-custom-enabled body :is(
+    button:not(:disabled):not([aria-disabled="true"]),
+    a,
+    [role="button"]:not([aria-disabled="true"]),
+    [role="link"],
+    [role="tab"],
+    [role="menuitem"],
+    [role="option"],
+    [role="switch"],
+    [role="checkbox"],
+    [role="radio"],
+    [role="treeitem"],
+    select,
+    label[for],
+    input[type="button"],
+    input[type="submit"],
+    input[type="reset"],
+    input[type="checkbox"],
+    input[type="radio"],
+    input[type="range"],
+    .clickable,
+    .lis-btn,
+    [ng-reflect-router-link]
+  ) {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M10 15 V7.5 C10 5.5 13 5.5 13 7.5 V14 V5.5 C13 3.5 16 3.5 16 5.5 V14 V7 C16 5 19 5 19 7 V15 V10 C19 8 22 8 22 10 V20 C22 26 18 29 13 27 C10 26 8 23 6 20 L4.5 17.5 C3.5 15.5 6 13.5 8 15.5 L10 18 Z' fill='%238b5cf6' stroke='%23ffffff' stroke-width='1.7' stroke-linejoin='round'/%3E%3C/svg%3E") 10 5, pointer !important;
+  }
+
+  /* Text-entry controls intentionally use an I-beam, not a click hand. */
+  html.cursor-custom-enabled body :is(
+    input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    textarea,
+    [contenteditable="true"],
+    [role="textbox"],
+    .CodeMirror,
+    .monaco-editor,
+    .cm-content
+  ) {
+    cursor: text !important;
+  }
+
+  /* Disabled controls and true drag handles retain their semantic states. */
+  html.cursor-custom-enabled body :is(
+    button:disabled,
+    button[aria-disabled="true"],
+    [disabled],
+    [aria-disabled="true"]
+  ) {
+    cursor: not-allowed !important;
+  }
+
+  html.cursor-custom-enabled body :is(.drag-handle, .cdk-drag-handle, [draggable="true"]) {
+    cursor: grab !important;
+  }
+
+  html.cursor-custom-enabled body :is(.drag-handle, .cdk-drag-handle, [draggable="true"]):active,
+  html.cursor-custom-enabled body .cdk-drag-dragging {
+    cursor: grabbing !important;
+  }
+
+  html.cursor-custom-enabled body :is([aria-busy="true"], .is-loading, .loading) {
+    cursor: progress !important;
+  }
+}
