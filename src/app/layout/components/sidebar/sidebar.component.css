@@ -44,33 +44,6 @@
   flex-shrink: 0;
 }
 
-/* ── Mobile close button ── */
-.mobile-close-btn {
-  margin-left: auto;
-  width: 34px;
-  height: 34px;
-  border: 1px solid transparent;
-  border-radius: 9px;
-  background: transparent;
-  color: var(--lis-sb-text);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
-}
-
-.mobile-close-btn:hover {
-  background: var(--lis-sb-hover-bg);
-  border-color: var(--lis-sb-hover-border);
-  color: var(--lis-sb-text-hover);
-}
-
-.mobile-close-btn:focus-visible {
-  outline: 2px solid var(--lis-primary, var(--primary));
-  outline-offset: 2px;
-}
-
 /* Keep the footer identity aligned with the nav rhythm. */
 .pc-sidebar.lis-sidebar .sidebar-footer {
   margin-top: auto;
