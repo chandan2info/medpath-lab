@@ -200,20 +200,49 @@
 .order-feedback--error > i { color: #df7777; }
 
 
-/* Real-time multi-draft workspace */
+/* Saved drafts: floating popover, independent of the catalogue/footer layout. */
 .selection-count .autosave-state{display:flex;align-items:center;gap:5px;margin-top:4px;font-size:9px;color:var(--text-secondary)}
 .autosave-state--saved{color:var(--lis-primary)!important}.autosave-state--error{color:#d66!important}
 .drafts-toggle{display:inline-flex;align-items:center;gap:6px}.drafts-toggle span{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;border-radius:12px;background:var(--lis-primary-xlight);color:var(--lis-primary-deep);font-size:9px}
-.drafts-panel{flex:0 0 auto;margin-top:7px;padding:10px 12px;max-height:190px;overflow:hidden;display:flex;flex-direction:column;gap:7px}
-.drafts-panel-head{display:flex;align-items:center;justify-content:space-between;color:var(--text-primary);font-size:12px}
-.drafts-panel-head div{display:flex;align-items:center;gap:8px}.drafts-panel-head span{font-size:9px;color:var(--text-secondary)}
-.drafts-close,.draft-delete{display:grid;place-items:center;width:26px;height:26px;border:1px solid var(--border-color);border-radius:7px;background:var(--body-bg);color:var(--text-secondary);cursor:pointer}
-.drafts-list{overflow-y:auto;min-height:0;display:flex;flex-direction:column;gap:6px}
-.draft-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px;border:1px solid var(--border-color);border-radius:8px;background:var(--body-bg)}
-.draft-copy{display:flex;flex-direction:column;gap:2px;min-width:0}.draft-copy strong{font-size:11px;color:var(--text-primary)}.draft-copy span,.draft-copy small{font-size:9px;color:var(--text-secondary)}
-.draft-actions{display:flex;align-items:center;gap:6px;flex:none}.draft-actions .lis-btn{min-height:29px;padding:4px 9px;font-size:10px}
-.draft-delete{color:#d66}.drafts-empty{padding:12px;color:var(--text-secondary);font-size:10px}
-@media(max-width:700px){.selection-actions{flex-wrap:wrap}.drafts-toggle{order:0}.draft-item{align-items:flex-start}.draft-actions{align-self:center}}
+.drafts-panel{
+  position:fixed;
+  z-index:60;
+  right:24px;
+  bottom:88px;
+  box-sizing:border-box;
+  width:min(520px,calc(100vw - 32px));
+  max-height:min(56dvh,480px);
+  margin:0;
+  padding:12px;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+  border:1px solid var(--border-color);
+  border-radius:14px;
+  background:var(--card-bg);
+  box-shadow:0 18px 48px rgba(10,25,40,.24),0 3px 12px rgba(10,25,40,.12);
+}
+.drafts-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:none;color:var(--text-primary);font-size:13px}
+.drafts-panel-head div{display:flex;align-items:center;gap:8px}.drafts-panel-head span{font-size:10px;color:var(--text-secondary)}
+.drafts-close,.draft-delete{display:grid;place-items:center;width:30px;height:30px;flex:none;border:1px solid var(--border-color);border-radius:8px;background:var(--body-bg);color:var(--text-secondary);cursor:pointer}
+.drafts-list{overflow-y:auto;min-height:0;display:flex;flex-direction:column;gap:7px;overscroll-behavior:contain}
+.draft-item{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;padding:10px;border:1px solid var(--border-color);border-radius:9px;background:var(--body-bg)}
+.draft-copy{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}.draft-copy strong{font-size:12px;color:var(--text-primary)}.draft-copy span,.draft-copy small{font-size:10px;line-height:1.4;color:var(--text-secondary);overflow-wrap:anywhere}
+.draft-actions{display:flex;align-items:center;gap:7px;flex:none}.draft-actions .lis-btn{min-height:32px;padding:5px 10px;font-size:11px;white-space:nowrap}
+.draft-delete{color:#d66}.drafts-empty{padding:16px 10px;color:var(--text-secondary);font-size:11px;line-height:1.5}
+@media(max-width:700px){
+  .selection-actions{flex-wrap:wrap}
+  .drafts-toggle{order:0}
+  .drafts-panel{right:12px;bottom:112px;width:calc(100vw - 24px);max-height:min(54dvh,420px);padding:11px;border-radius:12px}
+  .draft-item{align-items:center;gap:8px;padding:9px}
+  .draft-actions{gap:5px}
+}
+@media(max-width:480px){
+  .drafts-panel{right:8px;bottom:148px;width:calc(100vw - 16px);max-height:min(50dvh,360px)}
+  .draft-item{align-items:stretch;flex-direction:column}
+  .draft-actions{align-self:flex-end}
+}
 
 
 /* Keep the Test Order header and patient card full-width and aligned to Billing. */
