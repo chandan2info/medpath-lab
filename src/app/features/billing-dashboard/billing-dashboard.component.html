@@ -1,78 +1,58 @@
-<div class="billing-page">
-  <header class="billing-heading billing-title-card">
-    <div>
-      <div class="eyebrow"><i class="ti ti-wallet"></i> FINANCE & PATIENT SERVICES</div>
-      <h1>Billing Overview</h1>
-      <p>Manage invoices, collect outstanding payments and hand over approved reports.</p>
+<div class="billing-page billing-compact">
+  <header class="billing-topbar">
+    <div class="billing-title">
+      <h1>Billing</h1>
+      <p>Manage invoices, receive payments and track outstanding balances.</p>
     </div>
-    <a class="primary-action" routerLink="/dashboard/billing/new"><i class="ti ti-plus"></i> New Invoice</a>
+    <div class="billing-kpis" aria-label="Billing summary">
+      <article class="mini-kpi"><span class="kpi-icon kpi-icon--blue"><i class="ti ti-file-invoice"></i></span><span><small>Today's invoices</small><strong>{{ invoiceCount() }}</strong></span></article>
+      <article class="mini-kpi"><span class="kpi-icon kpi-icon--green"><i class="ti ti-circle-check"></i></span><span><small>Collected</small><strong>{{ collectedAmount() | currency:'INR':'symbol':'1.0-0' }}</strong></span></article>
+      <article class="mini-kpi"><span class="kpi-icon kpi-icon--orange"><i class="ti ti-alert-triangle"></i></span><span><small>Outstanding</small><strong class="amount-warning">{{ outstandingAmount() | currency:'INR':'symbol':'1.0-0' }}</strong></span></article>
+    </div>
   </header>
 
-  <section class="metric-grid" aria-label="Billing summary">
-    <article class="metric-card">
-      <div class="metric-top"><span>Invoices</span><span class="metric-icon metric-icon--blue"><i class="ti ti-file-invoice"></i></span></div>
-      <strong>{{ invoiceCount() }}</strong><small>Recorded in this workspace</small>
-    </article>
-    <article class="metric-card">
-      <div class="metric-top"><span>Collected</span><span class="metric-icon metric-icon--green"><i class="ti ti-circle-check"></i></span></div>
-      <strong>{{ collectedAmount() | currency:'INR':'symbol':'1.0-0' }}</strong><small>Payments received</small>
-    </article>
-    <article class="metric-card">
-      <div class="metric-top"><span>Outstanding</span><span class="metric-icon metric-icon--amber"><i class="ti ti-alert-circle"></i></span></div>
-      <strong class="amount-warning">{{ outstandingAmount() | currency:'INR':'symbol':'1.0-0' }}</strong><small>{{ pendingPaymentCount() }} invoices with a balance</small>
-    </article>
-    <article class="metric-card">
-      <div class="metric-top"><span>Reports ready</span><span class="metric-icon metric-icon--teal"><i class="ti ti-file-check"></i></span></div>
-      <strong>{{ readyCount() }}</strong><small>Orders with reports ready</small>
-    </article>
-  </section>
-
-  <section class="worklist-card">
-    <div class="worklist-heading">
-      <div><h2>Billing workspace</h2><p>Choose a task to see the patients and invoices that need attention.</p></div>
-      <a routerLink="/dashboard/billing/new" class="text-action"><i class="ti ti-plus"></i> Create invoice</a>
-    </div>
-
+  <section class="billing-workspace">
     <nav class="billing-tabs" aria-label="Billing views">
-      <button type="button" [class.active]="activeView() === 'overview'" (click)="setView('overview')"><i class="ti ti-layout-dashboard"></i> Overview</button>
-      <button type="button" [class.active]="activeView() === 'outstanding'" (click)="setView('outstanding')"><i class="ti ti-wallet"></i> Outstanding @if (pendingPaymentCount()) { <span class="tab-count">{{ pendingPaymentCount() }}</span> }</button>
-      <button type="button" [class.active]="activeView() === 'invoices'" (click)="setView('invoices')"><i class="ti ti-receipt"></i> All Invoices</button>
+      <a routerLink="/dashboard/billing/new" class="billing-tab-link"><i class="ti ti-plus"></i> New Invoice</a>
+      <button type="button" [class.active]="activeView() === 'invoices'" (click)="setView('invoices')"><i class="ti ti-file-invoice"></i> All Invoices</button>
+      <button type="button" [class.active]="activeView() === 'outstanding'" (click)="setView('outstanding')"><i class="ti ti-wallet"></i> Outstanding <span class="tab-count">{{ pendingPaymentCount() }}</span></button>
     </nav>
 
     <div class="table-toolbar">
-      <label class="search-field"><i class="ti ti-search"></i><input type="search" aria-label="Search billing records" placeholder="Search patient, patient ID, invoice or test..." [ngModel]="query()" (ngModelChange)="query.set($event)" />@if (query()) { <button type="button" aria-label="Clear search" (click)="query.set('')"><i class="ti ti-x"></i></button> }</label>
+      <label class="search-field"><i class="ti ti-search"></i><input type="search" aria-label="Search billing records" placeholder="Search by patient name, mobile, or invoice no..." [ngModel]="query()" (ngModelChange)="updateQuery($event)" />@if (query()) { <button type="button" aria-label="Clear search" (click)="updateQuery('')"><i class="ti ti-x"></i></button> }</label>
+      <div class="toolbar-filters">
+        <label class="filter-select"><i class="ti ti-filter"></i><select aria-label="Filter by payment status" [ngModel]="paymentFilter()" (ngModelChange)="updatePaymentFilter($event)"><option value="all">All Payments</option><option value="paid">Paid</option><option value="partial">Partially Paid</option><option value="unpaid">Unpaid</option></select><i class="ti ti-chevron-down"></i></label>
+        <label class="filter-select"><i class="ti ti-calendar"></i><select aria-label="Filter by date" [ngModel]="dateFilter()" (ngModelChange)="updateDateFilter($event)"><option value="7">Last 7 Days</option><option value="30">Last 30 Days</option><option value="all">All Time</option></select><i class="ti ti-chevron-down"></i></label>
+      </div>
       <span class="result-count">{{ filteredRows().length }} records</span>
     </div>
 
     @if (feedback()) { <div class="feedback" role="status"><i class="ti ti-info-circle"></i>{{ feedback() }}<button type="button" aria-label="Dismiss message" (click)="feedback.set('')"><i class="ti ti-x"></i></button></div> }
 
     <div class="table-wrap">
-      <table>
-        <thead><tr><th>Patient / Invoice</th><th>Tests</th><th>Invoice total</th><th>Paid</th><th>Balance</th><th>Payment</th><th>Reports</th><th class="actions-column">Actions</th></tr></thead>
+      <table class="invoice-table">
+        <thead><tr><th>Invoice / Date</th><th>Patient</th><th>Total</th><th>Paid</th><th>Balance</th><th>Status</th><th class="actions-column">Actions</th></tr></thead>
         <tbody>
-          @for (row of filteredRows(); track row.invoice.id) {
+          @for (row of visibleRows(); track row.invoice.id) {
             <tr>
-              <td><div class="patient-name">{{ row.patientName }}</div><div class="muted mono">{{ row.patientId }} · {{ row.invoice.id }}</div><div class="muted mono">Order {{ row.orderId }} · Visit {{ row.visitId }}</div><div class="muted">{{ row.createdAt | date:'dd MMM yyyy' }}</div></td>
-              <td><div class="test-summary">{{ row.tests.slice(0, 2).join(', ') || 'Tests not linked' }}</div>@if (row.tests.length > 2) { <small class="muted">+{{ row.tests.length - 2 }} more</small> }</td>
+              <td><strong class="invoice-id">{{ row.invoice.id }}</strong><small class="cell-subtitle">{{ row.createdAt | date:'dd MMM yyyy' }}</small></td>
+              <td><strong class="patient-name">{{ row.patientName }}</strong><small class="cell-subtitle">{{ row.patientId }}</small></td>
               <td class="money">{{ row.invoice.total | currency:'INR':'symbol':'1.0-0' }}</td>
-              <td class="money">{{ row.invoice.amountReceived | currency:'INR':'symbol':'1.0-0' }}</td>
+              <td class="money paid-amount">{{ row.invoice.amountReceived | currency:'INR':'symbol':'1.0-0' }}</td>
               <td class="money" [class.amount-warning]="row.invoice.balanceDue > 0">{{ row.invoice.balanceDue | currency:'INR':'symbol':'1.0-0' }}</td>
               <td><span class="status-pill" [ngClass]="'status-pill--' + row.invoice.status">{{ statusLabel(row) }}</span></td>
-              <td>@if (row.readyReportCount) { <span class="status-pill status-pill--ready">{{ row.readyReportCount }} ready</span> } @else if (row.reportCount) { <span class="status-pill status-pill--neutral">Delivered</span> } @else { <span class="muted">Not ready</span> }</td>
-              <td class="actions-column">
-                <div class="row-actions">
-                @if (row.invoice.balanceDue > 0) { <button type="button" class="small-action small-action--primary" (click)="openPayment(row)">Collect</button> }
-                @if (row.readyReportCount > 0) { <button type="button" class="small-action small-action--secondary" (click)="markReportDelivered(row)">Mark delivered</button> }
+              <td class="actions-column"><div class="row-actions">
+                @if (row.invoice.balanceDue > 0) { <button type="button" class="small-action small-action--primary" (click)="openPayment(row)"><i class="ti ti-cash"></i> Collect</button> }
                 @if (row.invoice.amountReceived === 0 && row.invoice.payments.length === 0) { <button type="button" class="icon-action icon-action--danger" [attr.aria-label]="'Delete invoice ' + row.invoice.id" title="Delete unpaid invoice" (click)="requestDelete(row)"><i class="ti ti-trash"></i></button> }
-                </div>
-              </td>
+              </div></td>
             </tr>
           } @empty {
-            <tr><td colspan="8"><div class="empty-state"><span class="empty-icon"><i class="ti ti-receipt-off"></i></span><strong>{{ activeView() === 'outstanding' ? 'No outstanding payments' : activeView() === 'overview' ? 'No recent invoices' : 'No billing records yet' }}</strong><p>{{ activeView() === 'outstanding' ? 'All recorded invoices are currently settled.' : activeView() === 'overview' ? 'Recently created invoices will appear here.' : 'Invoices created during patient registration will appear here.' }}</p>@if (activeView() === 'overview' || activeView() === 'invoices') { <a routerLink="/dashboard/billing/new">Create the first invoice</a> }</div></td></tr>
+            <tr><td colspan="7"><div class="empty-state"><strong>{{ activeView() === 'outstanding' ? 'No outstanding payments' : 'No invoices found' }}</strong><p>Try changing your search or filters.</p></div></td></tr>
           }
         </tbody>
       </table>
     </div>
+    <footer class="table-footer"><span>{{ paginationLabel() }}</span><nav class="pagination" aria-label="Invoice pages"><button type="button" aria-label="First page" [disabled]="currentPage() === 1" (click)="setPage(1)"><i class="ti ti-chevrons-left"></i></button><button type="button" aria-label="Previous page" [disabled]="currentPage() === 1" (click)="setPage(currentPage()-1)"><i class="ti ti-chevron-left"></i></button><span class="page-indicator">{{ currentPage() }} / {{ pageCount() }}</span><button type="button" aria-label="Next page" [disabled]="currentPage() === pageCount()" (click)="setPage(currentPage()+1)"><i class="ti ti-chevron-right"></i></button><button type="button" aria-label="Last page" [disabled]="currentPage() === pageCount()" (click)="setPage(pageCount())"><i class="ti ti-chevrons-right"></i></button></nav></footer>
   </section>
 </div>
 
