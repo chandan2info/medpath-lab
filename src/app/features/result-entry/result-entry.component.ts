@@ -294,6 +294,26 @@ export class ResultEntryComponent implements OnInit {
   updateSearch(value: string): void { this.testSearch.set(value); }
   clearOrderedFilters(): void { this.testSearch.set(''); this.filter.set('ALL'); this.showFilterMenu.set(false); }
 
+  queueInitials(sample: Sample): string {
+    const parts = sample.patientName.trim().split(/\\s+/).filter(Boolean);
+    return parts.length > 1
+      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+      : (parts[0]?.slice(0, 2) ?? '—').toUpperCase();
+  }
+
+  setQueueSearch(value: string): void {
+    this.queueSearch.set(value);
+  }
+
+  setQueueFilter(value: 'ALL' | 'READY' | 'DRAFT' | 'VALIDATION' | 'NOT_READY'): void {
+    this.queueFilter.set(value);
+  }
+
+  openQueueSample(sample: Sample): void {
+    if (sample.status !== 'ready' && sample.status !== 'critical') return;
+    this.router.navigate(['/dashboard/results', sample.id]);
+  }
+
   updateResult(parameterId: string, value: string): void {
     this.updateParameter(parameterId, { value });
     this.demoSavedState.set('unsaved');
