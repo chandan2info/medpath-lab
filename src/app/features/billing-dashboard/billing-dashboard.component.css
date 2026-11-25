@@ -133,3 +133,23 @@ tbody tr:hover{background:color-mix(in srgb,var(--lis-primary,#1d9e75) 3%,transp
 @media(max-height:700px){
   .worklist-card{max-height:calc(100dvh - 300px)}
 }
+
+
+/* Compact billing cards and reliable sticky action controls. */
+.billing-title-card{padding:12px 18px;min-height:92px}
+.billing-title-card h1{font-size:24px;margin:2px 0 3px}
+.billing-title-card p{font-size:12px}
+.metric-card{padding:10px 13px}
+.metric-icon{width:26px;height:26px}
+.metric-card>strong{margin:5px 0 1px;font-size:22px}
+.metric-card small{font-size:9px}
+.metric-grid{gap:10px;margin-bottom:12px}
+.worklist-heading{padding:13px 16px 9px}
+.billing-tabs button{padding:9px 12px 8px}
+.table-toolbar{padding:9px 14px}
+.table-wrap td.actions-column{position:sticky;right:0;z-index:2;min-width:170px;background:var(--card-bg,var(--surface-bg));box-shadow:-7px 0 10px -10px rgba(15,23,42,.55)}
+.table-wrap tbody tr:hover td.actions-column{background:color-mix(in srgb,var(--lis-primary,#1d9e75) 4%,var(--card-bg,var(--surface-bg)))}
+.row-actions{display:flex;align-items:center;justify-content:flex-start;gap:6px;min-width:150px;white-space:nowrap}
+.row-actions .small-action{display:inline-flex;align-items:center;justify-content:center;min-height:28px;visibility:visible;opacity:1}
+.table-wrap thead th.actions-column{position:sticky;right:0;z-index:5;background:var(--body-bg)}
+@media(max-width:640px){.billing-title-card{padding:12px 14px;min-height:0}.metric-card{padding:9px}.metric-card>strong{font-size:19px}.worklist-heading{padding:12px}.billing-tabs button{padding:9px 10px}}
