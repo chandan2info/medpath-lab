@@ -1,16 +1,31 @@
 import { DOCUMENT } from '@angular/common';
-import { Injectable, inject, signal } from '@angular/core';
+import { DestroyRef, Injectable, inject, signal } from '@angular/core';
 
 const STORAGE_KEY = 'medpath.customCursor.enabled';
 
 @Injectable({ providedIn: 'root' })
 export class CursorPreferenceService {
   private readonly document = inject(DOCUMENT);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly storage = this.getStorage();
   readonly enabled = signal(this.readInitialValue());
 
   constructor() {
     this.apply(this.enabled());
+
+    // Keep other tabs in the same browser aligned with the saved preference.
+    const view = this.document.defaultView;
+    if (view) {
+      const onStorage = (event: StorageEvent): void => {
+        if (event.key !== STORAGE_KEY || event.newValue === null) return;
+        const enabled = event.newValue === 'true';
+        this.enabled.set(enabled);
+        this.apply(enabled);
+      };
+
+      view.addEventListener('storage', onStorage);
+      this.destroyRef.onDestroy(() => view.removeEventListener('storage', onStorage));
+    }
   }
 
   toggle(): void {
