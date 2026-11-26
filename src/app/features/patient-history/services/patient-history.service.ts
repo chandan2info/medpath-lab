@@ -35,7 +35,7 @@ export class PatientHistoryService {
       const age = Number(visit.ageYears ?? 0) || 0;
       const sex = visit.gender || 'Not recorded';
       const name = visit.patientName || 'Patient';
-      const initials = name.split(/\\s+/).filter(Boolean).slice(0,2).map(part => part[0]).join('').toUpperCase();
+      const initials = name.split(/\s+/).filter(Boolean).slice(0,2).map(part => part[0]).join('').toUpperCase();
       const patient = grouped.get(visit.patientId) ?? {
         id: visit.patientId, name, age, sex, mobile: visit.mobile ? '+91 ' + visit.mobile : 'Mobile not recorded',
         initials: initials || 'P', avatarClass: 'av-t', visits: []
