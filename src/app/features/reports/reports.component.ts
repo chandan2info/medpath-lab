@@ -37,17 +37,6 @@ interface ReportDetail {
   qualification: string;
 }
 
-interface ReportStat {
-  id: string;
-  label: string;
-  value: string;
-  icon: string;
-  variant: 'primary' | 'warning' | 'success' | 'danger';
-  delta: string;
-  deltaType: 'up' | 'down' | 'neutral';
-  spark: string;
-}
-
 const REPORTS: ReportRow[] = [
   { id: 'RPT-2406-041', patientName: 'Arun Pillai',  patientId: 'PAT-2406-0316', test: 'KFT',            date: '23 Jun 2026', status: 'pending' },
   { id: 'RPT-2406-040', patientName: 'Priya Sharma', patientId: 'PAT-2406-0315', test: 'Thyroid panel',  date: '23 Jun 2026', status: 'pending' },
