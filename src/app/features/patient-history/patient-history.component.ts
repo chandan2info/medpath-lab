@@ -21,8 +21,8 @@ export class PatientHistoryComponent {
   private readonly reportPreview = inject(ReportPreviewService);
   private readonly historyService = inject(PatientHistoryService);
   get allPatients(): PatientRecord[] { return this.historyService.patients(); }
-  readonly viewTabs = ['All Patients', 'By Patient', 'By Test', 'Trends & Analytics'];
-  readonly detailTabs = ['History', 'Reports', 'Compare', 'Trends'];
+  readonly viewTabs = ['All Patients', 'By Patient', 'By Test', 'Report Comparison', 'Trends & Analytics'];
+  readonly detailTabs = ['History', 'Reports', 'Trends'];
   searchQ = signal('');
   selectedPatient = signal<PatientRecord | null>(null);
   activeView = signal('All Patients');
@@ -152,6 +152,7 @@ export class PatientHistoryComponent {
     if (value === 'By Patient' && !this.selectedPatient() && this.allPatients.length) {
       this.selectPatient(this.allPatients[0]);
     }
+    if (value === 'Report Comparison' && !this.selectedPatient() && this.allPatients.length) this.selectPatient(this.allPatients[0]);
     if (value === 'Trends & Analytics' && !this.analyticsPatientId() && this.allPatients.length) {
       this.analyticsPatientId.set(this.allPatients[0].id);
       this.trendParameter.set(this.availableParametersForAnalytics()[0] ?? '');
