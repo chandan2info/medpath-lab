@@ -183,7 +183,7 @@ export class PatientHistoryComponent {
   }
   @HostListener('document:click') closeActionMenu(): void { this.menuPatientId.set(null); }
   @HostListener('document:scroll') closeActionMenuOnScroll(): void { this.menuPatientId.set(null); }
-  @HostListener('document:keydown.escape') closeActionMenuOnEscape(): void { this.menuPatientId.set(null); this.closeInvoice(); }
+  @HostListener('document:keydown.escape') closeActionMenuOnEscape(): void { this.menuPatientId.set(null); this.closeInvoice(); this.selectedPatient.set(null); }
   resetPagination(): void { this.page.set(1); this.testPage.set(1); }
   setSearch(value: string): void { this.searchQ.set(value); this.page.set(1); this.testPage.set(1); }
   setPageSize(value: number): void { this.pageSize.set(value); this.page.set(1); this.testPage.set(1); }
