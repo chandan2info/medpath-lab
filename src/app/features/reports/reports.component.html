@@ -280,12 +280,12 @@
       <div class="pdf-preview-body">
         <div class="pdf-preview-stage">
           <div class="pdf-preview-scroll">
-            <div class="pdf-preview-paper" [class.pdf-preview-paper--landscape]="pdfOrientation() === 'landscape'" [style.--pdf-zoom]="pdfZoom() / 100">
+            <div class="pdf-preview-paper" [class.pdf-preview-paper--landscape]="customPdfSettings() && pdfOrientation() === 'landscape'" [style.--pdf-zoom]="pdfZoom() / 100" [style.width]="pdfPageWidth()" [style.aspect-ratio]="pdfPageAspectRatio()" [style.padding]="pdfPagePadding()">
               <ng-container *ngTemplateOutlet="reportSheet"></ng-container>
             </div>
           </div>
           <footer class="pdf-preview-toolbar">
-            <span class="pdf-page-count">A4 preview · Selected report</span>
+            <span class="pdf-page-count">{{ customPdfSettings() ? pdfPaperSize() + ' · ' + (pdfOrientation() === 'landscape' ? 'Landscape' : 'Portrait') : 'A4 · Portrait' }} preview · Selected report</span>
             <div class="pdf-zoom-controls">
               <button type="button" aria-label="Zoom out" [disabled]="pdfZoom() <= 60" (click)="changePdfZoom(-10)">
                 <i class="ti ti-zoom-out" aria-hidden="true"></i>
@@ -300,16 +300,12 @@
 
         <aside class="pdf-preview-settings">
           <div class="pdf-settings-title"><i class="ti ti-settings" aria-hidden="true"></i><h3>PDF settings</h3></div>
-          <div class="pdf-custom-toggle">
-            <div>
-              <strong>Enable custom PDF settings</strong>
-              <span>Use standard A4 portrait defaults when disabled</span>
+          @if (!customPdfSettings()) {
+            <div class="pdf-preview-tip">
+              <i class="ti ti-lock" aria-hidden="true"></i>
+              <span>Standard A4 portrait settings are active. Enable custom PDF settings from <strong>Settings</strong> to edit paper size, orientation and margins.</span>
             </div>
-            <label class="pdf-switch">
-              <input type="checkbox" role="switch" [checked]="customPdfSettings()" (change)="setCustomPdfSettings($any($event.target).checked)" aria-label="Enable custom PDF settings" />
-              <span class="pdf-switch-track" aria-hidden="true"></span>
-            </label>
-          </div>
+          }
 
           @if (customPdfSettings()) {
           <div class="pdf-setting-row" [class.pdf-setting-row--disabled]="!customPdfSettings()">
