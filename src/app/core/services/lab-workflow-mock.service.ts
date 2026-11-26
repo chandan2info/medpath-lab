@@ -6,7 +6,7 @@ export type MockResultStatus = 'draft' | 'awaiting-validation' | 'validated' | '
 export type MockReportStatus = 'generated' | 'dispatched';
 
 export interface MockVisit {
-  id: string; patientId: string; patientName: string; createdAt: string; status: PatientVisitStatus;
+  id: string; patientId: string; patientName: string; createdAt: string; status: PatientVisitStatus;\n  ageYears?: string; gender?: string; mobile?: string; refDoctor?: string;
 }
 export interface MockLabOrder {
   id: string; visitId: string; patientId: string; testIds: string[]; priority: 'routine'|'urgent'|'stat';
@@ -81,7 +81,7 @@ export class LabWorkflowMockService {
     return `${prefix}-${stamp}-${random}`;
   }
 
-  createVisit(patient: {id:string; firstName:string; lastName:string}): MockVisit {
+  createVisit(patient: {id:string; firstName:string; lastName:string; ageYears?:string; gender?:string; mobile?:string; refDoctor?:string}): MockVisit {
     const current = this.state();
     const visit: MockVisit = {
       id: this.id('VIS'), patientId: patient.id,
