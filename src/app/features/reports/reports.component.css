@@ -1781,9 +1781,13 @@ button.report-row:focus-visible {
 }
 
 .pdf-preview-paper {
-  width: min(100%, 760px);
+  width: min(100%, 794px);
+  box-sizing: border-box;
+  min-height: 0;
   flex: 0 0 auto;
-  padding: 22px;
+  aspect-ratio: 794 / 1123;
+  padding: 12mm;
+  overflow: hidden;
   background: #fff;
   color: #172033;
   box-shadow: 0 8px 30px rgb(0 0 0 / 24%);
