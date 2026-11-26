@@ -458,3 +458,65 @@
   .queue-footer { align-items: flex-start; flex-direction: column; gap: 5px; padding: 9px 12px; }
   .queue-table-wrap { max-height: 60vh; }
 }
+
+
+/* Match the Result Entry page's content origin and top-card alignment exactly. */
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+.validation-page {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  gap: 10px;
+  box-sizing: border-box;
+}
+.validation-header {
+  width: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 10px 14px;
+  box-sizing: border-box;
+  border-radius: 12px;
+}
+.validation-heading {
+  align-items: center;
+  gap: 12px;
+}
+.heading-icon {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  border-radius: 10px;
+  font-size: 19px;
+}
+.validation-heading h1 {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.2;
+}
+.eyebrow {
+  margin: 0 0 3px;
+  font-size: 9px;
+  line-height: 1.2;
+}
+.page-subtitle {
+  margin: 4px 0 0;
+  font-size: 11px;
+  line-height: 1.35;
+}
+.back-link {
+  min-height: 34px;
+  padding: 7px 11px;
+  border-radius: 8px;
+}
+@media (max-width: 650px) {
+  .validation-page { padding: 0; gap: 10px; }
+  .validation-header { padding: 10px 12px; }
+}
