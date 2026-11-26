@@ -193,7 +193,9 @@ import { PdfPreferencesService } from '../../core/services/pdf-preferences.servi
     .color-preset span { width:22px; height:22px; border-radius:50%; background:var(--preset-color); box-shadow:0 0 0 1px var(--border),inset 0 0 0 2px var(--bg-surface); }
     .color-preset small { font-size:10px; color:var(--text-secondary); }
     .color-preset.selected { border-color:var(--primary-deeper); background:var(--primary-xlight); }
-    .pdf-preference-row { margin-top:0; padding-top:0; border-top:0; }\n    .pdf-preference-status { margin:14px 0 0; }\n    .placeholder-page { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 20px; gap:14px; text-align:center; }
+    .pdf-preference-row { margin-top:0; padding-top:0; border-top:0; }
+    .pdf-preference-status { margin:14px 0 0; }
+    .placeholder-page { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 20px; gap:14px; text-align:center; }
     .placeholder-icon { font-size:48px; color:var(--lis-primary,#1D9E75); opacity:.35; }
     .placeholder-title { font-size:18px; font-weight:500; color:var(--text-primary); margin:0; }
     .placeholder-sub { font-size:13px; color:var(--text-secondary); margin:0; max-width:360px; }
