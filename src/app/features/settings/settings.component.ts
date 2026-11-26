@@ -12,7 +12,8 @@ import { PdfPreferencesService } from '../../core/services/pdf-preferences.servi
       <div><h1 class="page-title">Settings</h1></div>
     </div>
 
-    <section class="settings-card" aria-labelledby="appearance-heading">
+    <div class="settings-layout">
+    <section class="settings-card appearance-card" aria-labelledby="appearance-heading">
       <div class="settings-card-head">
         <i class="ti ti-palette settings-card-icon" aria-hidden="true"></i>
         <div>
@@ -48,11 +49,14 @@ import { PdfPreferencesService } from '../../core/services/pdf-preferences.servi
           <span class="theme-label">Dark mode</span>
           <span class="theme-desc">Switch between light and dark backgrounds.</span>
         </div>
-        <button type="button" class="mode-toggle" role="switch"
-          [attr.aria-checked]="theme.theme() === 'dark'" (click)="theme.toggle()">
-          <i class="ti" [class.ti-sun]="theme.theme() === 'light'" [class.ti-moon]="theme.theme() === 'dark'" aria-hidden="true"></i>
-          {{ theme.theme() === 'dark' ? 'Dark' : 'Light' }}
-        </button>
+        <div class="mode-switch-control">
+          <button type="button" class="mode-switch" role="switch" aria-label="Dark mode"
+            [class.is-on]="theme.theme() === 'dark'"
+            [attr.aria-checked]="theme.theme() === 'dark'" (click)="theme.toggle()">
+            <span class="switch-track" aria-hidden="true"><span class="switch-thumb"><i class="ti" [class.ti-moon]="theme.theme() === 'dark'" [class.ti-sun]="theme.theme() === 'light'"></i></span></span>
+          </button>
+          <span class="switch-state">{{ theme.theme() === 'dark' ? 'On' : 'Off' }}</span>
+        </div>
       </div>
     </section>
 
@@ -70,13 +74,14 @@ import { PdfPreferencesService } from '../../core/services/pdf-preferences.servi
           <span class="theme-label">Enable custom cursor</span>
           <span class="theme-desc">Use the MedPath cursor instead of the browser default on desktop.</span>
         </div>
-        <button type="button" class="mode-toggle" role="switch"
-          [class.switch-active]="cursor.enabled()"
-          [attr.aria-checked]="cursor.enabled()"
-          (click)="cursor.toggle()">
-          <span class="switch-dot" aria-hidden="true"></span>
-          {{ cursor.enabled() ? 'On' : 'Off' }}
-        </button>
+        <div class="mode-switch-control">
+          <button type="button" class="mode-switch" role="switch" aria-label="Enable custom cursor"
+            [class.is-on]="cursor.enabled()" [attr.aria-checked]="cursor.enabled()"
+            (click)="cursor.toggle()">
+            <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+          </button>
+          <span class="switch-state">{{ cursor.enabled() ? 'On' : 'Off' }}</span>
+        </div>
       </div>
 
       <div class="cursor-color-row">
@@ -109,7 +114,7 @@ import { PdfPreferencesService } from '../../core/services/pdf-preferences.servi
       </div>
     </section>
 
-    <section class="settings-card" aria-labelledby="pdf-export-heading">
+    <section class="settings-card pdf-card" aria-labelledby="pdf-export-heading">
       <div class="settings-card-head">
         <i class="ti ti-file-type-pdf settings-card-icon" aria-hidden="true"></i>
         <div>
@@ -122,18 +127,21 @@ import { PdfPreferencesService } from '../../core/services/pdf-preferences.servi
           <span class="theme-label">Enable custom PDF settings</span>
           <span class="theme-desc">Allow users to change paper size, orientation and margins in the report PDF preview.</span>
         </div>
-        <button type="button" class="mode-toggle"
-          [class.switch-active]="pdfPreferences.customSettingsEnabled()"
-          role="switch" [attr.aria-checked]="pdfPreferences.customSettingsEnabled()"
-          (click)="togglePdfSettings()">
-          <span class="switch-dot" aria-hidden="true"></span>
-          {{ pdfPreferences.customSettingsEnabled() ? 'On' : 'Off' }}
-        </button>
+        <div class="mode-switch-control">
+          <button type="button" class="mode-switch" role="switch" aria-label="Enable custom PDF settings"
+            [class.is-on]="pdfPreferences.customSettingsEnabled()"
+            [attr.aria-checked]="pdfPreferences.customSettingsEnabled()"
+            (click)="togglePdfSettings()">
+            <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+          </button>
+          <span class="switch-state">{{ pdfPreferences.customSettingsEnabled() ? 'On' : 'Off' }}</span>
+        </div>
       </div>
       <p class="settings-card-sub pdf-preference-status">
         {{ pdfPreferences.customSettingsEnabled() ? 'Custom PDF controls are available on the Reports page.' : 'Custom PDF controls are hidden. Standard A4 portrait defaults will be used.' }}
       </p>
     </section>
+    </div>
 
     <div class="placeholder-page" role="region" aria-label="More settings coming soon">
       <i class="ti ti-settings placeholder-icon" aria-hidden="true"></i>
@@ -144,17 +152,26 @@ import { PdfPreferencesService } from '../../core/services/pdf-preferences.servi
     :host { display:block; }
     .page-header { margin-bottom:14px; }
     .page-title { font-size:20px; font-weight:500; color:var(--text-primary); margin:0; }
-    .settings-card {
-      background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius-lg);
-      box-shadow:var(--shadow-card); padding:var(--space-6); margin-bottom:var(--space-6);
+    .settings-layout {
+      display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px;
+      align-items:stretch;
     }
+    .settings-card {
+      min-width:0; background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius-lg);
+      box-shadow:var(--shadow-card); padding:var(--space-6); margin:0;
+    }
+    .appearance-card { grid-column:1 / -1; }
+    .cursor-card,.pdf-card { height:100%; }
+    .pdf-card { display:flex; flex-direction:column; }
+    .pdf-preference-row { align-items:center; }
+    .pdf-preference-status { margin-top:auto; padding-top:18px; }
     .settings-card-head { display:flex; align-items:flex-start; gap:var(--space-3); margin-bottom:var(--space-5); }
     .settings-card-icon { font-size:22px; color:var(--primary-deeper); flex-shrink:0; margin-top:2px; }
     .settings-card-title { font-size:15px; font-weight:600; color:var(--text-primary); margin:0 0 2px; }
     .settings-card-sub { font-size:13px; color:var(--text-secondary); margin:0; max-width:520px; }
-    .theme-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:var(--space-3); }
+    .theme-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
     .theme-option {
-      position:relative; display:flex; align-items:center; gap:var(--space-3); text-align:left;
+      min-width:0; position:relative; display:flex; align-items:center; gap:var(--space-3); text-align:left;
       padding:var(--space-3) var(--space-4); border:1.5px solid var(--border); border-radius:var(--radius-md);
       background:var(--bg-surface-alt); cursor:pointer; transition:border-color var(--transition-fast),box-shadow var(--transition-fast),transform var(--transition-fast); font-family:inherit;
     }
@@ -164,7 +181,9 @@ import { PdfPreferencesService } from '../../core/services/pdf-preferences.servi
     .theme-swatches { display:flex; flex-shrink:0; }
     .swatch { width:18px; height:18px; border-radius:50%; border:2px solid var(--bg-surface); box-shadow:0 0 0 1px var(--border); }
     .swatch + .swatch { margin-left:-7px; }
-    .theme-text,.cursor-color-copy,.mode-row-text { display:flex; flex-direction:column; gap:1px; min-width:0; }
+    .theme-text,.cursor-color-copy,.mode-row-text { display:flex; flex-direction:column; gap:3px; min-width:0; }
+    .theme-text { padding-right:12px; }
+    .theme-desc { line-height:1.45; }
     .theme-label { font-size:13px; font-weight:600; color:var(--text-primary); }
     .theme-desc { font-size:11.5px; color:var(--text-secondary); }
     .theme-check { position:absolute; top:8px; right:8px; font-size:16px; color:var(--primary-deeper); }
@@ -172,16 +191,54 @@ import { PdfPreferencesService } from '../../core/services/pdf-preferences.servi
       display:flex; align-items:center; justify-content:space-between; gap:var(--space-4);
       margin-top:var(--space-5); padding-top:var(--space-5); border-top:1px solid var(--border);
     }
-    .mode-toggle {
-      display:flex; align-items:center; gap:var(--space-2); font-size:13px; font-weight:600;
-      color:var(--text-primary); background:var(--bg-surface-alt); border:1.5px solid var(--border);
-      border-radius:var(--radius-md); padding:8px 14px; cursor:pointer; transition:border-color var(--transition-fast),background var(--transition-fast); font-family:inherit;
+        .mode-switch-control {
+      display:inline-flex; align-items:center; justify-content:flex-end; gap:12px;
+      flex:0 0 auto; min-width:78px;
     }
-    .mode-toggle:hover { border-color:var(--primary-light); }
-    .mode-toggle i { font-size:16px; color:var(--theme-icon-color,var(--primary-deeper)); }
-    .switch-dot { width:8px; height:8px; border-radius:50%; background:var(--text-secondary); }
-    .switch-active .switch-dot { background:var(--color-success); }
-    .color-picker-control { display:flex; align-items:center; gap:10px; }
+    .mode-switch {
+      position:relative; display:inline-flex; align-items:center; width:52px; height:30px;
+      flex:0 0 52px; padding:3px; border:1px solid var(--border);
+      border-radius:999px; background:linear-gradient(145deg,var(--bg-surface-alt),var(--bg-surface));
+      box-shadow:inset 0 1px 3px rgba(0,0,0,.22),0 1px 1px rgba(255,255,255,.035);
+      cursor:pointer; transition:border-color .28s ease,background .32s ease,box-shadow .32s ease,transform .2s ease;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .mode-switch:hover { border-color:var(--primary-light); transform:translateY(-1px); }
+    .mode-switch:active { transform:scale(.96); }
+    .mode-switch:focus-visible { outline:2px solid var(--primary-deeper); outline-offset:4px; }
+    .switch-track {
+      position:relative; display:flex; align-items:center; width:100%; height:100%;
+      border-radius:inherit; background:transparent;
+    }
+    .switch-thumb {
+      position:relative; z-index:1; display:grid; place-items:center;
+      width:22px; height:22px; border-radius:50%;
+      color:var(--text-secondary);
+      background:linear-gradient(150deg,#fff 0%,#dce5ee 100%);
+      box-shadow:0 2px 5px rgba(0,0,0,.28),inset 0 1px 1px rgba(255,255,255,.9);
+      transform:translateX(0);
+      transition:transform .36s cubic-bezier(.2,.85,.25,1.25),background .28s ease,box-shadow .28s ease;
+    }
+    .switch-thumb i { font-size:11px; }
+    .mode-switch.is-on {
+      border-color:color-mix(in srgb,var(--primary-deeper) 76%,transparent);
+      background:linear-gradient(135deg,color-mix(in srgb,var(--primary-deeper) 88%,#fff 12%),var(--primary-deeper));
+      box-shadow:inset 0 1px 3px rgba(0,0,0,.16),0 0 0 3px var(--primary-xlight),0 3px 12px color-mix(in srgb,var(--primary-deeper) 22%,transparent);
+    }
+    .mode-switch.is-on .switch-thumb {
+      transform:translateX(22px); color:var(--primary-deeper);
+      box-shadow:0 2px 7px rgba(0,0,0,.24),0 0 0 2px rgba(255,255,255,.22);
+    }
+    .switch-state {
+      min-width:24px; color:var(--text-secondary); font-size:11px;
+      font-weight:700; letter-spacing:.08em; line-height:1; text-transform:uppercase;
+      text-align:left; transition:color .25s ease;
+    }
+    .mode-switch-control:has(.mode-switch.is-on) .switch-state { color:var(--primary-deeper); }
+    @media (prefers-reduced-motion: reduce) {
+      .mode-switch,.switch-thumb,.switch-state { transition:none !important; }
+    }
+.color-picker-control { display:flex; align-items:center; gap:10px; }
     .color-picker { width:38px; height:38px; display:grid; place-items:center; padding:4px; border:1px solid var(--border); border-radius:10px; background:var(--bg-surface-alt); cursor:pointer; }
     .color-picker input { position:absolute; width:1px; height:1px; opacity:0; }
     .color-picker-preview { width:26px; height:26px; border-radius:7px; background:var(--picker-color); box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); }
@@ -194,13 +251,21 @@ import { PdfPreferencesService } from '../../core/services/pdf-preferences.servi
     .color-preset small { font-size:10px; color:var(--text-secondary); }
     .color-preset.selected { border-color:var(--primary-deeper); background:var(--primary-xlight); }
     .pdf-preference-row { margin-top:0; padding-top:0; border-top:0; }
-    .pdf-preference-status { margin:14px 0 0; }
+    .pdf-preference-status { margin:auto 0 0; padding-top:18px; }
     .placeholder-page { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 20px; gap:14px; text-align:center; }
     .placeholder-icon { font-size:48px; color:var(--lis-primary,#1D9E75); opacity:.35; }
     .placeholder-title { font-size:18px; font-weight:500; color:var(--text-primary); margin:0; }
     .placeholder-sub { font-size:13px; color:var(--text-secondary); margin:0; max-width:360px; }
+    @media(max-width:1100px) {
+      .theme-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+    @media(max-width:900px) {
+      .settings-layout { grid-template-columns:minmax(0,1fr); gap:16px; }
+      .appearance-card { grid-column:auto; }
+    }
     @media(max-width:560px) {
       .settings-card { padding:16px; }
+      .theme-grid { grid-template-columns:minmax(0,1fr); }
       .cursor-enable-row,.cursor-color-row { align-items:flex-start; flex-direction:column; }
       .color-picker-control { flex-wrap:wrap; }
     }
