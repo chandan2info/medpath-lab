@@ -7,6 +7,7 @@ export type MockReportStatus = 'generated' | 'dispatched';
 
 export interface MockVisit {
   id: string; patientId: string; patientName: string; createdAt: string; status: PatientVisitStatus;
+  ageYears?: string; gender?: string; mobile?: string; refDoctor?: string;
 }
 export interface MockLabOrder {
   id: string; visitId: string; patientId: string; testIds: string[]; priority: 'routine'|'urgent'|'stat';
@@ -24,7 +25,7 @@ export interface MockLabSample {
   specimenGroups: Array<{tubeType:string;sampleType:string;testIds:string[]}>;
 }
 export interface MockResultRecord {
-  id: string; sampleId: string; status: MockResultStatus; values: Record<string,string>;
+  id: string; sampleId: string; status: MockResultStatus; values: Record<string,string>; parameterLabels?: Record<string,string>;
   updatedAt: string; reviewer?: string; reviewedAt?: string; reviewNote?: string;
 }
 export interface MockReport {
@@ -81,11 +82,12 @@ export class LabWorkflowMockService {
     return `${prefix}-${stamp}-${random}`;
   }
 
-  createVisit(patient: {id:string; firstName:string; lastName:string}): MockVisit {
+  createVisit(patient: {id:string; firstName:string; lastName:string; ageYears?:string; gender?:string; mobile?:string; refDoctor?:string}): MockVisit {
     const current = this.state();
     const visit: MockVisit = {
       id: this.id('VIS'), patientId: patient.id,
       patientName: `${patient.firstName} ${patient.lastName}`.trim(),
+      ageYears: patient.ageYears, gender: patient.gender, mobile: patient.mobile, refDoctor: patient.refDoctor,
       createdAt: new Date().toISOString(), status: 'registered'
     };
     this.persist({ ...current, visits: [visit, ...current.visits] });
@@ -181,13 +183,13 @@ export class LabWorkflowMockService {
     return updated;
   }
 
-  saveResults(sampleId: string, values: Record<string,string>): MockResultRecord {
+  saveResults(sampleId: string, values: Record<string,string>, parameterLabels: Record<string,string> = {}): MockResultRecord {
     const current = this.state();
     if (!current.samples.some(s => s.id === sampleId)) throw new Error('Sample not found.');
     const existing = current.results.find(r => r.sampleId === sampleId);
     const result: MockResultRecord = {
       id: existing?.id ?? this.id('RES'), sampleId, status: 'draft',
-      values: { ...values }, updatedAt: new Date().toISOString()
+      values: { ...values }, parameterLabels: { ...parameterLabels }, updatedAt: new Date().toISOString()
     };
     this.persist({
       ...current,

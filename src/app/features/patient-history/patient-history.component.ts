@@ -1,72 +1,276 @@
-import { Component, signal, computed, ChangeDetectionStrategy } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { NgClass } from '@angular/common';
+import { Component, ChangeDetectionStrategy, computed, signal, inject, HostListener } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { PatientFlowService } from '../../core/services/patient-flow.service';
+import { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';
+import { ReportPreviewService } from '../../core/services/report-preview.service';
+import { PatientHistoryService, HistoryPatientRecord, HistoryVisitRecord } from './services/patient-history.service';
 
-interface PatientRecord {
-  id: string; name: string; age: number; sex: string;
-  mobile: string; initials: string; avatarClass: string;
-  visitCount: number; visits: VisitRecord[];
-}
-
-interface VisitRecord {
-  date: string; invoiceId: string; tests: string[];
-  refDoctor: string; amount: number;
-  keyFinding: string; hasCritical: boolean;
-}
-
-const PATIENTS: PatientRecord[] = [
-  { id:'PAT-0316', name:'Arun Pillai',          age:61, sex:'M', mobile:'98xxx316', initials:'AP', avatarClass:'av-t', visitCount:4, visits:[
-    { date:'23 Jun 2026', invoiceId:'INV-2406-0091', tests:['KFT','Urine R/M'],   refDoctor:'Dr. Suresh Menon',  amount:600,  keyFinding:'K⁺ 6.8 mEq/L — Critical ↑↑',          hasCritical:true  },
-    { date:'12 Feb 2026', invoiceId:'INV-2402-0047', tests:['KFT','CBC'],          refDoctor:'Dr. Suresh Menon',  amount:700,  keyFinding:'Creatinine 1.9 mg/dL ↑',               hasCritical:false },
-    { date:'04 Sep 2025', invoiceId:'INV-2509-0012', tests:['KFT','LFT','Lipids'], refDoctor:'Dr. Pradeep Iyer', amount:1500, keyFinding:'All within normal range',                hasCritical:false },
-  ]},
-  { id:'PAT-0318', name:'Kavitha Nair',          age:34, sex:'F', mobile:'98xxx318', initials:'KN', avatarClass:'av-b', visitCount:2, visits:[
-    { date:'23 Jun 2026', invoiceId:'INV-2406-0090', tests:['CBC','LFT'],           refDoctor:'Dr. Suresh Menon',  amount:750,  keyFinding:'LFT mildly elevated — SGPT 58 U/L ↑',  hasCritical:false },
-    { date:'10 Jan 2026', invoiceId:'INV-2601-0011', tests:['CBC','ESR'],            refDoctor:'Dr. Suresh Menon',  amount:280,  keyFinding:'All within normal range',                hasCritical:false },
-  ]},
-  { id:'PAT-0315', name:'Priya Sharma',          age:29, sex:'F', mobile:'98xxx315', initials:'PS', avatarClass:'av-p', visitCount:1, visits:[
-    { date:'23 Jun 2026', invoiceId:'INV-2406-0089', tests:['Thyroid panel'],        refDoctor:'Dr. Anita Rao',     amount:700,  keyFinding:'TSH 8.2 mIU/L ↑ — Hypothyroid',        hasCritical:false },
-  ]},
-  { id:'PAT-0317', name:'Suresh Menon',          age:52, sex:'M', mobile:'98xxx317', initials:'SM', avatarClass:'av-g', visitCount:6, visits:[
-    { date:'23 Jun 2026', invoiceId:'INV-2406-0088', tests:['HbA1c','Lipids'],       refDoctor:'Self',              amount:850,  keyFinding:'HbA1c 8.1% — Uncontrolled diabetes',    hasCritical:false },
-    { date:'01 Apr 2026', invoiceId:'INV-2604-0022', tests:['Blood glucose','KFT'],  refDoctor:'Self',              amount:620,  keyFinding:'FBS 148 mg/dL ↑',                       hasCritical:false },
-  ]},
-  { id:'PAT-0320', name:'Meena Joshi',           age:45, sex:'F', mobile:'98xxx320', initials:'MJ', avatarClass:'av-b', visitCount:3, visits:[
-    { date:'23 Jun 2026', invoiceId:'INV-2406-0092', tests:['CBC','ESR'],            refDoctor:'Dr. Pradeep Iyer', amount:280,  keyFinding:'Processing — result pending',            hasCritical:false },
-  ]},
-];
+type VisitRecord = HistoryVisitRecord;
+type PatientRecord = HistoryPatientRecord;
+interface PatientRow { patient: PatientRecord; latest: VisitRecord; }
 
 @Component({
-  selector: 'app-patient-history',
-  standalone: true,
-  imports: [RouterLink, NgClass],
+  selector: 'app-patient-history', standalone: true, imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
-    templateUrl: './patient-history.component.html',
-    styleUrl: './patient-history.component.css',
+  templateUrl: './patient-history.component.html', styleUrl: './patient-history.component.css',
 })
 export class PatientHistoryComponent {
-  protected readonly allPatients = PATIENTS;
-  searchQ         = signal('');
-  selectedPatient = signal<PatientRecord | null>(PATIENTS[0]);
-  activeTab       = signal('Visit history');
+  private readonly router = inject(Router);
+  private readonly patientFlow = inject(PatientFlowService);
+  private readonly workflowStore = inject(LabWorkflowMockService);
+  private readonly reportPreview = inject(ReportPreviewService);
+  private readonly historyService = inject(PatientHistoryService);
+  get allPatients(): PatientRecord[] { return this.historyService.patients(); }
+  readonly viewTabs = ['All Patients', 'By Patient', 'By Test', 'Report Comparison', 'Trends & Analytics'];
+  readonly detailTabs = ['History', 'Reports', 'Trends'];
+  searchQ = signal('');
+  selectedPatient = signal<PatientRecord | null>(null);
+  patientModalOpen = signal(false);
+  activeView = signal('All Patients');
+  activeDetailTab = signal('History');
+  dateRange = signal('3months');
+  testFilter = signal('all');
+  resultFilter = signal('all');
+  paymentFilter = signal('all');
+  genderFilter = signal('all');
+  doctorFilter = signal('all');
+  fromDate = signal('');
+  toDate = signal('');
+  menuPatientId = signal<string | null>(null);
+  menuPosition = signal({ top: 0, left: 0 });
+  notice = signal('');
+  layout = signal<'list' | 'grid'>('list');
+  selectedCompareOrders = signal<string[]>([]);
+  trendParameter = signal('Haemoglobin');
+  analyticsPatientId = signal('');
+  analyticsPatient = computed(() => this.allPatients.find(p => p.id === this.analyticsPatientId()) ?? this.allPatients[0] ?? { id:'', name:'Select a patient', age:0, sex:'', mobile:'', initials:'', avatarClass:'', visits:[] });
+  analyticsResultVisits = computed(() => this.analyticsPatient().visits.filter(visit => visit.results.length > 0).length);
+  analyticsResultCount = computed(() => this.analyticsPatient().visits.reduce((count, visit) => count + visit.results.length, 0));
+  countPatientTests(patient: PatientRecord): number { return patient.visits.reduce((sum, visit) => sum + visit.tests.length, 0); }
+  page = signal(1);
+  testPage = signal(1);
+  pageSize = signal(10);
+  moreFiltersOpen = false;
 
-  filtered = computed(() => {
+  availableTests = computed(() => [...new Set(this.allPatients.flatMap(p => p.visits.flatMap(v => v.tests)))].sort());
+  availableDoctors = computed(() => [...new Set(this.allPatients.flatMap(p => p.visits.map(v => v.refDoctor)))].sort());
+  filteredVisits = computed(() => {
+    const now = new Date();
     const q = this.searchQ().trim().toLowerCase();
-    if (!q) return this.allPatients;
-    return this.allPatients.filter(p =>
-      p.name.toLowerCase().includes(q) ||
-      p.id.toLowerCase().includes(q) ||
-      p.mobile.includes(q)
-    );
+    const start = new Date(now);
+    if (this.dateRange() === 'week') start.setDate(start.getDate() - 7);
+    else if (this.dateRange() === 'month') start.setMonth(start.getMonth() - 1);
+    else if (this.dateRange() === '3months') start.setMonth(start.getMonth() - 3);
+    return this.allPatients.flatMap(patient => patient.visits.filter(visit => {
+      const date = new Date(visit.dateValue + 'T00:00:00');
+      const inDate = this.dateRange() === 'all' || (this.dateRange() === 'custom'
+        ? (!this.fromDate() || visit.dateValue >= this.fromDate()) && (!this.toDate() || visit.dateValue <= this.toDate())
+        : date >= start && date <= now);
+      const matchesSearch = !q || [patient.name, patient.id, patient.mobile, visit.invoiceId, visit.orderId, ...visit.tests].some(value => value.toLowerCase().includes(q));
+      const matchesTest = this.testFilter() === 'all' || visit.tests.includes(this.testFilter());
+      const matchesResult = this.resultFilter() === 'all' || visit.resultStatus.toLowerCase() === this.resultFilter();
+      const matchesPayment = this.paymentFilter() === 'all' || visit.paymentStatus.toLowerCase() === this.paymentFilter();
+      const matchesGender = this.genderFilter() === 'all' || patient.sex.toLowerCase() === this.genderFilter();
+      const matchesDoctor = this.doctorFilter() === 'all' || visit.refDoctor === this.doctorFilter();
+      return inDate && matchesSearch && matchesTest && matchesResult && matchesPayment && matchesGender && matchesDoctor;
+    }).map(visit => ({patient,visit}))).sort((a,b) => b.visit.dateValue.localeCompare(a.visit.dateValue));
   });
+  filteredTestRows = computed(() => this.filteredVisits().flatMap(({ patient, visit }) =>
+    visit.tests.map(test => ({ patient, visit, test }))
+  ));
+  filteredPatientRows = computed(() => {
+    const map = new Map<string, PatientRow>();
+    for (const item of this.filteredVisits()) {
+      const current = map.get(item.patient.id);
+      if (!current || item.visit.dateValue > current.latest.dateValue) map.set(item.patient.id,{patient:item.patient,latest:item.visit});
+    }
+    return [...map.values()].sort((a,b) => b.latest.dateValue.localeCompare(a.latest.dateValue));
+  });
+  pageRows = computed(() => {
+    const start = (this.page() - 1) * this.pageSize();
+    return this.filteredPatientRows().slice(start,start + this.pageSize());
+  });
+  pageCount = computed(() => Math.max(1,Math.ceil(this.filteredPatientRows().length / this.pageSize())));
+  pageTestRows = computed(() => {
+    const start = (this.testPage() - 1) * this.pageSize();
+    return this.filteredTestRows().slice(start,start + this.pageSize());
+  });
+  testPageCount = computed(() => Math.max(1,Math.ceil(this.filteredTestRows().length / this.pageSize())));
+  filteredPatientCount = computed(() => this.filteredPatientRows().length);
+  filteredVisitCount = computed(() => this.filteredVisits().length);
+  filteredTestCount = computed(() => this.filteredVisits().reduce((sum,item) => sum + item.visit.tests.length,0));
+  completedCount = computed(() => this.filteredVisits().filter(item => item.visit.resultStatus === 'Completed').length);
+  completionRate = computed(() => this.filteredVisitCount() ? Math.round(this.completedCount() / this.filteredVisitCount() * 100) : 0);
+  totalTests = computed(() => this.selectedPatient()?.visits.reduce((sum,visit) => sum + visit.tests.length,0) ?? 0);
+  compareEligibleVisits = computed(() => (this.selectedPatient()?.visits ?? []).filter(visit => visit.results.length > 0));
+  compareVisits = computed(() => (this.selectedPatient()?.visits ?? [])
+    .filter(visit => this.selectedCompareOrders().includes(visit.invoiceId))
+    .sort((a,b) => a.dateValue.localeCompare(b.dateValue)));
+  compareRows = computed(() => {
+    const visits = this.compareVisits();
+    const params = [...new Set(visits.flatMap(visit => visit.results.map(result => result.parameter)))];
+    return params.map(parameter => ({
+      parameter,
+      values: visits.map(visit => ({
+        visit,
+        result: visit.results.find(result => result.parameter === parameter) ?? null
+      }))
+    }));
+  });
+  trendPoints = computed(() => {
+    const patient = this.activeView() === 'Trends & Analytics' ? this.analyticsPatient() : this.selectedPatient();
+    return (patient?.visits ?? []).slice()
+      .sort((a,b) => a.dateValue.localeCompare(b.dateValue))
+      .map(visit => visit.results.find(result => result.parameter === this.trendParameter()) ?? null)
+      .filter((result): result is NonNullable<typeof result> => !!result);
+  });
+  trendMin = computed(() => {
+    const values = this.trendPoints().map(point => point.value);
+    return values.length ? Math.min(...values) : 0;
+  });
+  trendMax = computed(() => {
+    const values = this.trendPoints().map(point => point.value);
+    return values.length ? Math.max(...values) : 1;
+  });
+  trendChartCoordinates = computed(() => {
+    const points = this.trendPoints();
+    const min = this.trendMin();
+    const range = this.trendMax() === min ? 1 : this.trendMax() - min;
+    const step = 250 / Math.max(1, points.length - 1);
+    return points.map((point, index) => ({
+      x: 40 + index * step,
+      y: 130 - ((point.value - min) / range) * 95,
+      label: point.date.slice(0, 6)
+    }));
+  });
+  trendPolyline = computed(() => this.trendChartCoordinates().map(point => `${point.x},${point.y}`).join(' '));
 
-  totalTests     = computed(() => this.selectedPatient()?.visits.reduce((a,v) => a + v.tests.length, 0) ?? 0);
-  criticalCount  = computed(() => this.selectedPatient()?.visits.filter(v => v.hasCritical).length ?? 0);
-  hasCriticalHistory = computed(() => this.criticalCount() > 0);
-
-  visitDotClass(v: VisitRecord, i: number): string {
-    if (v.hasCritical) return 'dot-today';
-    if (i === 0) return 'dot-warn';
-    return 'dot-ok';
+  setDateRange(value: string): void { this.dateRange.set(value); this.page.set(1); this.testPage.set(1); }
+  setActiveView(value: string): void {
+    this.activeView.set(value);
+    // Workspace navigation must never open the patient detail modal.
+    this.patientModalOpen.set(false);
+    if (value !== 'Report Comparison') this.selectedPatient.set(null);
+    if (value === 'Trends & Analytics' && !this.analyticsPatientId() && this.allPatients.length) {
+      this.analyticsPatientId.set(this.allPatients[0].id);
+      this.trendParameter.set(this.availableParametersForAnalytics()[0] ?? '');
+    }
+  }
+  setComparisonPatientById(id: string): void {
+    const patient = this.allPatients.find(candidate => candidate.id === id);
+    if (patient) this.selectPatient(patient);
+  }
+  setAnalyticsPatient(id: string): void { this.analyticsPatientId.set(id); this.trendParameter.set(this.availableParametersForAnalytics()[0] ?? ''); }
+  availableParametersForAnalytics = computed(() => [...new Set(this.analyticsPatient().visits.flatMap(v => v.results.map(r => r.parameter)))].sort());
+  availableParametersForSelectedPatient = computed(() => [...new Set((this.selectedPatient()?.visits ?? []).flatMap(v => v.results.map(r => r.parameter)))].sort());
+  selectPatient(patient: PatientRecord): void {
+    this.selectedPatient.set(patient);
+    this.patientModalOpen.set(false);
+    this.activeDetailTab.set('History');
+    this.selectedCompareOrders.set([]);
+    this.menuPatientId.set(null);
+    if (this.activeView() !== 'Trends & Analytics') {
+      const parameters = [...new Set(patient.visits.flatMap(visit => visit.results.map(result => result.parameter)))].sort();
+      if (!parameters.includes(this.trendParameter())) this.trendParameter.set(parameters[0] ?? '');
+    }
+  }
+  openPatientDetails(patient: PatientRecord): void {
+    this.selectPatient(patient);
+    this.patientModalOpen.set(true);
+  }
+  closePatientDetails(): void {
+    this.patientModalOpen.set(false);
+    this.selectedPatient.set(null);
+  }
+  openPatientReport(patient: PatientRecord, visit: VisitRecord, reprint = false): void { this.selectPatient(patient); this.openReport(visit, reprint); }
+  openPatientInvoice(patient: PatientRecord, visit: VisitRecord): void { this.selectPatient(patient); this.showInvoice(visit); }
+  toggleActionMenu(patientId: string, event: MouseEvent): void {
+    if (this.menuPatientId() === patientId) { this.menuPatientId.set(null); return; }
+    const trigger = event.currentTarget as HTMLElement;
+    const rect = trigger.getBoundingClientRect();
+    const menuWidth = 260;
+    const menuHeight = 266;
+    const gap = 8;
+    // Open directly beneath the three-dot trigger, aligned to its right edge.
+    // The fixed-position menu intentionally overlays the next table row.
+    const belowTop = rect.bottom + gap;
+    const aboveTop = rect.top - menuHeight - gap;
+    const top = belowTop + menuHeight <= window.innerHeight - 12
+      ? belowTop
+      : Math.max(12, aboveTop);
+    const left = Math.max(12, rect.right - menuWidth);
+    this.menuPosition.set({ top, left });
+    this.menuPatientId.set(patientId);
+  }
+  @HostListener('document:click') closeActionMenu(): void { this.menuPatientId.set(null); }
+  @HostListener('document:scroll') closeActionMenuOnScroll(): void { this.menuPatientId.set(null); }
+  @HostListener('document:keydown.escape') closeActionMenuOnEscape(): void { this.menuPatientId.set(null); this.closeInvoice(); this.closePatientDetails(); }
+  resetPagination(): void { this.page.set(1); this.testPage.set(1); }
+  setSearch(value: string): void { this.searchQ.set(value); this.page.set(1); this.testPage.set(1); }
+  setPageSize(value: number): void { this.pageSize.set(value); this.page.set(1); this.testPage.set(1); }
+  setTestPage(page: number): void { this.testPage.set(Math.min(Math.max(1,page),this.testPageCount())); }
+  resetFilters(): void {
+    this.searchQ.set(''); this.dateRange.set('3months'); this.testFilter.set('all'); this.resultFilter.set('all');
+    this.paymentFilter.set('all'); this.genderFilter.set('all'); this.doctorFilter.set('all');
+    this.fromDate.set(''); this.toDate.set(''); this.page.set(1); this.testPage.set(1);
+  }
+  toggleCompare(orderId: string, checked: boolean): void {
+    this.selectedCompareOrders.update(ids => checked ? (ids.length < 3 ? [...ids,orderId] : ids) : ids.filter(id => id !== orderId));
+  }
+  openReport(visit: VisitRecord, reprint = false): void {
+    const report = this.workflowStore.reports().find(item => item.id === visit.reportId && item.sampleId === visit.sampleId);
+    const sample = this.workflowStore.samples().find(item => item.id === visit.sampleId);
+    const result = this.workflowStore.results().find(item => item.sampleId === visit.sampleId && item.status === 'validated');
+    const order = this.workflowStore.orders().find(item => item.id === visit.orderId);
+    const patient = this.selectedPatient();
+    if (!report || !sample || !result || !order || !patient) { this.notice.set('No finalized report is available for this order.'); return; }
+    const params = Object.entries(result.values).map(([name, value], index) => ({
+      id: 'result-' + index, name, value: String(value), unit: '', refLow: null, refHigh: null,
+      refLabel: 'Not recorded', flag: 'normal' as const
+    }));
+    this.reportPreview.stage({
+      patientName: patient.name, patientId: patient.id,
+      ageGender: patient.age ? patient.age + ' years / ' + patient.sex : patient.sex,
+      referredBy: visit.refDoctor, sampleId: sample.id,
+      sampleType: sample.specimenGroups.map(group => group.sampleType).join(', '),
+      collectedAt: sample.collectedAt, reportedAt: report.generatedAt,
+      priority: order.priority === 'stat' ? 'STAT' : 'Routine',
+      testName: visit.tests.join(', '), testCode: visit.tests.join(', '), department: 'Laboratory',
+      criticalNote: null, params, reportDate: new Date(report.generatedAt).toLocaleDateString('en-GB'),
+      verifyUrl: report.id, invoiceId: visit.invoiceRecordId ?? visit.orderId,
+      showRefRange: false, showFlags: false, showNotes: false
+    });
+    this.activeDetailTab.set('Reports');
+    this.router.navigate(['/dashboard/report-preview'], { state: { printAfterOpen: reprint, reportId: report.id } });
+  }
+  startNewOrder(patient: PatientRecord): void {
+    const [firstName, ...lastName] = patient.name.split(' ');
+    this.patientFlow.registerPatient({
+      firstName, lastName: lastName.join(' '), dob: '', ageYears: String(patient.age), gender: patient.sex,
+      bloodGroup: '', mobile: patient.mobile.replace(/\D/g, '').slice(-10), email: '', address: '',
+      refDoctor: '', visitType: 'Repeat', fasting: 'No', collection: 'Lab', clinicalNotes: '', medications: ''
+    }, patient.id);
+    this.router.navigate(['/dashboard/test-order']);
+  }
+  selectedInvoice = signal<import('../../core/services/lab-workflow-mock.service').MockInvoice | null>(null);
+  showInvoice(visit: VisitRecord): void {
+    const invoice = this.workflowStore.invoices().find(item => item.id === visit.invoiceRecordId && item.orderId === visit.orderId);
+    if (!invoice) { this.notice.set('No invoice has been generated for this order yet.'); return; }
+    this.selectedInvoice.set(invoice);
+  }
+  closeInvoice(): void { this.selectedInvoice.set(null); }
+  printInvoice(): void { if (this.selectedInvoice()) window.print(); }
+  setPage(page: number): void { this.page.set(Math.min(Math.max(1,page),this.pageCount())); }
+  exportCsv(): void {
+    const rows = [['Patient','UHID','Mobile','Gender','Referring doctor','Visit date','Invoice ID','Order ID','Test','Result status','Payment status','Amount'],
+      ...this.filteredTestRows().map(({patient,visit,test}) => [
+        patient.name, patient.id, patient.mobile, patient.sex, visit.refDoctor, visit.date,
+        visit.invoiceId, visit.orderId, test, visit.resultStatus, visit.paymentStatus, String(visit.amount)
+      ])];
+    const csv = rows.map(row => row.map(value => '"' + String(value ?? '').replace(/"/g,'""') + '"').join(',')).join('\r\n');
+    const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob); const anchor = document.createElement('a');
+    anchor.href = url; anchor.download = 'patient-history.csv'; document.body.appendChild(anchor);
+    anchor.click(); anchor.remove(); window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 }

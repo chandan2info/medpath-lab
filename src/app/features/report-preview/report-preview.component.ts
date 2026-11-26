@@ -1,5 +1,5 @@
 import {
-  Component, signal, computed, ChangeDetectionStrategy, inject
+  Component, signal, computed, ChangeDetectionStrategy, inject, AfterViewInit
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { NgClass } from '@angular/common';
@@ -18,11 +18,19 @@ type Orientation = ReportPreviewData['orientation'];
   templateUrl: './report-preview.component.html',
   styleUrl: './report-preview.component.css',
 })
-export class ReportPreviewComponent {
+export class ReportPreviewComponent implements AfterViewInit {
   private readonly previewSvc = inject(ReportPreviewService);
   private readonly router      = inject(Router);
 
   protected readonly data = this.previewSvc.data;
+  protected readonly isExistingReport = signal(!!window.history.state?.reportId);
+
+  ngAfterViewInit(): void {
+    if (window.history.state?.printAfterOpen) {
+      window.history.replaceState({ ...window.history.state, printAfterOpen: false }, document.title);
+      window.setTimeout(() => window.print(), 250);
+    }
+  }
 
   /** Which sections of the navigation panel are "done" */
   protected readonly sections = [
@@ -65,6 +73,8 @@ export class ReportPreviewComponent {
 
   protected zoomIn(): void  { this.zoom.update(z => Math.min(z + 10, 150)); }
   protected zoomOut(): void { this.zoom.update(z => Math.max(z - 10, 60));  }
+
+  protected printReport(): void { window.print(); }
 
   protected finalise(): void {
     // In a real app: trigger PDF export / API call here
