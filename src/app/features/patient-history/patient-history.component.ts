@@ -68,6 +68,8 @@ export class PatientHistoryComponent {
   trendParameter = signal('Haemoglobin');
   analyticsPatientId = signal(PATIENTS[0].id);
   analyticsPatient = computed(() => this.allPatients.find(p => p.id === this.analyticsPatientId()) ?? this.allPatients[0]);
+  analyticsCriticalCount = computed(() => this.analyticsPatient().visits.filter(visit => visit.hasCritical).length);
+  countPatientTests(patient: PatientRecord): number { return patient.visits.reduce((sum, visit) => sum + visit.tests.length, 0); }
   page = signal(1);
   pageSize = signal(10);
   moreFiltersOpen = false;
