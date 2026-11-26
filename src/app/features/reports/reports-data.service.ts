@@ -1,7 +1,9 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';
+import { PatientFlowService } from '../../core/services/patient-flow.service';
 
-export type ReportStatus = 'pending' | 'dispatched';
-export type ResultFlag = 'high' | 'low' | 'critical' | 'normal';
+export type ReportStatus = 'pending' | 'generated' | 'dispatched';
+export type ResultFlag = 'high' | 'low' | 'critical' | 'normal' | 'unavailable';
 
 export interface ResultRow {
   name: string;
@@ -153,15 +155,88 @@ const REPORT_DETAILS: Record<string, ReportDetail> = {
  */
 @Injectable({ providedIn: 'root' })
 export class ReportsDataService {
-  readonly reports = signal<ReportRow[]>(REPORTS.map(report => ({ ...report })));
+  private readonly workflowStore = inject(LabWorkflowMockService);
+  private readonly patientFlow = inject(PatientFlowService);
+  private readonly illustrativeReports = signal<ReportRow[]>(REPORTS.map(report => ({ ...report })));
+
+  readonly reports = computed(() => {
+    const rows = new Map(this.illustrativeReports().map(report => [report.id, report]));
+    for (const report of this.workflowStore.reports()) {
+      const joined = this.joinWorkflowReport(report.id);
+      if (joined) rows.set(report.id, this.workflowRow(joined));
+    }
+    return [...rows.values()];
+  });
 
   getReportDetail(reportId: string): ReportDetail | null {
+    const joined = this.joinWorkflowReport(reportId);
+    if (joined) return this.workflowDetail(joined);
     return REPORT_DETAILS[reportId] ?? null;
   }
 
   markAsDispatched(reportId: string): void {
-    this.reports.update(items => items.map(item =>
+    const workflowReport = this.workflowStore.reports().find(item => item.id === reportId);
+    if (workflowReport) {
+      if (workflowReport.status !== 'dispatched') this.workflowStore.dispatchReport(reportId, 'reports');
+      return;
+    }
+    this.illustrativeReports.update(items => items.map(item =>
       item.id === reportId ? { ...item, status: 'dispatched' as const } : item
     ));
+  }
+
+  private joinWorkflowReport(reportId: string) {
+    const report = this.workflowStore.reports().find(item => item.id === reportId);
+    if (!report) return null;
+    const sample = this.workflowStore.samples().find(item => item.id === report.sampleId);
+    const result = this.workflowStore.results().find(item => item.id === report.resultId && item.sampleId === report.sampleId);
+    const visit = sample && this.workflowStore.visits().find(item => item.id === sample.visitId && item.patientId === sample.patientId);
+    const order = sample && this.workflowStore.orders().find(item => item.id === sample.orderId && item.visitId === sample.visitId);
+    return sample && result && visit && order ? { report, sample, result, visit, order } : null;
+  }
+
+  private workflowRow(joined: NonNullable<ReturnType<ReportsDataService['joinWorkflowReport']>>): ReportRow {
+    const testNames = joined.order.testIds.map(id => this.patientFlow.allTests.find(test => test.id === id)?.name ?? id);
+    return {
+      id: joined.report.id,
+      patientName: joined.visit.patientName,
+      patientId: joined.visit.patientId,
+      test: testNames.join(', '),
+      date: this.formatDate(joined.report.generatedAt),
+      status: joined.report.status,
+    };
+  }
+
+  private workflowDetail(joined: NonNullable<ReturnType<ReportsDataService['joinWorkflowReport']>>): ReportDetail {
+    const testDetails = joined.order.testIds.map(id => this.patientFlow.allTests.find(test => test.id === id));
+    const rows: ResultRow[] = Object.entries(joined.result.values).map(([key, value]) => ({
+      name: joined.result.parameterLabels?.[key] || key,
+      result: value || 'Not available',
+      unit: 'Not available',
+      ref: 'Not available',
+      flag: 'unavailable',
+    }));
+    const dateTime = (value: string) => new Date(value).toLocaleString('en-GB', {
+      day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+    });
+    return {
+      patientAgeSex: `${joined.visit.ageYears || 'Not available'} / ${joined.visit.gender || 'Not available'}`,
+      collectedOn: dateTime(joined.sample.collectedAt),
+      referredBy: joined.visit.refDoctor || 'Not recorded',
+      reportedOn: dateTime(joined.report.generatedAt),
+      testTitle: testDetails.map(test => test?.name).filter(Boolean).join(' + ') || 'Not available',
+      sampleId: joined.sample.id,
+      note: 'Generated from validated mock workflow results. Clinical interpretation is not available in the stored mock data.',
+      specimen: joined.sample.specimenGroups.map(group => group.sampleType).filter(Boolean).join(', ') || 'Not available',
+      fasting: 'Not available',
+      groupTitle: [...new Set(testDetails.map(test => test?.category).filter(Boolean))].join(' · ') || 'Not available',
+      rows,
+      authorisedBy: joined.result.reviewer || 'Not available',
+      qualification: 'Not available',
+    };
+  }
+
+  private formatDate(value: string): string {
+    return new Date(value).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
   }
 }

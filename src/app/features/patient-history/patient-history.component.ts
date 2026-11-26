@@ -224,9 +224,9 @@ export class PatientHistoryComponent {
     const order = this.workflowStore.orders().find(item => item.id === visit.orderId);
     const patient = this.selectedPatient();
     if (!report || !sample || !result || !order || !patient) { this.notice.set('No finalized report is available for this order.'); return; }
-    const params = Object.entries(result.values).map(([name, value], index) => ({
-      id: 'result-' + index, name, value: String(value), unit: '', refLow: null, refHigh: null,
-      refLabel: 'Not recorded', flag: 'normal' as const
+    const params = Object.entries(result.values).map(([key, value], index) => ({
+      id: 'result-' + index, name: result.parameterLabels?.[key] || key, value: String(value), unit: 'Not available', refLow: null, refHigh: null,
+      refLabel: 'Not available', flag: 'unavailable' as const
     }));
     this.reportPreview.stage({
       patientName: patient.name, patientId: patient.id,
@@ -238,7 +238,7 @@ export class PatientHistoryComponent {
       testName: visit.tests.join(', '), testCode: visit.tests.join(', '), department: 'Laboratory',
       criticalNote: null, params, reportDate: new Date(report.generatedAt).toLocaleDateString('en-GB'),
       verifyUrl: report.id, invoiceId: visit.invoiceRecordId ?? visit.orderId,
-      showRefRange: false, showFlags: false, showNotes: false
+      showRefRange: true, showFlags: true, showNotes: false
     });
     this.activeDetailTab.set('Reports');
     this.router.navigate(['/dashboard/report-preview'], { state: { printAfterOpen: reprint, reportId: report.id } });

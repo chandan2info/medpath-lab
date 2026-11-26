@@ -74,7 +74,7 @@ describe('CursorPreferenceService', () => {
     service.setColor('#2563eb');
     expect(service.color()).toBe('#2563eb');
     expect(Storage.prototype.setItem).toHaveBeenCalledWith(colorKey, '#2563eb');
-    expect(document.querySelector('[data-medpath-cursor-color]')?.textContent).toContain('#2563eb');
+    expect(document.querySelector('[data-medpath-cursor-color]')?.textContent).toContain('%232563eb');
   });
 
   it('ignores invalid cursor colors', () => {
@@ -87,6 +87,6 @@ describe('CursorPreferenceService', () => {
     const service = TestBed.inject(CursorPreferenceService);
     window.dispatchEvent(new StorageEvent('storage', { key: colorKey, newValue: '#e11d48' }));
     expect(service.color()).toBe('#e11d48');
-    expect(document.querySelector('[data-medpath-cursor-color]')?.textContent).toContain('#e11d48');
+    expect(document.querySelector('[data-medpath-cursor-color]')?.textContent).toContain('%23e11d48');
   });
 });

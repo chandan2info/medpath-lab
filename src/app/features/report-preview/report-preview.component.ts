@@ -51,7 +51,7 @@ export class ReportPreviewComponent implements AfterViewInit {
   viewport = signal<'desktop' | 'mobile'>('desktop');
 
   protected flagLabel(f: ResultFlag): string {
-    return { normal: 'Normal', high: 'High', low: 'Low', critical: 'Critical' }[f] ?? f;
+    return { normal: 'Normal', high: 'High', low: 'Low', critical: 'Critical', unavailable: 'Unavailable' }[f] ?? f;
   }
 
   protected setTemplate(t: Template): void {

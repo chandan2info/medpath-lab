@@ -6,7 +6,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import { PdfPreferencesService } from '../../core/services/pdf-preferences.service';
 
 const PAGE_SIZE_OPTIONS = [5, 6, 7, 10] as const;
-type ReportStatusFilter = 'all' | 'pending' | 'dispatched';
+type ReportStatusFilter = 'all' | 'pending' | 'generated' | 'dispatched';
 
 @Component({
   selector: 'app-reports',
@@ -62,6 +62,7 @@ export class ReportsComponent {
     const count = this.filteredReports().length;
     const filter = this.statusFilter();
     if (filter === 'pending') return `${count} pending`;
+    if (filter === 'generated') return `${count} generated`;
     if (filter === 'dispatched') return `${count} dispatched`;
     return `${count} reports`;
   });
@@ -96,7 +97,7 @@ export class ReportsComponent {
 
   markAsDispatched(): void {
     const report = this.selected();
-    if (!report || report.status !== 'pending') return;
+    if (!report || report.status === 'dispatched') return;
     this.showDispatchConfirm.set(true);
   }
 
@@ -106,7 +107,7 @@ export class ReportsComponent {
 
   confirmDispatch(): void {
     const report = this.selected();
-    if (!report || report.status !== 'pending') {
+    if (!report || report.status === 'dispatched') {
       this.showDispatchConfirm.set(false);
       return;
     }
