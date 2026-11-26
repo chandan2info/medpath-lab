@@ -20,7 +20,7 @@
       <button type="button" class="lis-btn lis-btn--primary lis-btn--sm" (click)="printReport()">
         <i class="ti ti-printer" aria-hidden="true"></i> Print
       </button>
-      @if (selected()?.status === 'pending') {
+      @if (selected()?.status !== 'dispatched') {
         <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="markAsDispatched()">
           <i class="ti ti-send-check" aria-hidden="true"></i> Mark dispatched
         </button>
@@ -55,6 +55,8 @@
         (click)="setStatusFilter('all')" [attr.aria-pressed]="statusFilter() === 'all'">All</button>
       <button type="button" class="report-status-pill" [class.report-status-pill--active]="statusFilter() === 'pending'"
         (click)="setStatusFilter('pending')" [attr.aria-pressed]="statusFilter() === 'pending'">Pending</button>
+      <button type="button" class="report-status-pill" [class.report-status-pill--active]="statusFilter() === 'generated'"
+        (click)="setStatusFilter('generated')" [attr.aria-pressed]="statusFilter() === 'generated'">Generated</button>
       <button type="button" class="report-status-pill" [class.report-status-pill--active]="statusFilter() === 'dispatched'"
         (click)="setStatusFilter('dispatched')" [attr.aria-pressed]="statusFilter() === 'dispatched'">Dispatched</button>
     </div>
@@ -81,6 +83,8 @@
           <div>
             @if (r.status === 'pending') {
               <span class="lis-pill lis-pill--pending">Pending</span>
+            } @else if (r.status === 'generated') {
+              <span class="lis-pill lis-pill--ready">Generated</span>
             } @else {
               <span class="lis-pill lis-pill--ready">Dispatched</span>
             }
@@ -201,7 +205,7 @@
                 <td [class.rpt-bold]="row.flag === 'critical'">{{ row.name }}</td>
                 <td [class]="'rpt-flag-' + row.flag">
                   <strong>{{ row.result }}</strong>
-                  @if (row.flag === 'critical' || row.flag === 'high') { <span> ↑</span> }
+                @if (row.flag === 'critical' || row.flag === 'high') { <span> ↑</span> }
                   @else if (row.flag === 'low') { <span> ↓</span> }
                 </td>
                 <td>{{ row.unit }}</td>
@@ -210,6 +214,7 @@
                   @if (row.flag === 'critical') { <strong>CRITICAL</strong> }
                   @else if (row.flag === 'high') { High }
                   @else if (row.flag === 'low')  { Low }
+                  @else if (row.flag === 'unavailable') { Unavailable }
                   @else { Normal }
                 </td>
               </tr>

@@ -6,7 +6,7 @@ export interface HistoryVisitRecord {
   date: string; time: string; dateValue: string; invoiceId: string; tests: string[];
   refDoctor: string; amount: number; keyFinding: string; hasCritical: boolean;
   resultStatus: 'Completed' | 'Pending'; paymentStatus: 'Paid' | 'Partial' | 'Unpaid';
-  reports: { name: string; status: 'Available' | 'Pending'; reportId?: string }[];
+  reports: { name: string; status: 'Generated' | 'Dispatched' | 'Pending'; reportId?: string }[];
   results: { parameter: string; value: number; unit: string; reference: string; date: string }[];
   orderId: string; sampleId: string | null; reportId: string | null; invoiceRecordId: string | null;
 }
@@ -66,7 +66,9 @@ export class PatientHistoryService {
           keyFinding: report ? 'Validated report available' : result?.status === 'awaiting-validation' ? 'Awaiting result validation' : result?.status === 'rejected' ? 'Results rejected — review required' : sample ? 'Sample in processing workflow' : 'Order created — sample not yet collected',
           hasCritical: false, resultStatus: report ? 'Completed' : 'Pending',
           paymentStatus: invoice?.status === 'paid' ? 'Paid' : invoice?.status === 'partial' ? 'Partial' : 'Unpaid',
-          reports: tests.map(test => ({ name: test, status: report ? 'Available' : 'Pending', reportId: report?.id })),
+          reports: report
+            ? [{ name: tests.join(', '), status: report.status === 'dispatched' ? 'Dispatched' : 'Generated', reportId: report.id }]
+            : tests.map(test => ({ name: test, status: 'Pending' as const })),
           results: resultRows, sampleId: sample?.id ?? null, reportId: report?.id ?? null, invoiceRecordId: invoice?.id ?? null
         });
       }

@@ -329,9 +329,9 @@ export class ResultEntryComponent implements OnInit {
   }
   resultClass(flag: ResultFlag): string { return flag; }
   statusIcon(flag: ResultFlag): string {
-    return ({ normal:'ti-check', high:'ti-alert-triangle', low:'ti-alert-triangle', critical:'ti-x' } as const)[flag];
+    return ({ normal:'ti-check', high:'ti-alert-triangle', low:'ti-alert-triangle', critical:'ti-x', unavailable:'ti-help-circle' } as const)[flag];
   }
-  flagLabel(flag: ResultFlag): string { return ({normal:'Normal',high:'High',low:'Low',critical:'Critical'})[flag]; }
+  flagLabel(flag: ResultFlag): string { return ({normal:'Normal',high:'High',low:'Low',critical:'Critical',unavailable:'Unavailable'})[flag]; }
   testEntered(test: MockOrderedTest): number { return test.parameters.filter(p => p.value.trim() !== '').length; }
   testStatusLabel(status: TestStatus): string { return ({PENDING:'Pending',IN_PROGRESS:'In Progress',COMPLETED:'Completed'})[status]; }
   ageBreakdown(): string { return this.patientAge(); }
