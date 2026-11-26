@@ -1920,3 +1920,67 @@ button.report-row:focus-visible {
   .pdf-preview-overlay,
   .pdf-preview-overlay * { display: none !important; visibility: hidden !important; }
 }
+
+
+/* Interactive PDF export controls */
+.pdf-custom-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 18px 0 8px;
+  padding: 14px 15px;
+  background: color-mix(in srgb, var(--lis-primary, #36c6a7) 8%, var(--body-bg, #0f172a));
+  border: 1px solid color-mix(in srgb, var(--lis-primary, #36c6a7) 28%, var(--border-color));
+  border-radius: 12px;
+}
+.pdf-custom-toggle > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.pdf-custom-toggle strong { color: var(--text-primary); font-size: 13px; font-weight: 650; }
+.pdf-custom-toggle > div span { color: var(--text-secondary); font-size: 11px; line-height: 1.4; }
+.pdf-switch { position: relative; display: inline-flex; flex: 0 0 auto; cursor: pointer; }
+.pdf-switch input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.pdf-switch-track {
+  position: relative;
+  display: block;
+  width: 42px;
+  height: 24px;
+  background: var(--border-color, #475569);
+  border: 1px solid color-mix(in srgb, var(--text-secondary) 25%, transparent);
+  border-radius: 999px;
+  transition: background .18s ease, border-color .18s ease;
+}
+.pdf-switch-track::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 25%);
+  transition: transform .18s ease;
+}
+.pdf-switch input:checked + .pdf-switch-track { background: var(--lis-primary, #36c6a7); border-color: var(--lis-primary, #36c6a7); }
+.pdf-switch input:checked + .pdf-switch-track::after { transform: translateX(18px); }
+.pdf-switch input:focus-visible + .pdf-switch-track { outline: 2px solid var(--lis-primary); outline-offset: 3px; }
+.pdf-setting-row--disabled { opacity: .48; }
+.pdf-setting-control { flex: 1 1 auto; }
+.pdf-setting-control label { display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 12px; }
+.pdf-setting-control select {
+  display: block;
+  width: 100%;
+  min-height: 38px;
+  padding: 7px 34px 7px 10px;
+  color: var(--text-primary);
+  background: var(--body-bg, #0f172a);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.pdf-setting-control select:focus-visible { outline: 2px solid var(--lis-primary); outline-offset: 2px; }
+.pdf-setting-control select:disabled { cursor: not-allowed; }
+.pdf-preview-paper--landscape { width: min(100%, 980px); }
+.pdf-preview-paper--landscape .report-sheet { width: 100%; }
