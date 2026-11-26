@@ -180,6 +180,7 @@ export class PatientHistoryComponent {
   @HostListener('document:click') closeActionMenu(): void { this.menuPatientId.set(null); }
   @HostListener('document:scroll') closeActionMenuOnScroll(): void { this.menuPatientId.set(null); }
   @HostListener('document:keydown.escape') closeActionMenuOnEscape(): void { this.menuPatientId.set(null); this.closeInvoice(); }
+  resetPagination(): void { this.page.set(1); this.testPage.set(1); }
   setSearch(value: string): void { this.searchQ.set(value); this.page.set(1); this.testPage.set(1); }
   setPageSize(value: number): void { this.pageSize.set(value); this.page.set(1); this.testPage.set(1); }
   setTestPage(page: number): void { this.testPage.set(Math.min(Math.max(1,page),this.testPageCount())); }
