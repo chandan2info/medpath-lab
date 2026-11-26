@@ -280,7 +280,7 @@
       <div class="pdf-preview-body">
         <div class="pdf-preview-stage">
           <div class="pdf-preview-scroll">
-            <div class="pdf-preview-paper" [style.--pdf-zoom]="pdfZoom() / 100">
+            <div class="pdf-preview-paper" [class.pdf-preview-paper--landscape]="pdfOrientation() === 'landscape'" [style.--pdf-zoom]="pdfZoom() / 100">
               <ng-container *ngTemplateOutlet="reportSheet"></ng-container>
             </div>
           </div>
@@ -300,13 +300,50 @@
 
         <aside class="pdf-preview-settings">
           <div class="pdf-settings-title"><i class="ti ti-settings" aria-hidden="true"></i><h3>PDF settings</h3></div>
-          <div class="pdf-setting-row">
-            <span class="pdf-setting-icon"><i class="ti ti-file" aria-hidden="true"></i></span>
-            <div><span>Paper size</span><strong>A4 (210 × 297 mm)</strong></div>
+          <div class="pdf-custom-toggle">
+            <div>
+              <strong>Enable custom PDF settings</strong>
+              <span>Use standard A4 portrait defaults when disabled</span>
+            </div>
+            <label class="pdf-switch">
+              <input type="checkbox" role="switch" [checked]="customPdfSettings()" (change)="setCustomPdfSettings($any($event.target).checked)" aria-label="Enable custom PDF settings" />
+              <span class="pdf-switch-track" aria-hidden="true"></span>
+            </label>
           </div>
-          <div class="pdf-setting-row">
+
+          <div class="pdf-setting-row" [class.pdf-setting-row--disabled]="!customPdfSettings()">
+            <span class="pdf-setting-icon"><i class="ti ti-file" aria-hidden="true"></i></span>
+            <div class="pdf-setting-control">
+              <label for="pdf-paper-size">Paper size</label>
+              <select id="pdf-paper-size" [value]="pdfPaperSize()" [disabled]="!customPdfSettings()" (change)="setPdfPaperSize($any($event.target).value)">
+                <option value="A4">A4 (210 × 297 mm)</option>
+                <option value="A3">A3 (297 × 420 mm)</option>
+                <option value="Letter">Letter (8.5 × 11 in)</option>
+                <option value="Legal">Legal (8.5 × 14 in)</option>
+              </select>
+            </div>
+          </div>
+          <div class="pdf-setting-row" [class.pdf-setting-row--disabled]="!customPdfSettings()">
             <span class="pdf-setting-icon"><i class="ti ti-layout" aria-hidden="true"></i></span>
-            <div><span>Orientation</span><strong>Portrait</strong></div>
+            <div class="pdf-setting-control">
+              <label for="pdf-orientation">Orientation</label>
+              <select id="pdf-orientation" [value]="pdfOrientation()" [disabled]="!customPdfSettings()" (change)="setPdfOrientation($any($event.target).value)">
+                <option value="portrait">Portrait</option>
+                <option value="landscape">Landscape</option>
+              </select>
+            </div>
+          </div>
+          <div class="pdf-setting-row" [class.pdf-setting-row--disabled]="!customPdfSettings()">
+            <span class="pdf-setting-icon"><i class="ti ti-border-outer" aria-hidden="true"></i></span>
+            <div class="pdf-setting-control">
+              <label for="pdf-margins">Page margins</label>
+              <select id="pdf-margins" [value]="pdfMargins()" [disabled]="!customPdfSettings()" (change)="setPdfMargins($any($event.target).value)">
+                <option value="default">Default (12 mm)</option>
+                <option value="narrow">Narrow (6 mm)</option>
+                <option value="moderate">Moderate (16 mm)</option>
+                <option value="wide">Wide (24 mm)</option>
+              </select>
+            </div>
           </div>
           <div class="pdf-setting-row">
             <span class="pdf-setting-icon"><i class="ti ti-printer" aria-hidden="true"></i></span>
@@ -314,7 +351,7 @@
           </div>
           <div class="pdf-preview-tip">
             <i class="ti ti-info-circle" aria-hidden="true"></i>
-            <span>Your selected report will open in the browser print window. Choose <strong>Save as PDF</strong> as the destination.</span>
+            <span>{{ customPdfSettings() ? 'Your custom paper, orientation and margin choices will be applied when the print window opens.' : 'Standard A4 portrait settings will be used. Enable custom settings to change paper size, orientation or margins.' }} Choose <strong>Save as PDF</strong> as the destination in the browser print window.</span>
           </div>
           <div class="pdf-preview-actions">
             <button type="button" class="lis-btn lis-btn--secondary" (click)="closePdfPreview()">Cancel</button>
