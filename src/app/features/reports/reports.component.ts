@@ -3,6 +3,7 @@ import { ReportsDataService } from './reports-data.service';
 import type { ReportRow } from './reports-data.service';
 import { RouterLink } from '@angular/router';
 import { NgTemplateOutlet } from '@angular/common';
+import { PdfPreferencesService } from '../../core/services/pdf-preferences.service';
 
 const PAGE_SIZE_OPTIONS = [5, 6, 7, 10] as const;
 type ReportStatusFilter = 'all' | 'pending' | 'dispatched';
@@ -16,7 +17,7 @@ type ReportStatusFilter = 'all' | 'pending' | 'dispatched';
   styleUrl: './reports.component.css',
 })
 export class ReportsComponent {
-  private readonly reportsData = inject(ReportsDataService);
+  private readonly reportsData = inject(ReportsDataService);\n  private readonly pdfPreferences = inject(PdfPreferencesService);\n  readonly customPdfSettings = this.pdfPreferences.customSettingsEnabled;
   reports = this.reportsData.reports;
   selected = signal<ReportRow | null>(this.reports()[0] ?? null);
   previewExpanded = signal(false);
@@ -169,6 +170,30 @@ export class ReportsComponent {
     if (['default', 'narrow', 'moderate', 'wide'].includes(value)) {
       this.pdfMargins.set(value as 'default' | 'narrow' | 'moderate' | 'wide');
     }
+  }
+
+  pdfPageWidth(): string {
+    const sizes: Record<string, [number, number]> = {
+      A4: [794, 1123], A3: [1123, 1587], Letter: [816, 1056], Legal: [816, 1344],
+    };
+    const [portraitWidth, portraitHeight] = sizes[this.customPdfSettings() ? this.pdfPaperSize() : 'A4'];
+    const width = this.customPdfSettings() && this.pdfOrientation() === 'landscape' ? portraitHeight : portraitWidth;
+    return `min(100%, ${width}px)`;
+  }
+
+  pdfPageAspectRatio(): string {
+    const sizes: Record<string, [number, number]> = {
+      A4: [794, 1123], A3: [1123, 1587], Letter: [816, 1056], Legal: [816, 1344],
+    };
+    const [portraitWidth, portraitHeight] = sizes[this.customPdfSettings() ? this.pdfPaperSize() : 'A4'];
+    return this.customPdfSettings() && this.pdfOrientation() === 'landscape'
+      ? `${portraitHeight} / ${portraitWidth}`
+      : `${portraitWidth} / ${portraitHeight}`;
+  }
+
+  pdfPagePadding(): string {
+    const marginMap = { default: '12mm', narrow: '6mm', moderate: '16mm', wide: '24mm' };
+    return this.customPdfSettings() ? marginMap[this.pdfMargins()] : '12mm';
   }
 
   savePdfFromPreview(): void {
