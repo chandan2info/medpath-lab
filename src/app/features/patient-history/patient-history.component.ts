@@ -96,18 +96,19 @@ export class PatientHistoryComponent {
   completionRate = computed(() => this.filteredVisitCount() ? Math.round(this.completedCount() / this.filteredVisitCount() * 100) : 0);
   totalTests = computed(() => this.selectedPatient()?.visits.reduce((sum,visit) => sum + visit.tests.length,0) ?? 0);
   criticalCount = computed(() => this.selectedPatient()?.visits.filter(visit => visit.hasCritical).length ?? 0);
-  compareVisits = computed(() => (this.selectedPatient()?.visits ?? []).filter(v => this.selectedCompareOrders().includes(v.invoiceId)));
+  compareVisits = computed(() => (this.selectedPatient()?.visits ?? [])
+    .filter(visit => this.selectedCompareOrders().includes(visit.invoiceId))
+    .sort((a,b) => a.dateValue.localeCompare(b.dateValue)));
   compareRows = computed(() => {
-    const visits = this.compareVisits().slice().sort((a,b) => a.dateValue.localeCompare(b.dateValue));
-    const params = [...new Set(visits.flatMap(v => v.results.map(r => r.parameter)))];
-    return params.map(parameter => {
-      const values = visits.map(v => v.results.find(r => r.parameter === parameter) ?? null);
-      const previous = values.length > 1 ? values[values.length - 2] : null;
-      const latest = values[values.length - 1] ?? null;
-      const reference = latest?.reference ?? previous?.reference ?? '—';
-      const change = previous && latest ? `${latest.value - previous.value > 0 ? '+' : ''}${(latest.value - previous.value).toFixed(2)} ${latest.unit}` : '—';
-      return {parameter,previous,latest,reference,change,values};
-    });
+    const visits = this.compareVisits();
+    const params = [...new Set(visits.flatMap(visit => visit.results.map(result => result.parameter)))];
+    return params.map(parameter => ({
+      parameter,
+      values: visits.map(visit => ({
+        visit,
+        result: visit.results.find(result => result.parameter === parameter) ?? null
+      }))
+    }));
   });
   trendPoints = computed(() => {
     const patient = this.activeView() === 'Trends & Analytics' ? this.analyticsPatient() : this.selectedPatient();
