@@ -1399,8 +1399,8 @@ button.report-row:focus-visible {
    The list and preview continue to share one height and retain inner scrolling. */
 @media (min-width: 901px) {
   .reports-layout {
-    height: calc(105dvh - 199.5px);
-    min-height: 546px;
-    max-height: calc(105dvh - 157.5px);
+    height: calc(103dvh - 195.7px);
+    min-height: 535.6px;
+    max-height: calc(103dvh - 153.9px);
   }
 }
