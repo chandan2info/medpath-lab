@@ -46,8 +46,8 @@ export class PatientHistoryService {
         const report = sample ? reports.find(item => item.sampleId === sample.id) : undefined;
         const invoice = invoices.find(item => item.orderId === order.id);
         const date = new Date(order.createdAt);
+        // Keep user-facing test names in history, filters, exports and report lists.
         const tests = order.testIds.map(id => this.flow.allTests.find(test => test.id === id)?.name ?? id);
-        const shortTests = order.testIds.map(id => this.flow.allTests.find(test => test.id === id)?.id ?? id);
         const resultRows = Object.entries(result?.values ?? {}).map(([parameter, raw]) => ({
           parameter, value: Number(raw), unit: '', reference: 'Not recorded', date: date.toLocaleDateString('en-IN')
         })).filter(row => Number.isFinite(row.value));
@@ -59,7 +59,7 @@ export class PatientHistoryService {
           keyFinding: report ? 'Validated report available' : result?.status === 'awaiting-validation' ? 'Awaiting result validation' : result?.status === 'rejected' ? 'Results rejected — review required' : sample ? 'Sample in processing workflow' : 'Order created — sample not yet collected',
           hasCritical: false, resultStatus: report ? 'Completed' : 'Pending',
           paymentStatus: invoice?.status === 'paid' ? 'Paid' : invoice?.status === 'partial' ? 'Partial' : 'Unpaid',
-          reports: shortTests.map(test => ({ name: test, status: report ? 'Available' : 'Pending', reportId: report?.id })),
+          reports: tests.map(test => ({ name: test, status: report ? 'Available' : 'Pending', reportId: report?.id })),
           results: resultRows, sampleId: sample?.id ?? null, reportId: report?.id ?? null, invoiceRecordId: invoice?.id ?? null
         });
       }
