@@ -735,3 +735,60 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* ── Final readability and column-balance refinements ── */
+/* Keep the existing two-column layout; let the list card fill
+   the same vertical space as the report preview beside it. */
+.reports-layout {
+  align-items: stretch;
+}
+
+.report-list {
+  height: 100%;
+  min-height: 0;
+}
+
+.report-rows {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+}
+
+/* Give patient metadata its own clearly separated surface over
+   the lab header. Theme tokens preserve contrast in light/dark mode. */
+.rpt-pat-band {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
+}
+
+.rpt-pf-icon {
+  background: var(--lis-primary-xlight);
+  color: var(--lis-primary);
+  border: 1px solid var(--border-color);
+}
+
+.rpt-pl {
+  color: var(--text-secondary);
+}
+
+.rpt-pv {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  .reports-layout {
+    align-items: start;
+  }
+
+  .report-list {
+    height: auto;
+  }
+
+  .report-rows {
+    flex: 0 1 auto;
+    max-height: 380px;
+  }
+}
