@@ -1114,3 +1114,52 @@ button.report-row:focus-visible {
     display: none;
   }
 }
+
+
+/* Compact page-size control within the report-list footer. */
+.report-pagination {
+  flex-wrap: wrap;
+}
+
+.report-pagination-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.report-page-size {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.report-page-size select {
+  min-width: 48px;
+  padding: 4px 18px 4px 7px;
+  border: 1px solid var(--border-color);
+  border-radius: 7px;
+  background: var(--body-bg);
+  color: var(--text-primary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.report-page-size select:focus-visible {
+  outline: 2px solid var(--lis-primary);
+  outline-offset: 2px;
+}
+
+@media (max-width: 560px) {
+  .report-pagination {
+    align-items: flex-start;
+  }
+
+  .report-pagination-summary {
+    gap: 6px;
+  }
+}
