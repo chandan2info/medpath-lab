@@ -145,7 +145,7 @@ const REPORT_DETAILS: Record<string, ReportDetail> = {
   },
 };
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE_OPTIONS = [5, 7, 10] as const;
 type ReportStatusFilter = 'all' | 'pending' | 'dispatched';
 
 @Component({
@@ -163,7 +163,8 @@ export class ReportsComponent {
   query = signal('');
   statusFilter = signal<ReportStatusFilter>('all');
   page = signal(1);
-  readonly pageSize = PAGE_SIZE;
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
+  pageSize = signal<number>(7);
 
   selectedDetail = computed(() => {
     const id = this.selected()?.id;
@@ -179,15 +180,15 @@ export class ReportsComponent {
     );
   });
 
-  totalPages = computed(() => Math.max(1, Math.ceil(this.filteredReports().length / PAGE_SIZE)));
+  totalPages = computed(() => Math.max(1, Math.ceil(this.filteredReports().length / this.pageSize())));
   totalPagesArray = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
   currentPage = computed(() => Math.min(this.page(), this.totalPages()));
   pagedReports = computed(() => {
-    const start = (this.currentPage() - 1) * PAGE_SIZE;
-    return this.filteredReports().slice(start, start + PAGE_SIZE);
+    const start = (this.currentPage() - 1) * this.pageSize();
+    return this.filteredReports().slice(start, start + this.pageSize());
   });
   rangeStart = computed(() => this.filteredReports().length === 0 ? 0 : (this.currentPage() - 1) * PAGE_SIZE + 1);
-  rangeEnd = computed(() => Math.min(this.currentPage() * PAGE_SIZE, this.filteredReports().length));
+  rangeEnd = computed(() => Math.min(this.currentPage() * this.pageSize(), this.filteredReports().length));
   listCountLabel = computed(() => {
     const count = this.filteredReports().length;
     const filter = this.statusFilter();
@@ -208,7 +209,7 @@ export class ReportsComponent {
     this.selectFirstVisible();
   }
 
-  togglePreviewExpanded(): void {
+  setPageSize(size: number): void {\n    if (!PAGE_SIZE_OPTIONS.includes(size as typeof PAGE_SIZE_OPTIONS[number])) return;\n    this.pageSize.set(size);\n    this.page.set(1);\n    this.selectFirstVisible();\n  }\n\n  togglePreviewExpanded(): void {
     this.previewExpanded.update(expanded => !expanded);
   }
 
