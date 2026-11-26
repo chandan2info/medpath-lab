@@ -254,3 +254,16 @@
 .ph-test-history-status{align-items:flex-start}
 .ph-test-history-row>i{font-size:14px;color:var(--text-secondary)}
 @media(max-width:650px){.ph-test-history-row{grid-template-columns:minmax(0,1fr) auto;gap:7px 10px}.ph-test-history-name{grid-column:1/-1}.ph-test-history-order,.ph-test-history-date{grid-column:auto}.ph-test-history-status{grid-column:2;grid-row:2;align-items:flex-end}.ph-test-history-row>i{display:none}}
+
+/* Report Comparison is a dedicated workspace, not part of the quick patient drawer. */
+.ph-workspace.ph-compare-workspace{grid-template-columns:minmax(0,1fr)}
+.ph-report-comparison-workspace{display:flex;flex-direction:column;gap:16px;padding:18px;min-height:0;overflow:auto}
+.ph-comparison-toolbar{display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,360px);gap:18px;align-items:end;padding:14px;border:1px solid var(--border-color);border-radius:9px;background:var(--body-bg)}
+.ph-comparison-toolbar>div{display:flex;flex-direction:column;gap:5px}
+.ph-comparison-toolbar>div strong{font-size:13px;color:var(--text-primary)}
+.ph-comparison-toolbar>div span{font-size:10px;color:var(--text-secondary)}
+.ph-report-comparison-workspace .ph-compare-select{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:9px}
+.ph-report-comparison-workspace .ph-compare-select>span{grid-column:1/-1}
+.ph-report-comparison-workspace .ph-comparison-table{width:100%;overflow:auto}
+.ph-report-comparison-workspace .ph-comparison-table table{min-width:620px;width:100%;table-layout:auto}
+@media(max-width:650px){.ph-comparison-toolbar{grid-template-columns:1fr}.ph-report-comparison-workspace{padding:12px}}
