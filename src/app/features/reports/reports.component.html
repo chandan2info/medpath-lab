@@ -25,7 +25,7 @@
 </div>
 
 <section class="reports-stats-grid" aria-label="Report summary">
-  @for (s of stats; track s.id) {
+  @for (s of stats(); track s.id) {
     <div class="rsc-card">
       <div class="rsc-top">
         <div class="rsc-icon" [class]="'rsc-icon--' + s.variant" aria-hidden="true">
@@ -82,7 +82,7 @@
         </div>
       }
       @for (r of pagedReports(); track r.id) {
-        <button type="button" class="report-row" role="listitem"
+        <button type="button" class="report-row"
           [class.report-row--selected]="selected()?.id === r.id"
           (click)="selectReport(r)"
           [attr.aria-pressed]="selected()?.id === r.id"
