@@ -957,3 +957,85 @@ button.report-row:focus-visible {
     overscroll-behavior: contain;
   }
 }
+
+
+/* Scroll the complete test section (heading, note, specimen, group and
+   result rows) so it gets the full space between patient details and footer. */
+@media (min-width: 901px) {
+  .rpt-panel--mid {
+    position: relative;
+    min-height: 0;
+    overflow: hidden;
+    padding-right: 34px;
+  }
+
+  .rpt-test-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    padding-right: 2px;
+  }
+
+  .rpt-title-band,
+  .rpt-note,
+  .rpt-grp-title {
+    flex: 0 0 auto;
+  }
+
+  .rpt-tbl-wrap {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .rpt-expand-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--border-color);
+    border-radius: 9px;
+    background: var(--card-bg);
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+
+  .rpt-expand-btn:hover {
+    color: var(--lis-primary);
+    border-color: var(--lis-primary);
+  }
+
+  .report-preview-area--expanded {
+    position: fixed;
+    inset: 16px;
+    z-index: 1000;
+    height: auto !important;
+    width: auto;
+    padding: 0;
+    background: var(--page-bg, #0f172a);
+    border-radius: 16px;
+    box-shadow: 0 0 0 100vmax rgba(3, 8, 20, 0.76);
+  }
+
+  .report-preview-area--expanded .report-sheet {
+    height: 100%;
+    max-height: 100%;
+  }
+}
+
+@media (max-width: 900px) {
+  .rpt-expand-btn {
+    display: none;
+  }
+
+  .rpt-test-scroll {
+    min-height: 0;
+  }
+}
