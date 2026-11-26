@@ -1,5 +1,6 @@
-import { Component, ChangeDetectionStrategy, computed, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, ChangeDetectionStrategy, computed, signal, inject } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { PatientFlowService } from '../../core/services/patient-flow.service';
 
 interface VisitRecord {
   date: string; time: string; dateValue: string; invoiceId: string; tests: string[];
@@ -42,6 +43,8 @@ const PATIENTS: PatientRecord[] = [
   templateUrl: './patient-history.component.html', styleUrl: './patient-history.component.css',
 })
 export class PatientHistoryComponent {
+  private readonly router = inject(Router);
+  private readonly patientFlow = inject(PatientFlowService);
   protected readonly allPatients = PATIENTS;
   readonly viewTabs = ['All Patients', 'By Patient', 'By Test', 'Trends & Analytics'];
   readonly detailTabs = ['History', 'Reports', 'Compare', 'Trends'];
@@ -65,6 +68,7 @@ export class PatientHistoryComponent {
   trendParameter = signal('Haemoglobin');
   page = signal(1);
   pageSize = signal(10);
+  moreFiltersOpen = false;
 
   availableTests = computed(() => [...new Set(this.allPatients.flatMap(p => p.visits.flatMap(v => v.tests)))].sort());
   availableDoctors = computed(() => [...new Set(this.allPatients.flatMap(p => p.visits.map(v => v.refDoctor)))].sort());
@@ -132,7 +136,18 @@ export class PatientHistoryComponent {
   openReport(visit: VisitRecord): void {
     const available = visit.reports.some(r => r.status === 'Available');
     this.activeDetailTab.set('Reports');
-    this.notice.set(available ? 'Report ' + visit.invoiceId + ' is ready. Connect the existing report-preview route/API to render the actual document.' : 'This report is not yet available because result processing is pending.');
+    if (!available) { this.notice.set('This report is not yet available because result processing is pending.'); return; }
+    this.notice.set('Report ' + visit.invoiceId + ' selected. Open the Reports module to preview the finalized report.');
+    this.router.navigate(['/dashboard/reports']);
+  }
+  startNewOrder(patient: PatientRecord): void {
+    const [firstName, ...lastName] = patient.name.split(' ');
+    this.patientFlow.registerPatient({
+      firstName, lastName: lastName.join(' '), dob: '', ageYears: String(patient.age), gender: patient.sex,
+      bloodGroup: '', mobile: patient.mobile.replace(/\\D/g, '').slice(-10), email: '', address: '',
+      refDoctor: '', visitType: 'Repeat', fasting: 'No', collection: 'Lab', clinicalNotes: '', medications: ''
+    }, patient.id);
+    this.router.navigate(['/dashboard/test-order']);
   }
   showInvoice(visit: VisitRecord): void { this.notice.set('Invoice ' + visit.invoiceId + ' · ₹' + visit.amount.toLocaleString('en-IN')); }
   printHistory(): void { window.print(); }
