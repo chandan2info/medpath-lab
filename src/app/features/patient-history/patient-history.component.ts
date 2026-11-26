@@ -179,23 +179,17 @@ export class PatientHistoryComponent {
     if (this.menuPatientId() === patientId) { this.menuPatientId.set(null); return; }
     const trigger = event.currentTarget as HTMLElement;
     const rect = trigger.getBoundingClientRect();
-    // Anchor to the complete action group, not only the kebab button.
-    // This keeps the menu clear of both the eye and more-actions controls.
-    const actionGroup = trigger.closest('.ph-row-actions') as HTMLElement | null;
-    const groupRect = actionGroup?.getBoundingClientRect() ?? rect;
     const menuWidth = 260;
     const menuHeight = 300;
-    const gap = 10;
-    const leftOfActions = groupRect.left - menuWidth - gap;
-    const fitsLeft = leftOfActions >= 12;
-    const belowTop = groupRect.bottom + gap;
-    const aboveTop = groupRect.top - menuHeight - gap;
+    const gap = 8;
+    // Open directly beneath the three-dot trigger, aligned to its right edge.
+    // The fixed-position menu intentionally overlays the next table row.
+    const belowTop = rect.bottom + gap;
+    const aboveTop = rect.top - menuHeight - gap;
     const top = belowTop + menuHeight <= window.innerHeight - 12
       ? belowTop
       : Math.max(12, aboveTop);
-    const left = fitsLeft
-      ? leftOfActions
-      : Math.max(12, Math.min(groupRect.right + gap, window.innerWidth - menuWidth - 12));
+    const left = Math.max(12, Math.min(rect.right - menuWidth, window.innerWidth - menuWidth - 12));
     this.menuPosition.set({ top, left });
     this.menuPatientId.set(patientId);
   }
