@@ -190,7 +190,7 @@ import { PdfPreferencesService } from '../../core/services/pdf-preferences.servi
       display:inline-flex; align-items:center; justify-content:flex-start; gap:10px;
       min-width:94px; padding:5px 11px 5px 6px; border:1px solid var(--border);
       border-radius:999px; background:var(--bg-surface-alt); color:var(--text-secondary);
-      cursor:pointer; font:600 12px/1 inherit; transition:background .2s ease,border-color .2s ease,box-shadow .2s ease;
+      cursor:pointer; font-family:inherit; font-size:12px; font-weight:600; line-height:1; transition:background .2s ease,border-color .2s ease,box-shadow .2s ease;
       -webkit-tap-highlight-color:transparent;
     }
     .mode-switch:hover { border-color:var(--primary-light); }
