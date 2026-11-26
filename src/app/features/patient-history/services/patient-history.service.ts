@@ -1,6 +1,6 @@
 import { Injectable, computed, inject } from '@angular/core';
-import { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';
-import { PatientFlowService } from '../../core/services/patient-flow.service';
+import { LabWorkflowMockService } from '../../../core/services/lab-workflow-mock.service';
+import { PatientFlowService } from '../../../core/services/patient-flow.service';
 
 export interface HistoryVisitRecord {
   date: string; time: string; dateValue: string; invoiceId: string; tests: string[];
