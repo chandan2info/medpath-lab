@@ -153,10 +153,6 @@ export class ReportsComponent {
     this.pdfZoom.update(value => Math.min(120, Math.max(60, value + delta)));
   }
 
-  setCustomPdfSettings(enabled: boolean): void {
-    this.customPdfSettings.set(enabled);
-  }
-
   setPdfPaperSize(value: string): void {
     if (['A4', 'A3', 'Letter', 'Legal'].includes(value)) {
       this.pdfPaperSize.set(value as 'A4' | 'A3' | 'Letter' | 'Legal');
