@@ -1216,3 +1216,96 @@ button.report-row:focus-visible {
     padding-inline: 5px;
   }
 }
+
+
+/* Final fit refinement: keep the list footer compact without clipping
+   the select caret or the previous/next page controls. */
+.report-pagination {
+  min-width: 0;
+  gap: 6px;
+  padding: 9px 12px;
+}
+
+.report-pagination-summary {
+  min-width: 0;
+  gap: 6px;
+  font-size: 10.5px;
+}
+
+.report-pagination-summary > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.report-page-size {
+  gap: 4px;
+  flex: 0 0 auto;
+}
+
+.report-page-size select {
+  box-sizing: border-box;
+  width: 54px;
+  min-width: 54px;
+  height: 30px;
+  padding: 4px 20px 4px 7px;
+  background-position: right 6px center;
+}
+
+.report-pagination-controls {
+  flex: 0 0 auto;
+  gap: 4px;
+  padding-right: 2px;
+}
+
+.report-pagination-controls .page-btn {
+  box-sizing: border-box;
+  flex: 0 0 28px;
+  width: 28px;
+  height: 30px;
+}
+
+.rpt-expand-btn {
+  margin-right: 4px;
+  padding: 2px;
+}
+
+.rpt-expand-btn i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+@media (max-width: 520px) {
+  .report-pagination {
+    padding-inline: 9px;
+    gap: 4px;
+  }
+
+  .report-pagination-summary {
+    gap: 4px;
+    font-size: 10px;
+  }
+
+  .report-page-size select {
+    width: 50px;
+    min-width: 50px;
+  }
+
+  .report-pagination-controls {
+    gap: 3px;
+    padding-right: 2px;
+  }
+
+  .report-pagination-controls .page-btn {
+    flex-basis: 26px;
+    width: 26px;
+    height: 28px;
+  }
+}
+
+/* Keep a deliberate, small bottom gutter instead of a large dead zone. */
+:host {
+  padding-bottom: 12px;
+}
