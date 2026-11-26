@@ -8,16 +8,16 @@
   </div>
   @if (selected()) {
     <div class="preview-actions page-header-actions">
-      <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="printReport()">
-        <i class="ti ti-download" aria-hidden="true"></i> Print / Save PDF
+      <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm">
+        <i class="ti ti-download" aria-hidden="true"></i> Download PDF
       </button>
-      <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="dispatchSelected('Patient portal')">
-        <i class="ti ti-send" aria-hidden="true"></i> Record dispatch
+      <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm">
+        <i class="ti ti-send" aria-hidden="true"></i> Send to patient
       </button>
-      <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="dispatchSelected('WhatsApp')">
+      <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm">
         <i class="ti ti-brand-whatsapp" aria-hidden="true"></i> WhatsApp
       </button>
-      <button type="button" class="lis-btn lis-btn--primary lis-btn--sm" (click)="printReport()">
+      <button type="button" class="lis-btn lis-btn--primary lis-btn--sm">
         <i class="ti ti-printer" aria-hidden="true"></i> Print
       </button>
     </div>
@@ -25,7 +25,7 @@
 </div>
 
 <section class="reports-stats-grid" aria-label="Report summary">
-  @for (s of stats(); track s.id) {
+  @for (s of stats; track s.id) {
     <div class="rsc-card">
       <div class="rsc-top">
         <div class="rsc-icon" [class]="'rsc-icon--' + s.variant" aria-hidden="true">
@@ -74,20 +74,17 @@
         (click)="setStatusFilter('dispatched')" [attr.aria-pressed]="statusFilter() === 'dispatched'">Dispatched</button>
     </div>
 
-    <div role="listbox" aria-label="Report list" class="report-rows">
+    <div role="list" aria-label="Report list" class="report-rows">
       @if (filteredReports().length === 0) {
-        <div class="reports-empty" role="status" aria-live="polite">
+        <div class="reports-empty" role="status">
           <i class="ti ti-file-off" aria-hidden="true"></i>
           <span>No reports found.</span>
         </div>
       }
       @for (r of pagedReports(); track r.id) {
-        <div class="report-row" role="option" tabindex="0"
+        <div class="report-row" role="listitem"
           [class.report-row--selected]="selected()?.id === r.id"
           (click)="selected.set(r)"
-          (keydown.enter)="selected.set(r)"
-          (keydown.space)="$event.preventDefault(); selected.set(r)"
-          (keydown)="focusReport($event)"
           [attr.aria-selected]="selected()?.id === r.id"
         >
           <div class="rr-av" aria-hidden="true">{{ initials(r.patientName) }}</div>
@@ -108,7 +105,7 @@
     </div>
 
     <div class="report-pagination">
-      <span role="status" aria-live="polite">
+      <span>
         @if (filteredReports().length === 0) {
           No reports match
         } @else {
@@ -145,12 +142,12 @@
           <div class="rpt-lab">
             <div class="rpt-lab-name">MedPath Diagnostics</div>
             <div class="rpt-lab-tag">Accurate Results. Better Health.</div>
-            <div class="rpt-lab-addr">Lab contact details can be configured in Settings</div>
+            <div class="rpt-lab-addr">123, Health Street, Medical Area, Bengaluru — 560001 · +91 98765 43210 · info&#64;medpathdiagnostics.com</div>
           </div>
           <div class="rpt-meta">
-            <div class="rpt-date">Report date: {{ selected()?.date }}</div>
+            <div class="rpt-date">Report date: 23 Jun 2026</div>
             <div class="rpt-nabl">
-              <i class="ti ti-shield-check" aria-hidden="true"></i> Report preview
+              <i class="ti ti-shield-check" aria-hidden="true"></i> NABL Accredited
             </div>
           </div>
         </div>
@@ -159,27 +156,27 @@
         <div class="rpt-pat-band">
           <div class="rpt-pf">
             <i class="ti ti-user rpt-pf-icon" aria-hidden="true"></i>
-            <div><div class="rpt-pl">Patient</div><div class="rpt-pv">{{ selected()?.patientName }}</div></div>
+            <div><div class="rpt-pl">Patient</div><div class="rpt-pv">Arun Pillai</div></div>
           </div>
           <div class="rpt-pf">
             <i class="ti ti-fingerprint rpt-pf-icon" aria-hidden="true"></i>
-            <div><div class="rpt-pl">Patient ID</div><div class="rpt-pv rpt-pv--mono">{{ selected()?.patientId }}</div></div>
+            <div><div class="rpt-pl">Patient ID</div><div class="rpt-pv rpt-pv--mono">PAT-2406-0316</div></div>
           </div>
           <div class="rpt-pf">
             <i class="ti ti-calendar-check rpt-pf-icon" aria-hidden="true"></i>
-            <div><div class="rpt-pl">Collected on</div><div class="rpt-pv">{{ selected()?.date }}</div></div>
+            <div><div class="rpt-pl">Collected on</div><div class="rpt-pv">23 Jun 2026 · 9:20 AM</div></div>
           </div>
           <div class="rpt-pf">
             <i class="ti ti-gender-bigender rpt-pf-icon" aria-hidden="true"></i>
-            <div><div class="rpt-pl">Age / Sex</div><div class="rpt-pv">—</div></div>
+            <div><div class="rpt-pl">Age / Sex</div><div class="rpt-pv">61 years / Male</div></div>
           </div>
           <div class="rpt-pf">
             <i class="ti ti-stethoscope rpt-pf-icon" aria-hidden="true"></i>
-            <div><div class="rpt-pl">Referred by</div><div class="rpt-pv">—</div></div>
+            <div><div class="rpt-pl">Referred by</div><div class="rpt-pv">Dr. Suresh Menon</div></div>
           </div>
           <div class="rpt-pf">
             <i class="ti ti-calendar-event rpt-pf-icon" aria-hidden="true"></i>
-            <div><div class="rpt-pl">Reported on</div><div class="rpt-pv">{{ selected()?.date }}</div></div>
+            <div><div class="rpt-pl">Reported on</div><div class="rpt-pv">23 Jun 2026 · 11:05 AM</div></div>
           </div>
         </div>
         </div>
@@ -189,17 +186,17 @@
         <div class="rpt-title-band">
           <div class="rpt-title-text">
             <i class="ti ti-droplet" aria-hidden="true"></i>
-            {{ selected()?.test }}
+            Kidney Function Test (KFT)
           </div>
-          <div class="lis-mono rpt-sid-chip">{{ selected()?.sampleId }}</div>
+          <div class="lis-mono rpt-sid-chip">SMP-2406-087</div>
         </div>
 
         <div class="rpt-note">
-          <strong>Note:</strong> This preview is generated from the saved mock result record. Clinical interpretation and reference ranges must be configured and validated by the laboratory.
-          <span class="rpt-note-sep">Sample ID: {{ selected()?.sampleId }}</span>
+          <strong>Note:</strong> Critical value — Serum Potassium (K⁺) is significantly elevated. Referring physician has been notified.
+          <span class="rpt-note-sep">Specimen: Serum (Red top SST) &nbsp;·&nbsp; Fasting: Non-fasting</span>
         </div>
 
-        <div class="rpt-grp-title">Recorded result parameters</div>
+        <div class="rpt-grp-title">Biochemistry — Renal profile</div>
         <div class="rpt-tbl-wrap">
         <table class="rpt-tbl" role="table">
           <thead>
@@ -212,7 +209,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (row of resultRows(); track row.name) {
+            @for (row of kftRows; track row.name) {
               <tr [class.rpt-row-crit]="row.flag === 'critical'">
                 <td [class.rpt-bold]="row.flag === 'critical'">{{ row.name }}</td>
                 <td [class]="'rpt-flag-' + row.flag">
@@ -227,7 +224,7 @@
                   @if (row.flag === 'critical') { <strong>CRITICAL</strong> }
                   @else if (row.flag === 'high') { High }
                   @else if (row.flag === 'low')  { Low }
-                  @else { Entered }
+                  @else { Normal }
                 </td>
               </tr>
             }
@@ -243,15 +240,15 @@
               <div class="rpt-qr" aria-hidden="true"><i class="ti ti-qrcode"></i></div>
               <div class="rpt-qr-text">
                 <span class="rpt-qr-title">Scan to verify</span>
-                Authenticity: {{ selected()?.sampleId }}<br>
+                Authenticity: SMP-2406-087<br>
                 <span class="rpt-mono-url">medpathdiagnostics.com/verify</span>
               </div>
             </div>
             <div class="rpt-sign">
               <div class="rpt-sign-meta">
                 <div class="rpt-sign-pre">Authorised by</div>
-                <div class="rpt-sign-name">{{ workflowStoreReviewer() }}</div>
-                <div class="rpt-sign-role">Validation record</div>
+                <div class="rpt-sign-name">Dr. Priya Hegde</div>
+                <div class="rpt-sign-role">MD Pathology</div>
               </div>
               <svg class="rpt-signature" viewBox="0 0 110 44" aria-hidden="true">
                 <path d="M6 32 C 14 14, 22 14, 27 26 C 31 35, 35 20, 41 18 C 47 16, 50 30, 56 24 C 62 18, 66 12, 73 20 C 78 26, 84 14, 92 18 C 98 21, 100 28, 104 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
