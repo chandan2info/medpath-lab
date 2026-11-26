@@ -467,3 +467,55 @@
   .ph-patient-modal .ph-trend-panel .ph-chart{width:100%;padding:10px}
   .ph-patient-modal .ph-trend-panel .ph-chart svg{height:210px;max-height:210px}
 }
+
+
+/* Patient modal identity header — clearer hierarchy and compact metadata chips. */
+.ph-patient-modal .ph-detail-head{
+  align-items:center;padding:20px 24px;min-height:112px;
+  background:linear-gradient(110deg,var(--card-bg) 0%,var(--body-bg) 100%);
+}
+.ph-patient-modal .ph-detail-person{align-items:center;gap:16px}
+.ph-patient-modal .pd-av{
+  width:58px;height:58px;font-size:17px;
+  border:3px solid var(--card-bg);
+  box-shadow:0 0 0 1px var(--border-color),0 5px 14px rgba(0,0,0,.12);
+}
+.ph-patient-modal .ph-patient-identity{gap:5px}
+.ph-patient-modal .ph-patient-kicker{
+  display:flex;align-items:center;gap:6px;
+  color:var(--lis-primary);font-size:9px;font-weight:750;
+  letter-spacing:.12em;line-height:1.2;
+}
+.ph-patient-modal .ph-patient-kicker i{font-size:13px}
+.ph-patient-modal .ph-detail-person h2{
+  font-size:19px;font-weight:700;line-height:1.25;
+  letter-spacing:-.02em;color:var(--text-primary);
+}
+.ph-patient-modal .ph-patient-meta{
+  display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-top:3px;
+}
+.ph-patient-modal .ph-patient-meta>span{
+  display:inline-flex;align-items:center;gap:5px;
+  min-height:23px;padding:3px 8px;border:1px solid var(--border-color);
+  border-radius:6px;background:var(--body-bg);
+  color:var(--text-secondary);font-size:10px;line-height:1.2;
+}
+.ph-patient-modal .ph-patient-meta>span i{font-size:12px;color:var(--lis-primary)}
+.ph-patient-modal .ph-patient-meta .ph-patient-id{
+  color:var(--text-primary);font-size:10px;
+}
+.ph-patient-modal .ph-patient-close{
+  width:34px;height:34px;border-radius:9px;flex:none;
+}
+.ph-patient-modal .ph-patient-close:hover{
+  color:var(--lis-primary);border-color:var(--lis-primary);
+  background:var(--lis-primary-xlight);
+}
+@media(max-width:700px){
+  .ph-patient-modal .ph-detail-head{padding:14px;min-height:0}
+  .ph-patient-modal .ph-detail-person{gap:11px}
+  .ph-patient-modal .pd-av{width:46px;height:46px;font-size:14px}
+  .ph-patient-modal .ph-detail-person h2{font-size:16px}
+  .ph-patient-modal .ph-patient-meta{gap:5px}
+  .ph-patient-modal .ph-patient-meta>span{font-size:9px;padding:3px 6px}
+}
