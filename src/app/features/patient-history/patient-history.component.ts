@@ -27,7 +27,10 @@ interface PatientRow { patient: PatientRecord; latest: VisitRecord; }
 export class PatientHistoryComponent {
   private readonly router = inject(Router);
   private readonly patientFlow = inject(PatientFlowService);
-  protected readonly allPatients = PATIENTS;
+  private readonly workflowStore = inject(LabWorkflowMockService);
+  private readonly reportPreview = inject(ReportPreviewService);
+  private readonly historyService = inject(PatientHistoryService);
+  get allPatients(): PatientRecord[] { return this.historyService.patients(); }
   readonly viewTabs = ['All Patients', 'By Patient', 'By Test', 'Trends & Analytics'];
   readonly detailTabs = ['History', 'Reports', 'Compare', 'Trends'];
   searchQ = signal('');
@@ -48,8 +51,8 @@ export class PatientHistoryComponent {
   layout = signal<'list' | 'grid'>('list');
   selectedCompareOrders = signal<string[]>([]);
   trendParameter = signal('Haemoglobin');
-  analyticsPatientId = signal(PATIENTS[0].id);
-  analyticsPatient = computed(() => this.allPatients.find(p => p.id === this.analyticsPatientId()) ?? this.allPatients[0]);
+  analyticsPatientId = signal('');
+  analyticsPatient = computed(() => this.allPatients.find(p => p.id === this.analyticsPatientId()) ?? this.allPatients[0] ?? { id:'', name:'Select a patient', age:0, sex:'', mobile:'', initials:'', avatarClass:'', visits:[] });
   analyticsCriticalCount = computed(() => this.analyticsPatient().visits.filter(visit => visit.hasCritical).length);
   countPatientTests(patient: PatientRecord): number { return patient.visits.reduce((sum, visit) => sum + visit.tests.length, 0); }
   page = signal(1);
@@ -141,12 +144,31 @@ export class PatientHistoryComponent {
   toggleCompare(orderId: string, checked: boolean): void {
     this.selectedCompareOrders.update(ids => checked ? (ids.length < 3 ? [...ids,orderId] : ids) : ids.filter(id => id !== orderId));
   }
-  openReport(visit: VisitRecord): void {
-    const available = visit.reports.some(r => r.status === 'Available');
+  openReport(visit: VisitRecord, reprint = false): void {
+    const report = this.workflowStore.reports().find(item => item.id === visit.reportId && item.sampleId === visit.sampleId);
+    const sample = this.workflowStore.samples().find(item => item.id === visit.sampleId);
+    const result = this.workflowStore.results().find(item => item.sampleId === visit.sampleId && item.status === 'validated');
+    const order = this.workflowStore.orders().find(item => item.id === visit.orderId);
+    const patient = this.selectedPatient();
+    if (!report || !sample || !result || !order || !patient) { this.notice.set('No finalized report is available for this order.'); return; }
+    const params = Object.entries(result.values).map(([name, value], index) => ({
+      id: 'result-' + index, name, value: String(value), unit: '', refLow: null, refHigh: null,
+      refLabel: 'Not recorded', flag: 'normal' as const
+    }));
+    this.reportPreview.stage({
+      patientName: patient.name, patientId: patient.id,
+      ageGender: patient.age ? patient.age + ' years / ' + patient.sex : patient.sex,
+      referredBy: visit.refDoctor, sampleId: sample.id,
+      sampleType: sample.specimenGroups.map(group => group.sampleType).join(', '),
+      collectedAt: sample.collectedAt, reportedAt: report.generatedAt,
+      priority: order.priority === 'stat' ? 'STAT' : 'Routine',
+      testName: visit.tests.join(', '), testCode: visit.tests.join(', '), department: 'Laboratory',
+      criticalNote: null, params, reportDate: new Date(report.generatedAt).toLocaleDateString('en-GB'),
+      verifyUrl: report.id, invoiceId: visit.invoiceRecordId ?? visit.orderId,
+      showRefRange: false, showFlags: false, showNotes: false
+    });
     this.activeDetailTab.set('Reports');
-    if (!available) { this.notice.set('This report is not yet available because result processing is pending.'); return; }
-    this.notice.set('Report ' + visit.invoiceId + ' selected. Open the Reports module to preview the finalized report.');
-    this.router.navigate(['/dashboard/reports']);
+    this.router.navigate(['/dashboard/report-preview'], { state: { printAfterOpen: reprint, reportId: report.id } });
   }
   startNewOrder(patient: PatientRecord): void {
     const [firstName, ...lastName] = patient.name.split(' ');
@@ -157,8 +179,14 @@ export class PatientHistoryComponent {
     }, patient.id);
     this.router.navigate(['/dashboard/test-order']);
   }
-  showInvoice(visit: VisitRecord): void { this.notice.set('Invoice ' + visit.invoiceId + ' · ₹' + visit.amount.toLocaleString('en-IN')); }
-  printHistory(): void { window.print(); }
+  selectedInvoice = signal<import('../../core/services/lab-workflow-mock.service').MockInvoice | null>(null);
+  showInvoice(visit: VisitRecord): void {
+    const invoice = this.workflowStore.invoices().find(item => item.id === visit.invoiceRecordId && item.orderId === visit.orderId);
+    if (!invoice) { this.notice.set('No invoice has been generated for this order yet.'); return; }
+    this.selectedInvoice.set(invoice);
+  }
+  closeInvoice(): void { this.selectedInvoice.set(null); }
+  printInvoice(): void { if (this.selectedInvoice()) window.print(); }
   setPage(page: number): void { this.page.set(Math.min(Math.max(1,page),this.pageCount())); }
   exportCsv(): void {
     const rows = [['Patient','Patient ID','Mobile','Visit date','Order ID','Tests','Result status','Payment status','Amount'],
