@@ -1,5 +1,5 @@
 <div class="ph-page">
-  <header class="ph-page-header"><div class="ph-heading"><span class="ph-heading-icon"><i class="ti ti-history"></i></span><div><h1>Patient History</h1><p>View, search, compare and review patient test history in one place.</p></div></div><a routerLink="/dashboard/registration" class="lis-btn lis-btn--primary"><i class="ti ti-user-plus"></i> New patient</a></header>
+  <header class="ph-page-header"><div class="ph-heading"><span class="ph-heading-icon"><i class="ti ti-history"></i></span><div><h1>Patient History</h1><p>View, search, compare and review patient test history in one place.</p></div></div></header>
   <section class="ph-filter-card" aria-label="History filters">
     <div class="ph-filter-tabs" role="tablist">@for (tab of viewTabs; track tab) { <button type="button" role="tab" [attr.aria-selected]="activeView()===tab" [class.active]="activeView()===tab" (click)="activeView.set(tab)">{{ tab }}</button> }</div>
     <div class="ph-filter-grid">
