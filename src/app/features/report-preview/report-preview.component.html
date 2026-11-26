@@ -350,7 +350,7 @@
 
       <!-- Sticky action buttons -->
       <div class="rps-actions">
-        <button type="button" class="lis-btn lis-btn--primary lis-btn--full" (click)="finalise()">
+        @if (!isExistingReport()) { <button type="button" class="lis-btn lis-btn--primary lis-btn--full" (click)="finalise()">
           <i class="ti ti-file-check" aria-hidden="true"></i> Finalise &amp; generate report
         </button>
         <button type="button" class="lis-btn lis-btn--secondary lis-btn--full" (click)="printReport()">
