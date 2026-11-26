@@ -148,9 +148,11 @@ export class ReportsComponent {
   }
 
   savePdfFromPreview(): void {
-    this.showPdfPreview.set(false);
-    // Let Angular remove the modal before opening the browser print dialog.
-    window.setTimeout(() => window.print(), 80);
+    // Open the native print dialog directly from the click event so the
+    // browser preserves the user gesture and exposes its PDF destination/settings.
+    // The @media print rules hide the in-app preview overlay and print only
+    // the original selected report sheet.
+    window.print();
   }
 
   printReport(): void {
