@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { ThemeService, Palette } from '../../core/services/theme.service';
 import { CursorPreferenceService } from '../../core/services/cursor-preference.service';
+import { PdfPreferencesService } from '../../core/services/pdf-preferences.service';
 
 @Component({
   selector: 'app-settings',
@@ -108,6 +109,32 @@ import { CursorPreferenceService } from '../../core/services/cursor-preference.s
       </div>
     </section>
 
+    <section class="settings-card" aria-labelledby="pdf-export-heading">
+      <div class="settings-card-head">
+        <i class="ti ti-file-type-pdf settings-card-icon" aria-hidden="true"></i>
+        <div>
+          <h2 id="pdf-export-heading" class="settings-card-title">PDF export</h2>
+          <p class="settings-card-sub">Control whether report exports can use custom paper size, orientation and margin settings. When disabled, reports use the standard A4 portrait format.</p>
+        </div>
+      </div>
+      <div class="mode-row pdf-preference-row">
+        <div class="mode-row-text">
+          <span class="theme-label">Enable custom PDF settings</span>
+          <span class="theme-desc">Allow users to change paper size, orientation and margins in the report PDF preview.</span>
+        </div>
+        <button type="button" class="mode-toggle"
+          [class.switch-active]="pdfPreferences.customSettingsEnabled()"
+          role="switch" [attr.aria-checked]="pdfPreferences.customSettingsEnabled()"
+          (click)="togglePdfSettings()">
+          <span class="switch-dot" aria-hidden="true"></span>
+          {{ pdfPreferences.customSettingsEnabled() ? 'On' : 'Off' }}
+        </button>
+      </div>
+      <p class="settings-card-sub pdf-preference-status">
+        {{ pdfPreferences.customSettingsEnabled() ? 'Custom PDF controls are available on the Reports page.' : 'Custom PDF controls are hidden. Standard A4 portrait defaults will be used.' }}
+      </p>
+    </section>
+
     <div class="placeholder-page" role="region" aria-label="More settings coming soon">
       <i class="ti ti-settings placeholder-icon" aria-hidden="true"></i>
       <h2 class="placeholder-title">More settings — Coming soon</h2>
@@ -166,7 +193,7 @@ import { CursorPreferenceService } from '../../core/services/cursor-preference.s
     .color-preset span { width:22px; height:22px; border-radius:50%; background:var(--preset-color); box-shadow:0 0 0 1px var(--border),inset 0 0 0 2px var(--bg-surface); }
     .color-preset small { font-size:10px; color:var(--text-secondary); }
     .color-preset.selected { border-color:var(--primary-deeper); background:var(--primary-xlight); }
-    .placeholder-page { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 20px; gap:14px; text-align:center; }
+    .pdf-preference-row { margin-top:0; padding-top:0; border-top:0; }\n    .pdf-preference-status { margin:14px 0 0; }\n    .placeholder-page { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 20px; gap:14px; text-align:center; }
     .placeholder-icon { font-size:48px; color:var(--lis-primary,#1D9E75); opacity:.35; }
     .placeholder-title { font-size:18px; font-weight:500; color:var(--text-primary); margin:0; }
     .placeholder-sub { font-size:13px; color:var(--text-secondary); margin:0; max-width:360px; }
@@ -179,7 +206,7 @@ import { CursorPreferenceService } from '../../core/services/cursor-preference.s
 })
 export class SettingsComponent {
   protected readonly theme = inject(ThemeService);
-  protected readonly cursor = inject(CursorPreferenceService);
+  protected readonly cursor = inject(CursorPreferenceService);\n  protected readonly pdfPreferences = inject(PdfPreferencesService);
   protected readonly cursorColors = [
     { label: 'Violet', value: '#8b5cf6' },
     { label: 'Teal', value: '#0d9488' },
@@ -189,7 +216,7 @@ export class SettingsComponent {
     { label: 'Black', value: '#171717' },
   ];
 
-  protected selectPalette(id: Palette): void {
+  protected togglePdfSettings(): void {\n    this.pdfPreferences.setCustomSettingsEnabled(!this.pdfPreferences.customSettingsEnabled());\n  }\n\n  protected selectPalette(id: Palette): void {
     this.theme.setPalette(id);
   }
 
