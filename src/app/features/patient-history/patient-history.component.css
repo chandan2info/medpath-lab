@@ -18,7 +18,7 @@
 .breadcrumb li+li::before { content:'›'; margin-right:7px; opacity:.6; }
 
 .ph-toolbar {
-  display:flex; align-items:center; flex-wrap:wrap; gap:12px;
+  display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:12px;
   padding:10px 12px; border:1px solid var(--border-color); border-radius:11px;
   background:var(--card-bg);
 }
