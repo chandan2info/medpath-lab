@@ -1393,3 +1393,14 @@ button.report-row:focus-visible {
     justify-content: flex-end;
   }
 }
+
+
+/* Increase the shared desktop workspace height by 5% for both cards.
+   The list and preview continue to share one height and retain inner scrolling. */
+@media (min-width: 901px) {
+  .reports-layout {
+    height: calc(105dvh - 199.5px);
+    min-height: 546px;
+    max-height: calc(105dvh - 157.5px);
+  }
+}
