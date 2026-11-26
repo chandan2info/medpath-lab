@@ -1404,3 +1404,93 @@ button.report-row:focus-visible {
     max-height: calc(103dvh - 153.9px);
   }
 }
+
+
+/* Stable footer columns: keep the range, Rows selector and page controls
+   independent so global form-label styles cannot make them overlap. */
+@media (min-width: 561px) {
+  .report-pagination {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 8px;
+    min-width: 0;
+    overflow: visible;
+  }
+
+  .report-pagination-range {
+    grid-column: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.35;
+  }
+
+  .report-page-size {
+    grid-column: 2;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 7px;
+    width: auto !important;
+    min-width: max-content;
+    margin: 0 !important;
+    white-space: nowrap;
+  }
+
+  .report-page-size > span {
+    display: inline-block;
+    width: auto !important;
+    margin: 0 !important;
+  }
+
+  .report-page-size select {
+    display: block;
+    box-sizing: border-box;
+    width: 58px !important;
+    min-width: 58px;
+    height: 36px;
+    margin: 0 !important;
+    padding: 0 24px 0 10px;
+    flex: 0 0 58px;
+    appearance: auto;
+  }
+
+  .report-pagination-controls {
+    grid-column: 3;
+    min-width: max-content;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    margin: 0;
+    padding: 0 4px 0 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .report-pagination {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .report-pagination-range { grid-column: 1; min-width: 0; }
+  .report-page-size { grid-column: 2; }
+  .report-pagination-controls {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+}
+
+/* Reduce the shared desktop list/preview height by one more percentage point. */
+@media (min-width: 901px) {
+  .reports-layout {
+    height: calc(102dvh - 193.8px);
+    min-height: 530.4px;
+    max-height: calc(102dvh - 152.4px);
+  }
+}
