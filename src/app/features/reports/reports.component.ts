@@ -157,7 +157,7 @@ type ReportStatusFilter = 'all' | 'pending' | 'dispatched';
   styleUrl: './reports.component.css',
 })
 export class ReportsComponent {
-  protected readonly reports = REPORTS;
+  reports = signal<ReportRow[]>(REPORTS);
   selected = signal<ReportRow | null>(REPORTS[0]);
   previewExpanded = signal(false);
   query = signal('');
@@ -174,7 +174,7 @@ export class ReportsComponent {
   filteredReports = computed(() => {
     const q = this.query().trim().toLowerCase();
     const status = this.statusFilter();
-    return this.reports.filter(r =>
+    return this.reports().filter(r =>
       (status === 'all' || r.status === status) &&
       (!q || [r.patientName, r.patientId, r.test, r.id].some(value => value.toLowerCase().includes(q)))
     );
@@ -223,6 +223,19 @@ export class ReportsComponent {
   selectReport(report: ReportRow): void {
     this.selected.set(report);
     this.previewExpanded.set(false);
+  }
+
+  markAsDispatched(): void {
+    const report = this.selected();
+    if (!report || report.status !== 'pending') return;
+    const confirmed = window.confirm(`Mark report ${report.id} as dispatched? This demo action updates the local mock data only.`);
+    if (!confirmed) return;
+
+    this.reports.update(items => items.map(item =>
+      item.id === report.id ? { ...item, status: 'dispatched' as const } : item
+    ));
+    const updated = this.reports().find(item => item.id === report.id) ?? null;
+    this.selected.set(updated);
   }
 
   private selectFirstVisible(): void {
