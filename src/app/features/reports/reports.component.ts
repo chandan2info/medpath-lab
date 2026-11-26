@@ -187,7 +187,7 @@ export class ReportsComponent {
     const start = (this.currentPage() - 1) * this.pageSize();
     return this.filteredReports().slice(start, start + this.pageSize());
   });
-  rangeStart = computed(() => this.filteredReports().length === 0 ? 0 : (this.currentPage() - 1) * PAGE_SIZE + 1);
+  rangeStart = computed(() => this.filteredReports().length === 0 ? 0 : (this.currentPage() - 1) * this.pageSize() + 1);
   rangeEnd = computed(() => Math.min(this.currentPage() * this.pageSize(), this.filteredReports().length));
   listCountLabel = computed(() => {
     const count = this.filteredReports().length;
@@ -209,19 +209,26 @@ export class ReportsComponent {
     this.selectFirstVisible();
   }
 
-  setPageSize(size: number): void {\n    if (!PAGE_SIZE_OPTIONS.includes(size as typeof PAGE_SIZE_OPTIONS[number])) return;\n    this.pageSize.set(size);\n    this.page.set(1);\n    this.selectFirstVisible();\n  }\n\n  togglePreviewExpanded(): void {
+  setPageSize(size: number): void {
+    if (!PAGE_SIZE_OPTIONS.includes(size as typeof PAGE_SIZE_OPTIONS[number])) return;
+    this.pageSize.set(size);
+    this.page.set(1);
+    this.selectFirstVisible();
+  }
+
+  togglePreviewExpanded(): void {
     this.previewExpanded.update(expanded => !expanded);
   }
 
   selectReport(report: ReportRow): void {
     this.selected.set(report);
+    this.previewExpanded.set(false);
   }
 
   private selectFirstVisible(): void {
-    const first = this.filteredReports()[0] ?? null;
-    if (!first || !this.filteredReports().some(r => r.id === this.selected()?.id)) {
-      this.selected.set(first);
-    }
+    const first = this.pagedReports()[0] ?? null;
+    this.selected.set(first);
+    this.previewExpanded.set(false);
   }
 
   goToPage(p: number): void {
