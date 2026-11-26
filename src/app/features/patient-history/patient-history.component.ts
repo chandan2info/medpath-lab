@@ -180,7 +180,7 @@ export class PatientHistoryComponent {
     const trigger = event.currentTarget as HTMLElement;
     const rect = trigger.getBoundingClientRect();
     const menuWidth = 260;
-    const menuHeight = 300;
+    const menuHeight = 266;
     const gap = 8;
     // Open directly beneath the three-dot trigger, aligned to its right edge.
     // The fixed-position menu intentionally overlays the next table row.
@@ -189,7 +189,7 @@ export class PatientHistoryComponent {
     const top = belowTop + menuHeight <= window.innerHeight - 12
       ? belowTop
       : Math.max(12, aboveTop);
-    const left = Math.max(12, Math.min(rect.right - menuWidth, window.innerWidth - menuWidth - 12));
+    const left = Math.max(12, rect.right - menuWidth);
     this.menuPosition.set({ top, left });
     this.menuPatientId.set(patientId);
   }
