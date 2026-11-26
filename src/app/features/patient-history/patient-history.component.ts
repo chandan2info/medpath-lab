@@ -122,6 +122,18 @@ export class PatientHistoryComponent {
   trendPoints = computed(() => (this.selectedPatient()?.visits ?? []).slice().reverse().map(v => v.results.find(r => r.parameter === this.trendParameter()) ?? null).filter((r): r is NonNullable<typeof r> => !!r));
   trendMin = computed(() => Math.min(...this.trendPoints().map(p => p.value),0));
   trendMax = computed(() => Math.max(...this.trendPoints().map(p => p.value),1));
+  trendChartCoordinates = computed(() => {
+    const points = this.trendPoints();
+    const min = this.trendMin();
+    const range = Math.max(1, this.trendMax() - min);
+    const step = 250 / Math.max(1, points.length - 1);
+    return points.map((point, index) => ({
+      x: 40 + index * step,
+      y: 130 - ((point.value - min) / range) * 95,
+      label: point.date.slice(0, 6)
+    }));
+  });
+  trendPolyline = computed(() => this.trendChartCoordinates().map(point => `${point.x},${point.y}`).join(' '));
 
   setDateRange(value: string): void { this.dateRange.set(value); this.page.set(1); }
   selectPatient(patient: PatientRecord): void { this.selectedPatient.set(patient); this.activeDetailTab.set('History'); this.selectedCompareOrders.set([]); this.menuPatientId.set(null); }
