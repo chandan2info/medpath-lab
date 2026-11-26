@@ -400,9 +400,14 @@
   box-shadow:none!important;
   border-left:1px solid transparent;
 }
-.ph-patient-table tbody tr:hover td:last-child,
-.ph-patient-table tbody tr.row-selected td:last-child{
-  background:var(--lis-primary-xlight)!important;
+.ph-patient-table tbody tr:hover > td:last-child,
+.ph-patient-table tbody tr.row-selected > td:last-child{
+  /* Sticky cells need their own opaque hover fill; a transparent sticky cell
+     exposes the scroll viewport instead of the hovered row underneath. */
+  background-color:var(--lis-primary-xlight)!important;
+  background-image:none!important;
+  box-shadow:none!important;
+  border-left-color:var(--border-color);
 }
 .ph-patient-table tbody tr td:last-child .ph-row-actions{
   position:relative;z-index:1;
