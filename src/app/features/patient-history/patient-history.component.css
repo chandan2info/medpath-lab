@@ -235,3 +235,10 @@
 .ph-empty span{font-size:10px}
 @media(max-width:1080px){.ph-workspace{grid-template-columns:minmax(0,1fr);height:auto;max-height:none;min-height:0}.ph-detail-card{height:auto;max-height:620px;min-height:300px}.ph-history-list{max-height:440px;flex:none}}
 @media(max-width:650px){.ph-table-card{min-width:0}.ph-table-scroll{max-width:calc(100vw - 84px)}.ph-patient-table{min-width:850px}.ph-table-heading{gap:8px}.ph-table-tools{flex-wrap:wrap}.ph-detail-head{padding:11px}.ph-detail-tabs{overflow-x:auto;justify-content:flex-start;gap:12px}.ph-detail-tabs button{flex:none}.ph-history-actions button{min-height:32px}.ph-modal-backdrop{padding:10px}.ph-invoice-modal{max-height:92vh}}
+
+/* Compact test list: show four test chips and reveal remaining names on hover/focus. */
+.table-test-tags{display:flex;align-items:center;gap:5px;flex-wrap:nowrap;min-width:0}
+.table-test-tags>span{flex:0 0 auto;white-space:nowrap}
+.table-test-tags .table-test-more{position:relative;display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:23px;padding:0 7px;border:1px solid var(--lis-primary);border-radius:999px;background:var(--lis-primary-xlight);color:var(--lis-primary);font-size:10px;font-weight:700;cursor:help;outline:none}
+.table-test-tags .table-test-more::after{content:attr(data-tooltip);position:absolute;left:50%;bottom:calc(100% + 9px);z-index:40;display:block;width:max-content;max-width:min(280px,70vw);padding:9px 11px;border:1px solid var(--border-color);border-radius:8px;background:var(--card-bg);color:var(--text-primary);font-size:11px;font-weight:500;line-height:1.55;white-space:normal;overflow-wrap:anywhere;box-shadow:0 8px 24px rgba(0,0,0,.24);opacity:0;visibility:hidden;pointer-events:none;transform:translate(-50%,4px);transition:opacity .15s ease,transform .15s ease}
+.table-test-tags .table-test-more:hover::after,.table-test-tags .table-test-more:focus-visible::after{opacity:1;visibility:visible;transform:translate(-50%,0)}
