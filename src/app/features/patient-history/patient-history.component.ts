@@ -48,6 +48,7 @@ export class PatientHistoryComponent {
   analyticsResultCount = computed(() => this.analyticsPatient().visits.reduce((count, visit) => count + visit.results.length, 0));
   countPatientTests(patient: PatientRecord): number { return patient.visits.reduce((sum, visit) => sum + visit.tests.length, 0); }
   page = signal(1);
+  testPage = signal(1);
   pageSize = signal(10);
   moreFiltersOpen = false;
 
@@ -65,7 +66,7 @@ export class PatientHistoryComponent {
       const inDate = this.dateRange() === 'all' || (this.dateRange() === 'custom'
         ? (!this.fromDate() || visit.dateValue >= this.fromDate()) && (!this.toDate() || visit.dateValue <= this.toDate())
         : date >= start && date <= now);
-      const matchesSearch = !q || [patient.name, patient.id, patient.mobile, visit.invoiceId, ...visit.tests].some(value => value.toLowerCase().includes(q));
+      const matchesSearch = !q || [patient.name, patient.id, patient.mobile, visit.invoiceId, visit.orderId, ...visit.tests].some(value => value.toLowerCase().includes(q));
       const matchesTest = this.testFilter() === 'all' || visit.tests.includes(this.testFilter());
       const matchesResult = this.resultFilter() === 'all' || (this.resultFilter() === 'critical' ? visit.hasCritical : visit.resultStatus.toLowerCase() === this.resultFilter());
       const matchesPayment = this.paymentFilter() === 'all' || visit.paymentStatus.toLowerCase() === this.paymentFilter();
@@ -90,6 +91,11 @@ export class PatientHistoryComponent {
     return this.filteredPatientRows().slice(start,start + this.pageSize());
   });
   pageCount = computed(() => Math.max(1,Math.ceil(this.filteredPatientRows().length / this.pageSize())));
+  pageTestRows = computed(() => {
+    const start = (this.testPage() - 1) * this.pageSize();
+    return this.filteredTestRows().slice(start,start + this.pageSize());
+  });
+  testPageCount = computed(() => Math.max(1,Math.ceil(this.filteredTestRows().length / this.pageSize())));
   filteredPatientCount = computed(() => this.filteredPatientRows().length);
   filteredVisitCount = computed(() => this.filteredVisits().length);
   filteredTestCount = computed(() => this.filteredVisits().reduce((sum,item) => sum + item.visit.tests.length,0));
@@ -140,7 +146,7 @@ export class PatientHistoryComponent {
   });
   trendPolyline = computed(() => this.trendChartCoordinates().map(point => `${point.x},${point.y}`).join(' '));
 
-  setDateRange(value: string): void { this.dateRange.set(value); this.page.set(1); }
+  setDateRange(value: string): void { this.dateRange.set(value); this.page.set(1); this.testPage.set(1); }
   setActiveView(value: string): void {
     this.activeView.set(value);
     if (value === 'By Patient' && !this.selectedPatient() && this.allPatients.length) {
@@ -174,10 +180,13 @@ export class PatientHistoryComponent {
   @HostListener('document:click') closeActionMenu(): void { this.menuPatientId.set(null); }
   @HostListener('document:scroll') closeActionMenuOnScroll(): void { this.menuPatientId.set(null); }
   @HostListener('document:keydown.escape') closeActionMenuOnEscape(): void { this.menuPatientId.set(null); this.closeInvoice(); }
+  setSearch(value: string): void { this.searchQ.set(value); this.page.set(1); this.testPage.set(1); }
+  setPageSize(value: number): void { this.pageSize.set(value); this.page.set(1); this.testPage.set(1); }
+  setTestPage(page: number): void { this.testPage.set(Math.min(Math.max(1,page),this.testPageCount())); }
   resetFilters(): void {
     this.searchQ.set(''); this.dateRange.set('3months'); this.testFilter.set('all'); this.resultFilter.set('all');
     this.paymentFilter.set('all'); this.genderFilter.set('all'); this.doctorFilter.set('all');
-    this.abnormalOnly.set(false); this.fromDate.set(''); this.toDate.set(''); this.page.set(1);
+    this.abnormalOnly.set(false); this.fromDate.set(''); this.toDate.set(''); this.page.set(1); this.testPage.set(1);
   }
   toggleCompare(orderId: string, checked: boolean): void {
     this.selectedCompareOrders.update(ids => checked ? (ids.length < 3 ? [...ids,orderId] : ids) : ids.filter(id => id !== orderId));
@@ -227,11 +236,15 @@ export class PatientHistoryComponent {
   printInvoice(): void { if (this.selectedInvoice()) window.print(); }
   setPage(page: number): void { this.page.set(Math.min(Math.max(1,page),this.pageCount())); }
   exportCsv(): void {
-    const rows = [['Patient','Patient ID','Mobile','Visit date','Order ID','Tests','Result status','Payment status','Amount'],
-      ...this.filteredVisits().map(({patient,visit}) => [patient.name,patient.id,patient.mobile,visit.date,visit.invoiceId,visit.tests.join('; '),visit.resultStatus,visit.paymentStatus,String(visit.amount)])];
-    const csv = rows.map(row => row.map(value => '"' + value.replace(/"/g,'""') + '"').join(',')).join('\r\n');
+    const rows = [['Patient','UHID','Mobile','Gender','Referring doctor','Visit date','Invoice ID','Order ID','Test','Result status','Payment status','Amount'],
+      ...this.filteredTestRows().map(({patient,visit,test}) => [
+        patient.name, patient.id, patient.mobile, patient.sex, visit.refDoctor, visit.date,
+        visit.invoiceId, visit.orderId, test, visit.resultStatus, visit.paymentStatus, String(visit.amount)
+      ])];
+    const csv = rows.map(row => row.map(value => '"' + String(value ?? '').replace(/"/g,'""') + '"').join(',')).join('\r\n');
     const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
     const url = URL.createObjectURL(blob); const anchor = document.createElement('a');
-    anchor.href = url; anchor.download = 'patient-history.csv'; anchor.click(); URL.revokeObjectURL(url);
+    anchor.href = url; anchor.download = 'patient-history.csv'; document.body.appendChild(anchor);
+    anchor.click(); anchor.remove(); window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 }
