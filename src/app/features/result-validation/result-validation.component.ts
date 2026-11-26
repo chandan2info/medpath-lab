@@ -1,20 +1,20 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { DatePipe, UpperCasePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { LabWorkflowMockService, MockResultRecord, MockLabSample } from '../../core/services/lab-workflow-mock.service';
+import { LabWorkflowMockService, MockResultRecord, MockLabSample, MockVisit, MockLabOrder } from '../../core/services/lab-workflow-mock.service';
 
 type ValidationTab = 'pending' | 'validated' | 'returned';
 interface ValidationItem {
   result: MockResultRecord;
   sample: MockLabSample;
-  patient: ReturnType<LabWorkflowMockService['visits']>[number] | undefined;
-  order: ReturnType<LabWorkflowMockService['orders']>[number] | undefined;
+  patient: MockVisit | undefined;
+  order: MockLabOrder | undefined;
 }
 
 @Component({
   selector: 'app-result-validation',
   standalone: true,
-  imports: [RouterLink, DatePipe],
+  imports: [RouterLink, DatePipe, UpperCasePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './result-validation.component.html',
   styleUrl: './result-validation.component.css'
