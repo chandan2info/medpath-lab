@@ -6,7 +6,8 @@ export type MockResultStatus = 'draft' | 'awaiting-validation' | 'validated' | '
 export type MockReportStatus = 'generated' | 'dispatched';
 
 export interface MockVisit {
-  id: string; patientId: string; patientName: string; createdAt: string; status: PatientVisitStatus;\n  ageYears?: string; gender?: string; mobile?: string; refDoctor?: string;
+  id: string; patientId: string; patientName: string; createdAt: string; status: PatientVisitStatus;
+  ageYears?: string; gender?: string; mobile?: string; refDoctor?: string;
 }
 export interface MockLabOrder {
   id: string; visitId: string; patientId: string; testIds: string[]; priority: 'routine'|'urgent'|'stat';
