@@ -71,7 +71,7 @@ export class PatientHistoryComponent {
       const matchesGender = this.genderFilter() === 'all' || patient.sex.toLowerCase() === this.genderFilter();
       const matchesDoctor = this.doctorFilter() === 'all' || visit.refDoctor === this.doctorFilter();
       return inDate && matchesSearch && matchesTest && matchesResult && matchesPayment && matchesGender && matchesDoctor && (!this.abnormalOnly() || visit.hasCritical);
-    }).map(visit => ({patient,visit})));
+    }).map(visit => ({patient,visit}))).sort((a,b) => b.visit.dateValue.localeCompare(a.visit.dateValue));
   });
   filteredPatientRows = computed(() => {
     const map = new Map<string, PatientRow>();
