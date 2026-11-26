@@ -1309,3 +1309,87 @@ button.report-row:focus-visible {
 :host {
   padding-bottom: 12px;
 }
+
+
+/* Grid-based footer prevents the range text, page-size select and
+   pagination buttons from competing for the same flex space. */
+.report-pagination {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  justify-content: stretch;
+  gap: 10px;
+  min-height: 58px;
+  padding: 10px 14px;
+  overflow: visible;
+}
+
+.report-pagination-summary {
+  display: contents;
+}
+
+.report-pagination-summary > span {
+  grid-column: 1;
+  min-width: 0;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: nowrap;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.report-page-size {
+  grid-column: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.report-page-size select {
+  width: 54px;
+  min-width: 54px;
+  height: 34px;
+  padding: 4px 20px 4px 8px;
+}
+
+.report-pagination-controls {
+  grid-column: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: max-content;
+  padding: 0 3px 0 0;
+}
+
+.report-pagination-controls .page-btn {
+  flex: 0 0 34px;
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  margin: 0;
+}
+
+@media (max-width: 560px) {
+  .report-pagination {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 8px;
+  }
+
+  .report-pagination-summary > span {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .report-page-size {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .report-pagination-controls {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: flex-end;
+  }
+}
