@@ -3,7 +3,7 @@ import { ReportsDataService } from './reports-data.service';
 import type { ReportRow } from './reports-data.service';
 import { RouterLink } from '@angular/router';
 
-const PAGE_SIZE_OPTIONS = [5, 7, 10] as const;
+const PAGE_SIZE_OPTIONS = [5, 6, 7, 10] as const;
 type ReportStatusFilter = 'all' | 'pending' | 'dispatched';
 
 @Component({
@@ -23,7 +23,7 @@ export class ReportsComponent {
   statusFilter = signal<ReportStatusFilter>('all');
   page = signal(1);
   readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
-  pageSize = signal<number>(7);
+  pageSize = signal<number>(6);
 
   selectedDetail = computed(() => {
     const id = this.selected()?.id;
