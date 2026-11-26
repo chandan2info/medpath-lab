@@ -23,7 +23,7 @@ export class ReportsComponent {
   statusFilter = signal<ReportStatusFilter>('all');
   page = signal(1);
   readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
-  pageSize = signal<number>(6);
+  pageSize = signal<number>(7);
 
   selectedDetail = computed(() => {
     const id = this.selected()?.id;
