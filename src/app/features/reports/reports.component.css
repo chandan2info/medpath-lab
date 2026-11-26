@@ -755,29 +755,6 @@
   max-height: none;
 }
 
-/* Give patient metadata its own clearly separated surface over
-   the lab header. Theme tokens preserve contrast in light/dark mode. */
-.rpt-pat-band {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
-}
-
-.rpt-pf-icon {
-  background: var(--lis-primary-xlight);
-  color: var(--lis-primary);
-  border: 1px solid var(--border-color);
-}
-
-.rpt-pl {
-  color: var(--text-secondary);
-}
-
-.rpt-pv {
-  color: var(--text-primary);
-  font-weight: 600;
-}
-
 @media (max-width: 900px) {
   .reports-layout {
     align-items: start;
