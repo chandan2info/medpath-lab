@@ -66,6 +66,8 @@ export class PatientHistoryComponent {
   layout = signal<'list' | 'grid'>('list');
   selectedCompareOrders = signal<string[]>([]);
   trendParameter = signal('Haemoglobin');
+  analyticsPatientId = signal(PATIENTS[0].id);
+  analyticsPatient = computed(() => this.allPatients.find(p => p.id === this.analyticsPatientId()) ?? this.allPatients[0]);
   page = signal(1);
   pageSize = signal(10);
   moreFiltersOpen = false;
@@ -115,11 +117,18 @@ export class PatientHistoryComponent {
   criticalCount = computed(() => this.selectedPatient()?.visits.filter(visit => visit.hasCritical).length ?? 0);
   compareVisits = computed(() => (this.selectedPatient()?.visits ?? []).filter(v => this.selectedCompareOrders().includes(v.invoiceId)));
   compareRows = computed(() => {
-    const visits = this.compareVisits();
+    const visits = this.compareVisits().slice().sort((a,b) => a.dateValue.localeCompare(b.dateValue));
     const params = [...new Set(visits.flatMap(v => v.results.map(r => r.parameter)))];
-    return params.map(parameter => ({parameter,values:visits.map(v => v.results.find(r => r.parameter === parameter) ?? null)}));
+    return params.map(parameter => {
+      const values = visits.map(v => v.results.find(r => r.parameter === parameter) ?? null);
+      const previous = values.length > 1 ? values[values.length - 2] : null;
+      const latest = values[values.length - 1] ?? null;
+      const reference = latest?.reference ?? previous?.reference ?? '—';
+      const change = previous && latest ? `${latest.value - previous.value > 0 ? '+' : ''}${(latest.value - previous.value).toFixed(2)} ${latest.unit}` : '—';
+      return {parameter,previous,latest,reference,change,values};
+    });
   });
-  trendPoints = computed(() => (this.selectedPatient()?.visits ?? []).slice().reverse().map(v => v.results.find(r => r.parameter === this.trendParameter()) ?? null).filter((r): r is NonNullable<typeof r> => !!r));
+  trendPoints = computed(() => (this.analyticsPatient()?.visits ?? this.selectedPatient()?.visits ?? []).slice().reverse().map(v => v.results.find(r => r.parameter === this.trendParameter()) ?? null).filter((r): r is NonNullable<typeof r> => !!r));
   trendMin = computed(() => Math.min(...this.trendPoints().map(p => p.value),0));
   trendMax = computed(() => Math.max(...this.trendPoints().map(p => p.value),1));
   trendChartCoordinates = computed(() => {
@@ -136,6 +145,9 @@ export class PatientHistoryComponent {
   trendPolyline = computed(() => this.trendChartCoordinates().map(point => `${point.x},${point.y}`).join(' '));
 
   setDateRange(value: string): void { this.dateRange.set(value); this.page.set(1); }
+  setActiveView(value: string): void { this.activeView.set(value); if (value === 'By Patient' && !this.selectedPatient()) this.selectedPatient.set(this.allPatients[0]); }
+  setAnalyticsPatient(id: string): void { this.analyticsPatientId.set(id); this.trendParameter.set(this.availableParametersForAnalytics()[0] ?? 'Haemoglobin'); }
+  availableParametersForAnalytics = computed(() => [...new Set(this.analyticsPatient().visits.flatMap(v => v.results.map(r => r.parameter)))].sort());
   selectPatient(patient: PatientRecord): void { this.selectedPatient.set(patient); this.activeDetailTab.set('History'); this.selectedCompareOrders.set([]); this.menuPatientId.set(null); }
   resetFilters(): void {
     this.searchQ.set(''); this.dateRange.set('3months'); this.testFilter.set('all'); this.resultFilter.set('all');
