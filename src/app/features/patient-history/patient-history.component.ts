@@ -54,7 +54,6 @@ function toISODate(date: Date): string {
 })
 export class PatientHistoryComponent {
   protected readonly allPatients = PATIENTS;
-  searchQ = signal('');
   patientSearchQ = signal('');
   selectedPatient = signal<PatientRecord | null>(PATIENTS[0]);
   activeTab = signal('Visit history');
@@ -66,9 +65,7 @@ export class PatientHistoryComponent {
     const q = this.patientSearchQ().trim().toLowerCase();
     return this.allPatients.filter(p => {
       const matchesLocal = !q || [p.name, p.id, p.mobile].some(v => v.toLowerCase().includes(q));
-      const global = this.searchQ().trim().toLowerCase();
-      const matchesGlobal = !global || [p.name, p.id, p.mobile].some(v => v.toLowerCase().includes(global));
-      return matchesLocal && matchesGlobal;
+      return matchesLocal;
     });
   });
 
@@ -109,7 +106,6 @@ export class PatientHistoryComponent {
   }
 
   clearFilters(): void {
-    this.searchQ.set('');
     this.patientSearchQ.set('');
     this.datePreset.set('all');
     this.customFrom.set('');
