@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { DatePipe, UpperCasePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { LabWorkflowMockService, MockResultRecord, MockLabSample, MockVisit, MockLabOrder } from '../../core/services/lab-workflow-mock.service';
+import { MockResultRecord, MockLabSample, MockVisit, MockLabOrder } from '../../core/services/lab-workflow-mock.service';
+import { ResultValidationDataService } from './result-validation-data.service';
 
 type ValidationTab = 'pending' | 'validated' | 'returned';
 interface ValidationItem {
@@ -20,7 +21,7 @@ interface ValidationItem {
   styleUrl: './result-validation.component.css'
 })
 export class ResultValidationComponent {
-  private readonly store = inject(LabWorkflowMockService);
+  private readonly data = inject(ResultValidationDataService);
   readonly activeTab = signal<ValidationTab>('pending');
   readonly searchTerm = signal('');
   readonly priorityFilter = signal('all');
@@ -31,12 +32,12 @@ export class ResultValidationComponent {
   readonly isReviewOpen = signal(false);
 
   readonly items = computed<ValidationItem[]>(() => {
-    const visits = this.store.visits();
-    const orders = this.store.orders();
-    return this.store.results()
+    const visits = this.data.visits();
+    const orders = this.data.orders();
+    return this.data.results()
       .filter(result => result.status !== 'draft')
       .map(result => {
-        const sample = this.store.samples().find(item => item.id === result.sampleId);
+        const sample = this.data.samples().find(item => item.id === result.sampleId);
         if (!sample) return null;
         return {
           result,
@@ -59,7 +60,7 @@ export class ResultValidationComponent {
   readonly pendingCount = computed(() => this.pendingItems().length);
   readonly urgentCount = computed(() => this.pendingItems().filter(item => item.sample.priority !== 'routine').length);
   readonly validatedCount = computed(() => this.validatedItems().length);
-  readonly reportsReadyCount = computed(() => this.validatedItems().filter(item => !this.store.reports().some(report => report.sampleId === item.sample.id)).length);
+  readonly reportsReadyCount = computed(() => this.validatedItems().filter(item => !this.data.reports().some(report => report.sampleId === item.sample.id)).length);
 
   readonly visibleItems = computed(() => {
     const source = this.activeTab() === 'pending' ? this.pendingItems()
@@ -109,7 +110,7 @@ export class ResultValidationComponent {
     const item = this.selectedItem();
     if (!item) return;
     try {
-      this.store.reviewResults(item.sample.id, 'Demo Pathologist', true, this.reviewNote().trim());
+      this.data.approve(item.sample.id, 'Demo Pathologist', this.reviewNote().trim());
       this.showNotice('Results approved. This sample is now eligible for report generation.', 'success');
       this.closeReview();
     } catch (error) {
@@ -126,7 +127,7 @@ export class ResultValidationComponent {
       return;
     }
     try {
-      this.store.reviewResults(item.sample.id, 'Demo Pathologist', false, note);
+      this.data.returnForCorrection(item.sample.id, 'Demo Pathologist', note);
       this.showNotice('Results returned to Result Entry for correction.', 'success');
       this.closeReview();
     } catch (error) {
@@ -136,7 +137,7 @@ export class ResultValidationComponent {
 
   generateReport(sampleId: string): void {
     try {
-      const report = this.store.generateReport(sampleId);
+      const report = this.data.generateReport(sampleId);
       this.showNotice(`Report ${report.id} generated successfully.`, 'success');
     } catch (error) {
       this.showNotice(error instanceof Error ? error.message : 'Unable to generate report.', 'error');
