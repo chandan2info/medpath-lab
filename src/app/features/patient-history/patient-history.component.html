@@ -16,16 +16,6 @@
   </header>
 
   <section class="ph-toolbar" aria-label="Search and visit filters">
-    <label class="ph-global-search">
-      <i class="ti ti-search" aria-hidden="true"></i>
-      <input type="search" placeholder="Search by name, phone or patient ID…" [value]="searchQ()"
-        (input)="searchQ.set($any($event.target).value)" aria-label="Search all patients" />
-      @if (searchQ()) {
-        <button type="button" class="ph-clear" aria-label="Clear search" (click)="searchQ.set('')">
-          <i class="ti ti-x" aria-hidden="true"></i>
-        </button>
-      }
-    </label>
     <div class="ph-date-filter">
       <span class="ph-filter-label"><i class="ti ti-calendar-event" aria-hidden="true"></i> Visit period</span>
       <div class="ph-date-presets" role="group" aria-label="Filter visits by date">
