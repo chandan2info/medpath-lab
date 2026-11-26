@@ -556,3 +556,89 @@
   .ph-patient-modal .ph-detail-tabs{justify-content:flex-start;gap:5px;padding:8px 12px}
   .ph-patient-modal .ph-detail-tabs button{min-width:0;flex:1;padding:0 9px;font-size:11px}
 }
+
+
+/* Refined patient-detail tab bar and report cards. */
+.ph-patient-modal .ph-detail-tabs{
+  justify-content:center;gap:7px;padding:10px 18px;
+  background:var(--body-bg);border-bottom:1px solid var(--border-color);
+}
+.ph-patient-modal .ph-detail-tabs button{
+  min-width:132px;min-height:42px;padding:0 18px;
+  border:1px solid transparent;border-radius:10px;
+  background:transparent;color:var(--text-secondary);
+  font-size:12px;font-weight:650;letter-spacing:.01em;
+}
+.ph-patient-modal .ph-detail-tabs button.active{
+  border-color:rgba(45,197,160,.34);
+  background:var(--lis-primary-xlight);color:var(--lis-primary);
+  box-shadow:inset 0 0 0 1px rgba(45,197,160,.08);
+}
+.ph-patient-modal .ph-detail-tabs button .ph-tab-icon{
+  width:25px;height:25px;font-size:16px;
+}
+.ph-patient-modal .ph-report-list{padding:16px 20px;gap:9px}
+.ph-patient-modal .ph-report-row{
+  display:flex;align-items:center;gap:13px;min-height:66px;
+  padding:11px 13px;border:1px solid var(--border-color);
+  border-radius:11px;background:var(--body-bg);
+  transition:border-color .16s ease,background .16s ease,transform .16s ease;
+}
+.ph-patient-modal .ph-report-row:hover{
+  border-color:rgba(45,197,160,.42);
+  background:var(--card-bg);transform:translateY(-1px);
+}
+.ph-patient-modal .ph-report-row .report-file{
+  width:38px;height:38px;flex:none;border-radius:10px;
+  background:var(--lis-primary-xlight);font-size:17px;
+}
+.ph-patient-modal .ph-report-row .ph-report-info{
+  display:flex;flex:1;min-width:0;flex-direction:column;gap:6px;
+}
+.ph-patient-modal .ph-report-row .ph-report-info strong{
+  color:var(--text-primary);font-size:12px;font-weight:650;line-height:1.35;
+}
+.ph-patient-modal .ph-report-meta{
+  display:flex;align-items:center;flex-wrap:wrap;gap:6px 13px;
+  color:var(--text-secondary);font-size:10px;
+}
+.ph-patient-modal .ph-report-meta>span{
+  display:inline-flex;align-items:center;gap:5px;min-width:0;
+}
+.ph-patient-modal .ph-report-meta i{font-size:12px;color:var(--lis-primary)}
+.ph-patient-modal .ph-report-order{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ph-patient-modal .ph-report-actions{
+  display:flex;align-items:center;justify-content:flex-end;gap:9px;flex:none;
+}
+.ph-patient-modal .ph-report-status{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:24px;padding:3px 9px;border-radius:20px;
+  border:1px solid var(--border-color);background:var(--card-bg);
+  color:var(--text-secondary);font-size:10px;font-weight:650;white-space:nowrap;
+}
+.ph-patient-modal .ph-report-status.is-pending{
+  color:#d99a27;background:rgba(217,154,39,.10);
+  border-color:rgba(217,154,39,.22);
+}
+.ph-patient-modal .ph-report-actions button{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  min-width:88px;min-height:34px;padding:0 11px;border-radius:8px;
+  border:1px solid rgba(45,197,160,.32);background:var(--lis-primary-xlight);
+  color:var(--lis-primary);font:600 11px var(--font-family);
+}
+.ph-patient-modal .ph-report-actions button:hover:not(:disabled){
+  background:var(--lis-primary);color:#071b19;border-color:var(--lis-primary);
+}
+.ph-patient-modal .ph-report-actions button:disabled{
+  opacity:.38;cursor:not-allowed;border-color:var(--border-color);
+  background:var(--card-bg);color:var(--text-secondary);
+}
+@media(max-width:650px){
+  .ph-patient-modal .ph-detail-tabs{justify-content:stretch;gap:4px;padding:8px}
+  .ph-patient-modal .ph-detail-tabs button{min-width:0;flex:1;padding:0 8px}
+  .ph-patient-modal .ph-report-list{padding:12px;gap:8px}
+  .ph-patient-modal .ph-report-row{align-items:flex-start;gap:9px;padding:10px}
+  .ph-patient-modal .ph-report-actions{flex-direction:column;align-items:flex-end;gap:6px}
+  .ph-patient-modal .ph-report-actions button{min-width:76px}
+  .ph-patient-modal .ph-report-status{font-size:9px}
+}
