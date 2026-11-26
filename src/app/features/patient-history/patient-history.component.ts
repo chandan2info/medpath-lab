@@ -156,6 +156,10 @@ export class PatientHistoryComponent {
       this.trendParameter.set(this.availableParametersForAnalytics()[0] ?? '');
     }
   }
+  setComparisonPatientById(id: string): void {
+    const patient = this.allPatients.find(candidate => candidate.id === id);
+    if (patient) this.selectPatient(patient);
+  }
   setAnalyticsPatient(id: string): void { this.analyticsPatientId.set(id); this.trendParameter.set(this.availableParametersForAnalytics()[0] ?? ''); }
   availableParametersForAnalytics = computed(() => [...new Set(this.analyticsPatient().visits.flatMap(v => v.results.map(r => r.parameter)))].sort());
   availableParametersForSelectedPatient = computed(() => [...new Set((this.selectedPatient()?.visits ?? []).flatMap(v => v.results.map(r => r.parameter)))].sort());
