@@ -1,13 +1,16 @@
 import { Component, ChangeDetectionStrategy, computed, signal, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { PatientFlowService } from '../../core/services/patient-flow.service';\nimport { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';\nimport { ReportPreviewService, ReportPreviewData } from '../../core/services/report-preview.service';\nimport { PatientHistoryService } from './services/patient-history.service';
+import { PatientFlowService } from '../../core/services/patient-flow.service';
+import { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';
+import { ReportPreviewService, ReportPreviewData } from '../../core/services/report-preview.service';
+import { PatientHistoryService } from './services/patient-history.service';
 
 interface VisitRecord {
   date: string; time: string; dateValue: string; invoiceId: string; tests: string[];
   refDoctor: string; amount: number; keyFinding: string; hasCritical: boolean;
   resultStatus: 'Completed' | 'Pending'; paymentStatus: 'Paid' | 'Unpaid';
-  reports: { name: string; status: 'Available' | 'Pending' }[];
-  results: { parameter: string; value: number; unit: string; reference: string; date: string }[];
+  reports: { name: string; status: 'Available' | 'Pending'; reportId?: string }[];
+  results: { parameter: string; value: number; unit: string; reference: string; date: string }[];\n  orderId: string; sampleId: string | null; reportId: string | null; invoiceRecordId: string | null;
 }
 interface PatientRecord {
   id: string; name: string; age: number; sex: string; mobile: string;
@@ -125,7 +128,7 @@ export class PatientHistoryComponent {
   trendPolyline = computed(() => this.trendChartCoordinates().map(point => `${point.x},${point.y}`).join(' '));
 
   setDateRange(value: string): void { this.dateRange.set(value); this.page.set(1); }
-  setActiveView(value: string): void { this.activeView.set(value); if (value === 'By Patient' && !this.selectedPatient()) this.selectedPatient.set(this.allPatients[0]); }
+  setActiveView(value: string): void { this.activeView.set(value); if (value === 'By Patient' && !this.selectedPatient() && this.allPatients.length) this.selectedPatient.set(this.allPatients[0]); }
   setAnalyticsPatient(id: string): void { this.analyticsPatientId.set(id); this.trendParameter.set(this.availableParametersForAnalytics()[0] ?? ''); }
   availableParametersForAnalytics = computed(() => [...new Set(this.analyticsPatient().visits.flatMap(v => v.results.map(r => r.parameter)))].sort());
   selectPatient(patient: PatientRecord): void { this.selectedPatient.set(patient); this.activeDetailTab.set('History'); this.selectedCompareOrders.set([]); this.menuPatientId.set(null); }
