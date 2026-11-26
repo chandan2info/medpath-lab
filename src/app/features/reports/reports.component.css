@@ -795,7 +795,8 @@
 }
 
 
-/* Use the app's deeper primary tone for patient metadata labels. */
+/* Keep patient labels aligned with the report's theme-aware teal palette.
+   Avoid --primary-deeper here: some app themes define it as violet/blue. */
 .rpt-pl {
-  color: var(--primary-deeper);
+  color: var(--rpt-tint-label);
 }
