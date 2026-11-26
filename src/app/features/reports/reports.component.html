@@ -110,7 +110,7 @@
 
   <!-- Report preview -->
   @if (selected()) {
-    <div class="report-preview-area">
+    <div class="report-preview-area" [class.report-preview-area--expanded]="previewExpanded()">
       <!-- Print-ready report sheet -->
       <div class="report-sheet" id="report-sheet" aria-label="Report preview">
         <!-- Top panel: header + patient band, grouped as one card -->
@@ -163,6 +163,10 @@
 
         <!-- Middle panel: title + note + results table, grouped as one card -->
         <div class="rpt-panel rpt-panel--mid">
+        <button type="button" class="rpt-expand-btn" (click)="togglePreviewExpanded()" [attr.aria-label]="previewExpanded() ? 'Exit expanded preview' : 'Expand report preview'" [attr.title]="previewExpanded() ? 'Exit expanded preview' : 'Expand report preview'">
+          <i class="ti" [class.ti-arrows-minimize]="previewExpanded()" [class.ti-arrows-maximize]="!previewExpanded()" aria-hidden="true"></i>
+        </button>
+        <div class="rpt-test-scroll">
         <div class="rpt-title-band">
           <div class="rpt-title-text">
             <i class="ti ti-droplet" aria-hidden="true"></i>
@@ -209,6 +213,7 @@
             }
           </tbody>
         </table>
+        </div>
         </div>
         </div>
 
