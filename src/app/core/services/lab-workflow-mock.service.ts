@@ -87,6 +87,7 @@ export class LabWorkflowMockService {
     const visit: MockVisit = {
       id: this.id('VIS'), patientId: patient.id,
       patientName: `${patient.firstName} ${patient.lastName}`.trim(),
+      ageYears: patient.ageYears, gender: patient.gender, mobile: patient.mobile, refDoctor: patient.refDoctor,
       createdAt: new Date().toISOString(), status: 'registered'
     };
     this.persist({ ...current, visits: [visit, ...current.visits] });
