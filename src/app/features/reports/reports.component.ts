@@ -2,6 +2,7 @@ import { Component, signal, computed, ChangeDetectionStrategy, inject } from '@a
 import { ReportsDataService } from './reports-data.service';
 import type { ReportRow } from './reports-data.service';
 import { RouterLink } from '@angular/router';
+import { NgTemplateOutlet } from '@angular/common';
 
 const PAGE_SIZE_OPTIONS = [5, 6, 7, 10] as const;
 type ReportStatusFilter = 'all' | 'pending' | 'dispatched';
@@ -9,7 +10,7 @@ type ReportStatusFilter = 'all' | 'pending' | 'dispatched';
 @Component({
   selector: 'app-reports',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './reports.component.html',
   styleUrl: './reports.component.css',
@@ -20,6 +21,8 @@ export class ReportsComponent {
   selected = signal<ReportRow | null>(this.reports()[0] ?? null);
   previewExpanded = signal(false);
   showDispatchConfirm = signal(false);
+  showPdfPreview = signal(false);
+  pdfZoom = signal(85);
   query = signal('');
   statusFilter = signal<ReportStatusFilter>('all');
   page = signal(1);
@@ -132,8 +135,22 @@ export class ReportsComponent {
   }
 
   downloadPdf(): void {
-    // Browser print dialog supports Save as PDF without pretending a file was generated.
-    window.print();
+    if (!this.selected()) return;
+    this.showPdfPreview.set(true);
+  }
+
+  closePdfPreview(): void {
+    this.showPdfPreview.set(false);
+  }
+
+  changePdfZoom(delta: number): void {
+    this.pdfZoom.update(value => Math.min(120, Math.max(60, value + delta)));
+  }
+
+  savePdfFromPreview(): void {
+    this.showPdfPreview.set(false);
+    // Let Angular remove the modal before opening the browser print dialog.
+    window.setTimeout(() => window.print(), 80);
   }
 
   printReport(): void {
