@@ -178,7 +178,7 @@ export class PatientHistoryComponent {
   toggleActionMenu(patientId: string, event: MouseEvent): void {
     if (this.menuPatientId() === patientId) { this.menuPatientId.set(null); return; }
     const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-    this.menuPosition.set({ top: Math.max(12, Math.min(rect.bottom + 6, window.innerHeight - 280)), left: Math.max(12, Math.min(rect.right - 205, window.innerWidth - 217)) });
+    const menuWidth = 260; const menuHeight = 300; const left = rect.left - menuWidth - 10; const fitsLeft = left >= 12; const top = Math.max(12, Math.min(rect.top - 8, window.innerHeight - menuHeight - 12)); this.menuPosition.set({ top, left: fitsLeft ? left : Math.max(12, Math.min(rect.right - menuWidth, window.innerWidth - menuWidth - 12)) });
     this.menuPatientId.set(patientId);
   }
   @HostListener('document:click') closeActionMenu(): void { this.menuPatientId.set(null); }
