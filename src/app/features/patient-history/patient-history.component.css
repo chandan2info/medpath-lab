@@ -642,3 +642,10 @@
   .ph-patient-modal .ph-report-actions button{min-width:76px}
   .ph-patient-modal .ph-report-status{font-size:9px}
 }
+
+
+/* Keep the active menu's row above following rows so their action buttons cannot paint over the popup. */
+.ph-patient-table tbody tr.menu-open{position:relative;z-index:40}
+.ph-patient-table tbody tr.menu-open .ph-row-actions{position:relative;z-index:41}
+.ph-patient-table tbody tr:not(.menu-open) .ph-row-actions{z-index:1}
+.ph-patient-table tbody tr.menu-open .ph-action-menu{z-index:1600!important}
