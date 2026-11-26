@@ -136,14 +136,18 @@ export class PatientHistoryComponent {
   setActiveView(value: string): void { this.activeView.set(value); if (value === 'By Patient' && !this.selectedPatient() && this.allPatients.length) this.selectedPatient.set(this.allPatients[0]); }
   setAnalyticsPatient(id: string): void { this.analyticsPatientId.set(id); this.trendParameter.set(this.availableParametersForAnalytics()[0] ?? ''); }
   availableParametersForAnalytics = computed(() => [...new Set(this.analyticsPatient().visits.flatMap(v => v.results.map(r => r.parameter)))].sort());
-  selectPatient(patient: PatientRecord): void { this.selectedPatient.set(patient); this.activeDetailTab.set('History'); this.selectedCompareOrders.set([]); this.menuPatientId.set(null); }\n  openPatientReport(patient: PatientRecord, visit: VisitRecord, reprint = false): void { this.selectPatient(patient); this.openReport(visit, reprint); }\n  openPatientInvoice(patient: PatientRecord, visit: VisitRecord): void { this.selectPatient(patient); this.showInvoice(visit); }\n  toggleActionMenu(patientId: string, event: MouseEvent): void {
+  selectPatient(patient: PatientRecord): void { this.selectedPatient.set(patient); this.activeDetailTab.set('History'); this.selectedCompareOrders.set([]); this.menuPatientId.set(null); }
+  openPatientReport(patient: PatientRecord, visit: VisitRecord, reprint = false): void { this.selectPatient(patient); this.openReport(visit, reprint); }
+  openPatientInvoice(patient: PatientRecord, visit: VisitRecord): void { this.selectPatient(patient); this.showInvoice(visit); }
+  toggleActionMenu(patientId: string, event: MouseEvent): void {
     if (this.menuPatientId() === patientId) { this.menuPatientId.set(null); return; }
     const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
     this.menuPosition.set({ top: Math.max(12, Math.min(rect.bottom + 6, window.innerHeight - 280)), left: Math.max(12, Math.min(rect.right - 205, window.innerWidth - 217)) });
     this.menuPatientId.set(patientId);
   }
   @HostListener('document:click') closeActionMenu(): void { this.menuPatientId.set(null); }
-  @HostListener('document:scroll') closeActionMenuOnScroll(): void { this.menuPatientId.set(null); }\n  @HostListener('document:keydown.escape') closeActionMenuOnEscape(): void { this.menuPatientId.set(null); this.closeInvoice(); }
+  @HostListener('document:scroll') closeActionMenuOnScroll(): void { this.menuPatientId.set(null); }
+  @HostListener('document:keydown.escape') closeActionMenuOnEscape(): void { this.menuPatientId.set(null); this.closeInvoice(); }
   resetFilters(): void {
     this.searchQ.set(''); this.dateRange.set('3months'); this.testFilter.set('all'); this.resultFilter.set('all');
     this.paymentFilter.set('all'); this.genderFilter.set('all'); this.doctorFilter.set('all');
