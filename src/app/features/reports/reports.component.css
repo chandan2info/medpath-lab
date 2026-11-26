@@ -1494,3 +1494,43 @@ button.report-row:focus-visible {
     max-height: calc(102dvh - 152.4px);
   }
 }
+
+
+/* The page size is fixed at seven; footer now contains only the
+   report range and pagination controls, with no overlapping selector. */
+.report-pagination {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center;
+  column-gap: 12px;
+  overflow: visible;
+}
+
+.report-pagination-range {
+  grid-column: 1;
+  min-width: 0;
+  overflow: visible;
+  white-space: nowrap;
+  text-overflow: clip;
+}
+
+.report-pagination-controls {
+  grid-column: 2;
+  justify-self: end;
+  min-width: max-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-right: 4px;
+}
+
+@media (max-width: 560px) {
+  .report-pagination {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+  }
+  .report-pagination-range { grid-column: 1; }
+  .report-pagination-controls {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
