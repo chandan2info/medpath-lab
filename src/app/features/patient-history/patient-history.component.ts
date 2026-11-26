@@ -144,7 +144,7 @@ export class PatientHistoryComponent {
     const [firstName, ...lastName] = patient.name.split(' ');
     this.patientFlow.registerPatient({
       firstName, lastName: lastName.join(' '), dob: '', ageYears: String(patient.age), gender: patient.sex,
-      bloodGroup: '', mobile: patient.mobile.replace(/\\D/g, '').slice(-10), email: '', address: '',
+      bloodGroup: '', mobile: patient.mobile.replace(/\D/g, '').slice(-10), email: '', address: '',
       refDoctor: '', visitType: 'Repeat', fasting: 'No', collection: 'Lab', clinicalNotes: '', medications: ''
     }, patient.id);
     this.router.navigate(['/dashboard/test-order']);
