@@ -412,3 +412,23 @@
 .ph-patient-table tbody tr td:last-child .ph-row-actions{
   position:relative;z-index:1;
 }
+
+
+/* Unify hover paint across every cell, including the sticky Actions column.
+   Paint cells rather than only the TR so sticky positioning cannot reveal a
+   different layer/background while the pointer moves across the row. */
+.ph-patient-table tbody tr:hover > td,
+.ph-patient-table tbody tr.row-selected > td{
+  background-color:var(--lis-primary-xlight)!important;
+  background-image:none!important;
+}
+.ph-patient-table tbody tr:hover > td:last-child,
+.ph-patient-table tbody tr.row-selected > td:last-child{
+  background-color:var(--lis-primary-xlight)!important;
+  background-image:none!important;
+  box-shadow:none!important;
+}
+.ph-patient-table tbody tr:hover > td:last-child .icon-action,
+.ph-patient-table tbody tr.row-selected > td:last-child .icon-action{
+  background-color:var(--body-bg);
+}
