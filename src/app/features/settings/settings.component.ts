@@ -219,7 +219,9 @@ export class SettingsComponent {
 
   protected togglePdfSettings(): void {
     this.pdfPreferences.setCustomSettingsEnabled(!this.pdfPreferences.customSettingsEnabled());
-  }\n\n  protected selectPalette(id: Palette): void {
+  }
+
+  protected selectPalette(id: Palette): void {
     this.theme.setPalette(id);
   }
 
