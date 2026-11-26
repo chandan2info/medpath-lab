@@ -66,6 +66,8 @@ export class ReportPreviewComponent {
   protected zoomIn(): void  { this.zoom.update(z => Math.min(z + 10, 150)); }
   protected zoomOut(): void { this.zoom.update(z => Math.max(z - 10, 60));  }
 
+  protected printReport(): void { window.print(); }
+
   protected finalise(): void {
     // In a real app: trigger PDF export / API call here
     this.previewSvc.clear();
