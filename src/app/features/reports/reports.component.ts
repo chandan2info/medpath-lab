@@ -151,11 +151,39 @@ export class ReportsComponent {
     this.pdfZoom.update(value => Math.min(120, Math.max(60, value + delta)));
   }
 
+  setCustomPdfSettings(enabled: boolean): void {
+    this.customPdfSettings.set(enabled);
+  }
+
+  setPdfPaperSize(value: string): void {
+    if (['A4', 'A3', 'Letter', 'Legal'].includes(value)) {
+      this.pdfPaperSize.set(value as 'A4' | 'A3' | 'Letter' | 'Legal');
+    }
+  }
+
+  setPdfOrientation(value: string): void {
+    if (value === 'portrait' || value === 'landscape') this.pdfOrientation.set(value);
+  }
+
+  setPdfMargins(value: string): void {
+    if (['default', 'narrow', 'moderate', 'wide'].includes(value)) {
+      this.pdfMargins.set(value as 'default' | 'narrow' | 'moderate' | 'wide');
+    }
+  }
+
   savePdfFromPreview(): void {
-    // Open the native print dialog directly from the click event so the
-    // browser preserves the user gesture and exposes its PDF destination/settings.
-    // The @media print rules hide the in-app preview overlay and print only
-    // the original selected report sheet.
+    const pageSize = this.customPdfSettings() ? this.pdfPaperSize() : 'A4';
+    const orientation = this.customPdfSettings() ? this.pdfOrientation() : 'portrait';
+    const marginMap = { default: '12mm', narrow: '6mm', moderate: '16mm', wide: '24mm' };
+    const margin = this.customPdfSettings() ? marginMap[this.pdfMargins()] : '12mm';
+
+    const previous = document.getElementById('reports-dynamic-print-settings');
+    previous?.remove();
+    const style = document.createElement('style');
+    style.id = 'reports-dynamic-print-settings';
+    style.textContent = `@page { size: ${pageSize} ${orientation}; margin: ${margin}; }`;
+    document.head.appendChild(style);
+    window.addEventListener('afterprint', () => style.remove(), { once: true });
     window.print();
   }
 
