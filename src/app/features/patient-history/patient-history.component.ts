@@ -44,7 +44,8 @@ export class PatientHistoryComponent {
   trendParameter = signal('Haemoglobin');
   analyticsPatientId = signal('');
   analyticsPatient = computed(() => this.allPatients.find(p => p.id === this.analyticsPatientId()) ?? this.allPatients[0] ?? { id:'', name:'Select a patient', age:0, sex:'', mobile:'', initials:'', avatarClass:'', visits:[] });
-  analyticsCriticalCount = computed(() => this.analyticsPatient().visits.filter(visit => visit.hasCritical).length);
+  analyticsResultVisits = computed(() => this.analyticsPatient().visits.filter(visit => visit.results.length > 0).length);
+  analyticsResultCount = computed(() => this.analyticsPatient().visits.reduce((count, visit) => count + visit.results.length, 0));
   countPatientTests(patient: PatientRecord): number { return patient.visits.reduce((sum, visit) => sum + visit.tests.length, 0); }
   page = signal(1);
   pageSize = signal(10);
@@ -113,16 +114,23 @@ export class PatientHistoryComponent {
   });
   trendPoints = computed(() => {
     const patient = this.activeView() === 'Trends & Analytics' ? this.analyticsPatient() : this.selectedPatient();
-    return (patient?.visits ?? []).slice().reverse()
+    return (patient?.visits ?? []).slice()
+      .sort((a,b) => a.dateValue.localeCompare(b.dateValue))
       .map(visit => visit.results.find(result => result.parameter === this.trendParameter()) ?? null)
       .filter((result): result is NonNullable<typeof result> => !!result);
   });
-  trendMin = computed(() => Math.min(...this.trendPoints().map(p => p.value),0));
-  trendMax = computed(() => Math.max(...this.trendPoints().map(p => p.value),1));
+  trendMin = computed(() => {
+    const values = this.trendPoints().map(point => point.value);
+    return values.length ? Math.min(...values) : 0;
+  });
+  trendMax = computed(() => {
+    const values = this.trendPoints().map(point => point.value);
+    return values.length ? Math.max(...values) : 1;
+  });
   trendChartCoordinates = computed(() => {
     const points = this.trendPoints();
     const min = this.trendMin();
-    const range = Math.max(1, this.trendMax() - min);
+    const range = this.trendMax() === min ? 1 : this.trendMax() - min;
     const step = 250 / Math.max(1, points.length - 1);
     return points.map((point, index) => ({
       x: 40 + index * step,
