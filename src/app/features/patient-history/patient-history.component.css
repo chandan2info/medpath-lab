@@ -381,3 +381,29 @@
 @media(max-width:700px){
   .ph-action-menu{width:min(260px,calc(100vw - 24px))!important;min-width:0}
 }
+
+
+/* Final sticky Actions-column correction.
+   Keep the column pinned for horizontal scrolling, but let each cell inherit
+   the actual table/header surface instead of painting a separate dark panel. */
+.ph-patient-table th:last-child{
+  position:sticky;right:0;z-index:7;
+  background:var(--body-bg)!important;
+  box-shadow:none!important;
+  border-left:1px solid var(--border-color);
+}
+.ph-patient-table tbody td:last-child{
+  position:sticky;right:0;z-index:6;
+  background:transparent!important;
+  background-color:transparent!important;
+  background-clip:padding-box;
+  box-shadow:none!important;
+  border-left:1px solid transparent;
+}
+.ph-patient-table tbody tr:hover td:last-child,
+.ph-patient-table tbody tr.row-selected td:last-child{
+  background:var(--lis-primary-xlight)!important;
+}
+.ph-patient-table tbody tr td:last-child .ph-row-actions{
+  position:relative;z-index:1;
+}
