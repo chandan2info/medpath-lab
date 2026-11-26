@@ -1676,3 +1676,247 @@ button.report-row:focus-visible {
   .report-confirm-overlay,
   .report-confirm-dialog { animation: none; }
 }
+
+
+/* ── Branded in-app PDF preview ─────────────────────────── */
+.pdf-preview-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  background: rgb(4 10 20 / 82%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.pdf-preview-dialog {
+  display: flex;
+  flex-direction: column;
+  width: min(1480px, 100%);
+  height: min(94dvh, 980px);
+  min-height: 480px;
+  overflow: hidden;
+  color: var(--text-primary);
+  background: var(--card-bg, #1e293b);
+  border: 1px solid var(--border-color, #344256);
+  border-radius: 20px;
+  box-shadow: 0 28px 90px rgb(0 0 0 / 52%);
+}
+
+.pdf-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 0 0 auto;
+  gap: 16px;
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--border-color, #344256);
+  background: linear-gradient(110deg, rgb(20 184 166 / 7%), transparent 48%);
+}
+
+.pdf-preview-heading {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+}
+
+.pdf-preview-icon,
+.pdf-preview-settings .pdf-setting-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  color: var(--lis-primary, #36c6a7);
+  background: rgb(54 198 167 / 13%);
+  border: 1px solid rgb(54 198 167 / 22%);
+  border-radius: 11px;
+}
+
+.pdf-preview-icon { width: 44px; height: 44px; font-size: 22px; }
+.pdf-preview-heading h2 { margin: 0; color: var(--text-primary); font-size: 18px; font-weight: 650; }
+.pdf-preview-heading p { margin: 3px 0 0; color: var(--text-secondary); font-size: 12px; }
+
+.pdf-preview-close {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  color: var(--text-secondary);
+  background: var(--body-bg, transparent);
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  cursor: pointer;
+}
+.pdf-preview-close:hover { color: var(--text-primary); border-color: var(--lis-primary); }
+
+.pdf-preview-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(280px, .85fr);
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.pdf-preview-stage {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  padding: 16px;
+  background: color-mix(in srgb, var(--body-bg, #0f172a) 72%, #64748b 28%);
+  border-right: 1px solid var(--border-color);
+}
+
+.pdf-preview-scroll {
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 0;
+  overflow: auto;
+  padding: 8px;
+  scrollbar-gutter: stable;
+}
+
+.pdf-preview-paper {
+  width: min(100%, 760px);
+  flex: 0 0 auto;
+  padding: 22px;
+  background: #fff;
+  color: #172033;
+  box-shadow: 0 8px 30px rgb(0 0 0 / 24%);
+  transform: scale(var(--pdf-zoom, .85));
+  transform-origin: top center;
+  margin-bottom: calc((var(--pdf-zoom, .85) - 1) * 100%);
+}
+
+.pdf-preview-paper .report-sheet {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.pdf-preview-paper .rpt-panel {
+  break-inside: avoid;
+}
+
+.pdf-preview-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex: 0 0 auto;
+  padding: 12px 2px 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.pdf-zoom-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--text-primary);
+}
+
+.pdf-zoom-controls button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  color: var(--text-secondary);
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.pdf-zoom-controls button:hover:not(:disabled) { color: var(--lis-primary); border-color: var(--lis-primary); }
+.pdf-zoom-controls button:disabled { opacity: .4; cursor: not-allowed; }
+
+.pdf-preview-settings {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 24px;
+  background: var(--card-bg);
+}
+
+.pdf-settings-title {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border-color);
+}
+.pdf-settings-title > i { color: var(--lis-primary); font-size: 21px; }
+.pdf-settings-title h3 { margin: 0; color: var(--text-primary); font-size: 17px; font-weight: 650; }
+
+.pdf-setting-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 17px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+.pdf-preview-settings .pdf-setting-icon { width: 38px; height: 38px; font-size: 17px; }
+.pdf-setting-row > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.pdf-setting-row > div span { color: var(--text-secondary); font-size: 12px; }
+.pdf-setting-row strong { color: var(--text-primary); font-size: 13px; font-weight: 550; }
+
+.pdf-preview-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 13px;
+  color: var(--text-secondary);
+  background: rgb(54 198 167 / 7%);
+  border: 1px solid rgb(54 198 167 / 20%);
+  border-radius: 11px;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.pdf-preview-tip > i { flex: 0 0 auto; margin-top: 1px; color: var(--lis-primary); font-size: 17px; }
+.pdf-preview-tip strong { color: var(--text-primary); }
+
+.pdf-preview-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 22px;
+}
+.pdf-preview-actions .lis-btn { min-height: 42px; }
+
+@media (max-width: 900px) {
+  .pdf-preview-dialog { height: min(96dvh, 980px); }
+  .pdf-preview-body { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(280px, 1fr) auto; }
+  .pdf-preview-stage { border-right: 0; border-bottom: 1px solid var(--border-color); }
+  .pdf-preview-settings { padding: 16px 20px; }
+  .pdf-preview-settings .pdf-setting-row { padding: 10px 0; }
+  .pdf-preview-settings .pdf-settings-title { padding-bottom: 12px; }
+  .pdf-preview-tip { margin-top: 12px; }
+  .pdf-preview-actions { padding-top: 14px; }
+}
+
+@media (max-width: 560px) {
+  .pdf-preview-overlay { padding: 8px; }
+  .pdf-preview-dialog { height: 98dvh; min-height: 0; border-radius: 14px; }
+  .pdf-preview-header { padding: 12px 14px; }
+  .pdf-preview-stage { padding: 8px; }
+  .pdf-preview-paper { padding: 10px; }
+  .pdf-preview-settings { padding: 12px 14px; }
+  .pdf-preview-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .pdf-preview-actions .lis-btn { justify-content: center; padding-inline: 8px; }
+}
+
+/* The duplicate report markup in the in-app preview must never print.
+   The original report sheet remains the single print source. */
+@media print {
+  .pdf-preview-overlay,
+  .pdf-preview-overlay * { display: none !important; visibility: hidden !important; }
+}
