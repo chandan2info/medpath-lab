@@ -23,6 +23,7 @@ export class ReportPreviewComponent implements AfterViewInit {
   private readonly router      = inject(Router);
 
   protected readonly data = this.previewSvc.data;
+  protected readonly isExistingReport = signal(!!window.history.state?.reportId);
 
   ngAfterViewInit(): void {
     if (window.history.state?.printAfterOpen) {
