@@ -25,6 +25,7 @@ export class PatientHistoryComponent {
   readonly detailTabs = ['History', 'Reports', 'Trends'];
   searchQ = signal('');
   selectedPatient = signal<PatientRecord | null>(null);
+  patientModalOpen = signal(false);
   activeView = signal('All Patients');
   activeDetailTab = signal('History');
   dateRange = signal('3months');
@@ -147,10 +148,9 @@ export class PatientHistoryComponent {
   setDateRange(value: string): void { this.dateRange.set(value); this.page.set(1); this.testPage.set(1); }
   setActiveView(value: string): void {
     this.activeView.set(value);
-    if (value === 'By Patient' && !this.selectedPatient() && this.allPatients.length) {
-      this.selectPatient(this.allPatients[0]);
-    }
-    if (value === 'Report Comparison' && !this.selectedPatient() && this.allPatients.length) this.selectPatient(this.allPatients[0]);
+    // Workspace navigation must never open the patient detail modal.
+    this.patientModalOpen.set(false);
+    if (value !== 'Report Comparison') this.selectedPatient.set(null);
     if (value === 'Trends & Analytics' && !this.analyticsPatientId() && this.allPatients.length) {
       this.analyticsPatientId.set(this.allPatients[0].id);
       this.trendParameter.set(this.availableParametersForAnalytics()[0] ?? '');
@@ -165,6 +165,7 @@ export class PatientHistoryComponent {
   availableParametersForSelectedPatient = computed(() => [...new Set((this.selectedPatient()?.visits ?? []).flatMap(v => v.results.map(r => r.parameter)))].sort());
   selectPatient(patient: PatientRecord): void {
     this.selectedPatient.set(patient);
+    this.patientModalOpen.set(false);
     this.activeDetailTab.set('History');
     this.selectedCompareOrders.set([]);
     this.menuPatientId.set(null);
@@ -172,6 +173,14 @@ export class PatientHistoryComponent {
       const parameters = [...new Set(patient.visits.flatMap(visit => visit.results.map(result => result.parameter)))].sort();
       if (!parameters.includes(this.trendParameter())) this.trendParameter.set(parameters[0] ?? '');
     }
+  }
+  openPatientDetails(patient: PatientRecord): void {
+    this.selectPatient(patient);
+    this.patientModalOpen.set(true);
+  }
+  closePatientDetails(): void {
+    this.patientModalOpen.set(false);
+    this.selectedPatient.set(null);
   }
   openPatientReport(patient: PatientRecord, visit: VisitRecord, reprint = false): void { this.selectPatient(patient); this.openReport(visit, reprint); }
   openPatientInvoice(patient: PatientRecord, visit: VisitRecord): void { this.selectPatient(patient); this.showInvoice(visit); }
@@ -195,7 +204,7 @@ export class PatientHistoryComponent {
   }
   @HostListener('document:click') closeActionMenu(): void { this.menuPatientId.set(null); }
   @HostListener('document:scroll') closeActionMenuOnScroll(): void { this.menuPatientId.set(null); }
-  @HostListener('document:keydown.escape') closeActionMenuOnEscape(): void { this.menuPatientId.set(null); this.closeInvoice(); this.selectedPatient.set(null); }
+  @HostListener('document:keydown.escape') closeActionMenuOnEscape(): void { this.menuPatientId.set(null); this.closeInvoice(); this.closePatientDetails(); }
   resetPagination(): void { this.page.set(1); this.testPage.set(1); }
   setSearch(value: string): void { this.searchQ.set(value); this.page.set(1); this.testPage.set(1); }
   setPageSize(value: number): void { this.pageSize.set(value); this.page.set(1); this.testPage.set(1); }
