@@ -1163,3 +1163,56 @@ button.report-row:focus-visible {
     gap: 6px;
   }
 }
+
+
+/* Keep the report range, page-size selector and pagination on one footer row. */
+.report-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+
+.report-pagination-summary {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  flex-wrap: nowrap;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.report-pagination-controls {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 5px;
+}
+
+.rr-identifiers {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 520px) {
+  .report-pagination {
+    gap: 5px;
+  }
+
+  .report-pagination-summary {
+    gap: 5px;
+    font-size: 10px;
+  }
+
+  .report-pagination-controls {
+    gap: 3px;
+  }
+
+  .report-pagination-controls .page-btn {
+    min-width: 28px;
+    padding-inline: 5px;
+  }
+}
