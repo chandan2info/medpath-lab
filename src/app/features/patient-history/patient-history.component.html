@@ -1,149 +1,48 @@
 <div class="ph-page">
-  <header class="ph-page-header">
-    <div class="ph-heading">
-      <span class="ph-heading-icon"><i class="ti ti-history" aria-hidden="true"></i></span>
-      <div>
-        <h1>Patient History</h1>
-        <p>View and manage complete test history of all patients in one place.</p>
-      </div>
-    </div>
-    <a routerLink="/dashboard/registration" class="lis-btn lis-btn--primary"><i class="ti ti-user-plus" aria-hidden="true"></i> New patient</a>
-  </header>
-
+  <header class="ph-page-header"><div class="ph-heading"><span class="ph-heading-icon"><i class="ti ti-history"></i></span><div><h1>Patient History</h1><p>View, search, compare and review patient test history in one place.</p></div></div><a routerLink="/dashboard/registration" class="lis-btn lis-btn--primary"><i class="ti ti-user-plus"></i> New patient</a></header>
   <section class="ph-filter-card" aria-label="History filters">
-    <div class="ph-filter-tabs" role="tablist" aria-label="History view">
-      @for (tab of viewTabs; track tab) {
-        <button type="button" role="tab" [attr.aria-selected]="activeView() === tab"
-          [class.active]="activeView() === tab" (click)="activeView.set(tab)">{{ tab }}</button>
-      }
-    </div>
+    <div class="ph-filter-tabs" role="tablist">@for (tab of viewTabs; track tab) { <button type="button" role="tab" [attr.aria-selected]="activeView()===tab" [class.active]="activeView()===tab" (click)="activeView.set(tab)">{{ tab }}</button> }</div>
     <div class="ph-filter-grid">
-      <label class="ph-filter-field">
-        <span>Date range</span>
-        <select [value]="dateRange()" (change)="setDateRange($any($event.target).value)">
-          <option value="3months">Last 3 months</option>
-          <option value="week">Last week</option>
-          <option value="month">Last month</option>
-          <option value="all">All time</option>
-          <option value="custom">Custom range</option>
-        </select>
-      </label>
-      <label class="ph-filter-field">
-        <span>Test / Profile</span>
-        <select [value]="testFilter()" (change)="testFilter.set($any($event.target).value)">
-          <option value="all">All tests</option>
-          @for (test of availableTests(); track test) { <option [value]="test">{{ test }}</option> }
-        </select>
-      </label>
-      <label class="ph-filter-field">
-        <span>Result status</span>
-        <select [value]="resultFilter()" (change)="resultFilter.set($any($event.target).value)">
-          <option value="all">All</option><option value="critical">Critical</option><option value="completed">Completed</option><option value="pending">Pending</option>
-        </select>
-      </label>
-      <label class="ph-filter-field">
-        <span>Payment status</span>
-        <select [value]="paymentFilter()" (change)="paymentFilter.set($any($event.target).value)">
-          <option value="all">All</option><option value="paid">Paid</option><option value="unpaid">Unpaid</option>
-        </select>
-      </label>
-      <label class="ph-filter-search">
-        <i class="ti ti-search" aria-hidden="true"></i>
-        <input type="search" placeholder="Search patient, mobile, UHID or order ID…" [value]="searchQ()" (input)="searchQ.set($any($event.target).value)" />
-        @if (searchQ()) { <button type="button" aria-label="Clear search" (click)="searchQ.set('')"><i class="ti ti-x"></i></button> }
-      </label>
-      <button type="button" class="ph-reset" (click)="resetFilters()">Reset</button>
-      <button type="button" class="lis-btn lis-btn--primary ph-apply" (click)="filtersApplied.set(true)">Apply</button>
+      <label class="ph-filter-field"><span>Date range</span><select [value]="dateRange()" (change)="setDateRange($any($event.target).value)"><option value="week">Last 7 days</option><option value="month">Last 30 days</option><option value="3months">Last 3 months</option><option value="all">All time</option><option value="custom">Custom range</option></select></label>
+      <label class="ph-filter-field"><span>Test / Profile</span><select [value]="testFilter()" (change)="testFilter.set($any($event.target).value)"><option value="all">All tests</option>@for (test of availableTests(); track test) { <option [value]="test">{{ test }}</option> }</select></label>
+      <label class="ph-filter-field"><span>Result status</span><select [value]="resultFilter()" (change)="resultFilter.set($any($event.target).value)"><option value="all">All</option><option value="critical">Critical</option><option value="completed">Completed</option><option value="pending">Pending</option></select></label>
+      <label class="ph-filter-field"><span>Payment status</span><select [value]="paymentFilter()" (change)="paymentFilter.set($any($event.target).value)"><option value="all">All</option><option value="paid">Paid</option><option value="unpaid">Unpaid</option></select></label>
+      <label class="ph-filter-search"><i class="ti ti-search"></i><input type="search" placeholder="Search patient, mobile, UHID, order or test…" [value]="searchQ()" (input)="searchQ.set($any($event.target).value); page.set(1)">@if (searchQ()) { <button type="button" aria-label="Clear search" (click)="searchQ.set('')"><i class="ti ti-x"></i></button> }</label>
+      <button type="button" class="ph-more-filter" (click)="moreFiltersOpen = !moreFiltersOpen"><i class="ti ti-filter"></i> More filters</button><button type="button" class="ph-reset" (click)="resetFilters()">Reset</button><button type="button" class="lis-btn lis-btn--primary ph-apply">Apply</button>
     </div>
-    @if (dateRange() === 'custom') {
-      <div class="ph-custom-range">
-        <label>From <input type="date" [value]="fromDate()" (change)="fromDate.set($any($event.target).value)" /></label>
-        <label>To <input type="date" [value]="toDate()" (change)="toDate.set($any($event.target).value)" /></label>
-      </div>
-    }
+    @if (dateRange()==='custom') { <div class="ph-custom-range"><label>From <input type="date" [value]="fromDate()" (change)="fromDate.set($any($event.target).value)"></label><label>To <input type="date" [value]="toDate()" (change)="toDate.set($any($event.target).value)"></label></div> }
+    @if (moreFiltersOpen) { <div class="ph-advanced-filters"><label class="ph-filter-field"><span>Gender</span><select [value]="genderFilter()" (change)="genderFilter.set($any($event.target).value)"><option value="all">All</option><option value="male">Male</option><option value="female">Female</option></select></label><label class="ph-filter-field"><span>Referring doctor</span><select [value]="doctorFilter()" (change)="doctorFilter.set($any($event.target).value)"><option value="all">All doctors</option>@for (doctor of availableDoctors(); track doctor) { <option [value]="doctor">{{ doctor }}</option> }</select></label><label class="ph-abnormal"><input type="checkbox" [checked]="abnormalOnly()" (change)="abnormalOnly.set($any($event.target).checked)"> Abnormal / critical results only</label></div> }
   </section>
-
   <section class="ph-metrics" aria-label="History summary">
-    <article class="ph-metric"><span class="metric-icon metric-violet"><i class="ti ti-users"></i></span><div><span>Total patients</span><strong>{{ filteredPatientCount() }}</strong></div><small>In selected period</small></article>
-    <article class="ph-metric"><span class="metric-icon metric-blue"><i class="ti ti-clipboard-list"></i></span><div><span>Test orders</span><strong>{{ filteredVisitCount() }}</strong></div><small>Matching visits</small></article>
-    <article class="ph-metric"><span class="metric-icon metric-teal"><i class="ti ti-test-pipe"></i></span><div><span>Total tests</span><strong>{{ filteredTestCount() }}</strong></div><small>Across visits</small></article>
-    <article class="ph-metric"><span class="metric-icon metric-green"><i class="ti ti-clipboard-check"></i></span><div><span>Completed reports</span><strong>{{ completedCount() }}</strong></div><small>{{ completionRate() }}% completion</small></article>
+    <article class="ph-metric"><span class="metric-icon metric-violet"><i class="ti ti-users"></i></span><div><span>Total patients</span><strong>{{ filteredPatientCount() }}</strong></div><small>Filtered</small></article><article class="ph-metric"><span class="metric-icon metric-blue"><i class="ti ti-clipboard-list"></i></span><div><span>Test orders</span><strong>{{ filteredVisitCount() }}</strong></div><small>Matching visits</small></article><article class="ph-metric"><span class="metric-icon metric-teal"><i class="ti ti-test-pipe"></i></span><div><span>Total tests</span><strong>{{ filteredTestCount() }}</strong></div><small>Across visits</small></article><article class="ph-metric"><span class="metric-icon metric-green"><i class="ti ti-clipboard-check"></i></span><div><span>Completed reports</span><strong>{{ completedCount() }}</strong></div><small>{{ completionRate() }}% completion</small></article>
   </section>
-
   <section class="ph-workspace">
     <div class="ph-table-card lis-card">
-      <div class="ph-table-heading">
-        <div><h2>Patient test history</h2><span>{{ filteredPatientRows().length }} matching patients</span></div>
-        <div class="ph-table-tools">
-          <span>View</span>
-          <button type="button" class="view-toggle active" aria-label="Table view"><i class="ti ti-list"></i></button>
-          <button type="button" class="view-toggle" aria-label="Grid view" (click)="activeView.set('By Patient')"><i class="ti ti-layout-grid"></i></button>
-          <button type="button" class="lis-btn lis-btn--secondary ph-export" (click)="exportCsv()"><i class="ti ti-download"></i> Export</button>
-        </div>
-      </div>
-      @if (activeView() === 'Trends') {
-        <div class="ph-inline-state"><i class="ti ti-chart-line"></i><strong>Test trends</strong><span>Select a patient to explore their test history and result movement.</span></div>
-      } @else {
-        <div class="ph-table-scroll">
-          <table class="ph-patient-table">
-            <thead><tr><th>#</th><th>Patient</th><th>Patient ID</th><th>Age / Gender</th><th>Last test order</th><th>Tests</th><th>Result</th><th>Payment</th><th>Actions</th></tr></thead>
-            <tbody>
-              @for (row of filteredPatientRows(); track row.patient.id; let i = $index) {
-                <tr [class.row-selected]="selectedPatient()?.id === row.patient.id" (click)="selectPatient(row.patient)">
-                  <td>{{ i + 1 }}</td>
-                  <td><div class="table-patient"><span class="pi-av" [class]="row.patient.avatarClass">{{ row.patient.initials }}</span><span><strong>{{ row.patient.name }}</strong><small>{{ row.patient.mobile }}</small></span></div></td>
-                  <td class="lis-mono">{{ row.patient.id }}</td>
-                  <td>{{ row.patient.age }} yrs / {{ row.patient.sex }}</td>
-                  <td><strong>{{ row.latest?.date || '—' }}</strong><small>{{ row.latest?.time || '' }}</small></td>
-                  <td><div class="table-test-tags">@for (test of row.latest?.tests || []; track test) { <span>{{ test }}</span> }</div></td>
-                  <td><span class="status-pill" [class.status-critical]="row.latest?.hasCritical" [class.status-pending]="row.latest?.resultStatus === 'Pending'">{{ row.latest?.hasCritical ? 'Critical' : (row.latest?.resultStatus || 'Completed') }}</span></td>
-                  <td><span class="status-pill" [class.status-unpaid]="row.latest?.paymentStatus === 'Unpaid'">{{ row.latest?.paymentStatus || 'Paid' }}</span></td>
-                  <td><button type="button" class="icon-action" aria-label="View patient history" (click)="selectPatient(row.patient); $event.stopPropagation()"><i class="ti ti-eye"></i></button></td>
-                </tr>
-              } @empty {
-                <tr><td colspan="9"><div class="ph-empty"><i class="ti ti-search-off"></i><strong>No matching patient history</strong><span>Try changing the date range or clearing filters.</span></div></td></tr>
-              }
-            </tbody>
-          </table>
-        </div>
-        <div class="ph-table-footer"><span>Showing {{ filteredPatientRows().length }} of {{ allPatients.length }} patients</span><span class="ph-pagination">1</span></div>
+      <div class="ph-table-heading"><div><h2>{{ activeView()==='By Test'?'Test history':'Patient test history' }}</h2><span>{{ filteredPatientRows().length }} matching patients · {{ filteredVisitCount() }} orders</span></div><div class="ph-table-tools"><span>View</span><button type="button" class="view-toggle" [class.active]="layout()==='list'" aria-label="List view" (click)="layout.set('list')"><i class="ti ti-list"></i></button><button type="button" class="view-toggle" [class.active]="layout()==='grid'" aria-label="Grid view" (click)="layout.set('grid')"><i class="ti ti-layout-grid"></i></button><button type="button" class="lis-btn lis-btn--secondary ph-export" (click)="exportCsv()"><i class="ti ti-download"></i> Export</button></div></div>
+      @if (activeView()==='Trends & Analytics') { <div class="ph-inline-state"><i class="ti ti-chart-line"></i><strong>Patient trends & analytics</strong><span>Select a patient, then open Trends to inspect historical results and reference bands.</span></div> }
+      @else if (activeView()==='By Test') { <div class="ph-test-history-list">@for (item of filteredVisits(); track item.visit.invoiceId) { <button type="button" class="ph-test-history-row" (click)="selectPatient(item.patient)"><span><strong>{{ item.visit.tests.join(', ') }}</strong><small>{{ item.patient.name }} · {{ item.patient.id }}</small></span><span>{{ item.visit.date }}</span><span class="status-pill" [class.status-critical]="item.visit.hasCritical">{{ item.visit.resultStatus }}</span></button> } @empty { <div class="ph-empty">No test orders match these filters.</div> }</div> }
+      @else if (layout()==='grid') { <div class="ph-patient-grid">@for (row of pageRows(); track row.patient.id) { <button type="button" class="ph-patient-tile" [class.selected]="selectedPatient()?.id===row.patient.id" (click)="selectPatient(row.patient)"><span class="pi-av" [class]="row.patient.avatarClass">{{ row.patient.initials }}</span><strong>{{ row.patient.name }}</strong><small>{{ row.patient.id }} · {{ row.patient.age }} yrs / {{ row.patient.sex }}</small><span>{{ row.latest.tests.join(', ') }}</span><span class="status-pill" [class.status-critical]="row.latest.hasCritical" [class.status-pending]="row.latest.resultStatus==='Pending'">{{ row.latest.hasCritical?'Critical':row.latest.resultStatus }}</span></button> } @empty { <div class="ph-empty">No matching patient history.</div> }</div> }
+      @else {
+        <div class="ph-table-scroll"><table class="ph-patient-table"><thead><tr><th>#</th><th>Patient</th><th>UHID</th><th>Age / Gender</th><th>Last test order</th><th>Tests</th><th>Result</th><th>Payment</th><th>Actions</th></tr></thead><tbody>
+          @for (row of pageRows(); track row.patient.id; let i=$index) { <tr [class.row-selected]="selectedPatient()?.id===row.patient.id" (click)="selectPatient(row.patient)"><td>{{ (page()-1)*pageSize()+i+1 }}</td><td><div class="table-patient"><span class="pi-av" [class]="row.patient.avatarClass">{{ row.patient.initials }}</span><span><strong>{{ row.patient.name }}</strong><small>{{ row.patient.mobile }}</small></span></div></td><td class="lis-mono">{{ row.patient.id }}</td><td>{{ row.patient.age }} yrs / {{ row.patient.sex }}</td><td><strong>{{ row.latest.date }}</strong><small>{{ row.latest.time }}</small></td><td><div class="table-test-tags">@for (test of row.latest.tests; track test) { <span>{{ test }}</span> }</div></td><td><span class="status-pill" [class.status-critical]="row.latest.hasCritical" [class.status-pending]="row.latest.resultStatus==='Pending'">{{ row.latest.hasCritical?'Critical':row.latest.resultStatus }}</span></td><td><span class="status-pill" [class.status-unpaid]="row.latest.paymentStatus==='Unpaid'">{{ row.latest.paymentStatus }}</span></td><td><div class="ph-row-actions"><button type="button" class="icon-action" aria-label="View patient" (click)="selectPatient(row.patient); $event.stopPropagation()"><i class="ti ti-eye"></i></button><button type="button" class="icon-action" aria-label="More patient actions" [attr.aria-expanded]="menuPatientId()===row.patient.id" (click)="menuPatientId.set(menuPatientId()===row.patient.id?null:row.patient.id); $event.stopPropagation()"><i class="ti ti-dots-vertical"></i></button>
+          @if (menuPatientId()===row.patient.id) { <div class="ph-action-menu" (click)="$event.stopPropagation()"><button type="button" (click)="selectPatient(row.patient); activeDetailTab.set('History')"><i class="ti ti-history"></i> View full history</button><button type="button" (click)="selectPatient(row.patient); activeDetailTab.set('Reports')"><i class="ti ti-file-text"></i> View / download reports</button><button type="button" (click)="selectPatient(row.patient); printHistory()"><i class="ti ti-printer"></i> Reprint report</button><button type="button" (click)="notice.set('Order details: '+row.latest.invoiceId+' · '+row.latest.tests.join(', ')+' · ₹'+row.latest.amount)"><i class="ti ti-clipboard-list"></i> Order details</button><a routerLink="/dashboard/registration"><i class="ti ti-pencil"></i> Edit patient</a><a routerLink="/dashboard/test-order"><i class="ti ti-plus"></i> Create new order</a></div> }
+          </div></td></tr> } @empty { <tr><td colspan="9"><div class="ph-empty"><i class="ti ti-search-off"></i><strong>No matching patient history</strong><span>Try changing the date range or clearing filters.</span></div></td></tr> }
+        </tbody></table></div>
       }
+      <div class="ph-table-footer"><span>Showing {{ pageRows().length }} of {{ filteredPatientRows().length }} patients</span><div class="ph-paging"><label>Rows <select [value]="pageSize()" (change)="pageSize.set(+$any($event.target).value); page.set(1)"><option>10</option><option>25</option><option>50</option><option>100</option></select></label><button type="button" (click)="setPage(page()-1)" [disabled]="page()===1"><i class="ti ti-chevron-left"></i></button><span>{{ page() }} / {{ pageCount() }}</span><button type="button" (click)="setPage(page()+1)" [disabled]="page()===pageCount()"><i class="ti ti-chevron-right"></i></button></div></div>
     </div>
-
     @if (selectedPatient(); as patient) {
       <aside class="ph-detail-card lis-card">
-        <div class="ph-detail-head">
-          <div class="ph-detail-person"><span class="pd-av" [class]="patient.avatarClass">{{ patient.initials }}</span><div><h2>{{ patient.name }}</h2><span class="lis-mono">{{ patient.id }}</span><small>{{ patient.age }} years · {{ patient.sex }} · {{ patient.mobile }}</small></div></div>
-          <button type="button" class="icon-action" aria-label="Clear patient selection" (click)="selectedPatient.set(null)"><i class="ti ti-x"></i></button>
-        </div>
-        <div class="ph-detail-tabs" role="tablist">
-          @for (tab of detailTabs; track tab) { <button type="button" role="tab" [class.active]="activeDetailTab() === tab" [attr.aria-selected]="activeDetailTab() === tab" (click)="activeDetailTab.set(tab)">{{ tab }}</button> }
-        </div>
-        @if (activeDetailTab() === 'History') {
-          <div class="ph-history-list">
-            @for (visit of patient.visits; track visit.invoiceId) {
-              <article class="ph-history-item">
-                <div class="history-date"><strong>{{ visit.date }}</strong><span class="status-pill" [class.status-critical]="visit.hasCritical">{{ visit.hasCritical ? 'Critical' : visit.resultStatus }}</span></div>
-                <small class="lis-mono">Order ID: {{ visit.invoiceId }}</small>
-                <div class="history-tests"><strong>{{ visit.tests.join(', ') }}</strong><span>₹{{ visit.amount.toLocaleString('en-IN') }}</span></div>
-                <div class="history-finding" [class.finding-critical]="visit.hasCritical">{{ visit.keyFinding }}</div>
-                <div class="history-actions"><button type="button" (click)="openReport(visit)"><i class="ti ti-file-text"></i> View report</button><button type="button" (click)="printHistory()"><i class="ti ti-printer"></i> Reprint</button><button type="button" (click)="showInvoice(visit)"><i class="ti ti-receipt"></i> Invoice</button></div>
-              </article>
-            } @empty { <div class="ph-empty">No visits in this period.</div> }
-          </div>
-        } @else if (activeDetailTab() === 'Reports') {
-          <div class="ph-history-list">
-            @for (visit of patient.visits; track visit.invoiceId) {
-              <article class="ph-report-row"><span class="report-file"><i class="ti ti-file-description"></i></span><div><strong>{{ visit.tests.join(', ') }} report</strong><small>{{ visit.date }} · {{ visit.invoiceId }}</small></div><button type="button" (click)="openReport(visit)">Open</button></article>
-            }
-          </div>
-        } @else {
-          <div class="ph-trend-panel"><i class="ti ti-chart-line"></i><strong>Test trends</strong><p>Historical results will be plotted here as structured result data becomes available from the lab API.</p><div class="trend-summary"><span>{{ totalTests() }} tests recorded</span><span>{{ criticalCount() }} critical visits</span></div></div>
-        }
-        @if (invoiceNotice()) { <div class="ph-invoice-notice" role="status">{{ invoiceNotice() }} <button type="button" (click)="invoiceNotice.set('')">Dismiss</button></div> }
+        <div class="ph-detail-head"><div class="ph-detail-person"><span class="pd-av" [class]="patient.avatarClass">{{ patient.initials }}</span><div><h2>{{ patient.name }}</h2><span class="lis-mono">{{ patient.id }}</span><small>{{ patient.age }} years · {{ patient.sex }} · {{ patient.mobile }}</small></div></div><button type="button" class="icon-action" aria-label="Close patient details" (click)="selectedPatient.set(null)"><i class="ti ti-x"></i></button></div>
+        <div class="ph-detail-tabs" role="tablist">@for (tab of detailTabs; track tab) { <button type="button" role="tab" [class.active]="activeDetailTab()===tab" [attr.aria-selected]="activeDetailTab()===tab" (click)="activeDetailTab.set(tab)">{{ tab }}</button> }</div>
+        @if (activeDetailTab()==='History') { <div class="ph-history-list">@for (visit of patient.visits; track visit.invoiceId) { <article class="ph-history-item"><div class="history-date"><strong>{{ visit.date }}</strong><span class="status-pill" [class.status-critical]="visit.hasCritical" [class.status-pending]="visit.resultStatus==='Pending'">{{ visit.hasCritical?'Critical':visit.resultStatus }}</span></div><small class="lis-mono">Order ID: {{ visit.invoiceId }}</small><div class="history-tests"><strong>{{ visit.tests.join(', ') }}</strong><span>₹{{ visit.amount.toLocaleString('en-IN') }}</span></div><div class="history-finding" [class.finding-critical]="visit.hasCritical">{{ visit.keyFinding }}</div><div class="history-actions"><button type="button" (click)="openReport(visit)"><i class="ti ti-file-text"></i> View report</button><button type="button" (click)="printHistory()"><i class="ti ti-printer"></i> Reprint</button><button type="button" (click)="showInvoice(visit)"><i class="ti ti-receipt"></i> Invoice</button></div></article> }</div> }
+        @else if (activeDetailTab()==='Reports') { <div class="ph-history-list">@for (visit of patient.visits; track visit.invoiceId) { @for (report of visit.reports; track report.name) { <article class="ph-report-row"><span class="report-file"><i class="ti ti-file-description"></i></span><div><strong>{{ report.name }} report</strong><small>{{ visit.date }} · {{ visit.invoiceId }} · {{ report.status }}</small></div><button type="button" [disabled]="report.status==='Pending'" (click)="openReport(visit)">Preview</button></article> } }</div> }
+        @else if (activeDetailTab()==='Compare') { <div class="ph-compare-panel"><div class="ph-panel-title"><strong>Compare reports</strong><span>Select up to 3 historical orders for the same patient.</span></div><label class="ph-filter-field"><span>Parameter</span><select [value]="trendParameter()" (change)="trendParameter.set($any($event.target).value)"><option>Haemoglobin</option><option>Total WBC</option><option>Platelets</option><option>Creatinine</option><option>TSH</option><option>HbA1c</option></select></label><div class="ph-compare-select"><span>Select reports to compare (max 3)</span>@for (visit of patient.visits; track visit.invoiceId) { <label><input type="checkbox" [checked]="selectedCompareOrders().includes(visit.invoiceId)" [disabled]="!selectedCompareOrders().includes(visit.invoiceId)&&selectedCompareOrders().length>=3" (change)="toggleCompare(visit.invoiceId,$any($event.target).checked)"><span><strong>{{ visit.date }}</strong><small>{{ visit.invoiceId }}</small></span></label> }</div>
+          @if (selectedCompareOrders().length>=2) { <div class="ph-comparison-table"><table><thead><tr><th>Parameter</th>@for (visit of compareVisits(); track visit.invoiceId) { <th>{{ visit.date }}</th> }</tr></thead><tbody>@for (row of compareRows(); track row.parameter) { <tr><td>{{ row.parameter }}</td>@for (value of row.values; track $index) { <td>{{ value?value.value+' '+value.unit:'—' }}<small>{{ value?.reference||'' }}</small></td> }</tr> }</tbody></table><p class="ph-disclaimer">Compare like-for-like methods and units. Reference intervals vary by laboratory.</p></div> } @else { <div class="ph-compare-empty">Choose at least two reports to see a side-by-side comparison.</div> }</div> }
+        @else { <div class="ph-trend-panel"><div class="ph-trend-controls"><label class="ph-filter-field"><span>Test parameter</span><select [value]="trendParameter()" (change)="trendParameter.set($any($event.target).value)"><option>Haemoglobin</option><option>Total WBC</option><option>Platelets</option><option>Creatinine</option><option>TSH</option><option>HbA1c</option></select></label></div>
+          @if (trendPoints().length) { <div class="ph-chart"><div class="ph-chart-heading"><strong>{{ trendParameter() }}</strong><span>{{ trendPoints().length }} results</span></div><svg viewBox="0 0 320 170" role="img" [attr.aria-label]="trendParameter()+' historical trend'"><line x1="24" y1="145" x2="306" y2="145" class="chart-axis"></line><line x1="24" y1="18" x2="24" y2="145" class="chart-axis"></line><polyline [attr.points]="trendPoints().map((p,i)=>(40+i*(250/Math.max(1,trendPoints().length-1)))+','+(130-(p.value-trendMin())/Math.max(1,trendMax()-trendMin())*95)).join(' ')" class="chart-line"></polyline>@for (point of trendPoints(); track $index) { <circle [attr.cx]="40+$index*(250/Math.max(1,trendPoints().length-1))" [attr.cy]="130-(point.value-trendMin())/Math.max(1,trendMax()-trendMin())*95" r="4" class="chart-dot"></circle><text [attr.x]="40+$index*(250/Math.max(1,trendPoints().length-1))" y="160" text-anchor="middle" class="chart-label">{{ point.date.slice(0,6) }}</text> }</svg><div class="ph-chart-legend"><span><i></i> Recorded result</span><small>Values shown in original units; use the report's reference range for interpretation.</small></div></div> } @else { <div class="ph-compare-empty">No structured historical values are available for this parameter.</div> }<div class="trend-summary"><span>{{ totalTests() }} tests recorded</span><span>{{ criticalCount() }} critical visits</span></div></div> }
+        @if (notice()) { <div class="ph-invoice-notice" role="status">{{ notice() }} <button type="button" (click)="notice.set('')">Dismiss</button></div> }
       </aside>
-    } @else {
-      <aside class="ph-detail-card ph-detail-empty lis-card"><i class="ti ti-user-search"></i><strong>Select a patient</strong><span>Choose a patient from the table to see their visit history, reports and trends.</span></aside>
-    }
+    } @else { <aside class="ph-detail-card ph-detail-empty lis-card"><i class="ti ti-user-search"></i><strong>Select a patient</strong><span>Choose a patient from the table to inspect their history, reports, comparisons and trends.</span></aside> }
   </section>
 </div>
