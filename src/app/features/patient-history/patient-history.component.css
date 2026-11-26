@@ -221,3 +221,17 @@
   .ph-invoice-modal{width:100%;max-height:none;overflow:visible;border:0;box-shadow:none;border-radius:0;color:#111;background:#fff}
   .ph-invoice-modal>footer,.ph-invoice-modal header button{display:none!important}
 }
+
+/* Responsive safeguards for Phase 1 */
+.ph-table-scroll{position:relative;overscroll-behavior-x:contain}
+.ph-patient-table th:last-child,.ph-patient-table td:last-child{position:sticky;right:0;background:var(--card-bg);z-index:4;box-shadow:-6px 0 10px rgba(0,0,0,.08)}
+.ph-patient-table th:last-child{background:var(--body-bg);z-index:5}
+.ph-patient-table tbody tr:hover td:last-child,.ph-patient-table tbody tr.row-selected td:last-child{background:var(--lis-primary-xlight)}
+.ph-row-actions{min-width:58px}
+.ph-action-menu{position:fixed;right:auto;bottom:auto}
+.ph-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;min-height:180px;padding:24px;text-align:center;color:var(--text-secondary)}
+.ph-empty i{font-size:24px;color:var(--lis-primary)}
+.ph-empty strong{font-size:12px;color:var(--text-primary)}
+.ph-empty span{font-size:10px}
+@media(max-width:1080px){.ph-workspace{grid-template-columns:minmax(0,1fr);height:auto;max-height:none;min-height:0}.ph-detail-card{height:auto;max-height:620px;min-height:300px}.ph-history-list{max-height:440px;flex:none}}
+@media(max-width:650px){.ph-table-card{min-width:0}.ph-table-scroll{max-width:calc(100vw - 84px)}.ph-patient-table{min-width:850px}.ph-table-heading{gap:8px}.ph-table-tools{flex-wrap:wrap}.ph-detail-head{padding:11px}.ph-detail-tabs{overflow-x:auto;justify-content:flex-start;gap:12px}.ph-detail-tabs button{flex:none}.ph-history-actions button{min-height:32px}.ph-modal-backdrop{padding:10px}.ph-invoice-modal{max-height:92vh}}
