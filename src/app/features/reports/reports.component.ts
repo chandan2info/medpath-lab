@@ -18,7 +18,8 @@ type ReportStatusFilter = 'all' | 'pending' | 'dispatched';
 })
 export class ReportsComponent {
   private readonly reportsData = inject(ReportsDataService);
-  private readonly pdfPreferences = inject(PdfPreferencesService);\n  readonly customPdfSettings = this.pdfPreferences.customSettingsEnabled;
+  private readonly pdfPreferences = inject(PdfPreferencesService);
+  readonly customPdfSettings = this.pdfPreferences.customSettingsEnabled;
   reports = this.reportsData.reports;
   selected = signal<ReportRow | null>(this.reports()[0] ?? null);
   previewExpanded = signal(false);
