@@ -160,6 +160,7 @@ export class PatientHistoryComponent {
   }
   setAnalyticsPatient(id: string): void { this.analyticsPatientId.set(id); this.trendParameter.set(this.availableParametersForAnalytics()[0] ?? ''); }
   availableParametersForAnalytics = computed(() => [...new Set(this.analyticsPatient().visits.flatMap(v => v.results.map(r => r.parameter)))].sort());
+  availableParametersForSelectedPatient = computed(() => [...new Set((this.selectedPatient()?.visits ?? []).flatMap(v => v.results.map(r => r.parameter)))].sort());
   selectPatient(patient: PatientRecord): void {
     this.selectedPatient.set(patient);
     this.activeDetailTab.set('History');
