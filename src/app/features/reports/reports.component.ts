@@ -235,7 +235,11 @@ export class ReportsComponent {
       item.id === report.id ? { ...item, status: 'dispatched' as const } : item
     ));
     const updated = this.reports().find(item => item.id === report.id) ?? null;
-    this.selected.set(updated);
+    if (this.statusFilter() === 'pending') {
+      this.selectFirstVisible();
+    } else {
+      this.selected.set(updated);
+    }
   }
 
   private selectFirstVisible(): void {
