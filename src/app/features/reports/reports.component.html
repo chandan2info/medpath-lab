@@ -311,6 +311,7 @@
             </label>
           </div>
 
+          @if (customPdfSettings()) {
           <div class="pdf-setting-row" [class.pdf-setting-row--disabled]="!customPdfSettings()">
             <span class="pdf-setting-icon"><i class="ti ti-file" aria-hidden="true"></i></span>
             <div class="pdf-setting-control">
@@ -345,13 +346,14 @@
               </select>
             </div>
           </div>
+          }
           <div class="pdf-setting-row">
             <span class="pdf-setting-icon"><i class="ti ti-printer" aria-hidden="true"></i></span>
             <div><span>Output</span><strong>Browser PDF / Print</strong></div>
           </div>
           <div class="pdf-preview-tip">
             <i class="ti ti-info-circle" aria-hidden="true"></i>
-            <span>{{ customPdfSettings() ? 'Your custom paper, orientation and margin choices will be applied when the print window opens.' : 'Standard A4 portrait settings will be used. Enable custom settings to change paper size, orientation or margins.' }} Choose <strong>Save as PDF</strong> as the destination in the browser print window.</span>
+            <span>{{ customPdfSettings() ? 'Your custom paper, orientation and margin choices will be applied when the print window opens.' : 'Standard A4 portrait defaults are active. Turn on custom PDF settings to reveal additional options.' }} Choose <strong>Save as PDF</strong> as the destination in the browser print window.</span>
           </div>
           <div class="pdf-preview-actions">
             <button type="button" class="lis-btn lis-btn--secondary" (click)="closePdfPreview()">Cancel</button>
