@@ -55,7 +55,7 @@ export class PatientHistoryService {
           date: date.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }),
           time: date.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' }),
           dateValue: order.createdAt.slice(0,10), invoiceId: order.id, orderId: order.id,
-          tests: shortTests, refDoctor: visit.refDoctor || 'Not recorded', amount: order.total,
+          tests, refDoctor: visit.refDoctor || 'Not recorded', amount: order.total,
           keyFinding: report ? 'Validated report available' : result?.status === 'awaiting-validation' ? 'Awaiting result validation' : result?.status === 'rejected' ? 'Results rejected — review required' : sample ? 'Sample in processing workflow' : 'Order created — sample not yet collected',
           hasCritical: false, resultStatus: report ? 'Completed' : 'Pending',
           paymentStatus: invoice?.status === 'paid' ? 'Paid' : invoice?.status === 'partial' ? 'Partial' : 'Unpaid',
