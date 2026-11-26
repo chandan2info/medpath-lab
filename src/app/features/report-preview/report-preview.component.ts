@@ -1,5 +1,5 @@
 import {
-  Component, signal, computed, ChangeDetectionStrategy, inject
+  Component, signal, computed, ChangeDetectionStrategy, inject, AfterViewInit
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { NgClass } from '@angular/common';
@@ -18,11 +18,15 @@ type Orientation = ReportPreviewData['orientation'];
   templateUrl: './report-preview.component.html',
   styleUrl: './report-preview.component.css',
 })
-export class ReportPreviewComponent {
+export class ReportPreviewComponent implements AfterViewInit {
   private readonly previewSvc = inject(ReportPreviewService);
   private readonly router      = inject(Router);
 
   protected readonly data = this.previewSvc.data;
+
+  ngAfterViewInit(): void {
+    if (window.history.state?.printAfterOpen) window.setTimeout(() => window.print(), 250);
+  }
 
   /** Which sections of the navigation panel are "done" */
   protected readonly sections = [
