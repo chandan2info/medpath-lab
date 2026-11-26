@@ -793,3 +793,9 @@
 .rpt-logo i {
   color: #075b49;
 }
+
+
+/* Use the app's deeper primary tone for patient metadata labels. */
+.rpt-pl {
+  color: var(--primary-deeper);
+}
