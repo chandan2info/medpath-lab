@@ -8,7 +8,7 @@ import { PatientHistoryService } from './services/patient-history.service';
 interface VisitRecord {
   date: string; time: string; dateValue: string; invoiceId: string; tests: string[];
   refDoctor: string; amount: number; keyFinding: string; hasCritical: boolean;
-  resultStatus: 'Completed' | 'Pending'; paymentStatus: 'Paid' | 'Unpaid';
+  resultStatus: 'Completed' | 'Pending'; paymentStatus: 'Paid' | 'Partial' | 'Unpaid';
   reports: { name: string; status: 'Available' | 'Pending'; reportId?: string }[];
   results: { parameter: string; value: number; unit: string; reference: string; date: string }[];
   orderId: string; sampleId: string | null; reportId: string | null; invoiceRecordId: string | null;
