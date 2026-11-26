@@ -242,3 +242,15 @@
 .table-test-tags .table-test-more{position:relative;display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:23px;padding:0 7px;border:1px solid var(--lis-primary);border-radius:999px;background:var(--lis-primary-xlight);color:var(--lis-primary);font-size:10px;font-weight:700;cursor:help;outline:none}
 .table-test-tags .table-test-more::after{content:attr(data-tooltip);position:absolute;left:50%;bottom:calc(100% + 9px);z-index:40;display:block;width:max-content;max-width:min(280px,70vw);padding:9px 11px;border:1px solid var(--border-color);border-radius:8px;background:var(--card-bg);color:var(--text-primary);font-size:11px;font-weight:500;line-height:1.55;white-space:normal;overflow-wrap:anywhere;box-shadow:0 8px 24px rgba(0,0,0,.24);opacity:0;visibility:hidden;pointer-events:none;transform:translate(-50%,4px);transition:opacity .15s ease,transform .15s ease}
 .table-test-tags .table-test-more:hover::after,.table-test-tags .table-test-more:focus-visible::after{opacity:1;visibility:visible;transform:translate(-50%,0)}
+
+/* By Test: one row per test, with clear patient/order context */
+.ph-test-history-list{padding:10px 12px;display:flex;flex-direction:column;gap:7px;overflow:auto}
+.ph-test-history-row{display:grid;grid-template-columns:minmax(170px,1.6fr) minmax(100px,1fr) minmax(100px,.85fr) auto 16px;align-items:center;gap:12px;width:100%;padding:11px 12px;border:1px solid var(--border-color);border-radius:8px;background:var(--body-bg);color:var(--text-primary);text-align:left;cursor:pointer}
+.ph-test-history-row:hover{border-color:var(--lis-primary);background:var(--lis-primary-xlight)}
+.ph-test-history-name,.ph-test-history-order,.ph-test-history-date,.ph-test-history-status{display:flex;flex-direction:column;gap:4px;min-width:0}
+.ph-test-history-name strong{font-size:11px;color:var(--text-primary)}
+.ph-test-history-name small,.ph-test-history-order small,.ph-test-history-date small,.ph-test-history-status small{font-size:9px;color:var(--text-secondary)}
+.ph-test-history-order strong,.ph-test-history-date strong{font-size:10px;font-weight:600;overflow-wrap:anywhere}
+.ph-test-history-status{align-items:flex-start}
+.ph-test-history-row>i{font-size:14px;color:var(--text-secondary)}
+@media(max-width:650px){.ph-test-history-row{grid-template-columns:minmax(0,1fr) auto;gap:7px 10px}.ph-test-history-name{grid-column:1/-1}.ph-test-history-order,.ph-test-history-date{grid-column:auto}.ph-test-history-status{grid-column:2;grid-row:2;align-items:flex-end}.ph-test-history-row>i{display:none}}
