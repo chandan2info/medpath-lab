@@ -177,8 +177,26 @@ export class PatientHistoryComponent {
   openPatientInvoice(patient: PatientRecord, visit: VisitRecord): void { this.selectPatient(patient); this.showInvoice(visit); }
   toggleActionMenu(patientId: string, event: MouseEvent): void {
     if (this.menuPatientId() === patientId) { this.menuPatientId.set(null); return; }
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-    const menuWidth = 260; const menuHeight = 300; const left = rect.left - menuWidth - 10; const fitsLeft = left >= 12; const top = Math.max(12, Math.min(rect.top - 8, window.innerHeight - menuHeight - 12)); this.menuPosition.set({ top, left: fitsLeft ? left : Math.max(12, Math.min(rect.right - menuWidth, window.innerWidth - menuWidth - 12)) });
+    const trigger = event.currentTarget as HTMLElement;
+    const rect = trigger.getBoundingClientRect();
+    // Anchor to the complete action group, not only the kebab button.
+    // This keeps the menu clear of both the eye and more-actions controls.
+    const actionGroup = trigger.closest('.ph-row-actions') as HTMLElement | null;
+    const groupRect = actionGroup?.getBoundingClientRect() ?? rect;
+    const menuWidth = 260;
+    const menuHeight = 300;
+    const gap = 10;
+    const leftOfActions = groupRect.left - menuWidth - gap;
+    const fitsLeft = leftOfActions >= 12;
+    const belowTop = groupRect.bottom + gap;
+    const aboveTop = groupRect.top - menuHeight - gap;
+    const top = belowTop + menuHeight <= window.innerHeight - 12
+      ? belowTop
+      : Math.max(12, aboveTop);
+    const left = fitsLeft
+      ? leftOfActions
+      : Math.max(12, Math.min(groupRect.right + gap, window.innerWidth - menuWidth - 12));
+    this.menuPosition.set({ top, left });
     this.menuPatientId.set(patientId);
   }
   @HostListener('document:click') closeActionMenu(): void { this.menuPatientId.set(null); }
