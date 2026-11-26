@@ -76,7 +76,7 @@
           <div class="rr-info">
             <div class="rr-name">{{ r.patientName }}</div>
             <div class="rr-meta">{{ r.test }} · {{ r.date }}</div>
-            <div class="lis-mono">{{ r.id }}</div>
+            <div class="lis-mono rr-identifiers"><span>{{ r.patientId }}</span><span aria-hidden="true">·</span><span>{{ r.id }}</span></div>
           </div>
           <div>
             @if (r.status === 'pending') {
