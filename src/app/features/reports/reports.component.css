@@ -841,18 +841,23 @@ button.report-row:focus-visible {
 }
 
 
-/* Keep the report list content-sized; do not stretch it to the
-   full height of the report preview beside it. */
+/* On desktop, keep the report list card the same height as the
+   report preview card. Let the rows absorb the available height. */
 @media (min-width: 901px) {
   .reports-layout {
-    align-items: start;
+    align-items: stretch;
   }
   .report-list {
-    height: auto;
-    align-self: start;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    align-self: stretch;
+    min-height: 0;
   }
   .report-rows {
-    flex: 0 1 auto;
+    flex: 1 1 auto;
+    min-height: 0;
     max-height: none;
+    overflow-y: auto;
   }
 }
