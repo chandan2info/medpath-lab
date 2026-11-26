@@ -555,3 +555,183 @@
   color: var(--text-secondary);
 }
 .reports-empty i { font-size: 20px; opacity: 0.5; }
+
+
+/* ── Reports page refinement: tighter layout, clearer hierarchy ── */
+.reports-stats-grid {
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.reports-layout {
+  grid-template-columns: minmax(290px, 0.78fr) minmax(0, 1.9fr);
+  gap: 16px;
+}
+
+.report-list {
+  min-width: 0;
+  align-self: start;
+  overflow: hidden;
+}
+
+.report-list .lis-card__header {
+  padding: 14px 16px;
+}
+
+.report-search,
+.report-status-filter {
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+
+.report-rows {
+  min-height: 0;
+  max-height: min(560px, calc(100vh - 390px));
+}
+
+.report-row {
+  gap: 10px;
+  padding: 10px 14px;
+}
+
+.report-pagination {
+  padding: 10px 14px;
+}
+
+.report-preview-area {
+  min-width: 0;
+}
+
+.report-sheet {
+  padding: 16px;
+  border-radius: 14px;
+}
+
+.rpt-panel {
+  margin-bottom: 12px;
+  border-radius: 12px;
+}
+
+.rpt-header {
+  padding: 20px 22px 48px;
+}
+
+.rpt-pat-band {
+  /* A distinct, calm teal patient card with enough contrast in both themes. */
+  background: linear-gradient(135deg, rgba(20, 145, 130, 0.16), rgba(67, 184, 164, 0.10));
+  border: 1px solid rgba(20, 145, 130, 0.28);
+  padding: 16px 18px;
+  gap: 13px 16px;
+  margin: -28px 14px 14px;
+  box-shadow: 0 6px 18px rgba(15, 92, 83, 0.12);
+}
+
+.rpt-pf-icon {
+  background: rgba(20, 145, 130, 0.16);
+  color: #08796f;
+  border: 1px solid rgba(20, 145, 130, 0.16);
+}
+
+.rpt-pl {
+  color: #08796f;
+}
+
+.rpt-pv {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.rpt-panel--mid {
+  padding: 14px 16px 16px;
+}
+
+.rpt-title-band {
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+}
+
+.rpt-note {
+  margin-bottom: 14px;
+}
+
+.rpt-tbl-wrap {
+  margin-bottom: 8px;
+}
+
+.rpt-panel--footer {
+  padding: 12px 16px;
+}
+
+@media (max-width: 1100px) {
+  .reports-layout {
+    grid-template-columns: minmax(270px, 0.85fr) minmax(0, 1.5fr);
+    gap: 14px;
+  }
+}
+
+@media (max-width: 900px) {
+  .reports-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .report-rows {
+    max-height: 380px;
+  }
+}
+
+@media (max-width: 560px) {
+  .reports-stats-grid {
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .report-sheet {
+    padding: 10px;
+  }
+
+  .rpt-header {
+    align-items: flex-start;
+    padding: 16px 14px 42px;
+  }
+
+  .rpt-meta {
+    max-width: 112px;
+    white-space: normal;
+  }
+
+  .rpt-lab-addr {
+    font-size: 10px;
+    line-height: 1.4;
+  }
+
+  .rpt-pat-band {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: -24px 10px 10px;
+    padding: 13px 12px;
+    gap: 12px 10px;
+  }
+
+  .rpt-pf {
+    gap: 7px;
+  }
+
+  .rpt-pv {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    font-size: 11px;
+  }
+
+  .rpt-panel--mid {
+    padding: 12px 10px;
+  }
+
+  .rpt-panel--footer {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .rpt-pat-band {
+    grid-template-columns: 1fr;
+  }
+}
