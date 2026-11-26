@@ -861,3 +861,99 @@ button.report-row:focus-visible {
     overflow-y: auto;
   }
 }
+
+
+/* Fixed-height report workspace: keep the page stable while long result
+   tables scroll inside the preview. The list column shares the same height. */
+@media (min-width: 901px) {
+  .reports-layout {
+    height: calc(100dvh - 190px);
+    min-height: 520px;
+    max-height: calc(100dvh - 150px);
+    align-items: stretch;
+  }
+
+  .report-list,
+  .report-preview-area {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .report-list {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .report-rows {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    overflow-y: auto;
+  }
+
+  .report-preview-area {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .report-sheet {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .rpt-panel--top,
+  .rpt-panel--footer {
+    flex: 0 0 auto;
+  }
+
+  .rpt-panel--mid {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .rpt-tbl-wrap {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+}
+
+/* On smaller screens, preserve natural document flow rather than
+   compressing the report into a narrow fixed-height column. */
+@media (max-width: 900px) {
+  .reports-layout {
+    height: auto;
+    min-height: 0;
+    max-height: none;
+  }
+
+  .report-list,
+  .report-preview-area,
+  .report-sheet {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .rpt-panel--mid {
+    overflow: visible;
+  }
+
+  .rpt-tbl-wrap {
+    max-height: 60vh;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+}
