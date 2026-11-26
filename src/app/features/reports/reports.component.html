@@ -113,11 +113,9 @@
     </div>
   </div>
 
-  <!-- Report preview -->
-  @if (selected()) {
-    <div class="report-preview-area" [class.report-preview-area--expanded]="previewExpanded()">
-      <!-- Print-ready report sheet -->
-      <div class="report-sheet" id="report-sheet" aria-label="Report preview">
+  <ng-template #reportSheet>
+  <!-- Reusable report markup shared by the page and PDF preview -->
+  <div class="report-sheet" id="report-sheet" aria-label="Report preview">
         <!-- Top panel: header + patient band, grouped as one card -->
         <div class="rpt-panel rpt-panel--top">
         <div class="rpt-header">
@@ -247,6 +245,12 @@
           </div>
         </div>
       </div>
+  </ng-template>
+
+  <!-- Report preview -->
+  @if (selected()) {
+    <div class="report-preview-area" [class.report-preview-area--expanded]="previewExpanded()">
+      <ng-container *ngTemplateOutlet="reportSheet"></ng-container>
     </div>
   } @else {
     <div class="preview-empty">
@@ -255,6 +259,74 @@
     </div>
   }
 </div>
+
+
+@if (showPdfPreview() && selected()) {
+  <div class="pdf-preview-overlay" (click)="closePdfPreview()">
+    <section class="pdf-preview-dialog" role="dialog" aria-modal="true" aria-labelledby="pdf-preview-title" (click)="$event.stopPropagation()">
+      <header class="pdf-preview-header">
+        <div class="pdf-preview-heading">
+          <span class="pdf-preview-icon"><i class="ti ti-file-type-pdf" aria-hidden="true"></i></span>
+          <div>
+            <h2 id="pdf-preview-title">Save as PDF</h2>
+            <p>Preview and save the selected report</p>
+          </div>
+        </div>
+        <button type="button" class="pdf-preview-close" aria-label="Close PDF preview" (click)="closePdfPreview()">
+          <i class="ti ti-x" aria-hidden="true"></i>
+        </button>
+      </header>
+
+      <div class="pdf-preview-body">
+        <div class="pdf-preview-stage">
+          <div class="pdf-preview-scroll">
+            <div class="pdf-preview-paper" [style.--pdf-zoom]="pdfZoom() / 100">
+              <ng-container *ngTemplateOutlet="reportSheet"></ng-container>
+            </div>
+          </div>
+          <footer class="pdf-preview-toolbar">
+            <span class="pdf-page-count">A4 preview · Selected report</span>
+            <div class="pdf-zoom-controls">
+              <button type="button" aria-label="Zoom out" [disabled]="pdfZoom() <= 60" (click)="changePdfZoom(-10)">
+                <i class="ti ti-zoom-out" aria-hidden="true"></i>
+              </button>
+              <span>{{ pdfZoom() }}%</span>
+              <button type="button" aria-label="Zoom in" [disabled]="pdfZoom() >= 120" (click)="changePdfZoom(10)">
+                <i class="ti ti-zoom-in" aria-hidden="true"></i>
+              </button>
+            </div>
+          </footer>
+        </div>
+
+        <aside class="pdf-preview-settings">
+          <div class="pdf-settings-title"><i class="ti ti-settings" aria-hidden="true"></i><h3>PDF settings</h3></div>
+          <div class="pdf-setting-row">
+            <span class="pdf-setting-icon"><i class="ti ti-file" aria-hidden="true"></i></span>
+            <div><span>Paper size</span><strong>A4 (210 × 297 mm)</strong></div>
+          </div>
+          <div class="pdf-setting-row">
+            <span class="pdf-setting-icon"><i class="ti ti-layout" aria-hidden="true"></i></span>
+            <div><span>Orientation</span><strong>Portrait</strong></div>
+          </div>
+          <div class="pdf-setting-row">
+            <span class="pdf-setting-icon"><i class="ti ti-printer" aria-hidden="true"></i></span>
+            <div><span>Output</span><strong>Browser PDF / Print</strong></div>
+          </div>
+          <div class="pdf-preview-tip">
+            <i class="ti ti-info-circle" aria-hidden="true"></i>
+            <span>Your selected report will open in the browser print window. Choose <strong>Save as PDF</strong> as the destination.</span>
+          </div>
+          <div class="pdf-preview-actions">
+            <button type="button" class="lis-btn lis-btn--secondary" (click)="closePdfPreview()">Cancel</button>
+            <button type="button" class="lis-btn lis-btn--primary" (click)="savePdfFromPreview()">
+              <i class="ti ti-download" aria-hidden="true"></i> Save as PDF
+            </button>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </div>
+}
 
 
 @if (showDispatchConfirm() && selected(); as report) {
