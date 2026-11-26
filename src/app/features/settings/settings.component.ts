@@ -206,7 +206,8 @@ import { PdfPreferencesService } from '../../core/services/pdf-preferences.servi
 })
 export class SettingsComponent {
   protected readonly theme = inject(ThemeService);
-  protected readonly cursor = inject(CursorPreferenceService);\n  protected readonly pdfPreferences = inject(PdfPreferencesService);
+  protected readonly cursor = inject(CursorPreferenceService);
+  protected readonly pdfPreferences = inject(PdfPreferencesService);
   protected readonly cursorColors = [
     { label: 'Violet', value: '#8b5cf6' },
     { label: 'Teal', value: '#0d9488' },
@@ -216,7 +217,9 @@ export class SettingsComponent {
     { label: 'Black', value: '#171717' },
   ];
 
-  protected togglePdfSettings(): void {\n    this.pdfPreferences.setCustomSettingsEnabled(!this.pdfPreferences.customSettingsEnabled());\n  }\n\n  protected selectPalette(id: Palette): void {
+  protected togglePdfSettings(): void {
+    this.pdfPreferences.setCustomSettingsEnabled(!this.pdfPreferences.customSettingsEnabled());
+  }\n\n  protected selectPalette(id: Palette): void {
     this.theme.setPalette(id);
   }
 
