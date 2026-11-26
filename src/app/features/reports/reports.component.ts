@@ -198,16 +198,13 @@ export class ReportsComponent {
   });
   rangeStart = computed(() => this.filteredReports().length === 0 ? 0 : (this.currentPage() - 1) * PAGE_SIZE + 1);
   rangeEnd = computed(() => Math.min(this.currentPage() * PAGE_SIZE, this.filteredReports().length));
-  pendingCount = computed(() => this.reports.filter(r => r.status === 'pending').length);
-  dispatchedCount = computed(() => this.reports.filter(r => r.status === 'dispatched').length);
-  criticalCount = computed(() => this.reports.filter(r => REPORT_DETAILS[r.id]?.rows.some(row => row.flag === 'critical')).length);
-
-  stats = computed<ReportStat[]>(() => [
-    { id: 'total', label: 'Total Reports', value: String(this.reports.length), icon: 'file-text', variant: 'primary', delta: 'In demo dataset', deltaType: 'neutral', spark: '0,28 16,24 32,26 48,18 64,20 80,10 100,6' },
-    { id: 'pending', label: 'Pending Reports', value: String(this.pendingCount()), icon: 'hourglass', variant: 'warning', delta: 'Awaiting dispatch', deltaType: 'neutral', spark: '0,20 16,10 32,16 48,8 64,18 80,12 100,4' },
-    { id: 'dispatched', label: 'Dispatched', value: String(this.dispatchedCount()), icon: 'circle-check', variant: 'success', delta: 'Marked as dispatched', deltaType: 'neutral', spark: '0,26 16,22 32,24 48,14 64,18 80,8 100,10' },
-    { id: 'critical', label: 'Critical Reports', value: String(this.criticalCount()), icon: 'alert-triangle', variant: 'danger', delta: 'Needs clinical review', deltaType: 'neutral', spark: '0,10 16,18 32,12 48,22 64,14 80,24 100,18' },
-  ]);
+  listCountLabel = computed(() => {
+    const count = this.filteredReports().length;
+    const filter = this.statusFilter();
+    if (filter === 'pending') return `${count} pending`;
+    if (filter === 'dispatched') return `${count} dispatched`;
+    return `${count} reports`;
+  });
 
   setQuery(q: string): void {
     this.query.set(q);
