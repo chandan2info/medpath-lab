@@ -25,7 +25,10 @@ export class ReportPreviewComponent implements AfterViewInit {
   protected readonly data = this.previewSvc.data;
 
   ngAfterViewInit(): void {
-    if (window.history.state?.printAfterOpen) window.setTimeout(() => window.print(), 250);
+    if (window.history.state?.printAfterOpen) {
+      window.history.replaceState({ ...window.history.state, printAfterOpen: false }, document.title);
+      window.setTimeout(() => window.print(), 250);
+    }
   }
 
   /** Which sections of the navigation panel are "done" */
