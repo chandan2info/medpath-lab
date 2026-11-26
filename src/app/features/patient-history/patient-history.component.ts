@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, computed, signal, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { PatientFlowService } from '../../core/services/patient-flow.service';
+import { PatientFlowService } from '../../core/services/patient-flow.service';\nimport { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';\nimport { ReportPreviewService, ReportPreviewData } from '../../core/services/report-preview.service';\nimport { PatientHistoryService } from './services/patient-history.service';
 
 interface VisitRecord {
   date: string; time: string; dateValue: string; invoiceId: string; tests: string[];
@@ -15,28 +15,6 @@ interface PatientRecord {
 }
 interface PatientRow { patient: PatientRecord; latest: VisitRecord; }
 
-const PATIENTS: PatientRecord[] = [
-  { id:'PAT-0316', name:'Arun Pillai', age:61, sex:'Male', mobile:'+91 98xxx316', initials:'AP', avatarClass:'av-t', visits:[
-    {date:'25 Nov 2026',time:'10:24 AM',dateValue:'2026-11-25',invoiceId:'ORD-016832',tests:['CBC','KFT'],refDoctor:'Dr. Suresh Menon',amount:600,keyFinding:'K⁺ 6.8 mEq/L — Critical ↑↑',hasCritical:true,resultStatus:'Completed',paymentStatus:'Paid',reports:[{name:'CBC',status:'Available'},{name:'KFT',status:'Available'}],results:[{parameter:'Haemoglobin',value:13.8,unit:'g/dL',reference:'13.0–17.0',date:'25 Nov 2026'},{parameter:'Total WBC',value:7200,unit:'/µL',reference:'4,000–11,000',date:'25 Nov 2026'},{parameter:'Platelets',value:2.35,unit:'lakh/µL',reference:'1.50–4.50',date:'25 Nov 2026'},{parameter:'Creatinine',value:1.9,unit:'mg/dL',reference:'0.7–1.3',date:'25 Nov 2026'}]},
-    {date:'10 Oct 2026',time:'05:12 PM',dateValue:'2026-10-10',invoiceId:'ORD-015901',tests:['Lipid Profile'],refDoctor:'Dr. Suresh Menon',amount:700,keyFinding:'Creatinine 1.9 mg/dL ↑',hasCritical:false,resultStatus:'Completed',paymentStatus:'Paid',reports:[{name:'Lipid Profile',status:'Available'}],results:[{parameter:'Haemoglobin',value:12.9,unit:'g/dL',reference:'13.0–17.0',date:'10 Oct 2026'},{parameter:'Total WBC',value:6800,unit:'/µL',reference:'4,000–11,000',date:'10 Oct 2026'},{parameter:'Platelets',value:1.98,unit:'lakh/µL',reference:'1.50–4.50',date:'10 Oct 2026'}]},
-    {date:'15 Aug 2026',time:'11:03 AM',dateValue:'2026-08-15',invoiceId:'ORD-014221',tests:['CBC','LFT'],refDoctor:'Dr. Pradeep Iyer',amount:1500,keyFinding:'All within normal range',hasCritical:false,resultStatus:'Completed',paymentStatus:'Paid',reports:[{name:'CBC',status:'Available'},{name:'LFT',status:'Available'}],results:[{parameter:'Haemoglobin',value:12.4,unit:'g/dL',reference:'13.0–17.0',date:'15 Aug 2026'}]}
-  ]},
-  { id:'PAT-0318', name:'Kavitha Nair', age:34, sex:'Female', mobile:'+91 99xxx318', initials:'KN', avatarClass:'av-b', visits:[
-    {date:'24 Nov 2026',time:'05:12 PM',dateValue:'2026-11-24',invoiceId:'ORD-016811',tests:['Thyroid Profile'],refDoctor:'Dr. Suresh Menon',amount:750,keyFinding:'TSH within reference range',hasCritical:false,resultStatus:'Completed',paymentStatus:'Paid',reports:[{name:'Thyroid Profile',status:'Available'}],results:[{parameter:'TSH',value:3.2,unit:'µIU/mL',reference:'0.4–4.5',date:'24 Nov 2026'}]},
-    {date:'10 Oct 2026',time:'09:15 AM',dateValue:'2026-10-10',invoiceId:'ORD-015822',tests:['CBC','ESR'],refDoctor:'Dr. Anita Rao',amount:280,keyFinding:'All within normal range',hasCritical:false,resultStatus:'Completed',paymentStatus:'Paid',reports:[{name:'CBC',status:'Available'}],results:[{parameter:'TSH',value:3.6,unit:'µIU/mL',reference:'0.4–4.5',date:'10 Oct 2026'}]}
-  ]},
-  { id:'PAT-0315', name:'Priya Sharma', age:29, sex:'Female', mobile:'+91 98xxx315', initials:'PS', avatarClass:'av-p', visits:[
-    {date:'23 Nov 2026',time:'11:03 AM',dateValue:'2026-11-23',invoiceId:'ORD-016790',tests:['Thyroid Profile'],refDoctor:'Dr. Anita Rao',amount:700,keyFinding:'TSH 8.2 mIU/L ↑',hasCritical:false,resultStatus:'Completed',paymentStatus:'Paid',reports:[{name:'Thyroid Profile',status:'Available'}],results:[{parameter:'TSH',value:8.2,unit:'µIU/mL',reference:'0.4–4.5',date:'23 Nov 2026'}]}
-  ]},
-  { id:'PAT-0317', name:'Suresh Menon', age:52, sex:'Male', mobile:'+91 98xxx317', initials:'SM', avatarClass:'av-g', visits:[
-    {date:'22 Nov 2026',time:'08:30 AM',dateValue:'2026-11-22',invoiceId:'ORD-016744',tests:['HbA1c','Lipid Profile'],refDoctor:'Self',amount:850,keyFinding:'HbA1c 8.1% — Above target',hasCritical:false,resultStatus:'Completed',paymentStatus:'Paid',reports:[{name:'HbA1c',status:'Available'}],results:[{parameter:'HbA1c',value:8.1,unit:'%',reference:'4.0–5.6',date:'22 Nov 2026'}]},
-    {date:'01 Oct 2026',time:'08:15 AM',dateValue:'2026-10-01',invoiceId:'ORD-015400',tests:['Blood glucose','KFT'],refDoctor:'Self',amount:620,keyFinding:'FBS 148 mg/dL ↑',hasCritical:false,resultStatus:'Completed',paymentStatus:'Paid',reports:[{name:'Blood glucose',status:'Available'}],results:[{parameter:'HbA1c',value:7.8,unit:'%',reference:'4.0–5.6',date:'01 Oct 2026'}]}
-  ]},
-  { id:'PAT-0320', name:'Meena Joshi', age:45, sex:'Female', mobile:'+91 98xxx320', initials:'MJ', avatarClass:'av-b', visits:[
-    {date:'21 Nov 2026',time:'02:40 PM',dateValue:'2026-11-21',invoiceId:'ORD-016701',tests:['CBC','ESR'],refDoctor:'Dr. Pradeep Iyer',amount:280,keyFinding:'Processing — result pending',hasCritical:false,resultStatus:'Pending',paymentStatus:'Unpaid',reports:[{name:'CBC',status:'Pending'}],results:[]}
-  ]}
-];
-
 @Component({
   selector: 'app-patient-history', standalone: true, imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -49,7 +27,7 @@ export class PatientHistoryComponent {
   readonly viewTabs = ['All Patients', 'By Patient', 'By Test', 'Trends & Analytics'];
   readonly detailTabs = ['History', 'Reports', 'Compare', 'Trends'];
   searchQ = signal('');
-  selectedPatient = signal<PatientRecord | null>(PATIENTS[0]);
+  selectedPatient = signal<PatientRecord | null>(null);
   activeView = signal('All Patients');
   activeDetailTab = signal('History');
   dateRange = signal('3months');
@@ -148,7 +126,7 @@ export class PatientHistoryComponent {
 
   setDateRange(value: string): void { this.dateRange.set(value); this.page.set(1); }
   setActiveView(value: string): void { this.activeView.set(value); if (value === 'By Patient' && !this.selectedPatient()) this.selectedPatient.set(this.allPatients[0]); }
-  setAnalyticsPatient(id: string): void { this.analyticsPatientId.set(id); this.trendParameter.set(this.availableParametersForAnalytics()[0] ?? 'Haemoglobin'); }
+  setAnalyticsPatient(id: string): void { this.analyticsPatientId.set(id); this.trendParameter.set(this.availableParametersForAnalytics()[0] ?? ''); }
   availableParametersForAnalytics = computed(() => [...new Set(this.analyticsPatient().visits.flatMap(v => v.results.map(r => r.parameter)))].sort());
   selectPatient(patient: PatientRecord): void { this.selectedPatient.set(patient); this.activeDetailTab.set('History'); this.selectedCompareOrders.set([]); this.menuPatientId.set(null); }
   resetFilters(): void {
