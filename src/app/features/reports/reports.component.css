@@ -769,3 +769,27 @@
     max-height: 380px;
   }
 }
+
+
+/* ── Patient metadata contrast + report masthead polish ── */
+/* Keep the patient card surface exactly as-is; only improve
+   the foreground contrast of its labels and icon treatments. */
+.rpt-pl {
+  color: #75d9c4;
+}
+
+.rpt-pf-icon {
+  color: #8be7d5;
+  background: rgba(20, 145, 130, 0.22);
+  border-color: rgba(117, 217, 196, 0.22);
+}
+
+/* A deeper, calmer green gives the lab identity header a more
+   premium finish while retaining its existing layout and content. */
+.rpt-header {
+  background: linear-gradient(120deg, #075b49 0%, #08745b 100%);
+}
+
+.rpt-logo i {
+  color: #075b49;
+}
