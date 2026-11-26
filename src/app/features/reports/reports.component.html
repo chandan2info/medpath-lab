@@ -20,6 +20,11 @@
       <button type="button" class="lis-btn lis-btn--primary lis-btn--sm" (click)="printReport()">
         <i class="ti ti-printer" aria-hidden="true"></i> Print
       </button>
+      @if (selected()?.status === 'pending') {
+        <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="markAsDispatched()">
+          <i class="ti ti-send-check" aria-hidden="true"></i> Mark dispatched
+        </button>
+      }
     </div>
   }
 </div>
