@@ -839,3 +839,20 @@ button.report-row:focus-visible {
   position: relative;
   z-index: 1;
 }
+
+
+/* Keep the report list content-sized; do not stretch it to the
+   full height of the report preview beside it. */
+@media (min-width: 901px) {
+  .reports-layout {
+    align-items: start;
+  }
+  .report-list {
+    height: auto;
+    align-self: start;
+  }
+  .report-rows {
+    flex: 0 1 auto;
+    max-height: none;
+  }
+}
