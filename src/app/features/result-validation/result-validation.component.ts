@@ -149,7 +149,7 @@ export class ResultValidationComponent {
   }
 
   hasReport(sampleId: string): boolean {
-    return this.store.reports().some(report => report.sampleId === sampleId);
+    return this.data.reports().some(report => report.sampleId === sampleId);
   }
 
   testNames(sample: MockLabSample): string {
