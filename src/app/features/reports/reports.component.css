@@ -800,3 +800,24 @@
 .rpt-pl {
   color: var(--rpt-tint-label);
 }
+
+
+/* Report rows are native buttons for keyboard accessibility; reset UA button chrome. */
+button.report-row {
+  width: 100%;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+button.report-row.report-row--selected {
+  background: var(--lis-primary-xlight);
+}
+button.report-row:focus-visible {
+  outline: 2px solid var(--lis-primary);
+  outline-offset: -2px;
+  position: relative;
+  z-index: 1;
+}
