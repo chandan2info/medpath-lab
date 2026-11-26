@@ -10,7 +10,8 @@ interface VisitRecord {
   refDoctor: string; amount: number; keyFinding: string; hasCritical: boolean;
   resultStatus: 'Completed' | 'Pending'; paymentStatus: 'Paid' | 'Unpaid';
   reports: { name: string; status: 'Available' | 'Pending'; reportId?: string }[];
-  results: { parameter: string; value: number; unit: string; reference: string; date: string }[];\n  orderId: string; sampleId: string | null; reportId: string | null; invoiceRecordId: string | null;
+  results: { parameter: string; value: number; unit: string; reference: string; date: string }[];
+  orderId: string; sampleId: string | null; reportId: string | null; invoiceRecordId: string | null;
 }
 interface PatientRecord {
   id: string; name: string; age: number; sex: string; mobile: string;
