@@ -23,6 +23,10 @@ export class ReportsComponent {
   showDispatchConfirm = signal(false);
   showPdfPreview = signal(false);
   pdfZoom = signal(85);
+  customPdfSettings = signal(false);
+  pdfPaperSize = signal<'A4' | 'A3' | 'Letter' | 'Legal'>('A4');
+  pdfOrientation = signal<'portrait' | 'landscape'>('portrait');
+  pdfMargins = signal<'default' | 'narrow' | 'moderate' | 'wide'>('default');
   query = signal('');
   statusFilter = signal<ReportStatusFilter>('all');
   page = signal(1);
