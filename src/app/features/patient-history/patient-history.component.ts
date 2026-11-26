@@ -33,7 +33,6 @@ export class PatientHistoryComponent {
   paymentFilter = signal('all');
   genderFilter = signal('all');
   doctorFilter = signal('all');
-  abnormalOnly = signal(false);
   fromDate = signal('');
   toDate = signal('');
   menuPatientId = signal<string | null>(null);
@@ -68,11 +67,11 @@ export class PatientHistoryComponent {
         : date >= start && date <= now);
       const matchesSearch = !q || [patient.name, patient.id, patient.mobile, visit.invoiceId, visit.orderId, ...visit.tests].some(value => value.toLowerCase().includes(q));
       const matchesTest = this.testFilter() === 'all' || visit.tests.includes(this.testFilter());
-      const matchesResult = this.resultFilter() === 'all' || (this.resultFilter() === 'critical' ? visit.hasCritical : visit.resultStatus.toLowerCase() === this.resultFilter());
+      const matchesResult = this.resultFilter() === 'all' || visit.resultStatus.toLowerCase() === this.resultFilter();
       const matchesPayment = this.paymentFilter() === 'all' || visit.paymentStatus.toLowerCase() === this.paymentFilter();
       const matchesGender = this.genderFilter() === 'all' || patient.sex.toLowerCase() === this.genderFilter();
       const matchesDoctor = this.doctorFilter() === 'all' || visit.refDoctor === this.doctorFilter();
-      return inDate && matchesSearch && matchesTest && matchesResult && matchesPayment && matchesGender && matchesDoctor && (!this.abnormalOnly() || visit.hasCritical);
+      return inDate && matchesSearch && matchesTest && matchesResult && matchesPayment && matchesGender && matchesDoctor;
     }).map(visit => ({patient,visit}))).sort((a,b) => b.visit.dateValue.localeCompare(a.visit.dateValue));
   });
   filteredTestRows = computed(() => this.filteredVisits().flatMap(({ patient, visit }) =>
@@ -102,7 +101,6 @@ export class PatientHistoryComponent {
   completedCount = computed(() => this.filteredVisits().filter(item => item.visit.resultStatus === 'Completed').length);
   completionRate = computed(() => this.filteredVisitCount() ? Math.round(this.completedCount() / this.filteredVisitCount() * 100) : 0);
   totalTests = computed(() => this.selectedPatient()?.visits.reduce((sum,visit) => sum + visit.tests.length,0) ?? 0);
-  criticalCount = computed(() => this.selectedPatient()?.visits.filter(visit => visit.hasCritical).length ?? 0);
   compareEligibleVisits = computed(() => (this.selectedPatient()?.visits ?? []).filter(visit => visit.results.length > 0));
   compareVisits = computed(() => (this.selectedPatient()?.visits ?? [])
     .filter(visit => this.selectedCompareOrders().includes(visit.invoiceId))
@@ -189,7 +187,7 @@ export class PatientHistoryComponent {
   resetFilters(): void {
     this.searchQ.set(''); this.dateRange.set('3months'); this.testFilter.set('all'); this.resultFilter.set('all');
     this.paymentFilter.set('all'); this.genderFilter.set('all'); this.doctorFilter.set('all');
-    this.abnormalOnly.set(false); this.fromDate.set(''); this.toDate.set(''); this.page.set(1); this.testPage.set(1);
+    this.fromDate.set(''); this.toDate.set(''); this.page.set(1); this.testPage.set(1);
   }
   toggleCompare(orderId: string, checked: boolean): void {
     this.selectedCompareOrders.update(ids => checked ? (ids.length < 3 ? [...ids,orderId] : ids) : ids.filter(id => id !== orderId));
