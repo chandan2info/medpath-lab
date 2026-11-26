@@ -5,7 +5,7 @@ import { PatientFlowService } from '../../../core/services/patient-flow.service'
 export interface HistoryVisitRecord {
   date: string; time: string; dateValue: string; invoiceId: string; tests: string[];
   refDoctor: string; amount: number; keyFinding: string; hasCritical: boolean;
-  resultStatus: 'Completed' | 'Pending'; paymentStatus: 'Paid' | 'Unpaid';
+  resultStatus: 'Completed' | 'Pending'; paymentStatus: 'Paid' | 'Partial' | 'Unpaid';
   reports: { name: string; status: 'Available' | 'Pending'; reportId?: string }[];
   results: { parameter: string; value: number; unit: string; reference: string; date: string }[];
   orderId: string; sampleId: string | null; reportId: string | null; invoiceRecordId: string | null;
@@ -58,7 +58,7 @@ export class PatientHistoryService {
           tests: shortTests, refDoctor: visit.refDoctor || 'Not recorded', amount: order.total,
           keyFinding: report ? 'Validated report available' : result?.status === 'awaiting-validation' ? 'Awaiting result validation' : result?.status === 'rejected' ? 'Results rejected — review required' : sample ? 'Sample in processing workflow' : 'Order created — sample not yet collected',
           hasCritical: false, resultStatus: report ? 'Completed' : 'Pending',
-          paymentStatus: invoice?.status === 'paid' ? 'Paid' : 'Unpaid',
+          paymentStatus: invoice?.status === 'paid' ? 'Paid' : invoice?.status === 'partial' ? 'Partial' : 'Unpaid',
           reports: shortTests.map(test => ({ name: test, status: report ? 'Available' : 'Pending', reportId: report?.id })),
           results: resultRows, sampleId: sample?.id ?? null, reportId: report?.id ?? null, invoiceRecordId: invoice?.id ?? null
         });
