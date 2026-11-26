@@ -267,3 +267,32 @@
 .ph-report-comparison-workspace .ph-comparison-table{width:100%;overflow:auto}
 .ph-report-comparison-workspace .ph-comparison-table table{min-width:620px;width:100%;table-layout:auto}
 @media(max-width:650px){.ph-comparison-toolbar{grid-template-columns:1fr}.ph-report-comparison-workspace{padding:12px}}
+
+
+/* Patient details: large viewport modal replaces the narrow side drawer. */
+.ph-workspace:not(.ph-compare-workspace){grid-template-columns:minmax(0,1fr)}
+.ph-patient-modal-backdrop{
+  position:fixed;inset:0;z-index:1250;display:grid;place-items:center;
+  padding:clamp(12px,3vw,36px);background:rgba(5,12,24,.68);
+  backdrop-filter:blur(4px);overflow:auto;
+}
+.ph-patient-modal{
+  display:flex;flex-direction:column;width:min(1440px,94vw);
+  height:min(88vh,900px);min-height:420px;max-height:900px;
+  overflow:hidden;background:var(--card-bg);color:var(--text-primary);
+  border:1px solid var(--border-color);border-radius:14px;
+  box-shadow:0 28px 90px rgba(0,0,0,.42);
+}
+.ph-patient-modal .ph-detail-head{flex:none;padding:16px 20px}
+.ph-patient-modal .ph-detail-tabs{flex:none;padding:0 20px}
+.ph-patient-modal .ph-history-list,
+.ph-patient-modal .ph-trend-panel{flex:1;min-height:0;max-height:none;overflow:auto;padding:16px 20px;overscroll-behavior:contain}
+.ph-patient-modal .ph-report-row{flex:none}
+.ph-patient-modal .ph-invoice-notice{flex:none;margin:0 20px 12px}
+@media(max-width:700px){
+  .ph-patient-modal-backdrop{padding:0}
+  .ph-patient-modal{width:100vw;height:100dvh;max-height:none;min-height:0;border-radius:0;border:0}
+  .ph-patient-modal .ph-detail-head{padding:12px}
+  .ph-patient-modal .ph-detail-tabs{padding:0 12px}
+  .ph-patient-modal .ph-history-list,.ph-patient-modal .ph-trend-panel{padding:12px}
+}
