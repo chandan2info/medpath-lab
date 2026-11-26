@@ -48,9 +48,16 @@ export class PatientHistoryService {
         const date = new Date(order.createdAt);
         // Keep user-facing test names in history, filters, exports and report lists.
         const tests = order.testIds.map(id => this.flow.allTests.find(test => test.id === id)?.name ?? id);
-        const resultRows = Object.entries(result?.values ?? {}).map(([parameter, raw]) => ({
-          parameter, value: Number(raw), unit: '', reference: 'Not recorded', date: date.toLocaleDateString('en-IN')
-        })).filter(row => Number.isFinite(row.value));
+        const resultRows = Object.entries(result?.values ?? {}).map(([parameterKey, raw]) => {
+          const [testId, ...parameterIdParts] = parameterKey.split('.');
+          const parameterId = parameterIdParts.join('.');
+          const testName = this.flow.allTests.find(test => test.id === testId)?.name ?? testId;
+          const fallbackParameterName = parameterId.replace(/[-_]/g, ' ').replace(/\\b[a-z]/g, letter => letter.toUpperCase());
+          return {
+            parameter: result?.parameterLabels?.[parameterKey] || (parameterId ? `${testName} · ${fallbackParameterName}` : testName),
+            value: Number(raw), unit: '', reference: 'Not recorded', date: date.toLocaleDateString('en-IN')
+          };
+        }).filter(row => Number.isFinite(row.value));
         patient.visits.push({
           date: date.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }),
           time: date.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' }),
