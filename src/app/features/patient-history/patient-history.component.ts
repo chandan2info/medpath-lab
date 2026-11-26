@@ -96,6 +96,7 @@ export class PatientHistoryComponent {
   completionRate = computed(() => this.filteredVisitCount() ? Math.round(this.completedCount() / this.filteredVisitCount() * 100) : 0);
   totalTests = computed(() => this.selectedPatient()?.visits.reduce((sum,visit) => sum + visit.tests.length,0) ?? 0);
   criticalCount = computed(() => this.selectedPatient()?.visits.filter(visit => visit.hasCritical).length ?? 0);
+  compareEligibleVisits = computed(() => (this.selectedPatient()?.visits ?? []).filter(visit => visit.results.length > 0));
   compareVisits = computed(() => (this.selectedPatient()?.visits ?? [])
     .filter(visit => this.selectedCompareOrders().includes(visit.invoiceId))
     .sort((a,b) => a.dateValue.localeCompare(b.dateValue)));
