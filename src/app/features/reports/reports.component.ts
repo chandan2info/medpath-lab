@@ -19,6 +19,7 @@ export class ReportsComponent {
   reports = this.reportsData.reports;
   selected = signal<ReportRow | null>(this.reports()[0] ?? null);
   previewExpanded = signal(false);
+  showDispatchConfirm = signal(false);
   query = signal('');
   statusFilter = signal<ReportStatusFilter>('all');
   page = signal(1);
@@ -87,10 +88,22 @@ export class ReportsComponent {
   markAsDispatched(): void {
     const report = this.selected();
     if (!report || report.status !== 'pending') return;
-    const confirmed = window.confirm(`Mark report ${report.id} as dispatched? This demo action updates the local mock data only.`);
-    if (!confirmed) return;
+    this.showDispatchConfirm.set(true);
+  }
+
+  cancelDispatch(): void {
+    this.showDispatchConfirm.set(false);
+  }
+
+  confirmDispatch(): void {
+    const report = this.selected();
+    if (!report || report.status !== 'pending') {
+      this.showDispatchConfirm.set(false);
+      return;
+    }
 
     this.reportsData.markAsDispatched(report.id);
+    this.showDispatchConfirm.set(false);
     const updated = this.reports().find(item => item.id === report.id) ?? null;
     if (this.statusFilter() === 'pending') {
       this.selectFirstVisible();
