@@ -17,14 +17,14 @@ type ReportStatusFilter = 'all' | 'pending' | 'dispatched';
   styleUrl: './reports.component.css',
 })
 export class ReportsComponent {
-  private readonly reportsData = inject(ReportsDataService);\n  private readonly pdfPreferences = inject(PdfPreferencesService);\n  readonly customPdfSettings = this.pdfPreferences.customSettingsEnabled;
+  private readonly reportsData = inject(ReportsDataService);
+  private readonly pdfPreferences = inject(PdfPreferencesService);\n  readonly customPdfSettings = this.pdfPreferences.customSettingsEnabled;
   reports = this.reportsData.reports;
   selected = signal<ReportRow | null>(this.reports()[0] ?? null);
   previewExpanded = signal(false);
   showDispatchConfirm = signal(false);
   showPdfPreview = signal(false);
   pdfZoom = signal(85);
-  customPdfSettings = signal(false);
   pdfPaperSize = signal<'A4' | 'A3' | 'Letter' | 'Legal'>('A4');
   pdfOrientation = signal<'portrait' | 'landscape'>('portrait');
   pdfMargins = signal<'default' | 'narrow' | 'moderate' | 'wide'>('default');
