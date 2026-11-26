@@ -2,21 +2,11 @@ import { Component, ChangeDetectionStrategy, computed, signal, inject, HostListe
 import { Router, RouterLink } from '@angular/router';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
 import { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';
-import { ReportPreviewService, ReportPreviewData } from '../../core/services/report-preview.service';
-import { PatientHistoryService } from './services/patient-history.service';
+import { ReportPreviewService } from '../../core/services/report-preview.service';
+import { PatientHistoryService, HistoryPatientRecord, HistoryVisitRecord } from './services/patient-history.service';
 
-interface VisitRecord {
-  date: string; time: string; dateValue: string; invoiceId: string; tests: string[];
-  refDoctor: string; amount: number; keyFinding: string; hasCritical: boolean;
-  resultStatus: 'Completed' | 'Pending'; paymentStatus: 'Paid' | 'Partial' | 'Unpaid';
-  reports: { name: string; status: 'Available' | 'Pending'; reportId?: string }[];
-  results: { parameter: string; value: number; unit: string; reference: string; date: string }[];
-  orderId: string; sampleId: string | null; reportId: string | null; invoiceRecordId: string | null;
-}
-interface PatientRecord {
-  id: string; name: string; age: number; sex: string; mobile: string;
-  initials: string; avatarClass: string; visits: VisitRecord[];
-}
+type VisitRecord = HistoryVisitRecord;
+type PatientRecord = HistoryPatientRecord;
 interface PatientRow { patient: PatientRecord; latest: VisitRecord; }
 
 @Component({
@@ -116,7 +106,12 @@ export class PatientHistoryComponent {
       return {parameter,previous,latest,reference,change,values};
     });
   });
-  trendPoints = computed(() => (this.analyticsPatient()?.visits ?? this.selectedPatient()?.visits ?? []).slice().reverse().map(v => v.results.find(r => r.parameter === this.trendParameter()) ?? null).filter((r): r is NonNullable<typeof r> => !!r));
+  trendPoints = computed(() => {
+    const patient = this.activeView() === 'Trends & Analytics' ? this.analyticsPatient() : this.selectedPatient();
+    return (patient?.visits ?? []).slice().reverse()
+      .map(visit => visit.results.find(result => result.parameter === this.trendParameter()) ?? null)
+      .filter((result): result is NonNullable<typeof result> => !!result);
+  });
   trendMin = computed(() => Math.min(...this.trendPoints().map(p => p.value),0));
   trendMax = computed(() => Math.max(...this.trendPoints().map(p => p.value),1));
   trendChartCoordinates = computed(() => {
@@ -133,10 +128,28 @@ export class PatientHistoryComponent {
   trendPolyline = computed(() => this.trendChartCoordinates().map(point => `${point.x},${point.y}`).join(' '));
 
   setDateRange(value: string): void { this.dateRange.set(value); this.page.set(1); }
-  setActiveView(value: string): void { this.activeView.set(value); if (value === 'By Patient' && !this.selectedPatient() && this.allPatients.length) this.selectedPatient.set(this.allPatients[0]); }
+  setActiveView(value: string): void {
+    this.activeView.set(value);
+    if (value === 'By Patient' && !this.selectedPatient() && this.allPatients.length) {
+      this.selectPatient(this.allPatients[0]);
+    }
+    if (value === 'Trends & Analytics' && !this.analyticsPatientId() && this.allPatients.length) {
+      this.analyticsPatientId.set(this.allPatients[0].id);
+      this.trendParameter.set(this.availableParametersForAnalytics()[0] ?? '');
+    }
+  }
   setAnalyticsPatient(id: string): void { this.analyticsPatientId.set(id); this.trendParameter.set(this.availableParametersForAnalytics()[0] ?? ''); }
   availableParametersForAnalytics = computed(() => [...new Set(this.analyticsPatient().visits.flatMap(v => v.results.map(r => r.parameter)))].sort());
-  selectPatient(patient: PatientRecord): void { this.selectedPatient.set(patient); this.activeDetailTab.set('History'); this.selectedCompareOrders.set([]); this.menuPatientId.set(null); }
+  selectPatient(patient: PatientRecord): void {
+    this.selectedPatient.set(patient);
+    this.activeDetailTab.set('History');
+    this.selectedCompareOrders.set([]);
+    this.menuPatientId.set(null);
+    if (this.activeView() !== 'Trends & Analytics') {
+      const parameters = [...new Set(patient.visits.flatMap(visit => visit.results.map(result => result.parameter)))].sort();
+      if (!parameters.includes(this.trendParameter())) this.trendParameter.set(parameters[0] ?? '');
+    }
+  }
   openPatientReport(patient: PatientRecord, visit: VisitRecord, reprint = false): void { this.selectPatient(patient); this.openReport(visit, reprint); }
   openPatientInvoice(patient: PatientRecord, visit: VisitRecord): void { this.selectPatient(patient); this.showInvoice(visit); }
   toggleActionMenu(patientId: string, event: MouseEvent): void {
