@@ -49,10 +49,11 @@ import { PdfPreferencesService } from '../../core/services/pdf-preferences.servi
           <span class="theme-label">Dark mode</span>
           <span class="theme-desc">Switch between light and dark backgrounds.</span>
         </div>
-        <button type="button" class="mode-toggle" role="switch"
+        <button type="button" class="mode-switch" role="switch" aria-label="Dark mode"
+          [class.is-on]="theme.theme() === 'dark'"
           [attr.aria-checked]="theme.theme() === 'dark'" (click)="theme.toggle()">
-          <i class="ti" [class.ti-sun]="theme.theme() === 'light'" [class.ti-moon]="theme.theme() === 'dark'" aria-hidden="true"></i>
-          {{ theme.theme() === 'dark' ? 'Dark' : 'Light' }}
+          <span class="switch-track" aria-hidden="true"><span class="switch-thumb"><i class="ti" [class.ti-moon]="theme.theme() === 'dark'" [class.ti-sun]="theme.theme() === 'light'"></i></span></span>
+          <span class="switch-state">{{ theme.theme() === 'dark' ? 'On' : 'Off' }}</span>
         </button>
       </div>
     </section>
@@ -71,12 +72,12 @@ import { PdfPreferencesService } from '../../core/services/pdf-preferences.servi
           <span class="theme-label">Enable custom cursor</span>
           <span class="theme-desc">Use the MedPath cursor instead of the browser default on desktop.</span>
         </div>
-        <button type="button" class="mode-toggle" role="switch"
-          [class.switch-active]="cursor.enabled()"
+        <button type="button" class="mode-switch" role="switch" aria-label="Enable custom cursor"
+          [class.is-on]="cursor.enabled()"
           [attr.aria-checked]="cursor.enabled()"
           (click)="cursor.toggle()">
-          <span class="switch-dot" aria-hidden="true"></span>
-          {{ cursor.enabled() ? 'On' : 'Off' }}
+          <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+          <span class="switch-state">{{ cursor.enabled() ? 'On' : 'Off' }}</span>
         </button>
       </div>
 
@@ -123,12 +124,12 @@ import { PdfPreferencesService } from '../../core/services/pdf-preferences.servi
           <span class="theme-label">Enable custom PDF settings</span>
           <span class="theme-desc">Allow users to change paper size, orientation and margins in the report PDF preview.</span>
         </div>
-        <button type="button" class="mode-toggle"
-          [class.switch-active]="pdfPreferences.customSettingsEnabled()"
-          role="switch" [attr.aria-checked]="pdfPreferences.customSettingsEnabled()"
+        <button type="button" class="mode-switch" role="switch" aria-label="Enable custom PDF settings"
+          [class.is-on]="pdfPreferences.customSettingsEnabled()"
+          [attr.aria-checked]="pdfPreferences.customSettingsEnabled()"
           (click)="togglePdfSettings()">
-          <span class="switch-dot" aria-hidden="true"></span>
-          {{ pdfPreferences.customSettingsEnabled() ? 'On' : 'Off' }}
+          <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+          <span class="switch-state">{{ pdfPreferences.customSettingsEnabled() ? 'On' : 'Off' }}</span>
         </button>
       </div>
       <p class="settings-card-sub pdf-preference-status">
@@ -185,15 +186,31 @@ import { PdfPreferencesService } from '../../core/services/pdf-preferences.servi
       display:flex; align-items:center; justify-content:space-between; gap:var(--space-4);
       margin-top:var(--space-5); padding-top:var(--space-5); border-top:1px solid var(--border);
     }
-    .mode-toggle {
-      display:flex; align-items:center; gap:var(--space-2); font-size:13px; font-weight:600;
-      color:var(--text-primary); background:var(--bg-surface-alt); border:1.5px solid var(--border);
-      border-radius:var(--radius-md); padding:8px 14px; cursor:pointer; transition:border-color var(--transition-fast),background var(--transition-fast); font-family:inherit;
+    .mode-switch {
+      display:inline-flex; align-items:center; justify-content:flex-start; gap:10px;
+      min-width:94px; padding:5px 11px 5px 6px; border:1px solid var(--border);
+      border-radius:999px; background:var(--bg-surface-alt); color:var(--text-secondary);
+      cursor:pointer; font:600 12px/1 inherit; transition:background .2s ease,border-color .2s ease,box-shadow .2s ease;
+      -webkit-tap-highlight-color:transparent;
     }
-    .mode-toggle:hover { border-color:var(--primary-light); }
-    .mode-toggle i { font-size:16px; color:var(--theme-icon-color,var(--primary-deeper)); }
-    .switch-dot { width:8px; height:8px; border-radius:50%; background:var(--text-secondary); }
-    .switch-active .switch-dot { background:var(--color-success); }
+    .mode-switch:hover { border-color:var(--primary-light); }
+    .mode-switch:focus-visible { outline:2px solid var(--primary-deeper); outline-offset:3px; }
+    .switch-track {
+      width:38px; height:22px; flex:0 0 38px; display:flex; align-items:center;
+      padding:3px; border-radius:999px; background:var(--border);
+      transition:background .22s ease,box-shadow .22s ease;
+    }
+    .switch-thumb {
+      width:16px; height:16px; display:grid; place-items:center; border-radius:50%;
+      background:var(--bg-surface); color:var(--text-secondary);
+      box-shadow:0 1px 3px rgba(0,0,0,.24); transform:translateX(0);
+      transition:transform .22s cubic-bezier(.2,.8,.2,1),color .2s ease;
+    }
+    .switch-thumb i { font-size:10px; }
+    .mode-switch.is-on { color:var(--primary-deeper); border-color:color-mix(in srgb,var(--primary-deeper) 42%,var(--border)); }
+    .mode-switch.is-on .switch-track { background:var(--primary-deeper); box-shadow:0 0 0 3px var(--primary-xlight); }
+    .mode-switch.is-on .switch-thumb { transform:translateX(16px); color:var(--primary-deeper); }
+    .switch-state { min-width:20px; text-align:center; letter-spacing:.02em; text-transform:uppercase; }
     .color-picker-control { display:flex; align-items:center; gap:10px; }
     .color-picker { width:38px; height:38px; display:grid; place-items:center; padding:4px; border:1px solid var(--border); border-radius:10px; background:var(--bg-surface-alt); cursor:pointer; }
     .color-picker input { position:absolute; width:1px; height:1px; opacity:0; }
