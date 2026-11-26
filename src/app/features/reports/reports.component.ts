@@ -159,6 +159,7 @@ type ReportStatusFilter = 'all' | 'pending' | 'dispatched';
 export class ReportsComponent {
   protected readonly reports = REPORTS;
   selected = signal<ReportRow | null>(REPORTS[0]);
+  previewExpanded = signal(false);
   query = signal('');
   statusFilter = signal<ReportStatusFilter>('all');
   page = signal(1);
@@ -205,6 +206,10 @@ export class ReportsComponent {
     this.statusFilter.set(status);
     this.page.set(1);
     this.selectFirstVisible();
+  }
+
+  togglePreviewExpanded(): void {
+    this.previewExpanded.update(expanded => !expanded);
   }
 
   selectReport(report: ReportRow): void {
