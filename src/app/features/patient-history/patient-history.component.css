@@ -432,3 +432,17 @@
 .ph-patient-table tbody tr.row-selected > td:last-child .icon-action{
   background-color:var(--body-bg);
 }
+
+
+/* Remove the unnecessary vertical divider before the sticky Actions column. */
+.ph-patient-table thead th:last-child,
+.ph-patient-table tbody td:last-child{
+  border-left:0!important;
+  outline:0!important;
+}
+.ph-patient-table thead th:last-child{
+  box-shadow:none!important;
+}
+.ph-patient-table tbody td:last-child{
+  box-shadow:none!important;
+}
