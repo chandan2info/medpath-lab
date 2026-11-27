@@ -208,6 +208,42 @@ import { PdfPreferencesService } from '../../core/services/pdf-preferences.servi
     .theme-label { font-size:13px; font-weight:600; color:var(--text-primary); }
     .theme-desc { font-size:11.5px; color:var(--text-secondary); }
     .theme-check { position:absolute; top:8px; right:8px; font-size:16px; color:var(--primary-deeper); }
+    .cursor-shape-row {
+      display:flex; flex-direction:column; align-items:flex-start; gap:12px;
+      margin-top:var(--space-5); padding-top:var(--space-5); border-top:1px solid var(--border);
+    }
+    .cursor-shape-options {
+      display:grid; grid-template-columns:repeat(2,minmax(136px,164px)); gap:12px;
+      width:100%; max-width:340px;
+    }
+    .cursor-shape-option {
+      position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:9px; min-width:0; min-height:112px; padding:12px;
+      border:1px solid var(--border); border-radius:12px;
+      background:var(--bg-surface-alt); color:var(--text-secondary);
+      font:inherit; font-size:12px; font-weight:600; line-height:1.3;
+      cursor:pointer; transition:border-color .2s ease,background .2s ease,box-shadow .2s ease,transform .2s ease;
+    }
+    .cursor-shape-option svg {
+      display:block; width:42px; height:42px; max-width:42px; max-height:42px;
+      flex:0 0 42px; overflow:visible;
+    }
+    .cursor-shape-option span { display:block; white-space:nowrap; }
+    .cursor-shape-option:hover { border-color:var(--primary-light); transform:translateY(-1px); }
+    .cursor-shape-option.selected {
+      border-color:var(--primary-deeper); background:var(--primary-xlight);
+      color:var(--text-primary);
+      box-shadow:0 0 0 2px color-mix(in srgb,var(--primary-deeper) 12%,transparent);
+    }
+    .cursor-shape-option i {
+      position:absolute; top:8px; right:8px; color:var(--primary-deeper); font-size:15px;
+    }
+    .cursor-shape-option:focus-visible { outline:2px solid var(--primary-deeper); outline-offset:3px; }
+    @media(max-width:560px) {
+      .cursor-shape-options { grid-template-columns:repeat(2,minmax(0,1fr)); max-width:100%; }
+      .cursor-shape-option { min-height:104px; padding:10px 6px; }
+      .cursor-shape-option svg { width:38px; height:38px; flex-basis:38px; }
+    }
     .mode-row,.cursor-enable-row,.cursor-color-row {
       display:flex; align-items:center; justify-content:space-between; gap:var(--space-4);
       margin-top:var(--space-5); padding-top:var(--space-5); border-top:1px solid var(--border);
