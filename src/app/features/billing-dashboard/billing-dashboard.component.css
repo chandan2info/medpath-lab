@@ -10,7 +10,7 @@
 .metric-card{padding:14px 16px}
 .metric-top{display:flex;align-items:center;justify-content:space-between;color:var(--text-secondary);font-size:11px;font-weight:600}
 .metric-icon{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;font-size:16px}
-.metric-icon--blue{color:#4f83db;background:rgba(79,131,219,.12)}.metric-icon--green{color:#16a47c;background:rgba(22,164,124,.12)}.metric-icon--amber{color:#d28a20;background:rgba(210,138,32,.13)}.metric-icon--teal{color:#169b9b;background:rgba(22,155,155,.12)}
+.metric-icon--blue{color:#4f83db;background:rgba(79,131,219,.12)}.metric-icon--green{color:var(--color-success);background:color-mix(in srgb,var(--color-success) 14%,transparent)}.metric-icon--amber{color:#d28a20;background:rgba(210,138,32,.13)}.metric-icon--teal{color:#169b9b;background:rgba(22,155,155,.12)}
 .metric-card>strong{display:block;margin:8px 0 2px;color:var(--text-primary);font-size:25px;line-height:1.15;font-weight:750;letter-spacing:-.035em;font-variant-numeric:tabular-nums}
 .metric-card small{color:var(--text-secondary);font-size:10px}.amount-warning{color:#d97706!important}
 .worklist-card{overflow:hidden}.worklist-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px 18px 13px}.worklist-heading h2{margin:0 0 4px;font-size:15px;font-weight:700}
@@ -35,7 +35,7 @@ tbody tr:hover{background:color-mix(in srgb,var(--lis-primary,#1d9e75) 3%,transp
 .patient-name{margin-bottom:3px;font-size:12px;font-weight:700}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
 .test-summary{max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.money{font-variant-numeric:tabular-nums;white-space:nowrap}
 .status-pill{display:inline-flex;align-items:center;padding:4px 8px;border-radius:20px;font-size:9px;font-weight:700;white-space:nowrap}
-.status-pill--paid,.status-pill--ready{color:#13845f;background:rgba(19,132,95,.12)}.status-pill--partial{color:#b7791f;background:rgba(183,121,31,.13)}.status-pill--unpaid{color:#c24141;background:rgba(194,65,65,.12)}.status-pill--neutral{color:var(--text-secondary);background:var(--body-bg)}
+.status-pill--paid,.status-pill--ready{color:var(--color-success);background:color-mix(in srgb,var(--color-success) 14%,transparent)}.status-pill--partial{color:#b7791f;background:rgba(183,121,31,.13)}.status-pill--unpaid{color:#c24141;background:rgba(194,65,65,.12)}.status-pill--neutral{color:var(--text-secondary);background:var(--body-bg)}
 .row-actions{display:flex;align-items:center;gap:6px;min-width:155px}
 .small-action{padding:6px 9px;border:1px solid var(--border-color);border-radius:7px;background:var(--body-bg);color:var(--text-primary);font:inherit;font-size:10px;font-weight:650;white-space:nowrap;cursor:pointer}
 .small-action--primary{border-color:transparent;background:var(--lis-primary,#1d9e75);color:#fff}.small-action--secondary{color:var(--lis-primary,#1d9e75)}
@@ -245,7 +245,7 @@ tbody tr:hover{background:color-mix(in srgb,var(--lis-primary,#1d9e75) 3%,transp
 .mini-kpi{display:flex;align-items:center;gap:8px;min-width:112px;padding:7px 10px;border:1px solid var(--border-color);border-radius:9px;background:var(--body-bg)}
 .kpi-icon{display:grid;place-items:center;width:27px;height:27px;flex:0 0 auto;border-radius:8px;font-size:14px}
 .kpi-icon--blue{color:#4f83db;background:rgba(79,131,219,.14)}
-.kpi-icon--green{color:#16a47c;background:rgba(22,164,124,.14)}
+.kpi-icon--green{color:var(--color-success);background:color-mix(in srgb,var(--color-success) 16%,transparent)}
 .kpi-icon--orange{color:#dc7b32;background:rgba(220,123,50,.14)}
 .mini-kpi small{display:block;margin-bottom:2px;color:var(--text-secondary);font-size:8px;white-space:nowrap}
 .mini-kpi strong{display:block;color:var(--text-primary);font-size:13px;line-height:1.1;font-weight:750;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -277,7 +277,7 @@ tbody tr:hover{background:color-mix(in srgb,var(--lis-primary,#1d9e75) 3%,transp
 .invoice-id,.patient-name{display:block;color:var(--text-primary);font-size:10px;font-weight:700;white-space:nowrap}
 .cell-subtitle{display:block;margin-top:2px;color:var(--text-secondary);font-size:9px;white-space:nowrap}
 .invoice-table .money{font-size:10px;font-weight:650;font-variant-numeric:tabular-nums;white-space:nowrap}
-.invoice-table .paid-amount{color:#18ad85}
+.invoice-table .paid-amount{color:var(--color-success)}
 .invoice-table .status-pill{padding:4px 7px;font-size:8px}
 .invoice-table .actions-column{width:105px;min-width:105px}
 .invoice-table .row-actions{display:flex;align-items:center;gap:5px;min-width:0}
@@ -345,13 +345,13 @@ tbody tr:hover{background:color-mix(in srgb,var(--lis-primary,#1d9e75) 3%,transp
 .invoice-table .row-actions{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:7px!important;width:auto!important;min-width:0!important;white-space:nowrap!important;visibility:visible!important;opacity:1!important}
 .billing-collect-button{
  display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;
- min-width:86px;min-height:34px;padding:0 11px!important;border:1px solid #079b78!important;
- border-radius:7px!important;background:#079b78!important;color:#fff!important;
+ min-width:86px;min-height:34px;padding:0 11px!important;border:1px solid var(--lis-primary,#8c75cf)!important;
+ border-radius:7px!important;background:var(--lis-primary,#8c75cf)!important;color:#fff!important;
  font-family:inherit!important;font-size:12px!important;font-weight:700!important;line-height:1.2!important;white-space:nowrap!important;cursor:pointer!important;
  visibility:visible!important;opacity:1!important;position:relative!important;z-index:1
 }
 .billing-collect-button i{font-size:14px!important}
-.billing-collect-button:hover{background:#087f65!important;border-color:#087f65!important}
+.billing-collect-button:hover{background:color-mix(in srgb,var(--lis-primary,#8c75cf) 88%,#000)!important;border-color:color-mix(in srgb,var(--lis-primary,#8c75cf) 88%,#000)!important}
 .billing-delete-button{
  display:inline-grid!important;place-items:center!important;flex:0 0 32px!important;
  width:32px!important;height:32px!important;border:1px solid rgba(194,65,65,.35)!important;
@@ -359,7 +359,7 @@ tbody tr:hover{background:color-mix(in srgb,var(--lis-primary,#1d9e75) 3%,transp
  font-size:15px!important;cursor:pointer!important;visibility:visible!important;opacity:1!important
 }
 .billing-delete-button:hover{background:rgba(194,65,65,.16)!important;border-color:#d45b5b!important}
-.billing-settled-label{display:inline-flex;align-items:center;gap:4px;padding:6px 8px;border-radius:7px;background:rgba(19,132,95,.12);color:#13845f;font-size:11px;font-weight:700;white-space:nowrap}
+.billing-settled-label{display:inline-flex;align-items:center;gap:4px;padding:6px 8px;border-radius:7px;background:color-mix(in srgb,var(--color-success) 14%,transparent);color:var(--color-success);font-size:11px;font-weight:700;white-space:nowrap}
 @media(max-width:640px){
  .invoice-table th{font-size:11px!important}
  .invoice-table td{font-size:12px!important;padding:11px!important}

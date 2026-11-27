@@ -635,23 +635,25 @@
 }
 
 .rpt-pat-band {
-  /* A distinct, calm teal patient card with enough contrast in both themes. */
-  background: linear-gradient(135deg, rgba(20, 145, 130, 0.16), rgba(67, 184, 164, 0.10));
-  border: 1px solid rgba(20, 145, 130, 0.28);
+  /* Keep the patient detail card tied to the selected report palette. */
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--rpt-tint-border) 24%, var(--rpt-tint-bg)),
+    var(--rpt-tint-bg));
+  border: 1px solid var(--rpt-tint-border);
   padding: 16px 18px;
   gap: 13px 16px;
   margin: -28px 14px 14px;
-  box-shadow: 0 6px 18px rgba(15, 92, 83, 0.12);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--rpt-band-bg) 12%, transparent);
 }
 
 .rpt-pf-icon {
-  background: rgba(20, 145, 130, 0.16);
-  color: #08796f;
-  border: 1px solid rgba(20, 145, 130, 0.16);
+  background: color-mix(in srgb, var(--rpt-tint-border) 24%, transparent);
+  color: var(--rpt-tint-label);
+  border: 1px solid color-mix(in srgb, var(--rpt-tint-border) 24%, transparent);
 }
 
 .rpt-pl {
-  color: #08796f;
+  color: var(--rpt-tint-label);
 }
 
 .rpt-pv {
@@ -790,31 +792,23 @@
 
 
 /* ── Patient metadata contrast + report masthead polish ── */
-/* Keep the patient card surface exactly as-is; only improve
-   the foreground contrast of its labels and icon treatments. */
-.rpt-pl {
-  color: #75d9c4;
-}
-
+/* Keep the report masthead and patient metadata on the shared report tokens. */
 .rpt-pf-icon {
-  color: #8be7d5;
-  background: rgba(20, 145, 130, 0.22);
-  border-color: rgba(117, 217, 196, 0.22);
+  color: var(--rpt-tint-label);
+  background: color-mix(in srgb, var(--rpt-tint-border) 28%, transparent);
+  border-color: color-mix(in srgb, var(--rpt-tint-border) 28%, transparent);
 }
 
-/* A deeper, calmer green gives the lab identity header a more
-   premium finish while retaining its existing layout and content. */
 .rpt-header {
-  background: linear-gradient(120deg, #075b49 0%, #08745b 100%);
+  background: linear-gradient(120deg, var(--rpt-band-bg), var(--rpt-band-bg-2));
 }
 
 .rpt-logo i {
-  color: #075b49;
+  color: var(--rpt-band-bg);
 }
 
 
-/* Keep patient labels aligned with the report's theme-aware teal palette.
-   Avoid --primary-deeper here: some app themes define it as violet/blue. */
+/* Keep patient labels aligned with the selected report palette. */
 .rpt-pl {
   color: var(--rpt-tint-label);
 }
