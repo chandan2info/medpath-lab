@@ -3,6 +3,7 @@ import { DatePipe, UpperCasePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MockResultRecord, MockLabSample, MockVisit, MockLabOrder } from '../../core/services/lab-workflow-mock.service';
 import { ResultValidationDataService } from './result-validation-data.service';
+import { SampleTrackingService } from '../../core/services/sample-tracking.service';
 
 type ValidationTab = 'pending' | 'validated' | 'returned';
 interface ValidationItem {
@@ -22,6 +23,7 @@ interface ValidationItem {
 })
 export class ResultValidationComponent {
   private readonly data = inject(ResultValidationDataService);
+  private readonly sampleTracking = inject(SampleTrackingService);
   readonly activeTab = signal<ValidationTab>('pending');
   readonly searchTerm = signal('');
   readonly priorityFilter = signal('all');
@@ -111,6 +113,7 @@ export class ResultValidationComponent {
     if (!item) return;
     try {
       this.data.approve(item.sample.id, 'Demo Pathologist', this.reviewNote().trim());
+      this.sampleTracking.updateStatus(item.sample.id, 'ready');
       this.showNotice('Results approved. This sample is now eligible for report generation.', 'success');
       this.closeReview();
     } catch (error) {
@@ -128,6 +131,7 @@ export class ResultValidationComponent {
     }
     try {
       this.data.returnForCorrection(item.sample.id, 'Demo Pathologist', note);
+      this.sampleTracking.updateStatus(item.sample.id, 'pending');
       this.showNotice('Results returned to Result Entry for correction.', 'success');
       this.closeReview();
     } catch (error) {

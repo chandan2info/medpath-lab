@@ -186,8 +186,18 @@ export class LabWorkflowMockService {
   updateSampleTrackingDetails(sampleId: string, details: Partial<NonNullable<MockLabSample['tracking']>> & { trackingStatus?: MockLabSample['trackingStatus'] }): void {
     const current = this.state();
     if (!current.samples.some(item => item.id === sampleId)) throw new Error('Sample not found.');
+    const { trackingStatus, ...trackingDetails } = details;
     this.persist({ ...current, samples: current.samples.map(item => item.id === sampleId
-      ? { ...item, tracking: { ...item.tracking, ...details }, trackingStatus: details.trackingStatus ?? item.trackingStatus }
+      ? {
+          ...item,
+          tracking: {
+            ...item.tracking,
+            ...trackingDetails,
+            etaLabel: trackingDetails.etaLabel ?? item.tracking?.etaLabel ?? '',
+            tubes: trackingDetails.tubes ?? item.tracking?.tubes ?? []
+          },
+          trackingStatus: trackingStatus ?? item.trackingStatus
+        }
       : item) });
   }
 
