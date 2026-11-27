@@ -87,6 +87,21 @@ describe('CursorPreferenceService', () => {
     expect(document.querySelector('[data-medpath-cursor-color]')?.textContent).toContain('M4 3.5');
   });
 
+  it('supports and persists the rounded cursor shape', () => {
+    const service = TestBed.inject(CursorPreferenceService);
+    service.setShape('rounded');
+    expect(service.shape()).toBe('rounded');
+    expect(Storage.prototype.setItem).toHaveBeenCalledWith(shapeKey, 'rounded');
+    expect(document.querySelector('[data-medpath-cursor-color]')?.textContent).toContain('M6%203.5');
+  });
+
+  it('supports the compact cursor shape', () => {
+    const service = TestBed.inject(CursorPreferenceService);
+    service.setShape('compact');
+    expect(service.shape()).toBe('compact');
+    expect(document.querySelector('[data-medpath-cursor-color]')?.textContent).toContain('M5%203');
+  });
+
   it('restores a selected cursor shape from local storage', () => {
     (Storage.prototype.getItem as jasmine.Spy).and.callFake((key: string) => key === shapeKey ? 'soft-pointer' : null);
     const service = TestBed.inject(CursorPreferenceService);
