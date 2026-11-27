@@ -502,6 +502,7 @@
   border-bottom: 0.5px solid var(--border-color);
   color: var(--text-primary);
 }
+.rpt-method { display: block; margin-top: 2px; color: var(--rpt-ref-text); font-size: 9px; font-weight: 400; }
 .rpt-tbl tbody tr:last-child td { border-bottom: none; }
 .rpt-row-crit { background: var(--rpt-crit-bg); }
 .rpt-bold { font-weight: 600; }

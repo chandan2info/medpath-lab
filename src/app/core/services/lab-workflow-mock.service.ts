@@ -20,12 +20,16 @@ export interface MockInvoice {
 }
 export interface MockLabSample {
   id: string; orderId: string; visitId: string; patientId: string; patientName: string;
+  gender?: 'male'|'female'|'other';
+  dob?: string;
   testIds: string[]; priority: 'routine'|'urgent'|'stat'; status: MockSampleStatus;
+  fastingStatus?: 'fasting'|'non-fasting'|'post-meal'|'unknown';
   collectedAt: string; collector: string; checklist: string[]; notes: string;
   specimenGroups: Array<{tubeType:string;sampleType:string;testIds:string[]}>;
 }
 export interface MockResultRecord {
   id: string; sampleId: string; status: MockResultStatus; values: Record<string,string>; parameterLabels?: Record<string,string>;
+  parameterDetails?: Record<string,{ unit:string; range:string; flag:'normal'|'high'|'low'|'critical'|'unavailable'; method:string }>;
   updatedAt: string; reviewer?: string; reviewedAt?: string; reviewNote?: string;
 }
 export interface MockReport {
@@ -183,13 +187,13 @@ export class LabWorkflowMockService {
     return updated;
   }
 
-  saveResults(sampleId: string, values: Record<string,string>, parameterLabels: Record<string,string> = {}): MockResultRecord {
+  saveResults(sampleId: string, values: Record<string,string>, parameterLabels: Record<string,string> = {}, parameterDetails: MockResultRecord['parameterDetails'] = {}): MockResultRecord {
     const current = this.state();
     if (!current.samples.some(s => s.id === sampleId)) throw new Error('Sample not found.');
     const existing = current.results.find(r => r.sampleId === sampleId);
     const result: MockResultRecord = {
       id: existing?.id ?? this.id('RES'), sampleId, status: 'draft',
-      values: { ...values }, parameterLabels: { ...parameterLabels }, updatedAt: new Date().toISOString()
+      values: { ...values }, parameterLabels: { ...parameterLabels }, parameterDetails: { ...parameterDetails }, updatedAt: new Date().toISOString()
     };
     this.persist({
       ...current,

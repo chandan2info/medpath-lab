@@ -202,7 +202,7 @@
           <tbody>
             @for (row of (selectedDetail()?.rows ?? []); track row.name) {
               <tr [class.rpt-row-crit]="row.flag === 'critical'">
-                <td [class.rpt-bold]="row.flag === 'critical'">{{ row.name }}</td>
+                <td [class.rpt-bold]="row.flag === 'critical'">{{ row.name }}@if (row.method) { <small class="rpt-method">{{ row.method }}</small> }</td>
                 <td [class]="'rpt-flag-' + row.flag">
                   <strong>{{ row.result }}</strong>
                 @if (row.flag === 'critical' || row.flag === 'high') { <span> ↑</span> }

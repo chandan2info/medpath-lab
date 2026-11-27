@@ -32,7 +32,8 @@ export class PatientHistoryService {
     for (const visit of visits) {
       const visitOrders = orders.filter(order => order.visitId === visit.id);
       if (!visitOrders.length) continue;
-      const age = Number(visit.ageYears ?? 0) || 0;
+      // Registration stores formatted ages such as "30 Years"; Number() returned NaN.
+      const age = Number.parseInt(visit.ageYears ?? '', 10) || 0;
       const sex = visit.gender || 'Not recorded';
       const name = visit.patientName || 'Patient';
       const initials = name.split(/\s+/).filter(Boolean).slice(0,2).map(part => part[0]).join('').toUpperCase();
@@ -63,8 +64,16 @@ export class PatientHistoryService {
           time: date.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' }),
           dateValue: order.createdAt.slice(0,10), invoiceId: order.id, orderId: order.id,
           tests, refDoctor: visit.refDoctor || 'Not recorded', amount: order.total,
-          keyFinding: report ? 'Validated report available' : result?.status === 'awaiting-validation' ? 'Awaiting result validation' : result?.status === 'rejected' ? 'Results rejected — review required' : sample ? 'Sample in processing workflow' : 'Order created — sample not yet collected',
-          hasCritical: false, resultStatus: report ? 'Completed' : 'Pending',
+          keyFinding: report ? 'Validated report available'
+            : result?.status === 'validated' ? 'Results validated — report not generated'
+            : result?.status === 'awaiting-validation' ? 'Awaiting result validation'
+            : result?.status === 'rejected' ? 'Results rejected — review required'
+            : sample?.status === 'processing' ? 'Sample in testing'
+            : sample?.status === 'received' ? 'Sample received by the lab'
+            : sample?.status === 'collected' ? 'Sample collected — awaiting lab receipt'
+            : sample ? 'Sample status: ' + sample.status.replace(/-/g, ' ')
+            : 'Order created — sample not yet collected',
+          hasCritical: false, resultStatus: report || result?.status === 'validated' ? 'Completed' : 'Pending',
           paymentStatus: invoice?.status === 'paid' ? 'Paid' : invoice?.status === 'partial' ? 'Partial' : 'Unpaid',
           reports: report
             ? [{ name: tests.join(', '), status: report.status === 'dispatched' ? 'Dispatched' : 'Generated', reportId: report.id }]

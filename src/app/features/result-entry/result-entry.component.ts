@@ -190,6 +190,17 @@ export class ResultEntryComponent implements OnInit {
   readonly isFirstTest = computed(() => this.selectedTestIndex() <= 0);
   readonly isLastTest = computed(() => this.selectedTestIndex() < 0 || this.selectedTestIndex() >= this.tests().length - 1);
   readonly selectedTest = computed(() => this.tests().find(test => test.id === this.selectedTestId()) ?? this.tests()[0] ?? EMPTY_ORDERED_TEST);
+  readonly assessmentTitle = computed(() => {
+    const titles: Record<string, string> = {
+      CBC: 'Haematology assessment', ESR: 'Haematology assessment',
+      KFT: 'Renal function assessment', LFT: 'Liver function assessment',
+      HBA: 'Glycated haemoglobin assessment', GLU: 'Glucose assessment',
+      LIP: 'Lipid assessment', TSH: 'Thyroid assessment', FT3: 'Thyroid assessment',
+      VTD: 'Vitamin assessment', URI: 'Urinalysis assessment', UCR: 'Urine chemistry assessment',
+      CRP: 'Inflammation assessment', FER: 'Iron status assessment', B12: 'Vitamin assessment'
+    };
+    return titles[this.selectedTest().code] ?? 'Laboratory assessment';
+  });
   /**
    * Derive workflow status from entered parameter values instead of relying
    * on the initial demo status. This keeps the chips and list accurate after
@@ -257,7 +268,10 @@ export class ResultEntryComponent implements OnInit {
         const values = Object.fromEntries(this.tests().flatMap(test => test.parameters.map(parameter => [`${test.id}.${parameter.id}`, parameter.value])));
         try {
           const parameterLabels = Object.fromEntries(this.tests().flatMap(test => test.parameters.map(parameter => [`${test.id}.${parameter.id}`, parameter.name])));
-          this.workflowStore.saveResults(sampleId, values, parameterLabels);
+          const parameterDetails = Object.fromEntries(this.tests().flatMap(test => test.parameters.map(parameter => [`${test.id}.${parameter.id}`, {
+            unit: parameter.unit, range: parameter.range, flag: parameter.flag, method: parameter.method,
+          }])));
+          this.workflowStore.saveResults(sampleId, values, parameterLabels, parameterDetails);
           if (submit) {
             this.workflowStore.submitResults(sampleId);
           }

@@ -1,12 +1,14 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
+import { createDemoTests, flagFromValue } from '../../core/services/result-entry-data.service';
 
 export type ReportStatus = 'pending' | 'generated' | 'dispatched';
 export type ResultFlag = 'high' | 'low' | 'critical' | 'normal' | 'unavailable';
 
 export interface ResultRow {
   name: string;
+  method?: string;
   result: string;
   unit: string;
   ref: string;
@@ -160,12 +162,15 @@ export class ReportsDataService {
   private readonly illustrativeReports = signal<ReportRow[]>(REPORTS.map(report => ({ ...report })));
 
   readonly reports = computed(() => {
-    const rows = new Map(this.illustrativeReports().map(report => [report.id, report]));
-    for (const report of this.workflowStore.reports()) {
-      const joined = this.joinWorkflowReport(report.id);
-      if (joined) rows.set(report.id, this.workflowRow(joined));
-    }
-    return [...rows.values()];
+    const illustrative = this.illustrativeReports();
+    const workflowReports = this.workflowStore.reports()
+      .map(report => this.joinWorkflowReport(report.id))
+      .filter((joined): joined is NonNullable<ReturnType<ReportsDataService['joinWorkflowReport']>> => !!joined)
+      .map(joined => this.workflowRow(joined));
+    const workflowIds = new Set(workflowReports.map(report => report.id));
+    // Keep newly generated, live workflow reports visible ahead of the seeded
+    // illustrative queue so creating a report does not appear to do nothing.
+    return [...workflowReports, ...illustrative.filter(report => !workflowIds.has(report.id))];
   });
 
   getReportDetail(reportId: string): ReportDetail | null {
@@ -209,13 +214,32 @@ export class ReportsDataService {
 
   private workflowDetail(joined: NonNullable<ReturnType<ReportsDataService['joinWorkflowReport']>>): ReportDetail {
     const testDetails = joined.order.testIds.map(id => this.patientFlow.allTests.find(test => test.id === id));
-    const rows: ResultRow[] = Object.entries(joined.result.values).map(([key, value]) => ({
+    const recordedAge = Number.parseInt(joined.visit.ageYears ?? '', 10);
+    const profileTests = createDemoTests(
+      joined.order.testIds,
+      this.patientFlow.allTests,
+      joined.sample.gender ?? joined.visit.gender?.toLowerCase(),
+      joined.sample.dob,
+      joined.sample.collectedAt,
+      Number.isFinite(recordedAge) ? recordedAge : undefined,
+    );
+    const profileParameters = new Map<string, (typeof profileTests)[number]['parameters'][number]>(profileTests.flatMap(test => test.parameters.map(parameter => [`${test.id}.${parameter.id}`, parameter] as [string, typeof parameter])));
+    const rows: ResultRow[] = Object.entries(joined.result.values).map(([key, value]) => {
+      const storedDetails = joined.result.parameterDetails?.[key];
+      const configuredDetails = profileParameters.get(key);
+      const details = storedDetails ?? configuredDetails;
+      const rawRange = details?.range?.trim() ?? '';
+      const range = /^(configured range|as per lab reference)$/i.test(rawRange) ? '' : rawRange;
+      const hasNumericRange = /[0-9]/.test(range);
+      return ({
       name: joined.result.parameterLabels?.[key] || key,
+      method: details?.method,
       result: value || 'Not available',
-      unit: 'Not available',
-      ref: 'Not available',
-      flag: 'unavailable',
-    }));
+      unit: details?.unit || 'Not available',
+      ref: range || 'Not available',
+      flag: storedDetails?.flag ?? (hasNumericRange ? flagFromValue(value, range, configuredDetails?.criticalLow, configuredDetails?.criticalHigh) : 'unavailable'),
+    });
+    });
     const dateTime = (value: string) => new Date(value).toLocaleString('en-GB', {
       day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
     });
@@ -226,9 +250,11 @@ export class ReportsDataService {
       reportedOn: dateTime(joined.report.generatedAt),
       testTitle: testDetails.map(test => test?.name).filter(Boolean).join(' + ') || 'Not available',
       sampleId: joined.sample.id,
-      note: 'Generated from validated mock workflow results. Clinical interpretation is not available in the stored mock data.',
+      note: 'Illustrative demo values and reference intervals only. Verify against the laboratory validated method and patient-specific reference intervals before clinical use.',
       specimen: joined.sample.specimenGroups.map(group => group.sampleType).filter(Boolean).join(', ') || 'Not available',
-      fasting: 'Not available',
+      fasting: joined.sample.fastingStatus === 'fasting' ? 'Fasting'
+        : joined.sample.fastingStatus === 'non-fasting' ? 'Non-fasting'
+        : joined.sample.fastingStatus === 'post-meal' ? 'Post-meal' : 'Not recorded',
       groupTitle: [...new Set(testDetails.map(test => test?.category).filter(Boolean))].join(' · ') || 'Not available',
       rows,
       authorisedBy: joined.result.reviewer || 'Not available',

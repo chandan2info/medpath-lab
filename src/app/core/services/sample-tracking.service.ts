@@ -96,9 +96,12 @@ export class SampleTrackingService {
 
     const workflowSample = this.workflowStore.samples().find(sample => sample.id === sampleId);
     const workflowStatus = ({
-      received: 'received', processing: 'processing', rejected: 'rejected', pending: 'collected',
-    } as const)[status as 'received' | 'processing' | 'rejected' | 'pending'];
-    if (workflowSample && workflowStatus) {
+      received: 'received', processing: 'processing', rejected: 'rejected', pending: 'collected', ready: 'results-entered',
+    } as const)[status as 'received' | 'processing' | 'rejected' | 'pending' | 'ready'];
+    // Tracking's Ready state means eligible for result entry before review,
+    // but remains Ready after validation. Do not downgrade the workflow record.
+    const alreadyValidated = status === 'ready' && workflowSample?.status === 'validated';
+    if (workflowSample && workflowStatus && !alreadyValidated) {
       this.workflowStore.updateSampleStatus(sampleId, workflowStatus);
     }
     const updated = { ...current, status };

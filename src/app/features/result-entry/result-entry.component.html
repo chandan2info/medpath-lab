@@ -134,7 +134,7 @@
         <div class="test-card-heading">
           <div class="test-title">
             <i class="ti ti-flask-2"></i>
-            <div><h2>{{ selectedTest().shortName }}</h2><small>Renal function assessment · {{ totalCount() }} parameters</small></div>
+            <div><h2>{{ selectedTest().shortName }}</h2><small>{{ assessmentTitle() }} · {{ totalCount() }} parameters</small></div>
           </div>
           <div class="test-heading-actions">
             <span class="entry-progress">{{ enteredCount() }} / {{ totalCount() }} parameters</span>
@@ -169,7 +169,7 @@
             </tbody>
           </table>
         </div>
-        <footer class="test-footer"><span><i class="ti ti-info-circle"></i> Reference ranges are for adults and may vary based on age, gender and lab policy.</span></footer>
+        <footer class="test-footer"><span><i class="ti ti-info-circle"></i> Demo intervals use adult sex profiles and pediatric age bands 1–12 where available. Unconfigured ages or parameters are marked unavailable; confirm all intervals against lab policy.</span></footer>
       </section>
     </main>
   </div>

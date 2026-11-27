@@ -186,6 +186,13 @@ export class SampleCollectionComponent {
   // 2 = Collection is the 3rd step (index 2) of TIMELINE_STEPS
   timelineActiveIndex = computed(() => (this.collected() ? 3 : 2));
 
+  private toFastingStatus(condition: string): 'fasting' | 'non-fasting' | 'post-meal' | 'unknown' {
+    if (condition === 'Fasting') return 'fasting';
+    if (condition === 'Non-fasting') return 'non-fasting';
+    if (condition === 'Post-meal') return 'post-meal';
+    return 'unknown';
+  }
+
   private toDateTimeLocal(date: Date): string {
     const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
     return local.toISOString().slice(0, 16);
@@ -328,7 +335,7 @@ export class SampleCollectionComponent {
       refDoctor: patient.refDoctor,
       mobile: patient.mobile,
       visitType: patient.visitType.toLowerCase().replace(/\s+/g, '-') as 'walk-in' | 'appointment' | 'home-visit',
-      fastingStatus: patient.fasting.toLowerCase().replace(/\s+/g, '-') as 'fasting' | 'non-fasting' | 'unknown',
+      fastingStatus: this.toFastingStatus(this.patientCondition()),
       tests: orderedTests.map(test => test.id),
       priority: this.flow.priority(),
       status: 'pending',
@@ -347,11 +354,14 @@ export class SampleCollectionComponent {
       visitId,
       patientId: patient.id,
       patientName: `${patient.firstName} ${patient.lastName}`.trim(),
+      gender: patient.gender.toLowerCase() as 'male' | 'female' | 'other',
+      dob: patient.dob,
       testIds: orderedTests.map(test => test.id),
       priority: this.flow.priority(),
       collectedAt: collectedDate.toISOString(),
       collector: this.collectorName().trim(),
       checklist: CHECKLIST_ITEMS.map(item => item.id),
+      fastingStatus: this.toFastingStatus(this.patientCondition()),
       notes: this.notes().trim(),
       specimenGroups: orderedTests.reduce((groups, test) => {
         const key = test.tubeType;
