@@ -6,7 +6,7 @@ Each business feature owns its pages, feature components, domain models, and fea
 |---|---|
 | patient-registration | Patient identity and demographic capture |
 | test-order / review-order | Orders and ordered test items |
-| billing / billing-dashboard | Invoices, payments, discounts, refunds |
+| billing / billing-dashboard | Invoices, payments, discounts, refunds; mutations go through the BillingService feature boundary |
 | sample-collection / sample-tracking | Specimens, collection, receipt, tracking |
 | result-entry / result-validation | Result values, versions, review and authorization |
 | reports / report-preview | Authorized report snapshots and dispatch history |
@@ -22,4 +22,5 @@ Cross-feature rules:
 - Sample Collection and Sample Tracking must converge on one sample record.
 - Result Entry and Result Validation must converge on one result record and lifecycle.
 - Reports and Patient History must read the same authorized report/result records.
+- PatientFlowService coordinates the registration-to-billing journey; finalized orders are persisted in the shared workflow repository. BillingService owns invoice and payment mutations.
 - Avoid adding generic architecture layers (facades, use-cases, state folders) until a real feature needs them.
