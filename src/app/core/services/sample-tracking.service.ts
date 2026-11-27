@@ -68,9 +68,10 @@ export class SampleTrackingService {
   }
 
   private migrateLegacyQueue(): void {
-    if (this.workflowStore.samples().length || typeof localStorage === 'undefined') return;
+    if (typeof localStorage === 'undefined') return;
     try {
       const raw = localStorage.getItem('medpath.samples.v1');
+      if (!raw && this.workflowStore.samples().length) return;
       const legacy = raw ? JSON.parse(raw) as unknown : LEGACY_SAMPLES;
       if (!Array.isArray(legacy)) return;
       for (const sample of legacy as Sample[]) {
@@ -110,6 +111,12 @@ export class SampleTrackingService {
   private createSampleId(): string {
     const date = new Date();
     const datePart = `${String(date.getFullYear()).slice(-2)}${String(date.getMonth() + 1).padStart(2, '0')}`;
-    return `SMP-${datePart}-${String(this.workflowStore.samples().length + 1).padStart(3, '0')}`;
+    let sequence = this.workflowStore.samples().length + 1;
+    let id = `SMP-${datePart}-${String(sequence).padStart(3, '0')}`;
+    while (this.workflowStore.samples().some(sample => sample.id === id)) {
+      sequence += 1;
+      id = `SMP-${datePart}-${String(sequence).padStart(3, '0')}`;
+    }
+    return id;
   }
 }
