@@ -7,6 +7,7 @@ export type MockReportStatus = 'generated' | 'dispatched';
 
 export interface MockVisit {
   id: string; patientId: string; patientName: string; createdAt: string; status: PatientVisitStatus;
+  ageYears?: string; gender?: string; mobile?: string; refDoctor?: string;
 }
 export interface MockLabOrder {
   id: string; visitId: string; patientId: string; testIds: string[]; priority: 'routine'|'urgent'|'stat';
@@ -19,12 +20,16 @@ export interface MockInvoice {
 }
 export interface MockLabSample {
   id: string; orderId: string; visitId: string; patientId: string; patientName: string;
+  gender?: 'male'|'female'|'other';
+  dob?: string;
   testIds: string[]; priority: 'routine'|'urgent'|'stat'; status: MockSampleStatus;
+  fastingStatus?: 'fasting'|'non-fasting'|'post-meal'|'unknown';
   collectedAt: string; collector: string; checklist: string[]; notes: string;
   specimenGroups: Array<{tubeType:string;sampleType:string;testIds:string[]}>;
 }
 export interface MockResultRecord {
-  id: string; sampleId: string; status: MockResultStatus; values: Record<string,string>;
+  id: string; sampleId: string; status: MockResultStatus; values: Record<string,string>; parameterLabels?: Record<string,string>;
+  parameterDetails?: Record<string,{ unit:string; range:string; flag:'normal'|'high'|'low'|'critical'|'unavailable'; method:string }>;
   updatedAt: string; reviewer?: string; reviewedAt?: string; reviewNote?: string;
 }
 export interface MockReport {
@@ -81,11 +86,12 @@ export class LabWorkflowMockService {
     return `${prefix}-${stamp}-${random}`;
   }
 
-  createVisit(patient: {id:string; firstName:string; lastName:string}): MockVisit {
+  createVisit(patient: {id:string; firstName:string; lastName:string; ageYears?:string; gender?:string; mobile?:string; refDoctor?:string}): MockVisit {
     const current = this.state();
     const visit: MockVisit = {
       id: this.id('VIS'), patientId: patient.id,
       patientName: `${patient.firstName} ${patient.lastName}`.trim(),
+      ageYears: patient.ageYears, gender: patient.gender, mobile: patient.mobile, refDoctor: patient.refDoctor,
       createdAt: new Date().toISOString(), status: 'registered'
     };
     this.persist({ ...current, visits: [visit, ...current.visits] });
@@ -140,6 +146,17 @@ export class LabWorkflowMockService {
     return updated;
   }
 
+  /** Remove an unpaid demo invoice. Orders, visits and lab records are deliberately retained. */
+  deleteUnpaidInvoice(invoiceId: string): void {
+    const current = this.state();
+    const invoice = current.invoices.find(item => item.id === invoiceId);
+    if (!invoice) throw new Error('Invoice not found.');
+    if (invoice.amountReceived > 0 || invoice.payments.length > 0) {
+      throw new Error('This invoice has recorded payments and cannot be deleted. Preserve its payment history.');
+    }
+    this.persist({ ...current, invoices: current.invoices.filter(item => item.id !== invoiceId) });
+  }
+
   createSample(input: Omit<MockLabSample,'id'|'status'> & { id?: string }): MockLabSample {
     const current = this.state();
     if (current.samples.some(s => s.orderId === input.orderId)) {
@@ -170,13 +187,13 @@ export class LabWorkflowMockService {
     return updated;
   }
 
-  saveResults(sampleId: string, values: Record<string,string>): MockResultRecord {
+  saveResults(sampleId: string, values: Record<string,string>, parameterLabels: Record<string,string> = {}, parameterDetails: MockResultRecord['parameterDetails'] = {}): MockResultRecord {
     const current = this.state();
     if (!current.samples.some(s => s.id === sampleId)) throw new Error('Sample not found.');
     const existing = current.results.find(r => r.sampleId === sampleId);
     const result: MockResultRecord = {
       id: existing?.id ?? this.id('RES'), sampleId, status: 'draft',
-      values: { ...values }, updatedAt: new Date().toISOString()
+      values: { ...values }, parameterLabels: { ...parameterLabels }, parameterDetails: { ...parameterDetails }, updatedAt: new Date().toISOString()
     };
     this.persist({
       ...current,

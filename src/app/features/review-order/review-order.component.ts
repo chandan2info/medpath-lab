@@ -27,5 +27,5 @@ export class ReviewOrderComponent implements OnInit{
  @HostListener('document:click',['$event']) onDocumentClick(event:MouseEvent):void{if(this.alertsOpen()&&!this.elementRef.nativeElement.querySelector('.alert-popover-host')?.contains(event.target as Node))this.closeAlerts();}
  @HostListener('document:keydown.escape') onEscape():void{this.closeAlerts();}
  removeTest(testId:string,testName:string):void{if(!window.confirm('Remove '+testName+' from this order?'))return;this.flow.toggleTest(testId);}
- continueToBilling():void{if(!this.flow.selectedTests().length||this.saving())return;this.saving.set(true);setTimeout(()=>{this.saving.set(false);this.router.navigate(['/dashboard/billing']);},350);}
+ continueToBilling():void{if(!this.flow.selectedTests().length||this.saving())return;this.saving.set(true);setTimeout(()=>{this.saving.set(false);this.router.navigate(['/dashboard/billing/new']);},350);}
 }

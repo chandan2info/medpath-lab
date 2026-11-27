@@ -1,0 +1,368 @@
+:host{display:block;color:var(--text-primary)}
+.billing-page{max-width:1480px;margin:0 auto}
+.billing-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:18px}
+.billing-heading h1{margin:3px 0 5px;font-size:clamp(22px,2vw,28px);line-height:1.2;font-weight:700;letter-spacing:-.035em;color:var(--text-primary)}
+.billing-heading p,.worklist-heading p{margin:0;color:var(--text-secondary);font-size:13px}
+.eyebrow,.dialog-kicker{display:flex;align-items:center;gap:6px;color:var(--lis-primary,#1d9e75);font-size:10px;font-weight:700;letter-spacing:.1em}
+.primary-action,.secondary-action{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:38px;padding:0 14px;border:0;border-radius:9px;background:var(--lis-primary,#1d9e75);color:#fff;font-size:12px;font-weight:650;text-decoration:none;cursor:pointer}
+.metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.metric-card,.worklist-card{min-width:0;border:1px solid var(--border-color);border-radius:13px;background:var(--card-bg,var(--surface-bg));box-shadow:0 3px 12px rgba(15,23,42,.035)}
+.metric-card{padding:14px 16px}
+.metric-top{display:flex;align-items:center;justify-content:space-between;color:var(--text-secondary);font-size:11px;font-weight:600}
+.metric-icon{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;font-size:16px}
+.metric-icon--blue{color:#4f83db;background:rgba(79,131,219,.12)}.metric-icon--green{color:var(--color-success);background:color-mix(in srgb,var(--color-success) 14%,transparent)}.metric-icon--amber{color:#d28a20;background:rgba(210,138,32,.13)}.metric-icon--teal{color:#169b9b;background:rgba(22,155,155,.12)}
+.metric-card>strong{display:block;margin:8px 0 2px;color:var(--text-primary);font-size:25px;line-height:1.15;font-weight:750;letter-spacing:-.035em;font-variant-numeric:tabular-nums}
+.metric-card small{color:var(--text-secondary);font-size:10px}.amount-warning{color:#d97706!important}
+.worklist-card{overflow:hidden}.worklist-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px 18px 13px}.worklist-heading h2{margin:0 0 4px;font-size:15px;font-weight:700}
+.text-action{display:inline-flex;align-items:center;gap:5px;color:var(--lis-primary,#1d9e75);font-size:12px;font-weight:650;text-decoration:none;white-space:nowrap}
+.billing-tabs{display:flex;align-items:center;gap:4px;padding:0 14px;border-bottom:1px solid var(--border-color);overflow-x:auto}
+.billing-tabs button{display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;padding:12px 13px 11px;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--text-secondary);font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.billing-tabs button:hover{color:var(--text-primary);background:color-mix(in srgb,var(--lis-primary,#1d9e75) 5%,transparent)}
+.billing-tabs button.active{color:var(--lis-primary,#1d9e75);border-bottom-color:var(--lis-primary,#1d9e75)}
+.tab-count{min-width:18px;padding:1px 5px;border-radius:20px;background:color-mix(in srgb,var(--lis-primary,#1d9e75) 12%,transparent);color:var(--lis-primary,#1d9e75);font-size:10px;text-align:center}
+.table-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px}
+.search-field{display:flex;align-items:center;gap:8px;width:min(440px,100%);min-height:37px;padding:0 11px;border:1px solid var(--border-color);border-radius:8px;background:var(--body-bg);color:var(--text-secondary)}
+.search-field:focus-within{border-color:var(--lis-primary,#1d9e75);box-shadow:0 0 0 3px color-mix(in srgb,var(--lis-primary,#1d9e75) 12%,transparent)}
+.search-field input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:var(--text-primary);font:inherit;font-size:12px}
+.search-field input::placeholder{color:var(--text-secondary);opacity:.8}.search-field button{border:0;background:transparent;color:var(--text-secondary);cursor:pointer}
+.result-count,.muted{color:var(--text-secondary);font-size:10px}
+.feedback{display:flex;align-items:center;gap:8px;margin:0 16px 10px;padding:9px 11px;border-radius:8px;background:color-mix(in srgb,var(--lis-primary,#1d9e75) 9%,transparent);color:var(--text-primary);font-size:11px}
+.feedback button{margin-left:auto;border:0;background:transparent;color:inherit;cursor:pointer}
+.table-wrap{width:100%;overflow-x:auto}table{width:100%;border-collapse:collapse;text-align:left}
+th{padding:10px 12px;border-top:1px solid var(--border-color);border-bottom:1px solid var(--border-color);background:color-mix(in srgb,var(--body-bg) 70%,transparent);color:var(--text-secondary);font-size:10px;font-weight:700;white-space:nowrap}
+td{padding:12px;border-bottom:1px solid var(--border-color);color:var(--text-primary);font-size:11px;vertical-align:middle}tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:color-mix(in srgb,var(--lis-primary,#1d9e75) 3%,transparent)}
+.patient-name{margin-bottom:3px;font-size:12px;font-weight:700}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.test-summary{max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.money{font-variant-numeric:tabular-nums;white-space:nowrap}
+.status-pill{display:inline-flex;align-items:center;padding:4px 8px;border-radius:20px;font-size:9px;font-weight:700;white-space:nowrap}
+.status-pill--paid,.status-pill--ready{color:var(--color-success);background:color-mix(in srgb,var(--color-success) 14%,transparent)}.status-pill--partial{color:#b7791f;background:rgba(183,121,31,.13)}.status-pill--unpaid{color:#c24141;background:rgba(194,65,65,.12)}.status-pill--neutral{color:var(--text-secondary);background:var(--body-bg)}
+.row-actions{display:flex;align-items:center;gap:6px;min-width:155px}
+.small-action{padding:6px 9px;border:1px solid var(--border-color);border-radius:7px;background:var(--body-bg);color:var(--text-primary);font:inherit;font-size:10px;font-weight:650;white-space:nowrap;cursor:pointer}
+.small-action--primary{border-color:transparent;background:var(--lis-primary,#1d9e75);color:#fff}.small-action--secondary{color:var(--lis-primary,#1d9e75)}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:220px;padding:28px 16px;text-align:center}
+.empty-icon{display:grid;place-items:center;width:42px;height:42px;margin-bottom:10px;border-radius:13px;background:var(--body-bg);color:var(--text-secondary);font-size:20px}
+.empty-state strong{font-size:13px}.empty-state p{margin:5px 0 10px;color:var(--text-secondary);font-size:11px}.empty-state a{color:var(--lis-primary,#1d9e75);font-size:11px;font-weight:650;text-decoration:none}
+.payment-backdrop{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:18px;background:rgba(8,15,30,.58);backdrop-filter:blur(3px)}
+.payment-dialog{width:min(440px,100%);padding:20px;border:1px solid var(--border-color);border-radius:15px;background:var(--card-bg,var(--surface-bg));box-shadow:0 22px 70px rgba(0,0,0,.24)}
+.payment-dialog header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:17px}.payment-dialog h2{margin:4px 0 0;font-size:19px}
+.close-dialog{width:30px;height:30px;border:0;border-radius:8px;background:var(--body-bg);color:var(--text-secondary);cursor:pointer}
+.dialog-patient{display:flex;flex-direction:column;gap:3px;padding:11px 12px;border-radius:9px;background:var(--body-bg)}
+.dialog-patient strong{font-size:13px}.dialog-patient span{color:var(--text-secondary);font-size:10px}
+.balance-line{display:flex;justify-content:space-between;gap:10px;margin:15px 0;font-size:12px}.balance-line strong{color:#d97706;font-variant-numeric:tabular-nums}
+.payment-dialog label{display:block;margin:12px 0 6px;color:var(--text-secondary);font-size:11px;font-weight:650}
+.amount-input{display:flex;align-items:center;gap:8px;min-height:40px;padding:0 11px;border:1px solid var(--border-color);border-radius:8px}.amount-input span{color:var(--text-secondary)}
+.amount-input input,.payment-dialog select{width:100%;min-height:40px;border:1px solid var(--border-color);border-radius:8px;padding:0 10px;outline:0;background:var(--body-bg);color:var(--text-primary);font:inherit;font-size:12px}
+.amount-input input{border:0;padding:0;background:transparent}.payment-dialog footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+.secondary-action{border:1px solid var(--border-color);background:transparent;color:var(--text-primary)}.payment-dialog .primary-action:disabled{opacity:.6;cursor:wait}
+@media(max-width:900px){.metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.billing-heading{align-items:flex-start;flex-direction:column}.billing-heading .primary-action{width:100%}.metric-grid{gap:8px}.metric-card{padding:11px}.metric-card>strong{font-size:21px}.worklist-heading{align-items:flex-start;flex-direction:column}.table-toolbar{align-items:flex-start;flex-direction:column}.search-field{width:100%}.billing-tabs{padding:0 8px}.billing-tabs button{padding:11px 9px;font-size:11px}th,td{padding:10px 9px}}
+/* Invoice deletion and confirmation */
+.icon-action{display:grid;place-items:center;width:29px;height:29px;flex:0 0 auto;border:1px solid var(--border-color);border-radius:7px;background:var(--body-bg);font-size:14px;cursor:pointer}
+.icon-action--danger{color:#c24141;border-color:rgba(194,65,65,.2)}
+.icon-action--danger:hover{background:rgba(194,65,65,.1);border-color:rgba(194,65,65,.45)}
+.confirm-delete-dialog{max-width:430px}
+.delete-icon{display:grid;place-items:center;width:42px;height:42px;margin-bottom:13px;border-radius:12px;background:rgba(194,65,65,.1);color:#c24141;font-size:21px}
+.confirm-delete-dialog h2{margin:5px 0 8px;font-size:20px}
+.confirm-delete-dialog>p{margin:0;color:var(--text-secondary);font-size:12px;line-height:1.6}
+.confirm-delete-dialog>p strong{color:var(--text-primary)}
+.delete-summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0;padding:12px;border:1px solid var(--border-color);border-radius:9px;background:var(--body-bg)}
+.delete-summary div{display:flex;flex-direction:column;gap:4px}
+.delete-summary span{color:var(--text-secondary);font-size:10px}
+.delete-summary strong{font-size:13px;font-variant-numeric:tabular-nums}
+.confirm-delete-dialog .delete-note{display:flex;align-items:flex-start;gap:7px;padding:10px;border-radius:8px;background:rgba(210,138,32,.09);color:var(--text-secondary);font-size:10px}
+.delete-note i{color:#c18425;font-size:14px;flex:0 0 auto}
+.danger-action{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:38px;padding:0 14px;border:0;border-radius:9px;background:#c24141;color:#fff;font-size:12px;font-weight:650;cursor:pointer}
+.danger-action:hover{background:#a83232}
+
+
+/* Billing overview layout: card heading and a viewport-bounded work area. */
+.billing-title-card{
+  align-items:center;
+  padding:18px 20px;
+  border:1px solid var(--border-color);
+  border-radius:13px;
+  background:var(--card-bg,var(--surface-bg));
+  box-shadow:0 3px 12px rgba(15,23,42,.035);
+}
+.billing-title-card h1{margin-top:4px}
+.billing-title-card .primary-action{flex:0 0 auto}
+.worklist-card{
+  display:flex;
+  flex-direction:column;
+  max-height:calc(100dvh - 345px);
+  min-height:280px;
+}
+.table-wrap{
+  flex:1 1 auto;
+  min-height:0;
+  max-height:100%;
+  overflow:auto;
+  scrollbar-gutter:stable;
+}
+.table-wrap table{min-width:1060px}
+.table-wrap thead th{
+  position:sticky;
+  top:0;
+  z-index:3;
+}
+.table-wrap .actions-column{
+  position:sticky;
+  right:0;
+  z-index:2;
+  min-width:170px;
+  background:var(--card-bg,var(--surface-bg));
+  box-shadow:-7px 0 10px -10px rgba(15,23,42,.55);
+}
+.table-wrap thead .actions-column{
+  z-index:5;
+  background:var(--body-bg);
+}
+.table-wrap tbody tr:hover .actions-column{
+  background:color-mix(in srgb,var(--lis-primary,#1d9e75) 3%,var(--card-bg,var(--surface-bg)));
+}
+.row-actions{justify-content:flex-start}
+@media(max-width:900px){
+  .worklist-card{max-height:calc(100dvh - 390px)}
+}
+@media(max-width:640px){
+  .billing-title-card{align-items:stretch;gap:13px;padding:15px}
+  .billing-title-card .primary-action{width:100%}
+  .worklist-card{max-height:calc(100dvh - 430px);min-height:260px}
+  .table-wrap table{min-width:980px}
+}
+@media(max-height:700px){
+  .worklist-card{max-height:calc(100dvh - 300px)}
+}
+
+
+/* Compact billing cards and reliable sticky action controls. */
+.billing-title-card{padding:12px 18px;min-height:92px}
+.billing-title-card h1{font-size:24px;margin:2px 0 3px}
+.billing-title-card p{font-size:12px}
+.metric-card{padding:10px 13px}
+.metric-icon{width:26px;height:26px}
+.metric-card>strong{margin:5px 0 1px;font-size:22px}
+.metric-card small{font-size:9px}
+.metric-grid{gap:10px;margin-bottom:12px}
+.worklist-heading{padding:13px 16px 9px}
+.billing-tabs button{padding:9px 12px 8px}
+.table-toolbar{padding:9px 14px}
+.table-wrap td.actions-column{position:sticky;right:0;z-index:2;min-width:170px;background:var(--card-bg,var(--surface-bg));box-shadow:-7px 0 10px -10px rgba(15,23,42,.55)}
+.table-wrap tbody tr:hover td.actions-column{background:color-mix(in srgb,var(--lis-primary,#1d9e75) 4%,var(--card-bg,var(--surface-bg)))}
+.row-actions{display:flex;align-items:center;justify-content:flex-start;gap:6px;min-width:150px;white-space:nowrap}
+.row-actions .small-action{display:inline-flex;align-items:center;justify-content:center;min-height:28px;visibility:visible;opacity:1}
+.table-wrap thead th.actions-column{position:sticky;right:0;z-index:5;background:var(--body-bg)}
+@media(max-width:640px){.billing-title-card{padding:12px 14px;min-height:0}.metric-card{padding:9px}.metric-card>strong{font-size:19px}.worklist-heading{padding:12px}.billing-tabs button{padding:9px 10px}}
+
+
+/* Final billing workspace polish: distinct active tab, no full-width divider,
+   and normal table flow for reliable row actions. */
+.billing-tabs{
+  border-bottom:0 !important;
+  gap:8px;
+  padding:6px 14px 10px;
+}
+.billing-tabs button{
+  min-height:34px;
+  padding:7px 12px !important;
+  border:1px solid transparent !important;
+  border-radius:8px;
+  background:transparent;
+  color:var(--text-secondary);
+  transition:background .16s ease,color .16s ease,border-color .16s ease;
+}
+.billing-tabs button.active{
+  color:var(--lis-primary,#1d9e75) !important;
+  background:color-mix(in srgb,var(--lis-primary,#1d9e75) 13%,transparent) !important;
+  border-color:color-mix(in srgb,var(--lis-primary,#1d9e75) 30%,transparent) !important;
+  box-shadow:inset 3px 0 0 var(--lis-primary,#1d9e75);
+}
+.billing-tabs button:not(.active):hover{
+  background:color-mix(in srgb,var(--text-primary) 6%,transparent);
+  border-color:var(--border-color) !important;
+}
+/* Do not pin the final table column over the row content; keep it in normal
+   table flow so the actions remain visible and clickable at every row. */
+.table-wrap .actions-column,
+.table-wrap td.actions-column,
+.table-wrap thead th.actions-column{
+  position:static !important;
+  right:auto !important;
+  z-index:auto !important;
+  min-width:190px;
+  width:190px;
+  background:inherit;
+  box-shadow:none !important;
+}
+.table-wrap thead th.actions-column{
+  background:color-mix(in srgb,var(--body-bg) 70%,transparent);
+}
+.table-wrap tbody td.actions-column{
+  padding:10px 12px;
+}
+.table-wrap .row-actions{
+  display:inline-flex !important;
+  align-items:center;
+  justify-content:flex-start;
+  gap:7px;
+  min-width:0;
+  width:max-content;
+  max-width:none;
+  white-space:nowrap;
+}
+.table-wrap .row-actions button.small-action,
+.table-wrap .row-actions button.icon-action{
+  display:inline-flex !important;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 auto;
+  min-height:30px;
+  visibility:visible !important;
+  opacity:1 !important;
+  position:relative;
+  color:var(--text-primary);
+}
+.table-wrap .row-actions button.small-action--primary{
+  color:#fff !important;
+  background:var(--lis-primary,#1d9e75) !important;
+  border-color:var(--lis-primary,#1d9e75) !important;
+}
+.table-wrap .row-actions button.icon-action--danger{
+  color:#c24141 !important;
+}
+
+
+/* Compact invoice dashboard inspired by the supplied billing reference. */
+.billing-compact{max-width:1480px;margin:0 auto}
+.billing-topbar{
+  display:flex;align-items:center;justify-content:space-between;gap:18px;
+  padding:12px 16px;margin-bottom:9px;border:1px solid var(--border-color);
+  border-radius:12px;background:var(--card-bg,var(--surface-bg));
+}
+.billing-title h1{margin:0 0 3px;font-size:20px;line-height:1.2;font-weight:750;letter-spacing:-.03em}
+.billing-title p{margin:0;color:var(--text-secondary);font-size:10px}
+.billing-kpis{display:flex;align-items:stretch;gap:7px}
+.mini-kpi{display:flex;align-items:center;gap:8px;min-width:112px;padding:7px 10px;border:1px solid var(--border-color);border-radius:9px;background:var(--body-bg)}
+.kpi-icon{display:grid;place-items:center;width:27px;height:27px;flex:0 0 auto;border-radius:8px;font-size:14px}
+.kpi-icon--blue{color:#4f83db;background:rgba(79,131,219,.14)}
+.kpi-icon--green{color:var(--color-success);background:color-mix(in srgb,var(--color-success) 16%,transparent)}
+.kpi-icon--orange{color:#dc7b32;background:rgba(220,123,50,.14)}
+.mini-kpi small{display:block;margin-bottom:2px;color:var(--text-secondary);font-size:8px;white-space:nowrap}
+.mini-kpi strong{display:block;color:var(--text-primary);font-size:13px;line-height:1.1;font-weight:750;font-variant-numeric:tabular-nums;white-space:nowrap}
+.billing-workspace{overflow:hidden;border:1px solid var(--border-color);border-radius:12px;background:var(--card-bg,var(--surface-bg))}
+.billing-tabs{display:flex;align-items:center;gap:4px;padding:7px 10px;margin:0;border:0;border-bottom:1px solid var(--border-color);background:var(--body-bg)}
+.billing-tabs button,.billing-tabs .billing-tab-link{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:32px;
+  padding:0 13px;border:1px solid transparent;border-radius:7px;background:transparent;
+  color:var(--text-secondary);font:inherit;font-size:10px;font-weight:650;text-decoration:none;white-space:nowrap;cursor:pointer
+}
+.billing-tabs button.active{border-color:color-mix(in srgb,var(--lis-primary,#1d9e75) 35%,transparent);background:color-mix(in srgb,var(--lis-primary,#1d9e75) 15%,transparent);color:var(--lis-primary,#1d9e75);box-shadow:inset 0 -2px 0 var(--lis-primary,#1d9e75)}
+.billing-tabs .billing-tab-link{background:color-mix(in srgb,var(--text-primary) 5%,transparent);color:var(--text-primary)}
+.billing-tabs button:not(.active):hover,.billing-tabs .billing-tab-link:hover{background:color-mix(in srgb,var(--lis-primary,#1d9e75) 8%,transparent);color:var(--text-primary)}
+.tab-count{display:inline-grid;place-items:center;min-width:17px;height:17px;padding:0 4px;border-radius:20px;background:color-mix(in srgb,var(--lis-primary,#1d9e75) 18%,transparent);color:var(--lis-primary,#1d9e75);font-size:9px}
+.table-toolbar{display:flex;align-items:center;gap:8px;padding:9px 11px;border-bottom:1px solid var(--border-color)}
+.search-field{width:min(440px,48%);min-height:32px;border-radius:7px}
+.search-field input{font-size:10px}
+.toolbar-filters{display:flex;align-items:center;gap:7px;margin-left:auto}
+.filter-select{display:flex;align-items:center;gap:6px;min-height:32px;padding:0 9px;border:1px solid var(--border-color);border-radius:7px;background:var(--body-bg);color:var(--text-secondary)}
+.filter-select select{max-width:125px;border:0;outline:0;background:transparent;color:var(--text-primary);font:inherit;font-size:9px;appearance:none;cursor:pointer}
+.filter-select>i:last-child{font-size:11px}
+.result-count{padding:0 3px;font-size:9px;white-space:nowrap}
+.table-wrap{overflow:auto}
+.invoice-table{width:100%;min-width:720px;border-collapse:collapse}
+.invoice-table th{padding:9px 10px;border-top:0;border-bottom:1px solid var(--border-color);background:color-mix(in srgb,var(--body-bg) 65%,transparent);color:var(--text-secondary);font-size:9px;font-weight:700;white-space:nowrap}
+.invoice-table td{padding:9px 10px;border-bottom:1px solid var(--border-color);font-size:10px;vertical-align:middle}
+.invoice-table tbody tr:last-child td{border-bottom:0}
+.invoice-table tbody tr:hover{background:color-mix(in srgb,var(--lis-primary,#1d9e75) 4%,transparent)}
+.invoice-id,.patient-name{display:block;color:var(--text-primary);font-size:10px;font-weight:700;white-space:nowrap}
+.cell-subtitle{display:block;margin-top:2px;color:var(--text-secondary);font-size:9px;white-space:nowrap}
+.invoice-table .money{font-size:10px;font-weight:650;font-variant-numeric:tabular-nums;white-space:nowrap}
+.invoice-table .paid-amount{color:var(--color-success)}
+.invoice-table .status-pill{padding:4px 7px;font-size:8px}
+.invoice-table .actions-column{width:105px;min-width:105px}
+.invoice-table .row-actions{display:flex;align-items:center;gap:5px;min-width:0}
+.invoice-table .small-action{display:inline-flex;align-items:center;gap:5px;min-height:27px;padding:0 8px;border-radius:6px;font-size:9px}
+.invoice-table .small-action--primary{background:var(--body-bg);border:1px solid var(--border-color);color:var(--text-primary)}
+.invoice-table .small-action--primary:hover{border-color:var(--lis-primary,#1d9e75);background:color-mix(in srgb,var(--lis-primary,#1d9e75) 12%,transparent);color:var(--lis-primary,#1d9e75)}
+.invoice-table .icon-action{width:27px;height:27px;border-radius:6px;font-size:12px}
+.table-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 11px;border-top:1px solid var(--border-color);color:var(--text-secondary);font-size:9px}
+.pagination{display:flex;align-items:center;gap:4px}
+.pagination button{display:grid;place-items:center;width:26px;height:26px;border:1px solid var(--border-color);border-radius:6px;background:var(--body-bg);color:var(--text-secondary);font-size:12px;cursor:pointer}
+.pagination button:disabled{opacity:.35;cursor:not-allowed}
+.pagination button:not(:disabled):hover{border-color:var(--lis-primary,#1d9e75);color:var(--lis-primary,#1d9e75)}
+.page-indicator{min-width:28px;text-align:center;color:var(--text-primary);font-size:9px;font-weight:700}
+.billing-compact .empty-state{min-height:130px}
+@media(max-width:850px){
+ .billing-topbar{align-items:flex-start;flex-direction:column}
+ .billing-kpis{width:100%}.mini-kpi{flex:1;min-width:0}
+ .table-toolbar{flex-wrap:wrap}.search-field{width:100%;max-width:none}
+ .toolbar-filters{margin-left:0}.result-count{margin-left:auto}
+}
+@media(max-width:560px){
+ .billing-topbar{padding:11px}
+ .billing-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+ .mini-kpi{gap:5px;padding:6px}.kpi-icon{width:23px;height:23px;font-size:12px}
+ .mini-kpi small{font-size:7px}.mini-kpi strong{font-size:10px}
+ .billing-tabs{gap:2px;padding:6px}
+ .billing-tabs button,.billing-tabs .billing-tab-link{padding:0 8px;font-size:9px}
+ .toolbar-filters{width:100%}.filter-select{flex:1;min-width:0}.filter-select select{max-width:none;width:100%}
+ .table-footer{align-items:flex-start;flex-direction:column}
+ .pagination{align-self:flex-end}
+}
+
+
+/* Recent is a workspace view; New Invoice is the primary action on the right. */
+.billing-tabs .billing-create-link{
+  margin-left:auto;
+  min-height:30px;
+  padding:0 12px;
+  border:1px solid var(--lis-primary,#1d9e75);
+  border-radius:7px;
+  background:var(--lis-primary,#1d9e75);
+  color:#fff;
+  font-weight:700;
+}
+.billing-tabs .billing-create-link:hover{
+  background:color-mix(in srgb,var(--lis-primary,#1d9e75) 88%,#000);
+  color:#fff;
+}
+@media(max-width:560px){
+  .billing-tabs{flex-wrap:wrap}
+  .billing-tabs .billing-create-link{margin-left:auto}
+}
+
+
+/* Readability and reliable row-level action visibility */
+.invoice-table{min-width:900px;table-layout:auto}
+.invoice-table th{font-size:12px!important;padding:12px 13px!important;line-height:1.35}
+.invoice-table td{font-size:13px!important;padding:13px!important;line-height:1.4}
+.invoice-table .invoice-id,.invoice-table .patient-name{font-size:13px!important;font-weight:700}
+.invoice-table .cell-subtitle{font-size:11px!important;line-height:1.35}
+.invoice-table .money{font-size:13px!important;font-weight:650}
+.invoice-table .status-pill{font-size:10px!important;padding:5px 9px!important}
+.invoice-table .actions-column{width:160px!important;min-width:160px!important}
+.invoice-table td.actions-column{display:table-cell!important;visibility:visible!important;opacity:1!important;overflow:visible!important}
+.invoice-table .row-actions{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:7px!important;width:auto!important;min-width:0!important;white-space:nowrap!important;visibility:visible!important;opacity:1!important}
+.billing-collect-button{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;
+ min-width:86px;min-height:34px;padding:0 11px!important;border:1px solid var(--lis-primary,#8c75cf)!important;
+ border-radius:7px!important;background:var(--lis-primary,#8c75cf)!important;color:#fff!important;
+ font-family:inherit!important;font-size:12px!important;font-weight:700!important;line-height:1.2!important;white-space:nowrap!important;cursor:pointer!important;
+ visibility:visible!important;opacity:1!important;position:relative!important;z-index:1
+}
+.billing-collect-button i{font-size:14px!important}
+.billing-collect-button:hover{background:color-mix(in srgb,var(--lis-primary,#8c75cf) 88%,#000)!important;border-color:color-mix(in srgb,var(--lis-primary,#8c75cf) 88%,#000)!important}
+.billing-delete-button{
+ display:inline-grid!important;place-items:center!important;flex:0 0 32px!important;
+ width:32px!important;height:32px!important;border:1px solid rgba(194,65,65,.35)!important;
+ border-radius:7px!important;background:rgba(194,65,65,.08)!important;color:#d45b5b!important;
+ font-size:15px!important;cursor:pointer!important;visibility:visible!important;opacity:1!important
+}
+.billing-delete-button:hover{background:rgba(194,65,65,.16)!important;border-color:#d45b5b!important}
+.billing-settled-label{display:inline-flex;align-items:center;gap:4px;padding:6px 8px;border-radius:7px;background:color-mix(in srgb,var(--color-success) 14%,transparent);color:var(--color-success);font-size:11px;font-weight:700;white-space:nowrap}
+@media(max-width:640px){
+ .invoice-table th{font-size:11px!important}
+ .invoice-table td{font-size:12px!important;padding:11px!important}
+ .invoice-table .invoice-id,.invoice-table .patient-name,.invoice-table .money{font-size:12px!important}
+ .invoice-table .cell-subtitle{font-size:10px!important}
+}

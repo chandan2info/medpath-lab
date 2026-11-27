@@ -346,11 +346,22 @@ export class PatientFlowService {
   searchPatients(query: string): KnownPatientRecord[] {
     const q = query.trim().toLowerCase();
     if (q.length < 2) return [];
-    return KNOWN_PATIENTS.filter(p =>
+    const known = KNOWN_PATIENTS.filter(p =>
       p.id.toLowerCase().includes(q) ||
       p.name.toLowerCase().includes(q) ||
       p.mobile.includes(q)
     );
+    const active = this._patient();
+    if (active && [active.id, active.firstName, active.lastName, active.mobile]
+      .some(value => value.toLowerCase().includes(q)) && !known.some(patient => patient.id === active.id)) {
+      known.unshift({
+        id: active.id, name: `${active.firstName} ${active.lastName}`.trim(),
+        firstName: active.firstName, lastName: active.lastName, mobile: active.mobile,
+        dob: active.dob, gender: active.gender, bloodGroup: active.bloodGroup,
+        email: active.email, address: active.address, registeredLabel: 'Current workflow patient',
+      });
+    }
+    return known;
   }
 
   calcAge(dob: string): string {

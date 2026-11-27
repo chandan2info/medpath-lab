@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { UserSessionService } from '../../../core/services/user-session.service';
+import { CursorPreferenceService } from '../../../core/services/cursor-preference.service';
 
 interface ChipMenuLink {
   label: string;
@@ -34,6 +35,7 @@ interface ChipMenuLink {
 })
 export class UserChipComponent {
   private readonly session = inject(UserSessionService);
+  readonly cursorPreference = inject(CursorPreferenceService);
   private readonly router = inject(Router);
   private readonly host = inject(ElementRef<HTMLElement>);
 

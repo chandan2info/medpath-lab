@@ -1,57 +1,167 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { DatePipe, UpperCasePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';
+import { MockResultRecord, MockLabSample, MockVisit, MockLabOrder } from '../../core/services/lab-workflow-mock.service';
+import { ResultValidationDataService } from './result-validation-data.service';
 import { SampleTrackingService } from '../../core/services/sample-tracking.service';
+
+type ValidationTab = 'pending' | 'validated' | 'returned';
+interface ValidationItem {
+  result: MockResultRecord;
+  sample: MockLabSample;
+  patient: MockVisit | undefined;
+  order: MockLabOrder | undefined;
+}
 
 @Component({
   selector: 'app-result-validation',
   standalone: true,
-  imports: [RouterLink, DatePipe],
+  imports: [RouterLink, DatePipe, UpperCasePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './result-validation.component.html',
   styleUrl: './result-validation.component.css'
 })
 export class ResultValidationComponent {
-  private readonly store = inject(LabWorkflowMockService);
+  private readonly data = inject(ResultValidationDataService);
   private readonly sampleTracking = inject(SampleTrackingService);
-  protected readonly workflow = this.store;
-  readonly queue = computed(() => this.store.results()
-    .filter(result => result.status === 'awaiting-validation')
-    .map(result => ({ result, sample: this.store.samples().find(sample => sample.id === result.sampleId) }))
-    .filter(item => !!item.sample));
-  readonly validatedResults = computed(() => this.store.results().filter(result => result.status === 'validated'));
-  readonly selectedId = signal<string | null>(null);
+  readonly activeTab = signal<ValidationTab>('pending');
+  readonly searchTerm = signal('');
+  readonly priorityFilter = signal('all');
+  readonly selectedSampleId = signal<string | null>(null);
   readonly reviewNote = signal('');
   readonly notice = signal('');
+  readonly noticeType = signal<'success' | 'error'>('success');
+  readonly isReviewOpen = signal(false);
 
-  select(sampleId: string): void { this.selectedId.set(sampleId); this.reviewNote.set(''); this.notice.set(''); }
+  readonly items = computed<ValidationItem[]>(() => {
+    const visits = this.data.visits();
+    const orders = this.data.orders();
+    return this.data.results()
+      .filter(result => result.status !== 'draft')
+      .map(result => {
+        const sample = this.data.samples().find(item => item.id === result.sampleId);
+        if (!sample) return null;
+        return {
+          result,
+          sample,
+          patient: visits.find(visit => visit.id === sample.visitId),
+          order: orders.find(order => order.id === sample.orderId)
+        };
+      })
+      .filter((item): item is ValidationItem => item !== null)
+      .sort((a, b) => {
+        const priority = (value: string) => value === 'stat' ? 0 : value === 'urgent' ? 1 : 2;
+        return priority(a.sample.priority) - priority(b.sample.priority)
+          || b.result.updatedAt.localeCompare(a.result.updatedAt);
+      });
+  });
 
-  approve(sampleId: string): void {
-    try {
-      this.store.reviewResults(sampleId, 'Demo Pathologist', true, this.reviewNote().trim());
-      this.sampleTracking.updateStatus(sampleId, 'ready');
-      this.notice.set('Result approved. It is now eligible for report generation.');
-      this.selectedId.set(null);
-    } catch (error) { this.notice.set(error instanceof Error ? error.message : 'Unable to approve result.'); }
+  readonly pendingItems = computed(() => this.items().filter(item => item.result.status === 'awaiting-validation'));
+  readonly validatedItems = computed(() => this.items().filter(item => item.result.status === 'validated'));
+  readonly returnedItems = computed(() => this.items().filter(item => item.result.status === 'rejected'));
+  readonly pendingCount = computed(() => this.pendingItems().length);
+  readonly urgentCount = computed(() => this.pendingItems().filter(item => item.sample.priority !== 'routine').length);
+  readonly validatedCount = computed(() => this.validatedItems().length);
+  readonly reportsReadyCount = computed(() => this.validatedItems().filter(item => !this.data.reports().some(report => report.sampleId === item.sample.id)).length);
+
+  readonly visibleItems = computed(() => {
+    const source = this.activeTab() === 'pending' ? this.pendingItems()
+      : this.activeTab() === 'validated' ? this.validatedItems() : this.returnedItems();
+    const term = this.searchTerm().trim().toLowerCase();
+    return source.filter(item => {
+      const matchesPriority = this.priorityFilter() === 'all' || item.sample.priority === this.priorityFilter();
+      const matchesSearch = !term || [
+        item.sample.patientName, item.sample.patientId, item.sample.id, item.sample.orderId,
+        ...item.sample.testIds, ...Object.values(item.result.parameterLabels ?? {})
+      ].join(' ').toLowerCase().includes(term);
+      return matchesPriority && matchesSearch;
+    });
+  });
+
+  readonly selectedItem = computed(() => this.items().find(item => item.sample.id === this.selectedSampleId()) ?? null);
+  readonly resultRows = computed(() => {
+    const result = this.selectedItem()?.result;
+    if (!result) return [];
+    return Object.entries(result.values).map(([key, value]) => ({
+      key,
+      label: result.parameterLabels?.[key] || this.formatParameter(key),
+      value: value || '—'
+    }));
+  });
+
+  setTab(tab: ValidationTab): void {
+    this.activeTab.set(tab);
+    this.selectedSampleId.set(null);
+    this.isReviewOpen.set(false);
   }
 
-  reject(sampleId: string): void {
-    const note = this.reviewNote().trim();
-    if (!note) { this.notice.set('Add a review note before rejecting results.'); return; }
-    if (!window.confirm('Return these results for correction? The report cannot be generated until they are reviewed again.')) return;
+  openReview(item: ValidationItem): void {
+    this.selectedSampleId.set(item.sample.id);
+    this.reviewNote.set(item.result.reviewNote ?? '');
+    this.notice.set('');
+    this.isReviewOpen.set(true);
+  }
+
+  closeReview(): void {
+    this.isReviewOpen.set(false);
+    this.selectedSampleId.set(null);
+    this.reviewNote.set('');
+  }
+
+  approve(): void {
+    const item = this.selectedItem();
+    if (!item) return;
     try {
-      this.store.reviewResults(sampleId, 'Demo Pathologist', false, note);
-      this.sampleTracking.updateStatus(sampleId, 'pending');
-      this.notice.set('Result returned for correction. The sample is marked rejected in the mock workflow.');
-      this.selectedId.set(null);
-    } catch (error) { this.notice.set(error instanceof Error ? error.message : 'Unable to reject result.'); }
+      this.data.approve(item.sample.id, 'Demo Pathologist', this.reviewNote().trim());
+      this.sampleTracking.updateStatus(item.sample.id, 'ready');
+      this.showNotice('Results approved. This sample is now eligible for report generation.', 'success');
+      this.closeReview();
+    } catch (error) {
+      this.showNotice(error instanceof Error ? error.message : 'Unable to approve results.', 'error');
+    }
+  }
+
+  reject(): void {
+    const item = this.selectedItem();
+    const note = this.reviewNote().trim();
+    if (!item) return;
+    if (!note) {
+      this.showNotice('Add a correction note before returning these results.', 'error');
+      return;
+    }
+    try {
+      this.data.returnForCorrection(item.sample.id, 'Demo Pathologist', note);
+      this.sampleTracking.updateStatus(item.sample.id, 'pending');
+      this.showNotice('Results returned to Result Entry for correction.', 'success');
+      this.closeReview();
+    } catch (error) {
+      this.showNotice(error instanceof Error ? error.message : 'Unable to return results.', 'error');
+    }
   }
 
   generateReport(sampleId: string): void {
     try {
-      const report = this.store.generateReport(sampleId);
-      this.notice.set(`Report ${report.id} generated successfully from validated results.`);
-    } catch (error) { this.notice.set(error instanceof Error ? error.message : 'Unable to generate report.'); }
+      const report = this.data.generateReport(sampleId);
+      this.showNotice(`Report ${report.id} generated successfully.`, 'success');
+    } catch (error) {
+      this.showNotice(error instanceof Error ? error.message : 'Unable to generate report.', 'error');
+    }
+  }
+
+  hasReport(sampleId: string): boolean {
+    return this.data.reports().some(report => report.sampleId === sampleId);
+  }
+
+  testNames(sample: MockLabSample): string {
+    return sample.testIds.join(', ');
+  }
+
+  formatParameter(key: string): string {
+    return key.split('.').map(part => part.replace(/[-_]/g, ' ').replace(/\b\w/g, char => char.toUpperCase())).join(' · ');
+  }
+
+  private showNotice(message: string, type: 'success' | 'error'): void {
+    this.notice.set(message);
+    this.noticeType.set(type);
   }
 }

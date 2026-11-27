@@ -296,8 +296,26 @@
   box-shadow: var(--shadow-card-hover, 0 10px 32px rgba(0,0,0,0.10));
 }
 @media print {
-  .report-sheet { border: none; border-radius: 0; box-shadow: none; padding: 0; }
-  .page-header-actions { display: none; }
+  /* Print only the selected report, not the dashboard chrome or report list. */
+  :host * {
+    visibility: hidden !important;
+  }
+  .report-sheet,
+  .report-sheet * {
+    visibility: visible !important;
+  }
+  .report-sheet {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+  }
+  .page-header-actions {
+    display: none !important;
+  }
 }
 
 /* Panel — shared card chrome for the three grouped sections. */
@@ -416,23 +434,68 @@
 .rpt-title-band {
   padding: 0 0 12px;
   margin-bottom: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px 16px;
   border-bottom: 1px solid var(--border-color);
 }
+.rpt-test-heading { min-width: 0; }
+.rpt-test-heading__title { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .rpt-title-text {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--rpt-tint-label);
-  display: flex;
-  align-items: center;
-  gap: 7px;
+  line-height: 1.35;
 }
-.rpt-title-text i { font-size: 13px; }
-.rpt-sid-chip { font-size: 12px; font-weight: 500; color: var(--rpt-tint-label); }
+.rpt-test-heading__title > i { flex: 0 0 auto; font-size: 14px; color: var(--rpt-tint-label); }
+.rpt-test-count {
+  flex: 0 0 auto;
+  padding: 3px 8px;
+  border: 1px solid var(--rpt-tint-border);
+  border-radius: 999px;
+  background: var(--rpt-tint-bg);
+  color: var(--rpt-tint-label);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.rpt-test-list { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 7px; }
+.rpt-test-chip {
+  display: inline-flex;
+  max-width: 100%;
+  padding: 3px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--body-bg);
+  color: var(--text-secondary);
+  font-size: 10px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.rpt-test-chip--overflow { display: none; }
+.rpt-test-list-toggle {
+  border: 0;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: var(--rpt-tint-bg);
+  color: var(--rpt-tint-label);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.rpt-test-list-toggle:hover { background: var(--rpt-tint-border); }
+.rpt-title-actions { display: flex; align-items: center; gap: 8px; }
+.rpt-sid-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  color: var(--text-secondary);
+}
+.rpt-sid-chip span { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+.rpt-sid-chip strong { color: var(--rpt-tint-label); font-size: 11px; font-weight: 600; white-space: nowrap; }
 
 .rpt-note {
   background: var(--rpt-note-bg);
@@ -484,6 +547,7 @@
   border-bottom: 0.5px solid var(--border-color);
   color: var(--text-primary);
 }
+.rpt-method { display: block; margin-top: 2px; color: var(--rpt-ref-text); font-size: 9px; font-weight: 400; }
 .rpt-tbl tbody tr:last-child td { border-bottom: none; }
 .rpt-row-crit { background: var(--rpt-crit-bg); }
 .rpt-bold { font-weight: 600; }
@@ -555,3 +619,1408 @@
   color: var(--text-secondary);
 }
 .reports-empty i { font-size: 20px; opacity: 0.5; }
+
+
+/* ── Reports page refinement: tighter layout, clearer hierarchy ── */
+.reports-stats-grid {
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.reports-layout {
+  grid-template-columns: minmax(290px, 0.78fr) minmax(0, 1.9fr);
+  gap: 16px;
+}
+
+.report-list {
+  min-width: 0;
+  align-self: start;
+  overflow: hidden;
+}
+
+.report-list .lis-card__header {
+  padding: 14px 16px;
+}
+
+.report-search,
+.report-status-filter {
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+
+.report-rows {
+  min-height: 0;
+  max-height: min(560px, calc(100vh - 390px));
+}
+
+.report-row {
+  gap: 10px;
+  padding: 10px 14px;
+}
+
+.report-pagination {
+  padding: 10px 14px;
+}
+
+.report-preview-area {
+  min-width: 0;
+}
+
+.report-sheet {
+  padding: 16px;
+  border-radius: 14px;
+}
+
+.rpt-panel {
+  margin-bottom: 12px;
+  border-radius: 12px;
+}
+
+.rpt-header {
+  padding: 20px 22px 48px;
+}
+
+.rpt-pat-band {
+  /* Keep the patient detail card tied to the selected report palette. */
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--rpt-tint-border) 24%, var(--rpt-tint-bg)),
+    var(--rpt-tint-bg));
+  border: 1px solid var(--rpt-tint-border);
+  padding: 16px 18px;
+  gap: 13px 16px;
+  margin: -28px 14px 14px;
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--rpt-band-bg) 12%, transparent);
+}
+
+.rpt-pf-icon {
+  background: color-mix(in srgb, var(--rpt-tint-border) 24%, transparent);
+  color: var(--rpt-tint-label);
+  border: 1px solid color-mix(in srgb, var(--rpt-tint-border) 24%, transparent);
+}
+
+.rpt-pl {
+  color: var(--rpt-tint-label);
+}
+
+.rpt-pv {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.rpt-panel--mid {
+  padding: 14px 16px 16px;
+}
+
+.rpt-title-band {
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+}
+
+.rpt-note {
+  margin-bottom: 14px;
+}
+
+.rpt-tbl-wrap {
+  margin-bottom: 8px;
+}
+
+.rpt-panel--footer {
+  padding: 12px 16px;
+}
+
+@media (max-width: 1100px) {
+  .reports-layout {
+    grid-template-columns: minmax(270px, 0.85fr) minmax(0, 1.5fr);
+    gap: 14px;
+  }
+}
+
+@media (max-width: 900px) {
+  .reports-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .report-rows {
+    max-height: 380px;
+  }
+}
+
+@media (max-width: 560px) {
+  .reports-stats-grid {
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .report-sheet {
+    padding: 10px;
+  }
+
+  .rpt-header {
+    align-items: flex-start;
+    padding: 16px 14px 42px;
+  }
+
+  .rpt-meta {
+    max-width: 112px;
+    white-space: normal;
+  }
+
+  .rpt-lab-addr {
+    font-size: 10px;
+    line-height: 1.4;
+  }
+
+  .rpt-pat-band {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: -24px 10px 10px;
+    padding: 13px 12px;
+    gap: 12px 10px;
+  }
+
+  .rpt-pf {
+    gap: 7px;
+  }
+
+  .rpt-pv {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    font-size: 11px;
+  }
+
+  .rpt-panel--mid {
+    padding: 12px 10px;
+  }
+
+  .rpt-panel--footer {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .rpt-pat-band {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ── Final readability and column-balance refinements ── */
+/* Keep the existing two-column layout; let the list card fill
+   the same vertical space as the report preview beside it. */
+.reports-layout {
+  align-items: stretch;
+}
+
+.report-list {
+  height: 100%;
+  min-height: 0;
+}
+
+.report-rows {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+}
+
+@media (max-width: 900px) {
+  .reports-layout {
+    align-items: start;
+  }
+
+  .report-list {
+    height: auto;
+  }
+
+  .report-rows {
+    flex: 0 1 auto;
+    max-height: 380px;
+  }
+}
+
+
+/* ── Patient metadata contrast + report masthead polish ── */
+/* Keep the report masthead and patient metadata on the shared report tokens. */
+.rpt-pf-icon {
+  color: var(--rpt-tint-label);
+  background: color-mix(in srgb, var(--rpt-tint-border) 28%, transparent);
+  border-color: color-mix(in srgb, var(--rpt-tint-border) 28%, transparent);
+}
+
+.rpt-header {
+  background: linear-gradient(120deg, var(--rpt-band-bg), var(--rpt-band-bg-2));
+}
+
+.rpt-logo i {
+  color: var(--rpt-band-bg);
+}
+
+
+/* Keep patient labels aligned with the selected report palette. */
+.rpt-pl {
+  color: var(--rpt-tint-label);
+}
+
+
+/* Report rows are native buttons for keyboard accessibility; reset UA button chrome. */
+button.report-row {
+  width: 100%;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+button.report-row.report-row--selected {
+  background: var(--lis-primary-xlight);
+}
+button.report-row:focus-visible {
+  outline: 2px solid var(--lis-primary);
+  outline-offset: -2px;
+  position: relative;
+  z-index: 1;
+}
+
+
+/* On desktop, keep the report list card the same height as the
+   report preview card. Let the rows absorb the available height. */
+@media (min-width: 901px) {
+  .reports-layout {
+    align-items: stretch;
+  }
+  .report-list {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    align-self: stretch;
+    min-height: 0;
+  }
+  .report-rows {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    overflow-y: auto;
+  }
+}
+
+
+/* Fixed-height report workspace: keep the page stable while long result
+   tables scroll inside the preview. The list column shares the same height. */
+@media (min-width: 901px) {
+  .reports-layout {
+    height: calc(100dvh - 190px);
+    min-height: 520px;
+    max-height: calc(100dvh - 150px);
+    align-items: stretch;
+  }
+
+  .report-list,
+  .report-preview-area {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .report-list {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .report-rows {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    overflow-y: auto;
+  }
+
+  .report-preview-area {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .report-sheet {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .rpt-panel--top,
+  .rpt-panel--footer {
+    flex: 0 0 auto;
+  }
+
+  .rpt-panel--mid {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .rpt-tbl-wrap {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+}
+
+/* On smaller screens, preserve natural document flow rather than
+   compressing the report into a narrow fixed-height column. */
+@media (max-width: 900px) {
+  .reports-layout {
+    height: auto;
+    min-height: 0;
+    max-height: none;
+  }
+
+  .report-list,
+  .report-preview-area,
+  .report-sheet {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .rpt-panel--mid {
+    overflow: visible;
+  }
+
+  .rpt-tbl-wrap {
+    max-height: 60vh;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+}
+
+
+/* Scroll the complete test section (heading, note, specimen, group and
+   result rows) so it gets the full space between patient details and footer. */
+@media (min-width: 901px) {
+  .rpt-panel--mid {
+    position: relative;
+    min-height: 0;
+    overflow: hidden;
+    padding-right: 34px;
+  }
+
+  .rpt-test-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    padding-right: 2px;
+  }
+
+  .rpt-title-band,
+  .rpt-note,
+  .rpt-grp-title {
+    flex: 0 0 auto;
+  }
+
+  .rpt-tbl-wrap {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .rpt-expand-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--border-color);
+    border-radius: 9px;
+    background: var(--card-bg);
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+
+  .rpt-expand-btn:hover {
+    color: var(--lis-primary);
+    border-color: var(--lis-primary);
+  }
+
+  .report-preview-area--expanded {
+    position: fixed;
+    inset: 16px;
+    z-index: 1000;
+    height: auto !important;
+    width: auto;
+    padding: 0;
+    background: var(--page-bg, #0f172a);
+    border-radius: 16px;
+    box-shadow: 0 0 0 100vmax rgba(3, 8, 20, 0.76);
+  }
+
+  .report-preview-area--expanded .report-sheet {
+    height: 100%;
+    max-height: 100%;
+  }
+}
+
+@media (max-width: 900px) {
+  .rpt-expand-btn {
+    display: none;
+  }
+
+  .rpt-title-band { grid-template-columns: minmax(0, 1fr); }
+  .rpt-title-actions { justify-content: space-between; }
+  .rpt-sid-chip { align-items: flex-start; }
+
+  .rpt-test-scroll {
+    min-height: 0;
+  }
+}
+
+@media print {
+  .rpt-test-chip--overflow { display: inline-flex !important; }
+  .rpt-test-list-toggle { display: none !important; }
+}
+
+
+/* Keep expand / collapse control in the test title row. This avoids
+   covering the sample ID and keeps its position identical in both modes. */
+@media (min-width: 901px) {
+  .rpt-panel--mid {
+    padding-right: 16px;
+  }
+
+  .rpt-title-band {
+    padding-right: 0;
+  }
+
+  .rpt-expand-btn {
+    position: static;
+    flex: 0 0 32px;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--body-bg);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: color .15s ease, border-color .15s ease, background .15s ease;
+  }
+
+  .rpt-expand-btn:hover {
+    color: var(--lis-primary);
+    border-color: var(--lis-primary);
+    background: var(--lis-primary-xlight);
+  }
+
+  /* Reclaim a little vertical room for result rows without hiding metadata. */
+  .rpt-title-band {
+    margin-bottom: 9px;
+    padding-bottom: 8px;
+  }
+
+  .rpt-note {
+    padding: 10px 14px;
+    margin-bottom: 10px;
+    line-height: 1.45;
+  }
+
+  .rpt-grp-title {
+    margin-bottom: 8px;
+  }
+
+  .rpt-tbl td {
+    padding-top: 7px;
+    padding-bottom: 7px;
+  }
+}
+
+@media (max-width: 900px) {
+  .rpt-expand-btn {
+    display: none;
+  }
+}
+
+
+/* Compact page-size control within the report-list footer. */
+.report-pagination {
+  flex-wrap: wrap;
+}
+
+.report-pagination-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.report-page-size {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.report-page-size select {
+  min-width: 48px;
+  padding: 4px 18px 4px 7px;
+  border: 1px solid var(--border-color);
+  border-radius: 7px;
+  background: var(--body-bg);
+  color: var(--text-primary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.report-page-size select:focus-visible {
+  outline: 2px solid var(--lis-primary);
+  outline-offset: 2px;
+}
+
+@media (max-width: 560px) {
+  .report-pagination {
+    align-items: flex-start;
+  }
+
+  .report-pagination-summary {
+    gap: 6px;
+  }
+}
+
+
+/* Keep the report range, page-size selector and pagination on one footer row. */
+.report-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+
+.report-pagination-summary {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  flex-wrap: nowrap;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.report-pagination-controls {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 5px;
+}
+
+.rr-identifiers {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 520px) {
+  .report-pagination {
+    gap: 5px;
+  }
+
+  .report-pagination-summary {
+    gap: 5px;
+    font-size: 10px;
+  }
+
+  .report-pagination-controls {
+    gap: 3px;
+  }
+
+  .report-pagination-controls .page-btn {
+    min-width: 28px;
+    padding-inline: 5px;
+  }
+}
+
+
+/* Final fit refinement: keep the list footer compact without clipping
+   the select caret or the previous/next page controls. */
+.report-pagination {
+  min-width: 0;
+  gap: 6px;
+  padding: 9px 12px;
+}
+
+.report-pagination-summary {
+  min-width: 0;
+  gap: 6px;
+  font-size: 10.5px;
+}
+
+.report-pagination-summary > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.report-page-size {
+  gap: 4px;
+  flex: 0 0 auto;
+}
+
+.report-page-size select {
+  box-sizing: border-box;
+  width: 54px;
+  min-width: 54px;
+  height: 30px;
+  padding: 4px 20px 4px 7px;
+  background-position: right 6px center;
+}
+
+.report-pagination-controls {
+  flex: 0 0 auto;
+  gap: 4px;
+  padding-right: 2px;
+}
+
+.report-pagination-controls .page-btn {
+  box-sizing: border-box;
+  flex: 0 0 28px;
+  width: 28px;
+  height: 30px;
+}
+
+.rpt-expand-btn {
+  margin-right: 4px;
+  padding: 2px;
+}
+
+.rpt-expand-btn i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+@media (max-width: 520px) {
+  .report-pagination {
+    padding-inline: 9px;
+    gap: 4px;
+  }
+
+  .report-pagination-summary {
+    gap: 4px;
+    font-size: 10px;
+  }
+
+  .report-page-size select {
+    width: 50px;
+    min-width: 50px;
+  }
+
+  .report-pagination-controls {
+    gap: 3px;
+    padding-right: 2px;
+  }
+
+  .report-pagination-controls .page-btn {
+    flex-basis: 26px;
+    width: 26px;
+    height: 28px;
+  }
+}
+
+/* Keep a deliberate, small bottom gutter instead of a large dead zone. */
+:host {
+  padding-bottom: 12px;
+}
+
+
+/* Grid-based footer prevents the range text, page-size select and
+   pagination buttons from competing for the same flex space. */
+.report-pagination {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  justify-content: stretch;
+  gap: 10px;
+  min-height: 58px;
+  padding: 10px 14px;
+  overflow: visible;
+}
+
+.report-pagination-summary {
+  display: contents;
+}
+
+.report-pagination-summary > span {
+  grid-column: 1;
+  min-width: 0;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: nowrap;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.report-page-size {
+  grid-column: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.report-page-size select {
+  width: 54px;
+  min-width: 54px;
+  height: 34px;
+  padding: 4px 20px 4px 8px;
+}
+
+.report-pagination-controls {
+  grid-column: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: max-content;
+  padding: 0 3px 0 0;
+}
+
+.report-pagination-controls .page-btn {
+  flex: 0 0 34px;
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  margin: 0;
+}
+
+@media (max-width: 560px) {
+  .report-pagination {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 8px;
+  }
+
+  .report-pagination-summary > span {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .report-page-size {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .report-pagination-controls {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: flex-end;
+  }
+}
+
+
+/* Increase the shared desktop workspace height by 5% for both cards.
+   The list and preview continue to share one height and retain inner scrolling. */
+@media (min-width: 901px) {
+  .reports-layout {
+    height: calc(103dvh - 195.7px);
+    min-height: 535.6px;
+    max-height: calc(103dvh - 153.9px);
+  }
+}
+
+
+/* Stable footer columns: keep the range, Rows selector and page controls
+   independent so global form-label styles cannot make them overlap. */
+@media (min-width: 561px) {
+  .report-pagination {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 8px;
+    min-width: 0;
+    overflow: visible;
+  }
+
+  .report-pagination-range {
+    grid-column: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.35;
+  }
+
+  .report-page-size {
+    grid-column: 2;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 7px;
+    width: auto !important;
+    min-width: max-content;
+    margin: 0 !important;
+    white-space: nowrap;
+  }
+
+  .report-page-size > span {
+    display: inline-block;
+    width: auto !important;
+    margin: 0 !important;
+  }
+
+  .report-page-size select {
+    display: block;
+    box-sizing: border-box;
+    width: 58px !important;
+    min-width: 58px;
+    height: 36px;
+    margin: 0 !important;
+    padding: 0 24px 0 10px;
+    flex: 0 0 58px;
+    appearance: auto;
+  }
+
+  .report-pagination-controls {
+    grid-column: 3;
+    min-width: max-content;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    margin: 0;
+    padding: 0 4px 0 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .report-pagination {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .report-pagination-range { grid-column: 1; min-width: 0; }
+  .report-page-size { grid-column: 2; }
+  .report-pagination-controls {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+}
+
+/* Reduce the shared desktop list/preview height by one more percentage point. */
+@media (min-width: 901px) {
+  .reports-layout {
+    height: calc(102dvh - 193.8px);
+    min-height: 530.4px;
+    max-height: calc(102dvh - 152.4px);
+  }
+}
+
+
+/* The page size is fixed at seven; footer now contains only the
+   report range and pagination controls, with no overlapping selector. */
+.report-pagination {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center;
+  column-gap: 12px;
+  overflow: visible;
+}
+
+.report-pagination-range {
+  grid-column: 1;
+  min-width: 0;
+  overflow: visible;
+  white-space: nowrap;
+  text-overflow: clip;
+}
+
+.report-pagination-controls {
+  grid-column: 2;
+  justify-self: end;
+  min-width: max-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-right: 4px;
+}
+
+@media (max-width: 560px) {
+  .report-pagination {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+  }
+  .report-pagination-range { grid-column: 1; }
+  .report-pagination-controls {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+
+
+/* Branded, centered confirmation dialog for report dispatch actions. */
+.report-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgb(5 12 24 / 76%);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+  animation: report-confirm-fade-in 160ms ease-out;
+}
+
+.report-confirm-dialog {
+  position: relative;
+  width: min(100%, 520px);
+  padding: 34px 36px 30px;
+  color: var(--lis-text-primary, #edf4f8);
+  background: linear-gradient(145deg, #202d3e 0%, #172332 100%);
+  border: 1px solid var(--lis-border, #34465a);
+  border-radius: 20px;
+  box-shadow: 0 24px 80px rgb(0 0 0 / 48%), inset 0 1px 0 rgb(255 255 255 / 4%);
+  text-align: center;
+  animation: report-confirm-rise-in 180ms ease-out;
+}
+
+.report-confirm-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  color: var(--lis-text-muted, #a0afc1);
+  background: rgb(255 255 255 / 5%);
+  border: 1px solid var(--lis-border, #34465a);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: color 150ms ease, background 150ms ease, border-color 150ms ease;
+}
+
+.report-confirm-close:hover {
+  color: var(--lis-text-primary, #fff);
+  background: rgb(255 255 255 / 10%);
+  border-color: var(--lis-primary, #36c6a7);
+}
+
+.report-confirm-icon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin: 2px auto 20px;
+  color: var(--lis-primary, #36c6a7);
+  background: rgb(54 198 167 / 12%);
+  border: 1px solid rgb(54 198 167 / 45%);
+  border-radius: 17px;
+  box-shadow: 0 0 28px rgb(54 198 167 / 10%);
+  font-size: 28px;
+}
+
+.report-confirm-dialog h2 {
+  margin: 0 28px 10px;
+  color: var(--lis-text-primary, #f3f7fa);
+  font-size: clamp(20px, 2vw, 24px);
+  font-weight: 650;
+  line-height: 1.3;
+}
+
+.report-confirm-dialog > p {
+  margin: 0 auto 22px;
+  max-width: 420px;
+  color: var(--lis-text-secondary, #bdc9d5);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.report-confirm-dialog > p strong {
+  color: var(--lis-text-primary, #f3f7fa);
+  font-weight: 650;
+  letter-spacing: .02em;
+}
+
+.report-confirm-notice {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 13px 15px;
+  color: var(--lis-primary-soft, #9be8d7);
+  background: rgb(54 198 167 / 8%);
+  border: 1px solid rgb(54 198 167 / 28%);
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.report-confirm-notice i {
+  flex: 0 0 auto;
+  color: var(--lis-primary, #36c6a7);
+  font-size: 18px;
+}
+
+.report-confirm-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 26px;
+}
+
+.report-confirm-actions .lis-btn {
+  min-height: 42px;
+  padding-inline: 20px;
+}
+
+@keyframes report-confirm-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes report-confirm-rise-in {
+  from { opacity: 0; transform: translateY(10px) scale(.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 560px) {
+  .report-confirm-overlay { padding: 16px; }
+  .report-confirm-dialog { padding: 30px 20px 22px; border-radius: 16px; }
+  .report-confirm-actions { flex-direction: column-reverse; }
+  .report-confirm-actions .lis-btn { width: 100%; justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .report-confirm-overlay,
+  .report-confirm-dialog { animation: none; }
+}
+
+
+/* ── Branded in-app PDF preview ─────────────────────────── */
+.pdf-preview-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  background: rgb(4 10 20 / 82%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.pdf-preview-dialog {
+  display: flex;
+  flex-direction: column;
+  width: min(1480px, 100%);
+  height: min(94dvh, 980px);
+  min-height: 480px;
+  overflow: hidden;
+  color: var(--text-primary);
+  background: var(--card-bg, #1e293b);
+  border: 1px solid var(--border-color, #344256);
+  border-radius: 20px;
+  box-shadow: 0 28px 90px rgb(0 0 0 / 52%);
+}
+
+.pdf-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 0 0 auto;
+  gap: 16px;
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--border-color, #344256);
+  background: linear-gradient(110deg, rgb(20 184 166 / 7%), transparent 48%);
+}
+
+.pdf-preview-heading {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+}
+
+.pdf-preview-icon,
+.pdf-preview-settings .pdf-setting-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  color: var(--lis-primary, #36c6a7);
+  background: rgb(54 198 167 / 13%);
+  border: 1px solid rgb(54 198 167 / 22%);
+  border-radius: 11px;
+}
+
+.pdf-preview-icon { width: 44px; height: 44px; font-size: 22px; }
+.pdf-preview-heading h2 { margin: 0; color: var(--text-primary); font-size: 18px; font-weight: 650; }
+.pdf-preview-heading p { margin: 3px 0 0; color: var(--text-secondary); font-size: 12px; }
+
+.pdf-preview-close {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  color: var(--text-secondary);
+  background: var(--body-bg, transparent);
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  cursor: pointer;
+}
+.pdf-preview-close:hover { color: var(--text-primary); border-color: var(--lis-primary); }
+
+.pdf-preview-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(280px, .85fr);
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.pdf-preview-stage {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  padding: 16px;
+  background: color-mix(in srgb, var(--body-bg, #0f172a) 72%, #64748b 28%);
+  border-right: 1px solid var(--border-color);
+}
+
+.pdf-preview-scroll {
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 0;
+  overflow: auto;
+  padding: 8px;
+  scrollbar-gutter: stable;
+}
+
+.pdf-preview-paper {
+  width: min(100%, 794px);
+  box-sizing: border-box;
+  min-height: 0;
+  flex: 0 0 auto;
+  aspect-ratio: 794 / 1123;
+  padding: 12mm;
+  overflow: hidden;
+  background: #fff;
+  color: #172033;
+  box-shadow: 0 8px 30px rgb(0 0 0 / 24%);
+  transform: scale(var(--pdf-zoom, .85));
+  transform-origin: top center;
+  margin-bottom: calc((var(--pdf-zoom, .85) - 1) * 100%);
+}
+
+.pdf-preview-paper .report-sheet {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.pdf-preview-paper .rpt-panel {
+  break-inside: avoid;
+}
+
+.pdf-preview-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex: 0 0 auto;
+  padding: 12px 2px 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.pdf-zoom-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--text-primary);
+}
+
+.pdf-zoom-controls button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  color: var(--text-secondary);
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.pdf-zoom-controls button:hover:not(:disabled) { color: var(--lis-primary); border-color: var(--lis-primary); }
+.pdf-zoom-controls button:disabled { opacity: .4; cursor: not-allowed; }
+
+.pdf-preview-settings {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 24px;
+  background: var(--card-bg);
+}
+
+.pdf-settings-title {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border-color);
+}
+.pdf-settings-title > i { color: var(--lis-primary); font-size: 21px; }
+.pdf-settings-title h3 { margin: 0; color: var(--text-primary); font-size: 17px; font-weight: 650; }
+
+.pdf-setting-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 17px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+.pdf-preview-settings .pdf-setting-icon { width: 38px; height: 38px; font-size: 17px; }
+.pdf-setting-row > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.pdf-setting-row > div span { color: var(--text-secondary); font-size: 12px; }
+.pdf-setting-row strong { color: var(--text-primary); font-size: 13px; font-weight: 550; }
+
+.pdf-preview-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 13px;
+  color: var(--text-secondary);
+  background: rgb(54 198 167 / 7%);
+  border: 1px solid rgb(54 198 167 / 20%);
+  border-radius: 11px;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.pdf-preview-tip > i { flex: 0 0 auto; margin-top: 1px; color: var(--lis-primary); font-size: 17px; }
+.pdf-preview-tip strong { color: var(--text-primary); }
+
+.pdf-preview-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 22px;
+}
+.pdf-preview-actions .lis-btn { min-height: 42px; }
+
+@media (max-width: 900px) {
+  .pdf-preview-dialog { height: min(96dvh, 980px); }
+  .pdf-preview-body { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(280px, 1fr) auto; }
+  .pdf-preview-stage { border-right: 0; border-bottom: 1px solid var(--border-color); }
+  .pdf-preview-settings { padding: 16px 20px; }
+  .pdf-preview-settings .pdf-setting-row { padding: 10px 0; }
+  .pdf-preview-settings .pdf-settings-title { padding-bottom: 12px; }
+  .pdf-preview-tip { margin-top: 12px; }
+  .pdf-preview-actions { padding-top: 14px; }
+}
+
+@media (max-width: 560px) {
+  .pdf-preview-overlay { padding: 8px; }
+  .pdf-preview-dialog { height: 98dvh; min-height: 0; border-radius: 14px; }
+  .pdf-preview-header { padding: 12px 14px; }
+  .pdf-preview-stage { padding: 8px; }
+  .pdf-preview-paper { padding: 10px; }
+  .pdf-preview-settings { padding: 12px 14px; }
+  .pdf-preview-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .pdf-preview-actions .lis-btn { justify-content: center; padding-inline: 8px; }
+}
+
+/* The duplicate report markup in the in-app preview must never print.
+   The original report sheet remains the single print source. */
+@media print {
+  .pdf-preview-overlay,
+  .pdf-preview-overlay * { display: none !important; visibility: hidden !important; }
+}
+
+
+/* Interactive PDF export controls */
+.pdf-custom-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 18px 0 8px;
+  padding: 14px 15px;
+  background: color-mix(in srgb, var(--lis-primary, #36c6a7) 8%, var(--body-bg, #0f172a));
+  border: 1px solid color-mix(in srgb, var(--lis-primary, #36c6a7) 28%, var(--border-color));
+  border-radius: 12px;
+}
+.pdf-custom-toggle > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.pdf-custom-toggle strong { color: var(--text-primary); font-size: 13px; font-weight: 650; }
+.pdf-custom-toggle > div span { color: var(--text-secondary); font-size: 11px; line-height: 1.4; }
+.pdf-switch { position: relative; display: inline-flex; flex: 0 0 auto; cursor: pointer; }
+.pdf-switch input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.pdf-switch-track {
+  position: relative;
+  display: block;
+  width: 42px;
+  height: 24px;
+  background: var(--border-color, #475569);
+  border: 1px solid color-mix(in srgb, var(--text-secondary) 25%, transparent);
+  border-radius: 999px;
+  transition: background .18s ease, border-color .18s ease;
+}
+.pdf-switch-track::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 25%);
+  transition: transform .18s ease;
+}
+.pdf-switch input:checked + .pdf-switch-track { background: var(--lis-primary, #36c6a7); border-color: var(--lis-primary, #36c6a7); }
+.pdf-switch input:checked + .pdf-switch-track::after { transform: translateX(18px); }
+.pdf-switch input:focus-visible + .pdf-switch-track { outline: 2px solid var(--lis-primary); outline-offset: 3px; }
+.pdf-setting-row--disabled { opacity: .48; }
+.pdf-setting-control { flex: 1 1 auto; }
+.pdf-setting-control label { display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 12px; }
+.pdf-setting-control select {
+  display: block;
+  width: 100%;
+  min-height: 38px;
+  padding: 7px 34px 7px 10px;
+  color: var(--text-primary);
+  background: var(--body-bg, #0f172a);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.pdf-setting-control select:focus-visible { outline: 2px solid var(--lis-primary); outline-offset: 2px; }
+.pdf-setting-control select:disabled { cursor: not-allowed; }
+.pdf-preview-paper--landscape { width: min(100%, 980px); }
+.pdf-preview-paper--landscape .report-sheet { width: 100%; }

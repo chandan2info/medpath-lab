@@ -8,41 +8,26 @@
   </div>
   @if (selected()) {
     <div class="preview-actions page-header-actions">
-      <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="printReport()">
-        <i class="ti ti-download" aria-hidden="true"></i> Print / Save PDF
+      <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="downloadPdf()">
+        <i class="ti ti-download" aria-hidden="true"></i> Save as PDF
       </button>
-      <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="dispatchSelected('Patient portal')">
-        <i class="ti ti-send" aria-hidden="true"></i> Record dispatch
+      <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" disabled title="Patient email or phone is not included in the demo data">
+        <i class="ti ti-send" aria-hidden="true"></i> Send to patient
       </button>
-      <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="dispatchSelected('WhatsApp')">
+      <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" disabled title="Patient phone number is not included in the demo data">
         <i class="ti ti-brand-whatsapp" aria-hidden="true"></i> WhatsApp
       </button>
       <button type="button" class="lis-btn lis-btn--primary lis-btn--sm" (click)="printReport()">
         <i class="ti ti-printer" aria-hidden="true"></i> Print
       </button>
+      @if (selected()?.status !== 'dispatched') {
+        <button type="button" class="lis-btn lis-btn--secondary lis-btn--sm" (click)="markAsDispatched()">
+          <i class="ti ti-send-check" aria-hidden="true"></i> Mark dispatched
+        </button>
+      }
     </div>
   }
 </div>
-
-<section class="reports-stats-grid" aria-label="Report summary">
-  @for (s of stats(); track s.id) {
-    <div class="rsc-card">
-      <div class="rsc-top">
-        <div class="rsc-icon" [class]="'rsc-icon--' + s.variant" aria-hidden="true">
-          <i class="ti ti-{{ s.icon }}"></i>
-        </div>
-        <div class="rsc-body">
-          <div class="rsc-label">{{ s.label }}</div>
-          <div class="rsc-value">{{ s.value }}</div>
-        </div>
-        <svg class="rsc-spark" [class]="'rsc-spark--' + s.variant" viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true">
-          <polyline [attr.points]="s.spark" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-      </div>
-      <div class="rsc-delta" [class]="'rsc-delta--' + s.deltaType">{{ s.delta }}</div>
-    </div>
-  }
-</section>
 
 <div class="reports-layout">
   <!-- Report list -->
@@ -50,7 +35,7 @@
     <div class="lis-card__header">
       <i class="ti ti-file-text lis-card-icon" aria-hidden="true"></i>
       <h2 class="lis-card__title">All reports</h2>
-      <span class="lis-badge lis-badge--danger">{{ pendingCount() }} pending</span>
+      <span class="lis-badge lis-badge--danger">{{ listCountLabel() }}</span>
     </div>
 
     <div class="report-search">
@@ -70,45 +55,46 @@
         (click)="setStatusFilter('all')" [attr.aria-pressed]="statusFilter() === 'all'">All</button>
       <button type="button" class="report-status-pill" [class.report-status-pill--active]="statusFilter() === 'pending'"
         (click)="setStatusFilter('pending')" [attr.aria-pressed]="statusFilter() === 'pending'">Pending</button>
+      <button type="button" class="report-status-pill" [class.report-status-pill--active]="statusFilter() === 'generated'"
+        (click)="setStatusFilter('generated')" [attr.aria-pressed]="statusFilter() === 'generated'">Generated</button>
       <button type="button" class="report-status-pill" [class.report-status-pill--active]="statusFilter() === 'dispatched'"
         (click)="setStatusFilter('dispatched')" [attr.aria-pressed]="statusFilter() === 'dispatched'">Dispatched</button>
     </div>
 
-    <div role="listbox" aria-label="Report list" class="report-rows">
+    <div role="list" aria-label="Report list" class="report-rows">
       @if (filteredReports().length === 0) {
-        <div class="reports-empty" role="status" aria-live="polite">
+        <div class="reports-empty" role="status">
           <i class="ti ti-file-off" aria-hidden="true"></i>
           <span>No reports found.</span>
         </div>
       }
       @for (r of pagedReports(); track r.id) {
-        <div class="report-row" role="option" tabindex="0"
+        <button type="button" class="report-row"
           [class.report-row--selected]="selected()?.id === r.id"
-          (click)="selected.set(r)"
-          (keydown.enter)="selected.set(r)"
-          (keydown.space)="$event.preventDefault(); selected.set(r)"
-          (keydown)="focusReport($event)"
-          [attr.aria-selected]="selected()?.id === r.id"
+          (click)="selectReport(r)"
+          [attr.aria-pressed]="selected()?.id === r.id"
         >
           <div class="rr-av" aria-hidden="true">{{ initials(r.patientName) }}</div>
           <div class="rr-info">
             <div class="rr-name">{{ r.patientName }}</div>
             <div class="rr-meta">{{ r.test }} · {{ r.date }}</div>
-            <div class="lis-mono">{{ r.id }}</div>
+            <div class="lis-mono rr-identifiers"><span>{{ r.patientId }}</span><span aria-hidden="true">·</span><span>{{ r.id }}</span></div>
           </div>
           <div>
             @if (r.status === 'pending') {
               <span class="lis-pill lis-pill--pending">Pending</span>
+            } @else if (r.status === 'generated') {
+              <span class="lis-pill lis-pill--ready">Generated</span>
             } @else {
               <span class="lis-pill lis-pill--ready">Dispatched</span>
             }
           </div>
-        </div>
+        </button>
       }
     </div>
 
     <div class="report-pagination">
-      <span role="status" aria-live="polite">
+      <span class="report-pagination-range">
         @if (filteredReports().length === 0) {
           No reports match
         } @else {
@@ -131,11 +117,9 @@
     </div>
   </div>
 
-  <!-- Report preview -->
-  @if (selected()) {
-    <div class="report-preview-area">
-      <!-- Print-ready report sheet -->
-      <div class="report-sheet" id="report-sheet" aria-label="Report preview">
+  <ng-template #reportSheet>
+  <!-- Reusable report markup shared by the page and PDF preview -->
+  <div class="report-sheet" id="report-sheet" aria-label="Report preview">
         <!-- Top panel: header + patient band, grouped as one card -->
         <div class="rpt-panel rpt-panel--top">
         <div class="rpt-header">
@@ -145,12 +129,12 @@
           <div class="rpt-lab">
             <div class="rpt-lab-name">MedPath Diagnostics</div>
             <div class="rpt-lab-tag">Accurate Results. Better Health.</div>
-            <div class="rpt-lab-addr">Lab contact details can be configured in Settings</div>
+            <div class="rpt-lab-addr">123, Health Street, Medical Area, Bengaluru — 560001 · +91 98765 43210 · info&#64;medpathdiagnostics.com</div>
           </div>
           <div class="rpt-meta">
             <div class="rpt-date">Report date: {{ selected()?.date }}</div>
             <div class="rpt-nabl">
-              <i class="ti ti-shield-check" aria-hidden="true"></i> Report preview
+              <i class="ti ti-shield-check" aria-hidden="true"></i> NABL Accredited
             </div>
           </div>
         </div>
@@ -167,39 +151,58 @@
           </div>
           <div class="rpt-pf">
             <i class="ti ti-calendar-check rpt-pf-icon" aria-hidden="true"></i>
-            <div><div class="rpt-pl">Collected on</div><div class="rpt-pv">{{ selected()?.date }}</div></div>
+            <div><div class="rpt-pl">Collected on</div><div class="rpt-pv">{{ selectedDetail()?.collectedOn }}</div></div>
           </div>
           <div class="rpt-pf">
             <i class="ti ti-gender-bigender rpt-pf-icon" aria-hidden="true"></i>
-            <div><div class="rpt-pl">Age / Sex</div><div class="rpt-pv">—</div></div>
+            <div><div class="rpt-pl">Age / Sex</div><div class="rpt-pv">{{ selectedDetail()?.patientAgeSex }}</div></div>
           </div>
           <div class="rpt-pf">
             <i class="ti ti-stethoscope rpt-pf-icon" aria-hidden="true"></i>
-            <div><div class="rpt-pl">Referred by</div><div class="rpt-pv">—</div></div>
+            <div><div class="rpt-pl">Referred by</div><div class="rpt-pv">{{ selectedDetail()?.referredBy }}</div></div>
           </div>
           <div class="rpt-pf">
             <i class="ti ti-calendar-event rpt-pf-icon" aria-hidden="true"></i>
-            <div><div class="rpt-pl">Reported on</div><div class="rpt-pv">{{ selected()?.date }}</div></div>
+            <div><div class="rpt-pl">Reported on</div><div class="rpt-pv">{{ selectedDetail()?.reportedOn }}</div></div>
           </div>
         </div>
         </div>
 
         <!-- Middle panel: title + note + results table, grouped as one card -->
         <div class="rpt-panel rpt-panel--mid">
+        <div class="rpt-test-scroll">
         <div class="rpt-title-band">
-          <div class="rpt-title-text">
-            <i class="ti ti-droplet" aria-hidden="true"></i>
-            {{ selected()?.test }}
+          <div class="rpt-test-heading">
+            <div class="rpt-test-heading__title">
+              <i class="ti ti-droplet" aria-hidden="true"></i>
+              <span class="rpt-title-text">Ordered tests</span>
+              <span class="rpt-test-count">{{ selectedTestNames().length }} {{ selectedTestNames().length === 1 ? 'test' : 'tests' }}</span>
+            </div>
+            <div class="rpt-test-list" aria-label="Tests included in this report">
+              @for (testName of selectedTestNames(); track $index) {
+                <span class="rpt-test-chip" [class.rpt-test-chip--overflow]="!testListExpanded() && !showPdfPreview() && $index >= 3" [attr.aria-hidden]="!testListExpanded() && !showPdfPreview() && $index >= 3 ? 'true' : null">{{ testName }}</span>
+              }
+              @if (hiddenTestCount() > 0 && !showPdfPreview()) {
+                <button type="button" class="rpt-test-list-toggle" [attr.aria-expanded]="testListExpanded()" (click)="toggleTestList()">
+                  {{ testListExpanded() ? 'Show less' : '+' + hiddenTestCount() + ' more' }}
+                </button>
+              }
+            </div>
           </div>
-          <div class="lis-mono rpt-sid-chip">{{ selected()?.sampleId }}</div>
+          <div class="rpt-title-actions">
+            <div class="rpt-sid-chip"><span>Sample ID</span><strong class="lis-mono">{{ selectedDetail()?.sampleId }}</strong></div>
+            <button type="button" class="rpt-expand-btn" (click)="togglePreviewExpanded()" [attr.aria-label]="previewExpanded() ? 'Exit expanded preview' : 'Expand report preview'" [attr.title]="previewExpanded() ? 'Exit expanded preview' : 'Expand report preview'">
+              <i class="ti" [class.ti-arrows-minimize]="previewExpanded()" [class.ti-arrows-maximize]="!previewExpanded()" aria-hidden="true"></i>
+            </button>
+          </div>
         </div>
 
         <div class="rpt-note">
-          <strong>Note:</strong> This preview is generated from the saved mock result record. Clinical interpretation and reference ranges must be configured and validated by the laboratory.
-          <span class="rpt-note-sep">Sample ID: {{ selected()?.sampleId }}</span>
+          <strong>Note:</strong> {{ selectedDetail()?.note }}
+          <span class="rpt-note-sep">Specimen: {{ selectedDetail()?.specimen }} &nbsp;·&nbsp; Fasting: {{ selectedDetail()?.fasting }}</span>
         </div>
 
-        <div class="rpt-grp-title">Recorded result parameters</div>
+        <div class="rpt-grp-title">{{ selectedDetail()?.groupTitle }}</div>
         <div class="rpt-tbl-wrap">
         <table class="rpt-tbl" role="table">
           <thead>
@@ -212,14 +215,13 @@
             </tr>
           </thead>
           <tbody>
-            @for (row of resultRows(); track row.name) {
+            @for (row of (selectedDetail()?.rows ?? []); track row.name) {
               <tr [class.rpt-row-crit]="row.flag === 'critical'">
-                <td [class.rpt-bold]="row.flag === 'critical'">{{ row.name }}</td>
+                <td [class.rpt-bold]="row.flag === 'critical'">{{ row.name }}@if (row.method) { <small class="rpt-method">{{ row.method }}</small> }</td>
                 <td [class]="'rpt-flag-' + row.flag">
                   <strong>{{ row.result }}</strong>
-                  @if (row.flag === 'critical') { <span> ↑↑</span> }
-                  @else if (row.flag === 'high') { <span> ↑</span> }
-                  @else if (row.flag === 'low')  { <span> ↓</span> }
+                @if (row.flag === 'critical' || row.flag === 'high') { <span> ↑</span> }
+                  @else if (row.flag === 'low') { <span> ↓</span> }
                 </td>
                 <td>{{ row.unit }}</td>
                 <td class="rpt-ref">{{ row.ref }}</td>
@@ -227,12 +229,14 @@
                   @if (row.flag === 'critical') { <strong>CRITICAL</strong> }
                   @else if (row.flag === 'high') { High }
                   @else if (row.flag === 'low')  { Low }
-                  @else { Entered }
+                  @else if (row.flag === 'unavailable') { Unavailable }
+                  @else { Normal }
                 </td>
               </tr>
             }
           </tbody>
         </table>
+        </div>
         </div>
         </div>
 
@@ -243,15 +247,15 @@
               <div class="rpt-qr" aria-hidden="true"><i class="ti ti-qrcode"></i></div>
               <div class="rpt-qr-text">
                 <span class="rpt-qr-title">Scan to verify</span>
-                Authenticity: {{ selected()?.sampleId }}<br>
+                Authenticity: {{ selectedDetail()?.sampleId }}<br>
                 <span class="rpt-mono-url">medpathdiagnostics.com/verify</span>
               </div>
             </div>
             <div class="rpt-sign">
               <div class="rpt-sign-meta">
                 <div class="rpt-sign-pre">Authorised by</div>
-                <div class="rpt-sign-name">{{ workflowStoreReviewer() }}</div>
-                <div class="rpt-sign-role">Validation record</div>
+                <div class="rpt-sign-name">{{ selectedDetail()?.authorisedBy }}</div>
+                <div class="rpt-sign-role">{{ selectedDetail()?.qualification }}</div>
               </div>
               <svg class="rpt-signature" viewBox="0 0 110 44" aria-hidden="true">
                 <path d="M6 32 C 14 14, 22 14, 27 26 C 31 35, 35 20, 41 18 C 47 16, 50 30, 56 24 C 62 18, 66 12, 73 20 C 78 26, 84 14, 92 18 C 98 21, 100 28, 104 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -261,6 +265,12 @@
           </div>
         </div>
       </div>
+  </ng-template>
+
+  <!-- Report preview -->
+  @if (selected()) {
+    <div class="report-preview-area" [class.report-preview-area--expanded]="previewExpanded()">
+      <ng-container *ngTemplateOutlet="reportSheet"></ng-container>
     </div>
   } @else {
     <div class="preview-empty">
@@ -269,3 +279,145 @@
     </div>
   }
 </div>
+
+
+@if (showPdfPreview() && selected()) {
+  <div class="pdf-preview-overlay" (click)="closePdfPreview()">
+    <section class="pdf-preview-dialog" role="dialog" aria-modal="true" aria-labelledby="pdf-preview-title" (click)="$event.stopPropagation()">
+      <header class="pdf-preview-header">
+        <div class="pdf-preview-heading">
+          <span class="pdf-preview-icon"><i class="ti ti-file-type-pdf" aria-hidden="true"></i></span>
+          <div>
+            <h2 id="pdf-preview-title">Save as PDF</h2>
+            <p>Preview and save the selected report</p>
+          </div>
+        </div>
+        <button type="button" class="pdf-preview-close" aria-label="Close PDF preview" (click)="closePdfPreview()">
+          <i class="ti ti-x" aria-hidden="true"></i>
+        </button>
+      </header>
+
+      <div class="pdf-preview-body">
+        <div class="pdf-preview-stage">
+          <div class="pdf-preview-scroll">
+            <div class="pdf-preview-paper" [class.pdf-preview-paper--landscape]="customPdfSettings() && pdfOrientation() === 'landscape'" [style.--pdf-zoom]="pdfZoom() / 100" [style.width]="pdfPageWidth()" [style.aspect-ratio]="pdfPageAspectRatio()" [style.padding]="pdfPagePadding()">
+              <ng-container *ngTemplateOutlet="reportSheet"></ng-container>
+            </div>
+          </div>
+          <footer class="pdf-preview-toolbar">
+            <span class="pdf-page-count">{{ customPdfSettings() ? pdfPaperSize() + ' · ' + (pdfOrientation() === 'landscape' ? 'Landscape' : 'Portrait') : 'A4 · Portrait' }} preview · Selected report</span>
+            <div class="pdf-zoom-controls">
+              <button type="button" aria-label="Zoom out" [disabled]="pdfZoom() <= 60" (click)="changePdfZoom(-10)">
+                <i class="ti ti-zoom-out" aria-hidden="true"></i>
+              </button>
+              <span>{{ pdfZoom() }}%</span>
+              <button type="button" aria-label="Zoom in" [disabled]="pdfZoom() >= 120" (click)="changePdfZoom(10)">
+                <i class="ti ti-zoom-in" aria-hidden="true"></i>
+              </button>
+            </div>
+          </footer>
+        </div>
+
+        <aside class="pdf-preview-settings">
+          <div class="pdf-settings-title"><i class="ti ti-settings" aria-hidden="true"></i><h3>PDF settings</h3></div>
+          @if (!customPdfSettings()) {
+            <div class="pdf-preview-tip">
+              <i class="ti ti-lock" aria-hidden="true"></i>
+              <span>Standard A4 portrait settings are active. Enable custom PDF settings from <strong>Settings</strong> to edit paper size, orientation and margins.</span>
+            </div>
+          }
+
+          @if (customPdfSettings()) {
+          <div class="pdf-setting-row" [class.pdf-setting-row--disabled]="!customPdfSettings()">
+            <span class="pdf-setting-icon"><i class="ti ti-file" aria-hidden="true"></i></span>
+            <div class="pdf-setting-control">
+              <label for="pdf-paper-size">Paper size</label>
+              <select id="pdf-paper-size" [value]="pdfPaperSize()" [disabled]="!customPdfSettings()" (change)="setPdfPaperSize($any($event.target).value)">
+                <option value="A4">A4 (210 × 297 mm)</option>
+                <option value="A3">A3 (297 × 420 mm)</option>
+                <option value="Letter">Letter (8.5 × 11 in)</option>
+                <option value="Legal">Legal (8.5 × 14 in)</option>
+              </select>
+            </div>
+          </div>
+          <div class="pdf-setting-row" [class.pdf-setting-row--disabled]="!customPdfSettings()">
+            <span class="pdf-setting-icon"><i class="ti ti-layout" aria-hidden="true"></i></span>
+            <div class="pdf-setting-control">
+              <label for="pdf-orientation">Orientation</label>
+              <select id="pdf-orientation" [value]="pdfOrientation()" [disabled]="!customPdfSettings()" (change)="setPdfOrientation($any($event.target).value)">
+                <option value="portrait">Portrait</option>
+                <option value="landscape">Landscape</option>
+              </select>
+            </div>
+          </div>
+          <div class="pdf-setting-row" [class.pdf-setting-row--disabled]="!customPdfSettings()">
+            <span class="pdf-setting-icon"><i class="ti ti-border-outer" aria-hidden="true"></i></span>
+            <div class="pdf-setting-control">
+              <label for="pdf-margins">Page margins</label>
+              <select id="pdf-margins" [value]="pdfMargins()" [disabled]="!customPdfSettings()" (change)="setPdfMargins($any($event.target).value)">
+                <option value="default">Default (12 mm)</option>
+                <option value="narrow">Narrow (6 mm)</option>
+                <option value="moderate">Moderate (16 mm)</option>
+                <option value="wide">Wide (24 mm)</option>
+              </select>
+            </div>
+          </div>
+          }
+          <div class="pdf-setting-row">
+            <span class="pdf-setting-icon"><i class="ti ti-printer" aria-hidden="true"></i></span>
+            <div><span>Output</span><strong>Browser PDF / Print</strong></div>
+          </div>
+          <div class="pdf-preview-tip">
+            <i class="ti ti-info-circle" aria-hidden="true"></i>
+            <span>{{ customPdfSettings() ? 'Your custom paper, orientation and margin choices will be applied when the print window opens.' : 'Standard A4 portrait defaults are active. Turn on custom PDF settings to reveal additional options.' }} Choose <strong>Save as PDF</strong> as the destination in the browser print window.</span>
+          </div>
+          <div class="pdf-preview-actions">
+            <button type="button" class="lis-btn lis-btn--secondary" (click)="closePdfPreview()">Cancel</button>
+            <button type="button" class="lis-btn lis-btn--primary" (click)="savePdfFromPreview()">
+              <i class="ti ti-download" aria-hidden="true"></i> Save as PDF
+            </button>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </div>
+}
+
+
+@if (showDispatchConfirm() && selected(); as report) {
+  <div class="report-confirm-overlay">
+    <section
+      class="report-confirm-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="dispatch-dialog-title"
+      aria-describedby="dispatch-dialog-description"
+    >
+      <button type="button" class="report-confirm-close" aria-label="Close confirmation" (click)="cancelDispatch()">
+        <i class="ti ti-x" aria-hidden="true"></i>
+      </button>
+
+      <div class="report-confirm-icon" aria-hidden="true">
+        <i class="ti ti-send"></i>
+      </div>
+
+      <h2 id="dispatch-dialog-title">Mark report as dispatched?</h2>
+      <p id="dispatch-dialog-description">
+        Are you sure you want to mark report <strong>{{ report.id }}</strong> as dispatched?
+      </p>
+
+      <div class="report-confirm-notice">
+        <i class="ti ti-info-circle" aria-hidden="true"></i>
+        <span>This is a demo action and updates the local mock data only.</span>
+      </div>
+
+      <div class="report-confirm-actions">
+        <button type="button" class="lis-btn lis-btn--secondary" (click)="cancelDispatch()">Cancel</button>
+        <button type="button" class="lis-btn lis-btn--primary" (click)="confirmDispatch()">
+          <i class="ti ti-send-check" aria-hidden="true"></i>
+          Mark as dispatched
+        </button>
+      </div>
+    </section>
+  </div>
+}

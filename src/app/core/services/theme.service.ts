@@ -3,7 +3,7 @@ import { Injectable, signal, effect } from '@angular/core';
 export type Theme = 'light' | 'dark';
 
 /** 'default' = original Teal/Indigo brand palette (no data-palette attr). */
-export type Palette = 'default' | 'ocean' | 'sunset' | 'violet';
+export type Palette = 'default' | 'ocean' | 'sunset' | 'violet' | 'pastel';
 
 export interface PaletteOption {
   id: Palette;
@@ -37,6 +37,12 @@ export const PALETTE_OPTIONS: PaletteOption[] = [
     label: 'Violet',
     description: 'Rich purple with a magenta accent.',
     swatches: { primary: '#8B5CF6', secondary: '#EC4899', accent: '#C026D3' },
+  },
+  {
+    id: 'pastel',
+    label: 'Pastel Lavender',
+    description: 'Soft lavender, blush pink and pastel accents.',
+    swatches: { primary: '#8C75CF', secondary: '#F6D1CE', accent: '#E0E0F3' },
   },
 ];
 

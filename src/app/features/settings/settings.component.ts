@@ -1,5 +1,7 @@
 import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { ThemeService, Palette } from '../../core/services/theme.service';
+import { CursorPreferenceService } from '../../core/services/cursor-preference.service';
+import { PdfPreferencesService } from '../../core/services/pdf-preferences.service';
 
 @Component({
   selector: 'app-settings',
@@ -10,7 +12,8 @@ import { ThemeService, Palette } from '../../core/services/theme.service';
       <div><h1 class="page-title">Settings</h1></div>
     </div>
 
-    <section class="settings-card" aria-labelledby="appearance-heading">
+    <div class="settings-layout">
+    <section class="settings-card appearance-card" aria-labelledby="appearance-heading">
       <div class="settings-card-head">
         <i class="ti ti-palette settings-card-icon" aria-hidden="true"></i>
         <div>
@@ -21,14 +24,10 @@ import { ThemeService, Palette } from '../../core/services/theme.service';
 
       <div class="theme-grid" role="radiogroup" aria-label="Color theme">
         @for (option of theme.paletteOptions; track option.id) {
-          <button
-            type="button"
-            class="theme-option"
+          <button type="button" class="theme-option"
             [class.active]="theme.palette() === option.id"
-            role="radio"
-            [attr.aria-checked]="theme.palette() === option.id"
-            (click)="selectPalette(option.id)"
-          >
+            role="radio" [attr.aria-checked]="theme.palette() === option.id"
+            (click)="selectPalette(option.id)">
             <span class="theme-swatches" aria-hidden="true">
               <span class="swatch" [style.background]="option.swatches.primary"></span>
               <span class="swatch" [style.background]="option.swatches.accent"></span>
@@ -50,18 +49,132 @@ import { ThemeService, Palette } from '../../core/services/theme.service';
           <span class="theme-label">Dark mode</span>
           <span class="theme-desc">Switch between light and dark backgrounds.</span>
         </div>
-        <button
-          type="button"
-          class="mode-toggle"
-          role="switch"
-          [attr.aria-checked]="theme.theme() === 'dark'"
-          (click)="theme.toggle()"
-        >
-          <i class="ti" [class.ti-sun]="theme.theme() === 'light'" [class.ti-moon]="theme.theme() === 'dark'" aria-hidden="true"></i>
-          {{ theme.theme() === 'dark' ? 'Dark' : 'Light' }}
-        </button>
+        <div class="mode-switch-control">
+          <button type="button" class="mode-switch" role="switch" aria-label="Dark mode"
+            [class.is-on]="theme.theme() === 'dark'"
+            [attr.aria-checked]="theme.theme() === 'dark'" (click)="theme.toggle()">
+            <span class="switch-track" aria-hidden="true"><span class="switch-thumb"><i class="ti" [class.ti-moon]="theme.theme() === 'dark'" [class.ti-sun]="theme.theme() === 'light'"></i></span></span>
+          </button>
+          <span class="switch-state">{{ theme.theme() === 'dark' ? 'On' : 'Off' }}</span>
+        </div>
       </div>
     </section>
+
+    <section class="settings-card cursor-card" aria-labelledby="cursor-heading">
+      <div class="settings-card-head">
+        <i class="ti ti-pointer settings-card-icon" aria-hidden="true"></i>
+        <div>
+          <h2 id="cursor-heading" class="settings-card-title">Custom cursor</h2>
+          <p class="settings-card-sub">Personalize the arrow and pointer-hand colors. Changes apply instantly and are saved on this device.</p>
+        </div>
+      </div>
+
+      <div class="cursor-enable-row">
+        <div class="mode-row-text">
+          <span class="theme-label">Enable custom cursor</span>
+          <span class="theme-desc">Use the MedPath cursor instead of the browser default on desktop.</span>
+        </div>
+        <div class="mode-switch-control">
+          <button type="button" class="mode-switch" role="switch" aria-label="Enable custom cursor"
+            [class.is-on]="cursor.enabled()" [attr.aria-checked]="cursor.enabled()"
+            (click)="cursor.toggle()">
+            <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+          </button>
+          <span class="switch-state">{{ cursor.enabled() ? 'On' : 'Off' }}</span>
+        </div>
+      </div>
+
+      <div class="cursor-shape-row">
+        <div class="cursor-color-copy">
+          <span class="theme-label">Cursor shape</span>
+          <span class="theme-desc">Choose the pointer style used across MedPath.</span>
+        </div>
+        <div class="cursor-shape-options" role="radiogroup" aria-label="Cursor shape">
+          <button type="button" class="cursor-shape-option" [class.selected]="cursor.shape() === 'classic'"
+            role="radio" [attr.aria-checked]="cursor.shape() === 'classic'" (click)="cursor.setShape('classic')">
+            <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 3 L5 25 L11 19 L16 29 L21 26 L16 16 L25 16 Z" [attr.fill]="cursor.shape() === 'classic' ? cursor.color() : 'var(--text-secondary)'" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+            <span>Classic</span>
+            @if (cursor.shape() === 'classic') { <i class="ti ti-circle-check-filled" aria-hidden="true"></i> }
+          </button>
+          <button type="button" class="cursor-shape-option" [class.selected]="cursor.shape() === 'soft-pointer'"
+            role="radio" [attr.aria-checked]="cursor.shape() === 'soft-pointer'" (click)="cursor.setShape('soft-pointer')">
+            <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 3.5 C4 1.4 6.5 .2 8.2 1.6 L28 17.4 C31.4 20.1 29.5 25.6 25.2 25.6 H18.7 C16.3 25.6 14.1 26.7 12.6 28.6 L8.6 29.5 C5.9 32 .8 30.7 .6 27.9 Z" [attr.fill]="cursor.shape() === 'soft-pointer' ? cursor.color() : 'var(--text-secondary)'" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+            <span>Soft Pointer</span>
+            @if (cursor.shape() === 'soft-pointer') { <i class="ti ti-circle-check-filled" aria-hidden="true"></i> }
+          </button>
+          <button type="button" class="cursor-shape-option" [class.selected]="cursor.shape() === 'rounded'"
+            role="radio" [attr.aria-checked]="cursor.shape() === 'rounded'" (click)="cursor.setShape('rounded')">
+            <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 3.5 Q6 1.5 8 3 L27 17 Q31 20 26 23 L19 23 Q17 23 15 26 L12 30 Q9 33 8 28 Z" [attr.fill]="cursor.shape() === 'rounded' ? cursor.color() : 'var(--text-secondary)'" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+            <span>Rounded</span>
+            @if (cursor.shape() === 'rounded') { <i class="ti ti-circle-check-filled" aria-hidden="true"></i> }
+          </button>
+          <button type="button" class="cursor-shape-option" [class.selected]="cursor.shape() === 'compact'"
+            role="radio" [attr.aria-checked]="cursor.shape() === 'compact'" (click)="cursor.setShape('compact')">
+            <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 3 L5 25 L10 20 L14 28 L18 26 L14 18 L23 18 Z" [attr.fill]="cursor.shape() === 'compact' ? cursor.color() : 'var(--text-secondary)'" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+            <span>Compact</span>
+            @if (cursor.shape() === 'compact') { <i class="ti ti-circle-check-filled" aria-hidden="true"></i> }
+          </button>
+        </div>
+      </div>
+
+      <div class="cursor-color-row">
+        <div class="cursor-color-copy">
+          <span class="theme-label">Cursor color</span>
+          <span class="theme-desc">Choose a color for both the arrow and clickable hand.</span>
+        </div>
+        <div class="color-picker-control">
+          <label class="color-picker" [style.--picker-color]="cursor.color()" for="cursor-color">
+            <input id="cursor-color" type="color" [value]="cursor.color()" (input)="onCursorColorInput($event)" aria-label="Choose custom cursor color">
+            <span class="color-picker-preview" aria-hidden="true"></span>
+          </label>
+          <code class="color-value">{{ cursor.color() }}</code>
+          <button type="button" class="reset-color" (click)="cursor.resetColor()">Reset</button>
+        </div>
+      </div>
+
+      <div class="cursor-presets" aria-label="Preset cursor colors">
+        @for (color of cursorColors; track color.value) {
+          <button type="button" class="color-preset"
+            [style.--preset-color]="color.value"
+            [class.selected]="cursor.color() === color.value"
+            [attr.aria-label]="'Set cursor color to ' + color.label"
+            [attr.aria-pressed]="cursor.color() === color.value"
+            (click)="cursor.setColor(color.value)">
+            <span></span>
+            <small>{{ color.label }}</small>
+          </button>
+        }
+      </div>
+    </section>
+
+    <section class="settings-card pdf-card" aria-labelledby="pdf-export-heading">
+      <div class="settings-card-head">
+        <i class="ti ti-file-type-pdf settings-card-icon" aria-hidden="true"></i>
+        <div>
+          <h2 id="pdf-export-heading" class="settings-card-title">PDF export</h2>
+          <p class="settings-card-sub">Control whether report exports can use custom paper size, orientation and margin settings. When disabled, reports use the standard A4 portrait format.</p>
+        </div>
+      </div>
+      <div class="mode-row pdf-preference-row">
+        <div class="mode-row-text">
+          <span class="theme-label">Enable custom PDF settings</span>
+          <span class="theme-desc">Allow users to change paper size, orientation and margins in the report PDF preview.</span>
+        </div>
+        <div class="mode-switch-control">
+          <button type="button" class="mode-switch" role="switch" aria-label="Enable custom PDF settings"
+            [class.is-on]="pdfPreferences.customSettingsEnabled()"
+            [attr.aria-checked]="pdfPreferences.customSettingsEnabled()"
+            (click)="togglePdfSettings()">
+            <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+          </button>
+          <span class="switch-state">{{ pdfPreferences.customSettingsEnabled() ? 'On' : 'Off' }}</span>
+        </div>
+      </div>
+      <p class="settings-card-sub pdf-preference-status">
+        {{ pdfPreferences.customSettingsEnabled() ? 'Custom PDF controls are available on the Reports page.' : 'Custom PDF controls are hidden. Standard A4 portrait defaults will be used.' }}
+      </p>
+    </section>
+    </div>
 
     <div class="placeholder-page" role="region" aria-label="More settings coming soon">
       <i class="ti ti-settings placeholder-icon" aria-hidden="true"></i>
@@ -70,133 +183,186 @@ import { ThemeService, Palette } from '../../core/services/theme.service';
     </div>`,
   styles: [`
     :host { display:block; }
-
     .page-header { margin-bottom:14px; }
-    .page-title  { font-size:20px; font-weight:500; color:var(--text-primary); margin:0; }
-
+    .page-title { font-size:20px; font-weight:500; color:var(--text-primary); margin:0; }
+    .settings-layout {
+      display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px;
+      align-items:stretch;
+    }
     .settings-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-card);
-      padding: var(--space-6);
-      margin-bottom: var(--space-6);
+      min-width:0; background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius-lg);
+      box-shadow:var(--shadow-card); padding:var(--space-6); margin:0;
     }
-
-    .settings-card-head {
-      display:flex;
-      align-items:flex-start;
-      gap: var(--space-3);
-      margin-bottom: var(--space-5);
-    }
-    .settings-card-icon {
-      font-size: 22px;
-      color: var(--primary-deeper);
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
+    .appearance-card { grid-column:1 / -1; }
+    .cursor-card,.pdf-card { height:100%; }
+    .pdf-card { display:flex; flex-direction:column; }
+    .pdf-preference-row { align-items:center; }
+    .pdf-preference-status { margin-top:auto; padding-top:18px; }
+    .settings-card-head { display:flex; align-items:flex-start; gap:var(--space-3); margin-bottom:var(--space-5); }
+    .settings-card-icon { font-size:22px; color:var(--primary-deeper); flex-shrink:0; margin-top:2px; }
     .settings-card-title { font-size:15px; font-weight:600; color:var(--text-primary); margin:0 0 2px; }
-    .settings-card-sub   { font-size:13px; color:var(--text-secondary); margin:0; max-width:520px; }
-
-    .theme-grid {
-      display:grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: var(--space-3);
-    }
-
+    .settings-card-sub { font-size:13px; color:var(--text-secondary); margin:0; max-width:520px; }
+    .theme-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; }
     .theme-option {
-      position: relative;
-      display:flex;
-      align-items:center;
-      gap: var(--space-3);
-      text-align:left;
-      padding: var(--space-3) var(--space-4);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-md);
-      background: var(--bg-surface-alt);
-      cursor: pointer;
-      transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
-      font-family: inherit;
+      min-width:0; position:relative; display:flex; align-items:center; gap:var(--space-3); text-align:left;
+      padding:var(--space-3) var(--space-4); border:1.5px solid var(--border); border-radius:var(--radius-md);
+      background:var(--bg-surface-alt); cursor:pointer; transition:border-color var(--transition-fast),box-shadow var(--transition-fast),transform var(--transition-fast); font-family:inherit;
     }
-    .theme-option:hover {
-      border-color: var(--primary-light);
-      transform: translateY(-1px);
-    }
-    .theme-option:focus-visible {
-      outline: 2px solid var(--primary-deeper);
-      outline-offset: 2px;
-    }
-    .theme-option.active {
-      border-color: var(--primary-deeper);
-      box-shadow: 0 0 0 3px var(--primary-xlight);
-      background: var(--bg-surface);
-    }
-
-    .theme-swatches {
-      display:flex;
-      flex-shrink:0;
-    }
-    .swatch {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      border: 2px solid var(--bg-surface);
-      box-shadow: 0 0 0 1px var(--border);
-    }
-    .swatch + .swatch { margin-left: -7px; }
-
-    .theme-text { display:flex; flex-direction:column; gap:1px; min-width:0; }
+    .theme-option:hover { border-color:var(--primary-light); transform:translateY(-1px); }
+    .theme-option:focus-visible { outline:2px solid var(--primary-deeper); outline-offset:2px; }
+    .theme-option.active { border-color:var(--primary-deeper); box-shadow:0 0 0 3px var(--primary-xlight); background:var(--bg-surface); }
+    .theme-swatches { display:flex; flex-shrink:0; }
+    .swatch { width:18px; height:18px; border-radius:50%; border:2px solid var(--bg-surface); box-shadow:0 0 0 1px var(--border); }
+    .swatch + .swatch { margin-left:-7px; }
+    .theme-text,.cursor-color-copy,.mode-row-text { display:flex; flex-direction:column; gap:3px; min-width:0; }
+    .theme-text { padding-right:12px; }
+    .theme-desc { line-height:1.45; }
     .theme-label { font-size:13px; font-weight:600; color:var(--text-primary); }
-    .theme-desc  { font-size:11.5px; color:var(--text-secondary); }
-
-    .theme-check {
-      position:absolute;
-      top:8px;
-      right:8px;
-      font-size:16px;
-      color: var(--primary-deeper);
+    .theme-desc { font-size:11.5px; color:var(--text-secondary); }
+    .theme-check { position:absolute; top:8px; right:8px; font-size:16px; color:var(--primary-deeper); }
+    .cursor-shape-row {
+      display:flex; flex-direction:column; align-items:flex-start; gap:12px;
+      margin-top:var(--space-5); padding-top:var(--space-5); border-top:1px solid var(--border);
     }
-
-    .mode-row {
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: var(--space-4);
-      margin-top: var(--space-5);
-      padding-top: var(--space-5);
-      border-top: 1px solid var(--border);
+    .cursor-shape-options {
+      display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px;
+      width:100%; max-width:620px;
     }
-    .mode-row-text { display:flex; flex-direction:column; gap:1px; }
-
-    .mode-toggle {
-      display:flex;
-      align-items:center;
-      gap: var(--space-2);
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-primary);
-      background: var(--bg-surface-alt);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 8px 14px;
-      cursor: pointer;
-      transition: border-color var(--transition-fast), background var(--transition-fast);
-      font-family: inherit;
+    .cursor-shape-option {
+      position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:9px; min-width:0; min-height:112px; padding:12px;
+      border:1px solid var(--border); border-radius:12px;
+      background:var(--bg-surface-alt); color:var(--text-secondary);
+      font:inherit; font-size:12px; font-weight:600; line-height:1.3;
+      cursor:pointer; transition:border-color .2s ease,background .2s ease,box-shadow .2s ease,transform .2s ease;
     }
-    .mode-toggle:hover { border-color: var(--primary-light); }
-    .mode-toggle i { font-size: 16px; color: var(--theme-icon-color, var(--primary-deeper)); }
-
-    .placeholder-page { display:flex; flex-direction:column; align-items:center; justify-content:center;
-      padding:60px 20px; gap:14px; text-align:center; }
-    .placeholder-icon { font-size:48px; color:var(--lis-primary,#1D9E75); opacity:0.35; }
+    .cursor-shape-option svg {
+      display:block; width:38px; height:38px; max-width:38px; max-height:38px;
+      flex:0 0 38px; overflow:visible;
+    }
+    .cursor-shape-option span { display:block; white-space:nowrap; }
+    .cursor-shape-option:hover { border-color:var(--primary-light); transform:translateY(-1px); }
+    .cursor-shape-option.selected {
+      border-color:var(--primary-deeper); background:var(--primary-xlight);
+      color:var(--text-primary);
+      box-shadow:0 0 0 2px color-mix(in srgb,var(--primary-deeper) 12%,transparent);
+    }
+    .cursor-shape-option i {
+      position:absolute; top:8px; right:8px; color:var(--primary-deeper); font-size:15px;
+    }
+    .cursor-shape-option:focus-visible { outline:2px solid var(--primary-deeper); outline-offset:3px; }
+    @media(max-width:560px) {
+      .cursor-shape-options { grid-template-columns:repeat(2,minmax(0,1fr)); max-width:100%; }
+      .cursor-shape-option { min-height:104px; padding:10px 6px; }
+      .cursor-shape-option svg { width:38px; height:38px; flex-basis:38px; }
+    }
+    .mode-row,.cursor-enable-row,.cursor-color-row {
+      display:flex; align-items:center; justify-content:space-between; gap:var(--space-4);
+      margin-top:var(--space-5); padding-top:var(--space-5); border-top:1px solid var(--border);
+    }
+        .mode-switch-control {
+      display:inline-flex; align-items:center; justify-content:flex-end; gap:12px;
+      flex:0 0 auto; min-width:78px;
+    }
+    .mode-switch {
+      position:relative; display:inline-flex; align-items:center; width:52px; height:30px;
+      flex:0 0 52px; padding:3px; border:1px solid var(--border);
+      border-radius:999px; background:linear-gradient(145deg,var(--bg-surface-alt),var(--bg-surface));
+      box-shadow:inset 0 1px 3px rgba(0,0,0,.22),0 1px 1px rgba(255,255,255,.035);
+      cursor:pointer; transition:border-color .28s ease,background .32s ease,box-shadow .32s ease,transform .2s ease;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .mode-switch:hover { border-color:var(--primary-light); transform:translateY(-1px); }
+    .mode-switch:active { transform:scale(.96); }
+    .mode-switch:focus-visible { outline:2px solid var(--primary-deeper); outline-offset:4px; }
+    .switch-track {
+      position:relative; display:flex; align-items:center; width:100%; height:100%;
+      border-radius:inherit; background:transparent;
+    }
+    .switch-thumb {
+      position:relative; z-index:1; display:grid; place-items:center;
+      width:22px; height:22px; border-radius:50%;
+      color:var(--text-secondary);
+      background:linear-gradient(150deg,#fff 0%,#dce5ee 100%);
+      box-shadow:0 2px 5px rgba(0,0,0,.28),inset 0 1px 1px rgba(255,255,255,.9);
+      transform:translateX(0);
+      transition:transform .36s cubic-bezier(.2,.85,.25,1.25),background .28s ease,box-shadow .28s ease;
+    }
+    .switch-thumb i { font-size:11px; }
+    .mode-switch.is-on {
+      border-color:color-mix(in srgb,var(--primary-deeper) 76%,transparent);
+      background:linear-gradient(135deg,color-mix(in srgb,var(--primary-deeper) 88%,#fff 12%),var(--primary-deeper));
+      box-shadow:inset 0 1px 3px rgba(0,0,0,.16),0 0 0 3px var(--primary-xlight),0 3px 12px color-mix(in srgb,var(--primary-deeper) 22%,transparent);
+    }
+    .mode-switch.is-on .switch-thumb {
+      transform:translateX(22px); color:var(--primary-deeper);
+      box-shadow:0 2px 7px rgba(0,0,0,.24),0 0 0 2px rgba(255,255,255,.22);
+    }
+    .switch-state {
+      min-width:24px; color:var(--text-secondary); font-size:11px;
+      font-weight:700; letter-spacing:.08em; line-height:1; text-transform:uppercase;
+      text-align:left; transition:color .25s ease;
+    }
+    .mode-switch-control:has(.mode-switch.is-on) .switch-state { color:var(--primary-deeper); }
+    @media (prefers-reduced-motion: reduce) {
+      .mode-switch,.switch-thumb,.switch-state { transition:none !important; }
+    }
+.color-picker-control { display:flex; align-items:center; gap:10px; }
+    .color-picker { width:38px; height:38px; display:grid; place-items:center; padding:4px; border:1px solid var(--border); border-radius:10px; background:var(--bg-surface-alt); cursor:pointer; }
+    .color-picker input { position:absolute; width:1px; height:1px; opacity:0; }
+    .color-picker-preview { width:26px; height:26px; border-radius:7px; background:var(--picker-color); box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); }
+    .color-picker:focus-within { outline:2px solid var(--primary-deeper); outline-offset:2px; }
+    .color-value { font-size:12px; color:var(--text-secondary); min-width:64px; }
+    .reset-color { border:0; background:transparent; color:var(--primary-deeper); font:inherit; font-size:12px; font-weight:600; cursor:pointer; padding:6px; }
+    .cursor-presets { display:flex; flex-wrap:wrap; gap:14px; margin-top:18px; }
+    .color-preset { display:flex; flex-direction:column; align-items:center; gap:5px; padding:4px; border:1px solid transparent; border-radius:9px; background:transparent; cursor:pointer; }
+    .color-preset span { width:22px; height:22px; border-radius:50%; background:var(--preset-color); box-shadow:0 0 0 1px var(--border),inset 0 0 0 2px var(--bg-surface); }
+    .color-preset small { font-size:10px; color:var(--text-secondary); }
+    .color-preset.selected { border-color:var(--primary-deeper); background:var(--primary-xlight); }
+    .pdf-preference-row { margin-top:0; padding-top:0; border-top:0; }
+    .pdf-preference-status { margin:auto 0 0; padding-top:18px; }
+    .placeholder-page { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 20px; gap:14px; text-align:center; }
+    .placeholder-icon { font-size:48px; color:var(--lis-primary,#1D9E75); opacity:.35; }
     .placeholder-title { font-size:18px; font-weight:500; color:var(--text-primary); margin:0; }
-    .placeholder-sub   { font-size:13px; color:var(--text-secondary); margin:0; max-width:360px; }
+    .placeholder-sub { font-size:13px; color:var(--text-secondary); margin:0; max-width:360px; }
+    @media(max-width:1100px) {
+      .theme-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+    @media(max-width:900px) {
+      .settings-layout { grid-template-columns:minmax(0,1fr); gap:16px; }
+      .appearance-card { grid-column:auto; }
+    }
+    @media(max-width:560px) {
+      .settings-card { padding:16px; }
+      .theme-grid { grid-template-columns:minmax(0,1fr); }
+      .cursor-enable-row,.cursor-color-row,.cursor-shape-row { align-items:flex-start; flex-direction:column; }
+      .color-picker-control { flex-wrap:wrap; }
+    }
   `]
 })
 export class SettingsComponent {
   protected readonly theme = inject(ThemeService);
+  protected readonly cursor = inject(CursorPreferenceService);
+  protected readonly pdfPreferences = inject(PdfPreferencesService);
+  protected readonly cursorColors = [
+    { label: 'Violet', value: '#8b5cf6' },
+    { label: 'Teal', value: '#0d9488' },
+    { label: 'Blue', value: '#2563eb' },
+    { label: 'Rose', value: '#e11d48' },
+    { label: 'Amber', value: '#d97706' },
+    { label: 'Black', value: '#171717' },
+  ];
+
+  protected togglePdfSettings(): void {
+    this.pdfPreferences.setCustomSettingsEnabled(!this.pdfPreferences.customSettingsEnabled());
+  }
 
   protected selectPalette(id: Palette): void {
     this.theme.setPalette(id);
+  }
+
+  protected onCursorColorInput(event: Event): void {
+    const input = event.target;
+    if (input instanceof HTMLInputElement) this.cursor.setColor(input.value);
   }
 }

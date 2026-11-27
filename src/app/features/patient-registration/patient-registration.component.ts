@@ -4,10 +4,11 @@
 //  & clinical info, then navigate to Test Order.
 // ─────────────────────────────────────────────
 import {
-  Component, ChangeDetectionStrategy, signal, computed, inject, OnInit, HostListener
+  Component, ChangeDetectionStrategy, signal, computed, inject, OnInit, HostListener, DestroyRef
 } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe, NgClass } from '@angular/common';
 import { PatientFlowService, RegisteredPatient, KnownPatientRecord } from '../../core/services/patient-flow.service';
 import { DobDatePickerComponent } from '../../shared/components/dob-date-picker/dob-date-picker.component';
@@ -26,6 +27,8 @@ import { PatientCardComponent } from '../../shared/components/patient-card/patie
 export class PatientRegistrationComponent implements OnInit {
   private readonly fb     = inject(FormBuilder);
   private readonly router = inject(Router);
+  private readonly route  = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
   protected readonly flow = inject(PatientFlowService);
 
   protected readonly bloodGroups = [
@@ -113,6 +116,14 @@ export class PatientRegistrationComponent implements OnInit {
       collectionDate: [''],
       collectionTime: [''],
       collectionInstructions: [''],
+    });
+
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
+      const search = params.get('search');
+      if (!search) return;
+      this.currentStep.set(1);
+      this.showNewPatientForm.set(false);
+      this.searchExistingPatients(search);
     });
 
     // The custom date picker doesn't emit a native (change) event,

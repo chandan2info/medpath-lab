@@ -1,6 +1,10 @@
 /* MedPath LIS — unified, responsive application header. */
 .lis-topbar {
-  background: var(--lis-sb-bg, var(--bg-surface)) !important;
+  background: linear-gradient(
+    110deg,
+    var(--lis-sb-bg-brand, var(--lis-sb-bg, var(--bg-surface))),
+    var(--lis-sb-bg, var(--bg-surface))
+  ) !important;
   border-bottom: 1px solid var(--lis-sb-sep, var(--border-color));
   box-shadow: none !important;
 }
@@ -73,12 +77,99 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 14%, transparent);
 }
 
+.lis-topbar .topbar-search { position: relative; }
 .lis-topbar .topbar-search input { min-width: 0; font-size: 13px; }
 .lis-topbar .search-kbd { border-radius: 6px; padding: 3px 6px; }
+
+.topbar-search-results {
+  position: absolute;
+  z-index: 1200;
+  top: calc(100% + 8px);
+  left: 0;
+  width: min(480px, calc(100vw - 28px));
+  max-height: min(420px, 70vh);
+  overflow-y: auto;
+  padding: 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--card-bg, var(--bg-surface));
+  box-shadow: 0 16px 40px rgba(38, 28, 61, .18);
+}
+.topbar-search-result { display:flex; align-items:center; width:100%; min-width:0; gap:10px; border:0; border-radius:8px; padding:9px; color:var(--text-primary); background:transparent; text-align:left; cursor:pointer; }
+.topbar-search-result:hover, .topbar-search-result--active { background:color-mix(in srgb, var(--primary) 10%, var(--card-bg, #fff)); }
+.topbar-search-result:focus-visible { outline:2px solid var(--primary); outline-offset:-2px; }
+.topbar-search-result__icon { display:grid; place-items:center; width:30px; height:30px; flex:0 0 30px; border-radius:8px; color:var(--primary); background:color-mix(in srgb, var(--primary) 12%, var(--card-bg, #fff)); }
+.topbar-search-result__copy { display:grid; flex:1; min-width:0; gap:2px; }
+.topbar-search-result__copy strong { overflow:hidden; font-size:12px; font-weight:600; text-overflow:ellipsis; white-space:nowrap; }
+.topbar-search-result__copy small { overflow:hidden; color:var(--text-secondary); font-size:10px; text-overflow:ellipsis; white-space:nowrap; }
+.topbar-search-result__kind { flex:0 0 auto; color:var(--text-secondary); font-size:10px; }
+.topbar-search-empty { padding:14px 12px; color:var(--text-secondary); font-size:12px; }
+
+.topbar-alerts { position:relative; flex:0 0 34px; }
+/* Native Popover API promotes alerts to the browser top layer. This escapes
+   transformed/overflow-clipped dashboard containers on every route. */
+.topbar-alert-popover[popover] {
+  position: fixed;
+  inset: auto 16px auto auto;
+  top: calc(var(--header-height, 56px) + 12px);
+  z-index: 2000;
+  width: min(390px, calc(100vw - 32px));
+  max-width: calc(100vw - 32px);
+  max-height: min(560px, calc(100dvh - var(--header-height, 56px) - 24px));
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  flex-direction: column;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  color: var(--text-primary);
+  background: var(--card-bg, var(--bg-surface));
+  box-shadow: 0 18px 48px rgba(38, 28, 61, .2);
+  white-space: normal;
+}
+.topbar-alert-popover[popover]:not(:popover-open) { display: none; }
+.topbar-alert-popover[popover]:popover-open { display: flex; }
+.topbar-alert-popover__header { flex: 0 0 auto; }
+.topbar-alert-list { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.topbar-alert-note { flex: 0 0 auto; }
+
+@media (max-width: 480px) {
+  .topbar-alert-popover[popover] {
+    top: calc(var(--header-height, 56px) + 8px);
+    right: 12px;
+    width: calc(100vw - 24px);
+    max-width: calc(100vw - 24px);
+    max-height: calc(100dvh - var(--header-height, 56px) - 16px);
+  }
+}
+.topbar-alert-popover__header { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:13px 14px; border-bottom:1px solid var(--border-color); }
+.topbar-alert-popover__header>div { display:flex; align-items:center; gap:8px; }
+.topbar-alert-popover__header>div>i { color:var(--primary); }
+.topbar-alert-popover__header strong { font-size:13px; }
+.topbar-alert-popover__header span { border-radius:20px; padding:2px 7px; color:var(--text-secondary); background:var(--body-bg); font-size:10px; }
+.topbar-alert-popover__header button { display:grid; place-items:center; width:28px; height:28px; border:0; border-radius:7px; color:var(--text-secondary); background:transparent; cursor:pointer; }
+.topbar-alert-popover__header button:hover { color:var(--text-primary); background:var(--body-bg); }
+.topbar-alert-list { overflow-y:auto; padding:4px 10px; }
+.topbar-alert-item { display:grid; grid-template-columns:8px minmax(0,1fr); gap:9px; padding:11px 5px; border-bottom:1px solid var(--border-color); }
+.topbar-alert-item:last-child { border-bottom:0; }
+.topbar-alert-item__dot { width:8px; height:8px; margin-top:4px; border-radius:50%; background:var(--primary); }
+.topbar-alert-item--red .topbar-alert-item__dot { background:var(--lis-danger,#D84A4A); }
+.topbar-alert-item--amber .topbar-alert-item__dot { background:var(--lis-warning,#D3932F); }
+.topbar-alert-item--teal .topbar-alert-item__dot { background:var(--lis-success,#279879); }
+.topbar-alert-item>div { display:grid; gap:5px; min-width:0; }
+.topbar-alert-item strong { font-size:11px; font-weight:500; line-height:1.45; }
+.topbar-alert-item small { color:var(--text-secondary); font-size:10px; }
+.topbar-alert-item a { width:fit-content; color:var(--primary); font-size:10px; text-decoration:none; }
+.topbar-alert-item a:hover { text-decoration:underline; }
+.topbar-alert-note { margin:0; padding:8px 14px 10px; border-top:1px solid var(--border-color); color:var(--text-secondary); font-size:9px; }
 
 .lis-topbar .topbar-actions {
   display: flex;
   flex: 0 0 auto;
+  margin-left: auto;
+  justify-content: flex-end;
   align-items: center;
   gap: 10px;
   min-width: 0;
@@ -215,15 +306,21 @@
     font-size: 0;
   }
   .lis-topbar .lis-topbar-cta i { font-size: 16px; }
-  .lis-topbar .topbar-avatar-btn { padding: 2px; }
-  .lis-topbar .avatar-name,
-  .lis-topbar .avatar-role,
-  .lis-topbar .avatar-chevron { display: none; }
   .lis-topbar .topbar-search { flex: 1 1 70px; }
 }
 
 @media (max-width: 480px) {
   .lis-topbar { gap: 5px; padding-left: 8px; padding-right: 8px; }
+  /* Keep the action cluster anchored to the right edge on narrow screens. */
+  .lis-topbar .topbar-actions {
+    flex: 0 0 auto;
+    flex-shrink: 0;
+    margin-left: auto;
+    justify-content: flex-end;
+    white-space: nowrap;
+  }
+  .lis-topbar .topbar-icon-btn,
+  .lis-topbar app-user-chip { flex-shrink: 0; }
   .lis-topbar .topbar-search { padding: 0 9px; }
   .lis-topbar .search-kbd,
   .lis-topbar .lis-topbar-cta { display: none; }
@@ -233,4 +330,14 @@
   .lis-topbar .sidebar-toggle-btn,
   .lis-topbar .topbar-search,
   .lis-topbar .topbar-actions * { transition: none !important; }
+}
+
+/* The header search uses the same shared neutral/focus/invalid border
+   states as page searches while retaining its compact pill silhouette. */
+.lis-topbar .topbar-search.lis-search-control {
+  border-radius: 999px !important;
+  background: var(--bg-surface-alt) !important;
+}
+.lis-topbar .topbar-search.lis-search-control:focus-within {
+  background: var(--bg-surface) !important;
 }

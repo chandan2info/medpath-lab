@@ -7,8 +7,8 @@ export type Priority       = 'routine' | 'urgent' | 'stat';
 export type Gender         = 'male' | 'female' | 'other';
 export type PaymentMode    = 'cash' | 'upi' | 'card' | 'credit';
 export type VisitType      = 'walk-in' | 'appointment' | 'home-visit';
-export type FastingStatus  = 'fasting' | 'non-fasting' | 'unknown';
-export type ResultFlag     = 'normal' | 'high' | 'low' | 'critical';
+export type FastingStatus  = 'fasting' | 'non-fasting' | 'post-meal' | 'unknown';
+export type ResultFlag     = 'normal' | 'high' | 'low' | 'critical' | 'unavailable';
 
 export interface Patient {
   id: string;

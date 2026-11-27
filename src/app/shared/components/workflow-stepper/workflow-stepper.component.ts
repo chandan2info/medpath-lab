@@ -39,20 +39,14 @@ export class WorkflowStepperComponent {
   /** Override the default aria-label when a page needs a more specific description. */
   readonly ariaLabel = input('Workflow steps');
 
-  /**
-   * Per-step accent colors, cycled by index. Gives each stage of the
-   * trail its own identity (instead of one flat teal) while the
-   * connector track (see template + CSS) stitches them into a single
-   * unbroken multi-color line — so the trail always reads as
-   * *connected* rather than a row of separate, floating dots.
-   */
+  /** Per-step accents stay tied to the active light/dark palette. */
   private readonly palette: readonly string[] = [
-    '#1D9E75', // teal — brand primary
-    '#5367FE', // indigo — brand secondary
-    '#8B5CF6', // violet
-    '#F59E0B', // amber
-    '#EC4899', // pink
-    '#06B6D4', // cyan
+    'var(--lis-primary)',
+    'var(--primary-dark, var(--lis-primary))',
+    'var(--primary-deeper, var(--primary-dark, var(--lis-primary)))',
+    'var(--secondary-dark, var(--secondary, var(--lis-primary)))',
+    'var(--accent, var(--lis-primary))',
+    'var(--lis-primary-mid, var(--lis-primary))',
   ];
 
   stepColor(index: number): string {
