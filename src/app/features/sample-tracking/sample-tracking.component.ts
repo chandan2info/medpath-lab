@@ -6,7 +6,9 @@
 //  entered right after billing, see Screen 4a —
 //  Sample Collection.)
 // ─────────────────────────────────────────────
-import { Component, signal, computed, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, signal, computed, ChangeDetectionStrategy, inject, ElementRef } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { StatusPillComponent } from '../../shared/components/status-pill/status-pill.component';
 import { Sample, SampleStatus } from '../../shared/models/lis.models';
@@ -42,7 +44,9 @@ const FILTER_OPTS: { label: string; value: SampleStatus | 'all' | 'stat-priority
   styleUrl: './sample-tracking.component.css',
 })
 export class SampleTrackingComponent {
+  private readonly host = inject(ElementRef<HTMLElement>);
   private readonly svc = inject(SampleTrackingService);
+  private readonly route = inject(ActivatedRoute);
 
   protected readonly filterOpts  = FILTER_OPTS;
 
@@ -52,9 +56,45 @@ export class SampleTrackingComponent {
   actionError = signal('');
 
   constructor() {
-    // Default the detail panel to the first row once the queue loads.
-    const first = this.svc.samples()[0];
-    if (first) this.selectedSample.set(first);
+    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe(params => {
+      const search = params.get('search')?.trim() ?? '';
+      this.searchQ.set(search);
+      const exactMatch = search
+        ? this.svc.samples().find(sample => sample.id.toLowerCase() === search.toLowerCase())
+        : undefined;
+      const first = this.svc.samples()[0];
+      this.selectedSample.set(exactMatch ?? (search ? null : first ?? null));
+      this.syncSelectionToVisibleRows();
+    });
+  }
+
+  formatCollectedAt(value: string): string {
+    const date = new Date(value);
+    if (!Number.isNaN(date.getTime())) {
+      return new Intl.DateTimeFormat('en-IN', {
+        day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+      }).format(date);
+    }
+    return value;
+  }
+
+  /** Keep selection and available actions within the currently visible rows. */
+  private syncSelectionToVisibleRows(): void {
+    const visible = this.sortedSamples();
+    const selectedId = this.selectedSample()?.id;
+    if (selectedId && visible.some(sample => sample.id === selectedId)) return;
+    this.selectedSample.set(visible[0] ?? null);
+    this.actionError.set('');
+  }
+
+  updateSearch(value: string): void {
+    this.searchQ.set(value);
+    this.syncSelectionToVisibleRows();
+  }
+
+  setActiveFilter(filter: SampleStatus | 'all' | 'stat-priority'): void {
+    this.activeFilter.set(filter);
+    this.syncSelectionToVisibleRows();
   }
 
   /** Total samples in the queue, unfiltered — shown next to the filtered count so
@@ -85,6 +125,20 @@ export class SampleTrackingComponent {
     return this.sort.apply(rows);
   });
 
+  focusSample(event: Event): void {
+    const keyboardEvent = event as KeyboardEvent;
+    if (keyboardEvent.key !== 'ArrowDown' && keyboardEvent.key !== 'ArrowUp') return;
+    keyboardEvent.preventDefault();
+    const direction: -1 | 1 = keyboardEvent.key === 'ArrowDown' ? 1 : -1;
+    const root = this.host.nativeElement as HTMLElement;
+    const rows = Array.from(root.querySelectorAll('.sample-tbl tbody tr[tabindex="0"]')) as HTMLElement[];
+    const current = rows.indexOf(keyboardEvent.currentTarget as HTMLElement);
+    const next = Math.max(0, Math.min(rows.length - 1, current + direction));
+    rows[next]?.focus();
+    const sample = this.sortedSamples()[next];
+    if (sample) this.selectSample(sample);
+  }
+
   selectSample(s: Sample): void { this.selectedSample.set(s); this.actionError.set(''); }
 
   private runSampleAction(action: (id: string) => Sample | undefined): void {
@@ -105,6 +159,7 @@ export class SampleTrackingComponent {
   rejectSample(): void {
     const reason = window.prompt('Enter the specimen rejection reason:');
     if (!reason?.trim()) return;
+    if (!window.confirm('Reject this specimen and return it for recollection?')) return;
     this.runSampleAction(id => this.svc.rejectSample(id, reason));
   }
   requestRecollection(): void { this.runSampleAction(id => this.svc.requestRecollection(id)); }
@@ -117,6 +172,7 @@ export class SampleTrackingComponent {
   clearFilters(): void {
     this.searchQ.set('');
     this.activeFilter.set('all');
+    this.syncSelectionToVisibleRows();
   }
 
   /** Drives a one-time 360° spin on the search clear (×) button when clicked
@@ -124,7 +180,7 @@ export class SampleTrackingComponent {
   clearSpin = signal(false);
 
   clearSearch(): void {
-    this.searchQ.set('');
+    this.updateSearch('');
     this.clearSpin.set(true);
     setTimeout(() => this.clearSpin.set(false), 350);
   }

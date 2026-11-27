@@ -28,12 +28,13 @@
 </div>
 
 <div class="tracking-toolbar">
-  <div class="ts-search" role="search">
+  <div class="ts-search lis-search-control" role="search" [class.ts-search--invalid]="searchQ().trim().length > 0 && sortedSamples().length === 0">
     <i class="ti ti-search" aria-hidden="true"></i>
     <input type="text" placeholder="Search by patient name or sample ID…"
       [value]="searchQ()"
-      (input)="searchQ.set($any($event.target).value)"
-      aria-label="Search samples" />
+      (input)="updateSearch($any($event.target).value)"
+      aria-label="Search samples"
+      [attr.aria-invalid]="searchQ().trim().length > 0 && sortedSamples().length === 0" />
     @if (searchQ()) {
       <button type="button" class="ts-clear" [class.ts-clear--spin]="clearSpin()" (click)="clearSearch()" aria-label="Clear search">
         <i class="ti ti-x" aria-hidden="true"></i>
@@ -44,13 +45,13 @@
     @for (f of filterOpts; track f.value) {
       <button type="button" class="filter-pill"
         [class.filter-pill--active]="activeFilter() === f.value"
-        (click)="activeFilter.set(f.value)"
+        (click)="setActiveFilter(f.value)"
         [attr.aria-pressed]="activeFilter() === f.value">{{ f.label }}</button>
     }
   </div>
 </div>
 
-<div class="result-count">{{ sortedSamples().length }} of {{ totalCount() }} samples</div>
+<div class="result-count" role="status" aria-live="polite">{{ sortedSamples().length }} of {{ totalCount() }} samples</div>
 
 <div class="tracking-body">
   <!-- Sample table -->
@@ -117,7 +118,7 @@
           <tr>
             <td colspan="7" class="tbl-empty">
               <i class="ti ti-search-off" aria-hidden="true"></i>
-              <span>No samples match "{{ searchQ() }}"{{ activeFilter() !== 'all' ? ' in this filter' : '' }}.</span>
+              <span role="status" aria-live="polite">No samples match "{{ searchQ() }}"{{ activeFilter() !== 'all' ? ' in this filter' : '' }}.</span>
               <button type="button" class="tbl-empty__clear" (click)="clearFilters()">
                 Clear search &amp; filters
               </button>
@@ -128,6 +129,7 @@
             <tr (click)="selectSample(s)"
               (keydown.enter)="selectSample(s)"
               (keydown.space)="$event.preventDefault(); selectSample(s)"
+              (keydown)="focusSample($event)"
               tabindex="0"
               [class.row--selected]="selectedSample()?.id === s.id"
               [attr.aria-selected]="selectedSample()?.id === s.id">
@@ -181,7 +183,7 @@
         </div>
         <div class="det-cell">
           <span class="det-cell-lbl">Collected</span>
-          <span class="det-cell-val">{{ selectedSample()!.collectedAt }}</span>
+          <span class="det-cell-val">{{ formatCollectedAt(selectedSample()!.collectedAt) }}</span>
         </div>
         <div class="det-cell">
           <span class="det-cell-lbl">Priority</span>

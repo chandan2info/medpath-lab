@@ -73,3 +73,49 @@
 .wfs-timeline--dense .wfs-dot { width: 24px; height: 24px; font-size: 11px; }
 .wfs-timeline--dense .wfs-label { font-size: 9.5px; }
 .wfs-timeline--dense .wfs-track { top: 10.5px; left: 34px; right: 34px; }
+
+/* Keep every workflow step visible on narrow screens. The desktop fixed
+   widths remain unchanged; mobile distributes the available width evenly
+   and lets longer labels wrap rather than clipping the final step. */
+@media (max-width: 640px) {
+  :host {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .wfs-timeline {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  .wfs-step,
+  .wfs-timeline--dense .wfs-step {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+  }
+
+  .wfs-label,
+  .wfs-timeline--dense .wfs-label {
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: normal;
+    word-break: normal;
+    hyphens: none;
+    font-size: 8px;
+    line-height: 1.25;
+  }
+
+  .wfs-track,
+  .wfs-timeline--dense .wfs-track {
+    left: calc(50% / var(--wfs-step-count, 3));
+    right: calc(50% / var(--wfs-step-count, 3));
+  }
+}
+

@@ -12,7 +12,8 @@ import { map } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
 import { SampleTrackingService } from '../../core/services/sample-tracking.service';
-import { ResultFlag } from '../../shared/models/lis.models';
+import { ResultFlag, Sample } from '../../shared/models/lis.models';
+import { PatientCardComponent } from '../../shared/components/patient-card/patient-card.component';
 import { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';
 import { ResultEntryDataService, MockOrderedTest, MockParameter, NoteDraft, NotificationDraft, TestFilter, TestStatus, flagFromValue } from '../../core/services/result-entry-data.service';
 
@@ -24,10 +25,10 @@ const EMPTY_ORDERED_TEST: MockOrderedTest = {
 @Component({
   selector: 'app-result-entry',
   standalone: true,
-  imports: [RouterLink, NgClass, TitleCasePipe, DatePipe],
+  imports: [RouterLink, NgClass, TitleCasePipe, DatePipe, PatientCardComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './result-entry.component.html',
-  styleUrl: './result-entry.component.css',
+  styleUrls: ['./result-entry.component.css', './result-entry-queue-overrides.css'],
 })
 export class ResultEntryComponent implements OnInit {
   private readonly router = inject(Router);
@@ -36,6 +37,39 @@ export class ResultEntryComponent implements OnInit {
   private readonly sampleSvc = inject(SampleTrackingService);
   private readonly resultData = inject(ResultEntryDataService);
   private readonly workflowStore = inject(LabWorkflowMockService);
+
+  readonly isQueueView = computed(() => !this.sampleId());
+  readonly queueSearch = signal('');
+  readonly queueFilter = signal<'ALL' | 'READY' | 'DRAFT' | 'VALIDATION' | 'NOT_READY'>('READY');
+  readonly queueSamples = computed(() => this.sampleSvc.samples());
+  readonly queueRows = computed(() => {
+    const query = this.queueSearch().trim().toLowerCase();
+    const filter = this.queueFilter();
+    return this.queueSamples().map(sample => {
+      const saved = this.resultData.getSavedRecord(sample.id);
+      const state = saved?.workflowStatus === 'SUBMITTED_FOR_VALIDATION'
+        ? 'VALIDATION' as const
+        : saved?.workflowStatus === 'DRAFT'
+          ? 'DRAFT' as const
+          : sample.status === 'ready' || sample.status === 'critical'
+            ? 'READY' as const
+            : 'NOT_READY' as const;
+      return { sample, state, saved };
+    }).filter(row => {
+      const matchesFilter = filter === 'ALL' || row.state === filter;
+      const searchable = [row.sample.patientName, row.sample.patientId, row.sample.id, ...row.sample.tests].join(' ').toLowerCase();
+      return matchesFilter && (!query || searchable.includes(query));
+    });
+  });
+  readonly queueCounts = computed(() => {
+    const rows = this.queueSamples().map(sample => {
+      const saved = this.resultData.getSavedRecord(sample.id);
+      return saved?.workflowStatus === 'SUBMITTED_FOR_VALIDATION' ? 'VALIDATION'
+        : saved?.workflowStatus === 'DRAFT' ? 'DRAFT'
+        : sample.status === 'ready' || sample.status === 'critical' ? 'READY' : 'NOT_READY';
+    });
+    return { all: rows.length, ready: rows.filter(s => s === 'READY').length, draft: rows.filter(s => s === 'DRAFT').length, validation: rows.filter(s => s === 'VALIDATION').length, notReady: rows.filter(s => s === 'NOT_READY').length };
+  });
 
   private readonly sampleId = toSignal(
     this.route.paramMap.pipe(map(params => params.get('sampleId'))),
@@ -156,6 +190,17 @@ export class ResultEntryComponent implements OnInit {
   readonly isFirstTest = computed(() => this.selectedTestIndex() <= 0);
   readonly isLastTest = computed(() => this.selectedTestIndex() < 0 || this.selectedTestIndex() >= this.tests().length - 1);
   readonly selectedTest = computed(() => this.tests().find(test => test.id === this.selectedTestId()) ?? this.tests()[0] ?? EMPTY_ORDERED_TEST);
+  readonly assessmentTitle = computed(() => {
+    const titles: Record<string, string> = {
+      CBC: 'Haematology assessment', ESR: 'Haematology assessment',
+      KFT: 'Renal function assessment', LFT: 'Liver function assessment',
+      HBA: 'Glycated haemoglobin assessment', GLU: 'Glucose assessment',
+      LIP: 'Lipid assessment', TSH: 'Thyroid assessment', FT3: 'Thyroid assessment',
+      VTD: 'Vitamin assessment', URI: 'Urinalysis assessment', UCR: 'Urine chemistry assessment',
+      CRP: 'Inflammation assessment', FER: 'Iron status assessment', B12: 'Vitamin assessment'
+    };
+    return titles[this.selectedTest().code] ?? 'Laboratory assessment';
+  });
   /**
    * Derive workflow status from entered parameter values instead of relying
    * on the initial demo status. This keeps the chips and list accurate after
@@ -192,14 +237,8 @@ export class ResultEntryComponent implements OnInit {
 
   ngOnInit(): void {
     const routeSampleId=this.sampleId();
-    if(!routeSampleId){
-      const selectedPatient=this.flow.patient();
-      if(!selectedPatient){this.router.navigate(['/dashboard/tracking']);return;}
-      const patientSample=this.sampleSvc.getLatestByPatientId(selectedPatient.id);
-      if(patientSample)this.router.navigate(['/dashboard/results',patientSample.id],{replaceUrl:true});
-      else this.router.navigate(['/dashboard/collection'],{replaceUrl:true});
-      return;
-    }
+    // Sidebar access opens the work queue. A sample-specific route opens the workspace.
+    if(!routeSampleId) return;
     const sample=this.sample();
     if(!sample){this.router.navigate(['/dashboard/tracking']);return;}
     if(sample.status !== 'ready' && sample.status !== 'critical'){
@@ -228,7 +267,11 @@ export class ResultEntryComponent implements OnInit {
       next:()=>{
         const values = Object.fromEntries(this.tests().flatMap(test => test.parameters.map(parameter => [`${test.id}.${parameter.id}`, parameter.value])));
         try {
-          this.workflowStore.saveResults(sampleId, values);
+          const parameterLabels = Object.fromEntries(this.tests().flatMap(test => test.parameters.map(parameter => [`${test.id}.${parameter.id}`, parameter.name])));
+          const parameterDetails = Object.fromEntries(this.tests().flatMap(test => test.parameters.map(parameter => [`${test.id}.${parameter.id}`, {
+            unit: parameter.unit, range: parameter.range, flag: parameter.flag, method: parameter.method,
+          }])));
+          this.workflowStore.saveResults(sampleId, values, parameterLabels, parameterDetails);
           if (submit) {
             this.workflowStore.submitResults(sampleId);
           }
@@ -267,6 +310,26 @@ export class ResultEntryComponent implements OnInit {
   updateSearch(value: string): void { this.testSearch.set(value); }
   clearOrderedFilters(): void { this.testSearch.set(''); this.filter.set('ALL'); this.showFilterMenu.set(false); }
 
+  queueInitials(sample: Sample): string {
+    const parts = sample.patientName.trim().split(/\\s+/).filter(Boolean);
+    return parts.length > 1
+      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+      : (parts[0]?.slice(0, 2) ?? '—').toUpperCase();
+  }
+
+  setQueueSearch(value: string): void {
+    this.queueSearch.set(value);
+  }
+
+  setQueueFilter(value: 'ALL' | 'READY' | 'DRAFT' | 'VALIDATION' | 'NOT_READY'): void {
+    this.queueFilter.set(value);
+  }
+
+  openQueueSample(sample: Sample): void {
+    if (sample.status !== 'ready' && sample.status !== 'critical') return;
+    this.router.navigate(['/dashboard/results', sample.id]);
+  }
+
   updateResult(parameterId: string, value: string): void {
     this.updateParameter(parameterId, { value });
     this.demoSavedState.set('unsaved');
@@ -280,9 +343,9 @@ export class ResultEntryComponent implements OnInit {
   }
   resultClass(flag: ResultFlag): string { return flag; }
   statusIcon(flag: ResultFlag): string {
-    return ({ normal:'ti-check', high:'ti-alert-triangle', low:'ti-alert-triangle', critical:'ti-x' } as const)[flag];
+    return ({ normal:'ti-check', high:'ti-alert-triangle', low:'ti-alert-triangle', critical:'ti-x', unavailable:'ti-help-circle' } as const)[flag];
   }
-  flagLabel(flag: ResultFlag): string { return ({normal:'Normal',high:'High',low:'Low',critical:'Critical'})[flag]; }
+  flagLabel(flag: ResultFlag): string { return ({normal:'Normal',high:'High',low:'Low',critical:'Critical',unavailable:'Unavailable'})[flag]; }
   testEntered(test: MockOrderedTest): number { return test.parameters.filter(p => p.value.trim() !== '').length; }
   testStatusLabel(status: TestStatus): string { return ({PENDING:'Pending',IN_PROGRESS:'In Progress',COMPLETED:'Completed'})[status]; }
   ageBreakdown(): string { return this.patientAge(); }

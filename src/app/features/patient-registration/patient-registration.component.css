@@ -1247,3 +1247,257 @@
   .reg-card .visit-type-field .lis-seg__opt,
   .reg-card .sample-collection-field .lis-seg__opt { flex: 1 1 100%; }
 }
+
+
+/* Existing patient confirmation uses the shared identity and metadata card. */
+.existing-patient-selection { display:flex; flex-direction:column; gap:10px; padding:12px; border:1px solid var(--border-color); border-radius:12px; background:var(--body-bg); }
+.existing-patient-selection__eyebrow { display:flex; align-items:center; gap:6px; color:var(--lis-primary-deep,#085041); font-size:10px; font-weight:750; text-transform:uppercase; letter-spacing:.05em; }
+.existing-patient-selection__actions { display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:8px; }
+@media(max-width:600px) { .existing-patient-selection__actions { justify-content:stretch; } .existing-patient-selection__actions button { flex:1 1 auto; } }
+
+/* ── Responsive registration page header ─────────────────────────────
+   Keep the title/breadcrumb and shared workflow stepper in the same
+   visual hierarchy. On narrower content areas, move the stepper to its
+   own row and let it scroll inside its own bounds instead of widening
+   the page.
+   ─────────────────────────────────────────────────────────────────── */
+.page-header {
+  min-width: 0;
+  gap: 12px 16px;
+}
+
+.page-header__left,
+.page-header__title-row,
+.page-header__title-row > div {
+  min-width: 0;
+}
+
+.page-header > lis-workflow-stepper {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (max-width: 900px) {
+  .page-header {
+    align-items: flex-start;
+  }
+
+  .page-header > lis-workflow-stepper {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .page-header {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .page-header__title-row {
+    align-items: flex-start;
+    gap: 9px;
+  }
+
+  .page-header__title-row > div {
+    overflow-wrap: anywhere;
+  }
+
+  .page-header > lis-workflow-stepper {
+    width: 100%;
+  }
+}
+
+/* ── Registration clinical step: fluid width + viewport-aware height ──
+   Keep the form content-driven (never lock it to the viewport), but let the
+   card use spare vertical space on taller screens and keep the action bar at
+   the bottom. On short screens the document scrolls naturally. */
+.reg-form-wrap {
+  width: 100%;
+  max-width: min(1200px, 100%);
+  min-width: 0;
+}
+
+.reg-form-wrap > form {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: max(0px, calc(100dvh - 250px));
+}
+
+.reg-form-wrap > form > .reg-card {
+  flex: 1 0 auto;
+  min-width: 0;
+}
+
+.reg-form-wrap > form > .form-actions {
+  flex: 0 0 auto;
+  margin-top: auto;
+}
+
+/* Tighten the clinical profile and section rhythm as the available height
+   decreases, without shrinking controls below comfortable touch sizes. */
+@media (max-height: 820px) and (min-width: 701px) {
+  .reg-card .patient-recap {
+    margin-top: 8px;
+    margin-bottom: 10px;
+    padding: 12px 14px;
+  }
+
+  .patient-recap__details {
+    margin-top: 10px;
+    padding-top: 10px;
+    gap: 7px;
+  }
+
+  .patient-recap .patient-recap__detail {
+    min-height: 42px;
+    padding: 6px 9px;
+  }
+
+  .reg-card .field-group {
+    margin-top: 12px;
+    margin-bottom: 12px;
+  }
+
+  .reg-card .form-grid--visit {
+    row-gap: 10px;
+  }
+
+  .reg-card .form-grid--visit textarea {
+    min-height: 54px;
+  }
+
+  .form-actions {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .form-actions .lis-btn {
+    height: 46px;
+  }
+}
+
+/* Tablet: let the profile summary and visit controls use the available
+   width without forcing the desktop three-column minimums. */
+@media (max-width: 1180px) {
+  .reg-form-wrap {
+    max-width: 100%;
+  }
+
+  .reg-card .form-grid--visit {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  }
+
+  .reg-card .sample-collection-field--tablet-full {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Mobile: remove desktop card gutters, stack visit controls, and keep the
+   action buttons reachable without imposing a fixed page height. */
+@media (max-width: 700px) {
+  .reg-form-wrap > form {
+    min-height: 0;
+  }
+
+  .reg-card .patient-recap {
+    margin: 10px 12px 12px;
+    padding: 12px;
+  }
+
+  .patient-recap__details {
+    gap: 7px;
+    margin-top: 10px;
+    padding-top: 10px;
+  }
+
+  .reg-card .form-grid--visit {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    padding: 12px 14px;
+  }
+
+  .reg-card .sample-collection-field--tablet-full {
+    grid-column: auto;
+  }
+
+  .form-actions {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .form-actions .lis-btn {
+    min-height: 44px;
+    height: auto;
+    padding: 10px 14px;
+  }
+
+  .save-btn {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+}
+
+@media (max-width: 460px) {
+  .patient-recap__details {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .reg-card .patient-recap .recap-edit {
+    width: auto;
+    justify-content: center;
+  }
+
+  .form-actions .lis-btn {
+    font-size: 12px;
+  }
+}
+
+/* Registration action buttons: consistent, content-safe control height.
+   Override the earlier 52px desktop and auto-height mobile declarations so
+   Back/Cancel and the primary action remain visually balanced everywhere. */
+.reg-form-wrap .form-actions .lis-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px !important;
+  min-height: 44px !important;
+  max-height: 44px;
+  box-sizing: border-box;
+  padding: 0 18px !important;
+  line-height: 1 !important;
+  font-size: 14px;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.reg-form-wrap .form-actions .lis-btn i {
+  flex: 0 0 auto;
+  line-height: 1;
+}
+
+.reg-form-wrap .form-actions .save-btn {
+  min-width: 180px;
+  justify-content: center;
+}
+
+@media (max-width: 700px) {
+  .reg-form-wrap .form-actions {
+    align-items: center;
+  }
+
+  .reg-form-wrap .form-actions .lis-btn {
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px;
+    padding: 0 14px !important;
+    font-size: 13px;
+  }
+
+  .reg-form-wrap .form-actions .save-btn {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+}

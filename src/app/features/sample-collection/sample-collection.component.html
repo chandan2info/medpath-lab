@@ -30,27 +30,7 @@
   <!-- ════════════════════════════════════════════════
        Patient summary — identity + status dominate
        ════════════════════════════════════════════════ -->
-  <section class="patient-summary lis-card" role="region" aria-label="Current patient sample collection">
-    <div class="patient-identity">
-      <div class="ps-av-wrap" [class.ps-av-wrap--done]="collected()">
-        <div class="pat-av" aria-hidden="true">{{ patientInitials }}</div>
-      </div>
-      <div class="patient-identity__name">
-        <div class="pat-name">{{ patient.firstName }} {{ patient.lastName }}</div>
-        <span class="lis-mono patient-id">{{ patient.id }}</span>
-      </div>
-    </div>
-    <div class="patient-fact"><i class="ti ti-user patient-fact__icon" aria-hidden="true"></i><span class="patient-fact__label">Age</span><strong>{{ ageParts().years }}y {{ ageParts().months }}m {{ ageParts().days }}d</strong></div>
-    <div class="patient-fact"><i class="ti ti-calendar-event patient-fact__icon" aria-hidden="true"></i><span class="patient-fact__label">DOB</span><strong>{{ patient.dob | date:'dd MMM yyyy' }}</strong></div>
-    <div class="patient-fact"><i class="ti {{ genderIcon() }} patient-fact__icon" aria-hidden="true"></i><span class="patient-fact__label">Sex</span><strong>{{ patient.gender | titlecase }}</strong></div>
-    <div class="patient-fact"><i class="ti ti-phone patient-fact__icon" aria-hidden="true"></i><span class="patient-fact__label">Mobile</span><strong>{{ patient.mobile }}</strong></div>
-    <div class="patient-fact"><i class="ti ti-walk patient-fact__icon" aria-hidden="true"></i><span class="patient-fact__label">Visit</span><strong>Walk-in</strong></div>
-    <div class="patient-fact"><i class="ti ti-droplet-half-2 patient-fact__icon" aria-hidden="true"></i><span class="patient-fact__label">Fasting</span><strong>{{ patient.fasting || 'Unknown' }}</strong></div>
-    <div class="patient-fact patient-fact--priority">
-      <i class="ti ti-flag patient-fact__icon" aria-hidden="true"></i><span class="patient-fact__label">Priority</span>
-      <span class="prio-badge" [style.color]="priorityStyle().color" [style.background]="priorityStyle().bg" [style.border-color]="priorityStyle().color">{{ flow.priority() | titlecase }}</span>
-    </div>
-  </section>
+  <lis-patient-card [patient]="patient!" variant="collection" [priority]="flow.priority()" [collected]="collected()" />
 
   <!-- ════════════════════════════════════════════════
        Sample cards + Collection panel
@@ -88,7 +68,7 @@
                 </div>
                 <div class="tc-actions">
                   <button type="button" class="tc-action-btn" title="Print label" (click)="printLabels()"><i class="ti ti-printer" aria-hidden="true"></i><span>Print Label</span></button>
-                  <button type="button" class="tc-action-btn" title="Preview label"><i class="ti ti-eye" aria-hidden="true"></i><span>Preview</span></button>
+                  <button type="button" class="tc-action-btn" title="Preview label" [attr.aria-label]="'Preview label ' + tube.id" (click)="openTubePreview(tube)"><i class="ti ti-eye" aria-hidden="true"></i><span>Preview</span></button>
                   <button type="button" class="tc-action-btn" title="Regenerate barcode" (click)="printLabels()"><i class="ti ti-refresh" aria-hidden="true"></i><span>Regenerate</span></button>
                 </div>
               </div>
@@ -161,13 +141,13 @@
                       <div class="collection-time-picker" role="group" aria-label="Choose collection time">
                         <label class="collection-time-picker__unit">
                           <span>Hour</span>
-                          <select aria-label="Hour" [value]="timeHour()" (change)="updateTimeSelection($any($event.target).value, timeMinute(), timePeriod())">
+                          <select aria-label="Hour" [ngModel]="timeHour()" [ngModelOptions]="{standalone:true}" (ngModelChange)="updateTimeSelection($event, timeMinute(), timePeriod())">
                             @for (hour of timeHours; track hour) { <option [value]="hour">{{ hour }}</option> }
                           </select>
                         </label>
                         <label class="collection-time-picker__unit">
                           <span>Minute</span>
-                          <select aria-label="Minute" [value]="timeMinute()" (change)="updateTimeSelection(timeHour(), $any($event.target).value, timePeriod())">
+                          <select aria-label="Minute" [ngModel]="timeMinute()" [ngModelOptions]="{standalone:true}" (ngModelChange)="updateTimeSelection(timeHour(), $event, timePeriod())">
                             @for (minute of timeMinutes; track minute) { <option [value]="minute">{{ minute }}</option> }
                           </select>
                         </label>
@@ -298,7 +278,7 @@
     </div>
   </div>
 } @else {
-  <div class="empty-state lis-card" role="region" aria-label="No sample pending collection">
+  <div class="empty-state lis-card" role="status" aria-live="polite" aria-label="No sample pending collection">
     <i class="ti ti-flask-off empty-icon" aria-hidden="true"></i>
     <h2 class="empty-title">No Samples Pending</h2>
     <p class="empty-copy">Collect a sample after completing billing.</p>
@@ -308,5 +288,26 @@
     <a routerLink="/dashboard/tracking" class="lis-btn lis-btn--secondary">
       <i class="ti ti-timeline" aria-hidden="true"></i> View full sample queue
     </a>
+  </div>
+}
+
+@if (previewTube(); as tube) {
+  <div class="label-preview-backdrop" role="presentation" (click)="closeTubePreview()">
+    <section class="label-preview-dialog" role="dialog" aria-modal="true" aria-labelledby="label-preview-title" (click)="$event.stopPropagation()">
+      <header class="label-preview-dialog__header">
+        <div><h2 id="label-preview-title">Barcode label preview</h2><p>Review the specimen label before printing.</p></div>
+        <button type="button" aria-label="Close label preview" data-dialog-close (click)="closeTubePreview()"><i class="ti ti-x" aria-hidden="true"></i></button>
+      </header>
+      <div class="label-preview-sheet" [style.--tube-color]="tube.color">
+        <div class="label-preview-sheet__brand"><i class="ti ti-flask" aria-hidden="true"></i><strong>MedPath Diagnostics</strong></div>
+        <div class="label-preview-sheet__specimen"><span>{{ tube.label }}</span><strong>{{ tube.tests.join(' · ') }}</strong></div>
+        <div class="label-preview-sheet__barcode" aria-label="Synthetic barcode preview">
+          <div class="bc-bars bc-bars--lg" aria-hidden="true">@for (w of barcodeWidths; track $index) { <span class="bc-bar" [style.width.px]="w * 2.2"></span> }</div>
+          <strong class="lis-mono">{{ tube.id }}</strong>
+        </div>
+        <div class="label-preview-sheet__patient"><span>Patient</span><strong>{{ patient?.firstName }} {{ patient?.lastName }}</strong><span>{{ patient?.id }}</span></div>
+      </div>
+      <footer class="label-preview-dialog__footer"><button type="button" class="lis-btn lis-btn--secondary" (click)="closeTubePreview()">Close</button><button type="button" class="lis-btn lis-btn--primary" (click)="closeTubePreview(); printLabels()"><i class="ti ti-printer" aria-hidden="true"></i> Print label</button></footer>
+    </section>
   </div>
 }

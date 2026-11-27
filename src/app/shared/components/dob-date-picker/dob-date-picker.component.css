@@ -183,3 +183,15 @@
   color: #fff;
   font-weight: 600;
 }
+
+/* Keep the calendar panel inside the available form/viewport width. */
+.dob-panel {
+  max-width: min(300px, calc(100vw - 24px));
+  box-sizing: border-box;
+}
+
+@media (max-width: 480px) {
+  .dob-panel {
+    width: min(300px, calc(100vw - 24px));
+  }
+}

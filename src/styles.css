@@ -4163,7 +4163,7 @@
   --lis-sb-text:            rgba(180,192,225,0.72);
   --lis-sb-text-hover:      rgba(225,233,255,0.97);
   --lis-sb-text-active:     #ffffff;
-  --lis-sb-caption:         rgba(140,158,210,0.38);
+  --lis-sb-caption:         #9AABCE;
 
   /* ── Hover: frosted left-panel reveal ── */
   --lis-sb-hover-bg:        rgba(99,102,241,0.10);
@@ -4201,7 +4201,7 @@
   --lis-sb-text:            #4B587E;
   --lis-sb-text-hover:      #181D3D;
   --lis-sb-text-active:     #0F1020;
-  --lis-sb-caption:         #9BA3C7;
+  --lis-sb-caption:         #687491;
 
   --lis-sb-hover-bg:        rgba(99,102,241,0.11);
   --lis-sb-hover-border:    #5457E5;
@@ -4228,7 +4228,7 @@
   --lis-sb-text:            rgba(180,192,225,0.72);
   --lis-sb-text-hover:      rgba(225,233,255,0.97);
   --lis-sb-text-active:     #ffffff;
-  --lis-sb-caption:         rgba(140,158,210,0.38);
+  --lis-sb-caption:         #9AABCE;
   --lis-sb-hover-bg:        rgba(99,102,241,0.10);
   --lis-sb-hover-border:    #6366F1;
   --lis-sb-active-bg:       rgba(61,201,168,0.13);
@@ -4283,7 +4283,7 @@
   --lis-sb-text:            rgba(180,205,225,0.72);
   --lis-sb-text-hover:      rgba(225,242,255,0.97);
   --lis-sb-text-active:     #ffffff;
-  --lis-sb-caption:         rgba(140,180,210,0.38);
+  --lis-sb-caption:         #9BB6CE;
   --lis-sb-hover-bg:        rgba(37,99,235,0.14);
   --lis-sb-hover-border:    #2563EB;
   --lis-sb-active-bg:       rgba(14,165,233,0.16);
@@ -4304,7 +4304,7 @@
   --lis-sb-text:            #3E5C7A;
   --lis-sb-text-hover:      #14283D;
   --lis-sb-text-active:     #0B1622;
-  --lis-sb-caption:         #8FA9C2;
+  --lis-sb-caption:         #5C748D;
   --lis-sb-hover-bg:        rgba(37,99,235,0.11);
   --lis-sb-hover-border:    #2563EB;
   --lis-sb-active-bg:       rgba(14,165,233,0.14);
@@ -4372,7 +4372,7 @@
   --lis-sb-text:            rgba(225,200,190,0.72);
   --lis-sb-text-hover:      rgba(255,240,235,0.97);
   --lis-sb-text-active:     #ffffff;
-  --lis-sb-caption:         rgba(210,170,155,0.38);
+  --lis-sb-caption:         #C5A093;
   --lis-sb-hover-bg:        rgba(249,115,22,0.14);
   --lis-sb-hover-border:    #F97316;
   --lis-sb-active-bg:       rgba(251,113,133,0.16);
@@ -4393,7 +4393,7 @@
   --lis-sb-text:            #7A5048;
   --lis-sb-text-hover:      #3D211C;
   --lis-sb-text-active:     #1C1412;
-  --lis-sb-caption:         #C2998D;
+  --lis-sb-caption:         #8C5B50;
   --lis-sb-hover-bg:        rgba(249,115,22,0.11);
   --lis-sb-hover-border:    #F97316;
   --lis-sb-active-bg:       rgba(251,113,133,0.14);
@@ -4461,7 +4461,7 @@
   --lis-sb-text:            rgba(205,190,225,0.72);
   --lis-sb-text-hover:      rgba(244,240,255,0.97);
   --lis-sb-text-active:     #ffffff;
-  --lis-sb-caption:         rgba(175,155,210,0.38);
+  --lis-sb-caption:         #B9A8CF;
   --lis-sb-hover-bg:        rgba(192,38,211,0.14);
   --lis-sb-hover-border:    #C026D3;
   --lis-sb-active-bg:       rgba(139,92,246,0.16);
@@ -4482,7 +4482,7 @@
   --lis-sb-text:            #6B5286;
   --lis-sb-text-hover:      #2A1B3D;
   --lis-sb-text-active:     #16131F;
-  --lis-sb-caption:         #B79BD1;
+  --lis-sb-caption:         #795C96;
   --lis-sb-hover-bg:        rgba(192,38,211,0.11);
   --lis-sb-hover-border:    #C026D3;
   --lis-sb-active-bg:       rgba(139,92,246,0.14);
@@ -4807,6 +4807,108 @@
 }
 :root:not([data-theme="dark"]) .pc-sidebar.lis-sidebar .sidebar-user-role {
   color: #9BA6CE !important;
+}
+
+/* ───────────────────────────────────────────────────────────
+   SIDEBAR INTERACTION POLISH
+   Layout and motion only: all surfaces and colors come from the
+   existing sidebar tokens above, so light/dark themes stay intact.
+   ─────────────────────────────────────────────────────────── */
+.pc-sidebar.lis-sidebar {
+  will-change: width, transform;
+  contain: layout paint;
+}
+
+.pc-sidebar.lis-sidebar .sidebar-brand {
+  position: relative;
+  overflow: hidden;
+}
+
+.pc-sidebar.lis-sidebar .sidebar-nav {
+  padding: 12px 6px 16px;
+  overscroll-behavior: contain;
+}
+
+.pc-sidebar.lis-sidebar .nav-caption {
+  margin-top: 5px !important;
+  transition: opacity var(--transition-fast), padding var(--transition-sidebar);
+}
+
+.pc-sidebar.lis-sidebar .nav-item a,
+.pc-sidebar.lis-sidebar .nav-item a:link,
+.pc-sidebar.lis-sidebar .nav-item a:visited {
+  isolation: isolate;
+  transform: translateZ(0);
+  transition:
+    background-color 220ms cubic-bezier(0.2, 0.75, 0.25, 1),
+    color 180ms ease,
+    box-shadow 220ms ease !important;
+}
+
+/* Soft moving sheen follows the pointer without shifting the icon or label. */
+.pc-sidebar.lis-sidebar .nav-item a::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 15%,
+    rgba(255,255,255,0.055) 42%,
+    rgba(255,255,255,0.015) 58%,
+    transparent 82%
+  );
+  transform: translateX(-105%);
+  transition: transform 520ms cubic-bezier(0.2, 0.75, 0.25, 1), opacity 180ms ease;
+}
+
+.pc-sidebar.lis-sidebar .nav-item a:hover::after {
+  opacity: 1;
+  transform: translateX(105%);
+}
+
+.pc-sidebar.lis-sidebar .nav-item a .nav-icon,
+.pc-sidebar.lis-sidebar .nav-item a .nav-label,
+.pc-sidebar.lis-sidebar .nav-item a .nav-badge {
+  transform: none !important;
+}
+
+.pc-sidebar.lis-sidebar .nav-icon {
+  transition: color 180ms ease, filter 220ms ease !important;
+}
+
+.pc-sidebar.lis-sidebar .nav-item a:hover .nav-icon,
+.pc-sidebar.lis-sidebar .nav-item a.active .nav-icon {
+  transform: none !important;
+}
+
+.pc-sidebar.lis-sidebar .sidebar-footer {
+  margin-top: auto;
+}
+
+/* Collapsed mode gets centered targets with the exact same palette. */
+.pc-sidebar.lis-sidebar.collapsed .sidebar-brand {
+  justify-content: center !important;
+}
+
+.pc-sidebar.lis-sidebar.collapsed .nav-caption {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pc-sidebar.lis-sidebar,
+  .pc-sidebar.lis-sidebar *,
+  .pc-topbar .sidebar-toggle-btn {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .pc-sidebar.lis-sidebar .nav-item a::after {
+    display: none !important;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -5503,3 +5605,1205 @@
 .mini-step--active::before { background: var(--lis-primary, #1D9E75); border-color: var(--lis-primary, #1D9E75); }
 .mini-step--done { color: var(--lis-primary, #1D9E75); }
 .mini-step--done::before { background: var(--lis-primary-xlight, #E1F5EE); border-color: var(--lis-primary, #1D9E75); }
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE APPLICATION SHELL — layout-only overrides
+   Preserve existing theme tokens, typography and components.
+   ═══════════════════════════════════════════════════════════ */
+.pc-container.lis-app-shell {
+  width: auto;
+  min-width: 0;
+  min-height: calc(100dvh - var(--header-height, 56px));
+  box-sizing: border-box;
+}
+
+.pc-container.lis-app-shell > .pc-main-content {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: calc(100dvh - var(--header-height, 56px));
+}
+
+.pc-container.lis-app-shell .pc-page-content {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: clip;
+}
+
+.pc-page-content > * {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.pc-page-content .lis-card,
+.pc-page-content .card {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.pc-page-content img,
+.pc-page-content canvas,
+.pc-page-content svg {
+  max-width: 100%;
+}
+
+.pc-page-content .table-wrap,
+.pc-page-content .table-responsive,
+.pc-page-content .an-table-wrap,
+.pc-page-content .sample-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 1023px) {
+  .pc-container.lis-app-shell {
+    width: 100%;
+    margin-left: 0 !important;
+  }
+
+  .pc-container.lis-app-shell > .pc-main-content {
+    width: 100%;
+    min-height: calc(100dvh - var(--header-height, 56px));
+  }
+}
+
+@media (max-width: 768px) {
+  .pc-topbar {
+    left: 0 !important;
+    right: 0;
+    gap: 8px;
+    padding-right: 12px;
+    padding-left: 12px;
+    box-sizing: border-box;
+  }
+
+  .pc-topbar .topbar-search {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .pc-topbar .topbar-search input {
+    min-width: 0;
+  }
+
+  .pc-topbar .search-kbd {
+    display: none;
+  }
+
+  .pc-topbar .topbar-actions {
+    flex: 0 0 auto;
+    gap: 2px;
+  }
+
+  .pc-page-content .page-header {
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+
+  .pc-page-content .page-header > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .pc-page-content .lis-card__header {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 640px) {
+  .pc-topbar {
+    gap: 5px;
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+
+  .pc-topbar .topbar-icon-btn {
+    flex: 0 0 34px;
+    width: 34px;
+  }
+
+  .pc-topbar .lis-topbar-cta {
+    display: inline-flex;
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    font-size: 0;
+  }
+
+  .pc-topbar .lis-topbar-cta i {
+    font-size: 16px;
+  }
+
+  .pc-topbar .topbar-divider,
+  .pc-topbar .avatar-name,
+  .pc-topbar .avatar-role,
+  .pc-topbar .avatar-chevron {
+    display: none;
+  }
+
+  .pc-topbar .topbar-avatar-btn {
+    padding: 2px;
+  }
+
+  .pc-container.lis-app-shell .pc-page-content {
+    padding: 10px;
+  }
+}
+
+@media (max-width: 380px) {
+  .pc-topbar {
+    gap: 3px;
+    padding-right: 6px;
+    padding-left: 6px;
+  }
+
+  .pc-topbar .topbar-icon-btn,
+  .pc-topbar .lis-topbar-cta {
+    flex-basis: 32px;
+    width: 32px;
+    min-width: 32px;
+  }
+
+  .pc-topbar .topbar-search {
+    padding-right: 7px;
+    padding-left: 7px;
+  }
+}
+
+/* Compact the shared operator chip without changing its visual tokens. */
+@media (max-width: 640px) {
+  .pc-topbar app-user-chip[variant="topbar"] {
+    flex: 0 0 34px;
+    width: 34px;
+    min-width: 34px;
+  }
+
+  .pc-topbar app-user-chip[variant="topbar"] .chip-text,
+  .pc-topbar app-user-chip[variant="topbar"] .chip-chevron {
+    display: none !important;
+  }
+
+  .pc-topbar app-user-chip[variant="topbar"] .chip-trigger {
+    width: 34px;
+    min-width: 34px;
+    justify-content: center;
+    padding: 1px;
+  }
+}
+
+@media (max-width: 380px) {
+  .pc-topbar app-user-chip[variant="topbar"] {
+    flex-basis: 32px;
+    width: 32px;
+    min-width: 32px;
+  }
+
+  .pc-topbar app-user-chip[variant="topbar"] .chip-trigger {
+    width: 32px;
+    min-width: 32px;
+  }
+}
+
+/* ── Topbar: protect action controls from flex compression ───────────
+   At phone/tablet widths the global search yields space to the actions.
+   Keep controls at their intended size; only remove lower-priority
+   controls at very narrow widths instead of squeezing the whole group.
+   ─────────────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .pc-topbar .topbar-search {
+    display: flex !important;
+    flex: 1 1 90px;
+    min-width: 0;
+    width: auto;
+    max-width: none;
+  }
+
+  .pc-topbar .topbar-actions {
+    flex: 0 0 auto;
+    flex-shrink: 0;
+    min-width: max-content;
+    white-space: nowrap;
+    gap: 4px;
+  }
+
+  .pc-topbar .topbar-actions > .topbar-icon-btn {
+    flex: 0 0 36px;
+    width: 36px;
+    height: 36px;
+  }
+
+  .pc-topbar .lis-topbar-cta {
+    display: inline-flex;
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 0;
+    height: auto;
+    padding: 8px 12px;
+    gap: 6px;
+    font-size: 13px;
+  }
+
+  .pc-topbar .lis-topbar-cta i {
+    font-size: 15px;
+  }
+
+  .pc-topbar app-user-chip[variant="topbar"] {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 0;
+  }
+
+  .pc-topbar app-user-chip[variant="topbar"] .chip-text {
+    display: flex !important;
+  }
+
+  .pc-topbar app-user-chip[variant="topbar"] .chip-trigger {
+    width: auto;
+    min-width: 0;
+    padding: 5px 10px 5px 5px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pc-topbar .lis-topbar-cta {
+    display: none;
+  }
+
+  .pc-topbar app-user-chip[variant="topbar"] {
+    flex: 0 0 52px;
+    width: 52px;
+    min-width: 52px;
+  }
+
+  .pc-topbar app-user-chip[variant="topbar"] .chip-text {
+    display: none !important;
+  }
+
+  .pc-topbar app-user-chip[variant="topbar"] .chip-chevron {
+    display: inline-flex !important;
+    margin-left: 0;
+  }
+
+  .pc-topbar app-user-chip[variant="topbar"] .chip-trigger {
+    width: 52px;
+    min-width: 52px;
+    justify-content: space-between;
+    gap: 4px;
+    padding: 2px 5px 2px 2px;
+  }
+}
+
+
+
+/* ═══════════════════════════════════════════════════════════════
+   LIS INTERACTION BASELINE
+   Shared interaction states for workflow screens. Uses existing
+   theme tokens; intentionally does not redefine colors or typography.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Consistent keyboard focus visibility without changing resting styles. */
+.pc-page-content :is(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--lis-primary, var(--primary));
+  outline-offset: 2px;
+  z-index: 1;
+}
+.pc-page-content :is(button, a, input, select, textarea):focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Common button states: primary/secondary/destructive variants retain
+   their component colors; this layer only standardizes interaction. */
+.pc-page-content button,
+.pc-page-content [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+}
+.pc-page-content button:disabled,
+.pc-page-content button[aria-disabled="true"],
+.pc-page-content [role="button"][aria-disabled="true"] {
+  cursor: not-allowed !important;
+  opacity: .56;
+  box-shadow: none !important;
+  transform: none !important;
+}
+.pc-page-content button[aria-busy="true"],
+.pc-page-content button.is-loading {
+  cursor: progress;
+  pointer-events: none;
+}
+.pc-page-content button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Search fields: consistent control height while preserving each page's
+   existing border, radius, background and typography. */
+.pc-page-content :is(.search-input, .search-box, .ts-search, .search-wrap,
+  .search-field, .report-search, .catalogue-search) {
+  min-height: 38px;
+  box-sizing: border-box;
+}
+.pc-page-content :is(.search-input, .search-box, .ts-search, .search-wrap,
+  .search-field, .report-search, .catalogue-search) input {
+  min-width: 0;
+  min-height: 24px;
+  box-sizing: border-box;
+}
+.pc-page-content input[type="search"] {
+  min-width: 0;
+}
+.pc-page-content :is(.search-clear, .ts-clear, .search-reset, .clear-search) {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  min-height: 28px;
+}
+
+/* Popup layers stay above cards and tables, and remain viewport-safe. */
+.pc-page-content :is(.alert-popover, .filter-popover, .collection-datetime-popover,
+  .more-menu, .drafts-panel, .dropdown-menu, .search-suggestions) {
+  z-index: var(--z-modal, 400);
+  max-width: min( min( calc(100vw - 24px), 440px ), 100%);
+  box-sizing: border-box;
+}
+.pc-page-content :is(.alert-popover, .filter-popover, .collection-datetime-popover,
+  .more-menu, .dropdown-menu, .search-suggestions) :is(button, a, input, select) {
+  max-width: 100%;
+}
+.pc-page-content :is(.receipt-overlay, .success-overlay) {
+  z-index: var(--z-modal, 400);
+  padding: clamp(12px, 3vw, 28px);
+  box-sizing: border-box;
+}
+.pc-page-content :is(.dialog, .receipt-card, .success-card) {
+  max-width: min(100%, 560px);
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+/* Table/list interaction states. Keep existing selected colors; add
+   predictable hover and focus affordances to rows that are selectable. */
+.pc-page-content :is(.sample-tbl, .result-table, .report-table) tbody tr,
+.pc-page-content :is(.report-row, .test-item, .sample-row, .queue-row)[tabindex] {
+  transition: background-color .14s ease, box-shadow .14s ease;
+}
+.pc-page-content :is(.sample-tbl, .result-table, .report-table) tbody tr:hover,
+.pc-page-content :is(.report-row, .test-item, .sample-row, .queue-row):hover {
+  background-color: var(--lis-primary-xlight, var(--primary-xlight));
+}
+.pc-page-content :is(.report-row, .test-item, .sample-row, .queue-row):focus-visible {
+  outline: 2px solid var(--lis-primary, var(--primary));
+  outline-offset: -2px;
+}
+.pc-page-content :is(.report-row, .test-item, .sample-row, .queue-row)[aria-selected="true"],
+.pc-page-content :is(.report-row, .test-item, .sample-row, .queue-row).is-selected {
+  box-shadow: inset 3px 0 0 var(--lis-primary, var(--primary));
+}
+
+/* Empty/loading feedback should not collapse the surrounding work area. */
+.pc-page-content :is(.reports-empty, .empty-tests, .empty-state, .tbl-empty,
+  .empty-review, .no-results) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.pc-page-content [role="status"][aria-live],
+.pc-page-content [aria-live="polite"] {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 600px) {
+  .pc-page-content :is(.alert-popover, .filter-popover, .collection-datetime-popover,
+    .more-menu, .dropdown-menu, .search-suggestions) {
+    max-width: calc(100vw - 24px);
+  }
+  .pc-page-content :is(.dialog, .receipt-card, .success-card) {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE SIDEBAR — true off-canvas drawer
+   At tablet/phone widths the sidebar is removed from the app-shell
+   flex flow, so opening it never reduces or shifts page width.
+   Desktop expanded/collapsed behavior above 1023px is unchanged.
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 1023px) {
+  app-sidebar {
+    position: fixed !important;
+    inset: 0 auto 0 0 !important;
+    z-index: 60 !important;
+    display: block !important;
+    width: 0 !important;
+    height: 0 !important;
+    pointer-events: none !important;
+  }
+
+  .pc-sidebar.lis-sidebar {
+    position: fixed !important;
+    top: var(--header-height, 56px) !important;
+    right: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: min(var(--sidebar-expanded, 240px), calc(100vw - 56px)) !important;
+    min-width: 0 !important;
+    max-width: calc(100vw - 56px) !important;
+    height: auto !important;
+    max-height: calc(100dvh - var(--header-height, 56px)) !important;
+    margin: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    transform: translate3d(calc(-100% - 12px), 0, 0) !important;
+    visibility: hidden;
+    pointer-events: none !important;
+    z-index: 62 !important;
+    transition: transform 220ms cubic-bezier(.2,.8,.2,1), visibility 220ms ease !important;
+    box-shadow: 12px 0 32px rgba(0, 0, 0, .24) !important;
+  }
+
+  .pc-sidebar.lis-sidebar.mobile-open {
+    transform: translate3d(0, 0, 0) !important;
+    visibility: visible;
+    pointer-events: auto !important;
+  }
+
+  .sidebar-backdrop {
+    position: fixed !important;
+    inset: var(--header-height, 56px) 0 0 !important;
+    display: block !important;
+    width: 100vw !important;
+    height: calc(100dvh - var(--header-height, 56px)) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: rgba(7, 13, 25, .48) !important;
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+    z-index: 61 !important;
+    pointer-events: auto !important;
+  }
+
+  .pc-container.lis-app-shell {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .pc-container.lis-app-shell > .pc-main-content {
+    display: flex !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .pc-container.lis-app-shell .pc-page-content {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    box-sizing: border-box !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pc-sidebar.lis-sidebar,
+  .sidebar-backdrop {
+    transition: none !important;
+  }
+}
+
+/* ── MedPath violet cursor system ───────────────────────────────────
+   Purple cursor identity with a white edge for contrast on light/dark UI.
+   Explicit cursor states preserve expected browser interaction behaviour. */
+:root {
+  --lis-cursor-accent: #8b5cf6;
+}
+
+/* Default pointer */
+html.cursor-custom-enabled,
+html.cursor-custom-enabled body,
+html.cursor-custom-enabled body * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M5 3 L5 25 L11 19 L16 29 L21 26 L16 16 L25 16 Z' fill='%238b5cf6' stroke='%23ffffff' stroke-width='1.8' stroke-linejoin='round'/%3E%3C/svg%3E") 4 3, auto;
+}
+
+/* Clickable controls: custom violet hand */
+html.cursor-custom-enabled a,
+html.cursor-custom-enabled button,
+html.cursor-custom-enabled [role="button"],
+html.cursor-custom-enabled [role="tab"],
+html.cursor-custom-enabled [role="menuitem"],
+html.cursor-custom-enabled [role="option"],
+html.cursor-custom-enabled [role="link"],
+html.cursor-custom-enabled [role="switch"],
+html.cursor-custom-enabled [role="checkbox"],
+html.cursor-custom-enabled [role="radio"],
+html.cursor-custom-enabled [role="treeitem"],
+html.cursor-custom-enabled summary,
+html.cursor-custom-enabled select,
+html.cursor-custom-enabled input[type="button"],
+html.cursor-custom-enabled input[type="submit"],
+html.cursor-custom-enabled input[type="reset"],
+html.cursor-custom-enabled label[for],
+html.cursor-custom-enabled input[type="checkbox"],
+html.cursor-custom-enabled input[type="radio"],
+html.cursor-custom-enabled input[type="range"],
+html.cursor-custom-enabled .clickable,
+html.cursor-custom-enabled .lis-btn,
+html.cursor-custom-enabled [ng-reflect-router-link] {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M12 2.5 C10.9 2.5 10 3.4 10 4.5 V14 L8.1 12.1 C7.3 11.3 6 11.3 5.2 12.1 C4.4 12.9 4.4 14.2 5.2 15 L12.2 22 C13.4 23.2 15 23.8 16.7 23.8 H18 C21.3 23.8 24 21.1 24 17.8 V11 C24 9.9 23.1 9 22 9 C21.4 9 20.9 9.3 20.5 9.7 C20.2 8.7 19.3 8 18.3 8 C17.7 8 17.2 8.3 16.8 8.7 C16.5 7.7 15.6 7 14.6 7 C14 7 13.5 7.3 13.1 7.7 V4.5 C13.1 3.4 13.1 2.5 12 2.5 Z' fill='%238b5cf6' stroke='%23ffffff' stroke-width='1.7' stroke-linejoin='round'/%3E%3C/svg%3E") 10 5, pointer;
+}
+
+/* Text entry and selection */
+html.cursor-custom-enabled input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+html.cursor-custom-enabled textarea,
+html.cursor-custom-enabled [contenteditable="true"],
+html.cursor-custom-enabled [role="textbox"],
+html.cursor-custom-enabled .CodeMirror,
+html.cursor-custom-enabled .monaco-editor,
+html.cursor-custom-enabled .cm-content {
+  cursor: text;
+}
+
+/* Native semantic cursor states */
+html.cursor-custom-enabled :disabled,
+html.cursor-custom-enabled [disabled],
+html.cursor-custom-enabled [aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+[draggable="true"],
+.drag-handle,
+.cdk-drag-handle {
+  cursor: grab;
+}
+[draggable="true"]:active,
+.drag-handle:active,
+.cdk-drag-handle:active,
+.cdk-drag-dragging {
+  cursor: grabbing;
+}
+
+[aria-busy="true"],
+.is-loading,
+.loading,
+button:disabled.is-loading {
+  cursor: progress;
+}
+
+[aria-wait="true"],
+.cursor-wait {
+  cursor: wait;
+}
+
+.cursor-move,
+[aria-grabbed="true"] {
+  cursor: move;
+}
+
+.cursor-crosshair,
+[role="application"].precision-mode {
+  cursor: crosshair;
+}
+
+.cursor-help,
+[title]:not(a):not(button) {
+  cursor: help;
+}
+
+.cursor-zoom-in { cursor: zoom-in; }
+.cursor-zoom-out { cursor: zoom-out; }
+.cursor-copy { cursor: copy; }
+.cursor-alias { cursor: alias; }
+.cursor-no-drop { cursor: no-drop; }
+.cursor-not-allowed { cursor: not-allowed; }
+
+/* Resize handles and split panes */
+[role="separator"],
+.resize-handle,
+.cursor-col-resize { cursor: col-resize; }
+.cursor-row-resize { cursor: row-resize; }
+.cursor-n-resize { cursor: n-resize; }
+.cursor-s-resize { cursor: s-resize; }
+.cursor-e-resize { cursor: e-resize; }
+.cursor-w-resize { cursor: w-resize; }
+.cursor-ne-resize { cursor: ne-resize; }
+.cursor-nw-resize { cursor: nw-resize; }
+.cursor-se-resize { cursor: se-resize; }
+.cursor-sw-resize { cursor: sw-resize; }
+
+/* Touch-first devices do not have a persistent pointer. Keep their
+   native cursor behavior even when the desktop custom cursor is enabled. */
+@media (hover: none), (pointer: coarse) {
+  html.cursor-custom-enabled,
+  html.cursor-custom-enabled body,
+  html.cursor-custom-enabled body * {
+    cursor: auto !important;
+  }
+}
+
+/* ── Shared LIS search field system ──────────────────────────────────
+   Consistent default, focus and no-results borders across feature pages.
+   Search wrappers keep their page-specific sizing/layout; this owns only
+   the visual border, focus ring, icon and validation state. */
+.lis-search-control{
+  box-sizing:border-box;
+  border:1px solid var(--border-color,#d7dee8)!important;
+  border-radius:9px!important;
+  background:var(--body-bg,#fff)!important;
+  transition:border-color .16s ease,box-shadow .16s ease,background-color .16s ease;
+}
+.lis-search-control:focus-within{
+  border-color:var(--lis-primary,#1d9e75)!important;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--lis-primary,#1d9e75) 14%,transparent)!important;
+  outline:none;
+}
+.lis-search-control input{
+  min-width:0;
+  color:var(--text-primary);
+}
+.lis-search-control input::placeholder{color:var(--text-secondary);opacity:.78}
+.lis-search-control.is-invalid,
+.lis-search-control.is-invalid:focus-within{
+  border-color:var(--lis-danger,#e24b4a)!important;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--lis-danger,#e24b4a) 13%,transparent)!important;
+}
+.lis-search-control.is-invalid>i:first-child{color:var(--lis-danger,#e24b4a)}
+.lis-search-control button{flex-shrink:0}
+@media(prefers-reduced-motion:reduce){.lis-search-control{transition:none}}
+
+
+/* Keep interaction-specific cursors above the global custom cursor rule.
+   Limit these desktop pointer cues to devices that actually have a fine pointer. */
+@media (hover: hover) and (pointer: fine) {
+  html.cursor-custom-enabled body :is(
+    [draggable="true"],
+    .drag-handle,
+    .cdk-drag-handle
+  ) {
+    cursor: grab;
+  }
+
+  html.cursor-custom-enabled body :is(
+    [draggable="true"],
+    .drag-handle,
+    .cdk-drag-handle
+  ):active,
+  html.cursor-custom-enabled body .cdk-drag-dragging {
+    cursor: grabbing;
+  }
+
+  html.cursor-custom-enabled body :is(
+    [aria-busy="true"],
+    .is-loading,
+    .loading,
+    button:disabled.is-loading
+  ) {
+    cursor: progress;
+  }
+
+  html.cursor-custom-enabled body :is([aria-wait="true"], .cursor-wait) {
+    cursor: wait;
+  }
+
+  html.cursor-custom-enabled body :is(.cursor-move, [aria-grabbed="true"]) {
+    cursor: move;
+  }
+
+  html.cursor-custom-enabled body :is(.cursor-crosshair, [role="application"].precision-mode) {
+    cursor: crosshair;
+  }
+
+  html.cursor-custom-enabled body :is(.cursor-help, [title]:not(a):not(button)) {
+    cursor: help;
+  }
+
+  /* ApexCharts exposes its own clickable legend and toolbar elements. */
+  html.cursor-custom-enabled body :is(
+    .apexcharts-legend-series,
+    .apexcharts-toolbar > div,
+    .apexcharts-menu-item
+  ) {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M12 2.5 C10.9 2.5 10 3.4 10 4.5 V14 L8.1 12.1 C7.3 11.3 6 11.3 5.2 12.1 C4.4 12.9 4.4 14.2 5.2 15 L12.2 22 C13.4 23.2 15 23.8 16.7 23.8 H18 C21.3 23.8 24 21.1 24 17.8 V11 C24 9.9 23.1 9 22 9 C21.4 9 20.9 9.3 20.5 9.7 C20.2 8.7 19.3 8 18.3 8 C17.7 8 17.2 8.3 16.8 8.7 C16.5 7.7 15.6 7 14.6 7 C14 7 13.5 7.3 13.1 7.7 V4.5 C13.1 3.4 13.1 2.5 12 2.5 Z' fill='%238b5cf6' stroke='%23ffffff' stroke-width='1.7' stroke-linejoin='round'/%3E%3C/svg%3E") 10 5, pointer;
+  }
+}
+
+
+/* ── Cursor consistency overrides ───────────────────────────────────
+   Keep the custom cursor visible on controls even when component styles
+   define their own cursor. Text fields get a matching custom I-beam;
+   actual drag handles are the only elements that use grab/grabbing. */
+@media (hover: hover) and (pointer: fine) {
+  html.cursor-custom-enabled body :is(
+    button:not(:disabled):not([aria-disabled="true"]),
+    a,
+    [role="button"]:not([aria-disabled="true"]),
+    [role="link"],
+    [role="tab"],
+    [role="menuitem"],
+    [role="option"],
+    [role="switch"],
+    [role="checkbox"],
+    [role="radio"],
+    [role="treeitem"],
+    select,
+    label[for],
+    input[type="button"],
+    input[type="submit"],
+    input[type="reset"],
+    input[type="checkbox"],
+    input[type="radio"],
+    input[type="range"],
+    .clickable,
+    .lis-btn,
+    [ng-reflect-router-link]
+  ) {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M12 2.5 C10.9 2.5 10 3.4 10 4.5 V14 L8.1 12.1 C7.3 11.3 6 11.3 5.2 12.1 C4.4 12.9 4.4 14.2 5.2 15 L12.2 22 C13.4 23.2 15 23.8 16.7 23.8 H18 C21.3 23.8 24 21.1 24 17.8 V11 C24 9.9 23.1 9 22 9 C21.4 9 20.9 9.3 20.5 9.7 C20.2 8.7 19.3 8 18.3 8 C17.7 8 17.2 8.3 16.8 8.7 C16.5 7.7 15.6 7 14.6 7 C14 7 13.5 7.3 13.1 7.7 V4.5 C13.1 3.4 13.1 2.5 12 2.5 Z' fill='%238b5cf6' stroke='%23ffffff' stroke-width='1.7' stroke-linejoin='round'/%3E%3C/svg%3E") 10 5, pointer !important;
+  }
+
+  /* Cursor is applied to the exact hovered node. Many buttons/links contain
+     nested spans, icons or SVGs; cover those descendants too so the global
+     default cursor rule cannot win when the pointer is over their content. */
+  html.cursor-custom-enabled body :is(
+    button:not(:disabled):not([aria-disabled="true"]),
+    a,
+    [role="button"]:not([aria-disabled="true"]),
+    [role="link"],
+    [role="tab"],
+    [role="menuitem"],
+    [role="option"],
+    [role="switch"],
+    [role="checkbox"],
+    [role="radio"],
+    [role="treeitem"],
+    summary,
+    select,
+    label[for],
+    input[type="button"],
+    input[type="submit"],
+    input[type="reset"],
+    input[type="checkbox"],
+    input[type="radio"],
+    input[type="range"],
+    .clickable,
+    .lis-btn,
+    .cursor-pointer,
+    [ng-reflect-router-link]
+  ) *,
+  html.cursor-custom-enabled body :is(
+    button:not(:disabled):not([aria-disabled="true"]),
+    a,
+    [role="button"]:not([aria-disabled="true"]),
+    [role="link"],
+    [role="tab"],
+    [role="menuitem"],
+    [role="option"],
+    [role="switch"],
+    [role="checkbox"],
+    [role="radio"],
+    [role="treeitem"],
+    summary,
+    select,
+    label[for],
+    .clickable,
+    .lis-btn,
+    .cursor-pointer,
+    [ng-reflect-router-link]
+  ) {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M12 2.5 C10.9 2.5 10 3.4 10 4.5 V14 L8.1 12.1 C7.3 11.3 6 11.3 5.2 12.1 C4.4 12.9 4.4 14.2 5.2 15 L12.2 22 C13.4 23.2 15 23.8 16.7 23.8 H18 C21.3 23.8 24 21.1 24 17.8 V11 C24 9.9 23.1 9 22 9 C21.4 9 20.9 9.3 20.5 9.7 C20.2 8.7 19.3 8 18.3 8 C17.7 8 17.2 8.3 16.8 8.7 C16.5 7.7 15.6 7 14.6 7 C14 7 13.5 7.3 13.1 7.7 V4.5 C13.1 3.4 13.1 2.5 12 2.5 Z' fill='%238b5cf6' stroke='%23ffffff' stroke-width='1.7' stroke-linejoin='round'/%3E%3C/svg%3E") 10 5, pointer !important;
+  }
+
+  /* Text-entry controls intentionally use an I-beam, not a click hand. */
+  html.cursor-custom-enabled body :is(
+    input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    textarea,
+    [contenteditable="true"],
+    [role="textbox"],
+    .CodeMirror,
+    .monaco-editor,
+    .cm-content
+  ) {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='32' viewBox='0 0 24 32'%3E%3Cpath d='M6 5 H18 M12 5 V27 M6 27 H18' fill='none' stroke='%23ffffff' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='M6 5 H18 M12 5 V27 M6 27 H18' fill='none' stroke='%238b5cf6' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") 12 16, text !important;
+  }
+
+  /* Disabled controls and true drag handles retain their semantic states. */
+  html.cursor-custom-enabled body :is(
+    button:disabled,
+    button[aria-disabled="true"],
+    [disabled],
+    [aria-disabled="true"]
+  ) {
+    cursor: not-allowed !important;
+  }
+
+  html.cursor-custom-enabled body :is(.drag-handle, .cdk-drag-handle, [draggable="true"]) {
+    cursor: grab !important;
+  }
+
+  html.cursor-custom-enabled body :is(.drag-handle, .cdk-drag-handle, [draggable="true"]):active,
+  html.cursor-custom-enabled body .cdk-drag-dragging {
+    cursor: grabbing !important;
+  }
+
+  html.cursor-custom-enabled body :is([aria-busy="true"], .is-loading, .loading) {
+    cursor: progress !important;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   PASTEL LAVENDER — MedPath shared application palette
+   Selected from Settings > Appearance. The same tokens drive
+   Patient, Test Orders, Reports, Billing and shared components.
+   ═══════════════════════════════════════════════════════════ */
+
+/* Light mode */
+[data-palette="pastel"] {
+  --primary:           #8C75CF;
+  --primary-dark:      #7962BB;
+  --primary-deeper:    #7156B5;
+  --primary-light:     #A18DDD;
+  --primary-xlight:    #E8DDF7;
+
+  --secondary:         #F6D1CE;
+  --secondary-dark:    #D69A98;
+  --secondary-light:   #FCE4E2;
+  --secondary-xlight:  #FFF4F3;
+
+  --accent:            #C4ACDC;
+  --accent-dark:       #8C75CF;
+  --accent-light:      #E8D7EC;
+
+  --bg-page:           #FCEEF0;
+  --bg-surface:        #FFF8F8;
+  --bg-surface-alt:    #F8EAF0;
+  --bg-overlay:        rgba(252,238,240,0.96);
+
+  --text-base:         #30264A;
+  --text-muted:        #81758F;
+  --text-subtle:       #A69BAF;
+  --text-on-primary:   #FFFFFF;
+
+  --border:            #EDE3EF;
+  --border-strong:     #DCCCE3;
+
+  --shadow-sm:         0 1px 4px rgba(140,117,207,0.12);
+  --shadow-card:       0 2px 16px rgba(140,117,207,0.10);
+  --shadow-card-hover: 0 12px 32px rgba(140,117,207,0.18);
+  --shadow-editor:     0 24px 64px rgba(140,117,207,0.16), 0 4px 20px rgba(48,38,74,0.05);
+  --shadow-btn:        0 2px 12px rgba(140,117,207,0.28);
+  --shadow-btn-hover:  0 6px 20px rgba(140,117,207,0.34);
+  --shadow-nav:        0 1px 10px rgba(140,117,207,0.10);
+
+  --scrollbar-track:   #F8EAF0;
+  --scrollbar-thumb:   #C4ACDC;
+  --theme-icon-color:  #8C75CF;
+
+  --color-accent:      #7156B5;
+  --color-accent-soft: #E8DDF7;
+  --color-ai:          #8C75CF;
+  --color-ai-soft:     rgba(140,117,207,0.09);
+  --color-ai-header-bg: rgba(140,117,207,0.04);
+  --color-ai-soft-overlay: rgba(140,117,207,0.16);
+  --color-ai-soft-overlay-hover: rgba(140,117,207,0.24);
+  --color-success:     #65B995;
+  --block-hover-bg:    rgba(140,117,207,0.05);
+
+  /* Shared LIS tokens */
+  --lis-primary:       #8C75CF;
+  --lis-primary-mid:   #C4ACDC;
+  --lis-primary-light: #E8D7EC;
+  --lis-primary-xlight:#E8DDF7;
+  --lis-primary-deep:  #49396F;
+  --lis-sidebar-bg:    #8C75CF;
+  --lis-sidebar-text:  rgba(255,255,255,0.94);
+  --lis-sidebar-muted: rgba(255,255,255,0.68);
+  --lis-sidebar-hover: rgba(255,255,255,0.12);
+  --lis-sidebar-sep:   rgba(255,255,255,0.16);
+
+  --card-bg:           #FFF8F8;
+  --body-bg:           #FCEEF0;
+  --border-color:      #EDE3EF;
+  --text-primary:      #30264A;
+  --text-secondary:    #81758F;
+  --topbar-bg:         #FFF8F8;
+
+  --lis-warning:       #E5AE55;
+  --lis-danger:        #DF8295;
+  --lis-danger-xlight: #FFF0F2;
+
+  --pill-pending-bg:   #FBE9D2;
+  --pill-pending-color:#80551B;
+  --pill-process-bg:   #E0E0F3;
+  --pill-process-color:#454B83;
+  --pill-ready-bg:     #E8D7EC;
+  --pill-ready-color:  #49396F;
+  --pill-critical-bg:  #FFF0F2;
+  --pill-critical-color:#A33D50;
+
+  /* Pastel dashboard accents */
+  --lis-card-purple:   #E8D7EC;
+  --lis-card-pink:     #F6D1CE;
+  --lis-card-yellow:   #FBE9D2;
+  --lis-card-blue:     #E0E0F3;
+
+  /* Lavender sidebar with a clear white active item */
+  --lis-sb-bg:              #8C75CF;
+  --lis-sb-bg-brand:        #7962BB;
+  --lis-sb-search-bg:       rgba(255,255,255,0.14);
+  --lis-sb-sep:             rgba(255,255,255,0.18);
+  --lis-sb-text:            rgba(255,255,255,0.82);
+  --lis-sb-text-hover:      #FFFFFF;
+  --lis-sb-text-active:     #7156B5;
+  --lis-sb-caption:         rgba(255,255,255,0.58);
+  --lis-sb-hover-bg:        rgba(255,255,255,0.13);
+  --lis-sb-hover-border:    #FFFFFF;
+  --lis-sb-active-bg:       #FFFFFF;
+  --lis-sb-active-border:   #FFFFFF;
+  --lis-sb-active-glow:     rgba(255,255,255,0.22);
+  --lis-sb-icon-idle:       rgba(255,255,255,0.72);
+  --lis-sb-icon-hover:      #FFFFFF;
+  --lis-sb-icon-active:     #8C75CF;
+  --lis-sb-col-icon-bg:     rgba(255,255,255,0.10);
+  --lis-sb-col-icon-hover:  rgba(255,255,255,0.18);
+  --lis-sb-col-icon-active: rgba(140,117,207,0.12);
+
+  /* Report sheet stays clinical/print-friendly while using lavender branding */
+  --rpt-band-bg:        #7156B5;
+  --rpt-band-bg-2:      #8C75CF;
+  --rpt-band-text:      #FFFFFF;
+  --rpt-band-text-sub:  #F0EAFB;
+  --rpt-tint-bg:        #F8F3FC;
+  --rpt-tint-border:    #C4ACDC;
+  --rpt-tint-label:     #7156B5;
+  --rpt-tint-strong:    #30264A;
+  --rpt-note-bg:        #FFF8E8;
+  --rpt-note-border:    #E5AE55;
+  --rpt-note-text:      #684719;
+  --rpt-crit-bg:        #FFF0F2;
+  --rpt-flag-danger:    #B94D61;
+  --rpt-ref-text:       #81758F;
+}
+
+/* Dark mode keeps deep surfaces for contrast but retains pastel brand accents. */
+[data-theme="dark"][data-palette="pastel"] {
+  --primary:           #B7A4EA;
+  --primary-dark:      #A18DDD;
+  --primary-deeper:    #C4ACDC;
+  --primary-light:     rgba(196,172,220,0.20);
+  --primary-xlight:    rgba(140,117,207,0.16);
+  --secondary:         #F0B8B8;
+  --secondary-dark:    #D69A98;
+  --secondary-light:   rgba(246,209,206,0.18);
+  --secondary-xlight:  rgba(246,209,206,0.10);
+  --accent:            #C4ACDC;
+  --accent-dark:       #B7A4EA;
+  --accent-light:      rgba(232,215,236,0.16);
+
+  --bg-page:           #191522;
+  --bg-surface:        #231D30;
+  --bg-surface-alt:    #2E263D;
+  --bg-overlay:        rgba(25,21,34,0.97);
+  --text-base:         #F7F1FC;
+  --text-muted:        #C2B6D0;
+  --text-subtle:       #91849F;
+  --border:            #40364F;
+  --border-strong:     #554765;
+
+  --shadow-sm:         0 1px 3px rgba(0,0,0,0.42);
+  --shadow-card:       0 4px 12px rgba(0,0,0,0.28);
+  --shadow-card-hover: 0 16px 36px rgba(0,0,0,0.42);
+  --shadow-editor:     0 24px 64px rgba(0,0,0,0.52);
+  --shadow-btn:        0 2px 10px rgba(140,117,207,0.22);
+  --shadow-btn-hover:  0 6px 18px rgba(140,117,207,0.30);
+  --shadow-nav:        0 4px 16px rgba(0,0,0,0.30);
+
+  --lis-primary:       #B7A4EA;
+  --lis-primary-mid:   #C4ACDC;
+  --lis-primary-light: #352B48;
+  --lis-primary-xlight:rgba(183,164,234,0.15);
+  --lis-primary-deep:  #F0EAFB;
+  --lis-sidebar-bg:    #231D30;
+  --lis-sidebar-text:  rgba(247,241,252,0.90);
+  --lis-sidebar-muted: rgba(247,241,252,0.54);
+  --lis-sidebar-hover: rgba(183,164,234,0.10);
+  --lis-sidebar-sep:   rgba(247,241,252,0.08);
+
+  --card-bg:           #231D30;
+  --body-bg:           #191522;
+  --border-color:      #40364F;
+  --text-primary:      #F7F1FC;
+  --text-secondary:    #C2B6D0;
+  --topbar-bg:         #231D30;
+
+  --lis-warning:       #E5B866;
+  --lis-danger:        #EF9AA9;
+  --lis-danger-xlight: rgba(239,154,169,0.13);
+  --pill-pending-bg:   rgba(229,174,85,0.15);
+  --pill-pending-color:#F1C77F;
+  --pill-process-bg:   rgba(160,150,220,0.16);
+  --pill-process-color:#D8C9F3;
+  --pill-ready-bg:     rgba(183,164,234,0.15);
+  --pill-ready-color:  #D9CCF4;
+  --pill-critical-bg:  rgba(239,154,169,0.14);
+  --pill-critical-color:#F3AAB7;
+
+  --lis-card-purple:   #352B48;
+  --lis-card-pink:     #452C39;
+  --lis-card-yellow:   #453824;
+  --lis-card-blue:     #2C304B;
+
+  --lis-sb-bg:              #231D30;
+  --lis-sb-bg-brand:        #191522;
+  --lis-sb-search-bg:       #352B48;
+  --lis-sb-sep:             rgba(247,241,252,0.08);
+  --lis-sb-text:            rgba(220,210,235,0.78);
+  --lis-sb-text-hover:      #FFFFFF;
+  --lis-sb-text-active:     #F7F1FC;
+  --lis-sb-caption:         #C2B6D0;
+  --lis-sb-hover-bg:        rgba(183,164,234,0.12);
+  --lis-sb-hover-border:    #B7A4EA;
+  --lis-sb-active-bg:       rgba(183,164,234,0.18);
+  --lis-sb-active-border:   #C4ACDC;
+  --lis-sb-active-glow:     rgba(183,164,234,0.22);
+  --lis-sb-icon-idle:       rgba(220,210,235,0.62);
+  --lis-sb-icon-hover:      #E5D9FA;
+  --lis-sb-icon-active:     #D9CCF4;
+  --lis-sb-col-icon-bg:     rgba(183,164,234,0.08);
+  --lis-sb-col-icon-hover:  rgba(183,164,234,0.16);
+  --lis-sb-col-icon-active: rgba(183,164,234,0.18);
+
+  --rpt-band-bg:        #4A3B68;
+  --rpt-band-bg-2:      #7156B5;
+  --rpt-band-text:      #FFFFFF;
+  --rpt-band-text-sub:  #D8C9F3;
+  --rpt-tint-bg:        #2B2438;
+  --rpt-tint-border:    #8C75CF;
+  --rpt-tint-label:     #C4ACDC;
+  --rpt-tint-strong:    #F7F1FC;
+  --rpt-note-bg:        rgba(229,174,85,0.12);
+  --rpt-note-border:    #E5B866;
+  --rpt-note-text:      #F1C77F;
+  --rpt-crit-bg:        rgba(239,154,169,0.14);
+  --rpt-flag-danger:    #EF9AA9;
+  --rpt-ref-text:       #B5A9C4;
+}
+
+/* Pastel light theme: soft illustrated lab banner, built from CSS shapes so it
+   stays crisp at every size and does not depend on an external image request. */
+[data-palette="pastel"]:not([data-theme="dark"]) .welcome-band {
+  background:
+    radial-gradient(ellipse at 77% 115%, rgba(185,151,234,0.25) 0 22%, transparent 22.5%),
+    radial-gradient(ellipse at 94% 15%, rgba(208,189,244,0.45) 0 24%, transparent 24.5%),
+    linear-gradient(112deg, #F0E2FB 0%, #E8D9F8 54%, #DCCBF3 100%);
+  border: 1px solid rgba(140,117,207,0.12);
+  box-shadow: 0 8px 22px rgba(140,117,207,0.10);
+}
+[data-palette="pastel"]:not([data-theme="dark"]) .welcome-band::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  width: 156px;
+  height: 118px;
+  right: 24%;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: .52;
+  background: no-repeat center / contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 190 140'%3E%3Cg fill='none' stroke='%238C75CF' stroke-linecap='round' stroke-linejoin='round' stroke-width='4'%3E%3Crect x='85' y='12' width='72' height='112' rx='11' fill='%23F8F1FF'/%3E%3Cpath d='M103 35h36M103 53h27M103 71h35M103 89h22'/%3E%3Cpath d='M101 35l5 5 9-11M101 71l5 5 9-11' stroke='%23A47BE0'/%3E%3Cpath d='M30 31h26v7H30zM36 38v49a10 10 0 0010 10 10 10 0 0010-10V38M27 87h32' fill='%23DCCBFA'/%3E%3Cpath d='M64 69h24M71 69v40a12 12 0 0024 0V69M67 105h32' fill='%23E9D5FF'/%3E%3Cpath d='M144 116c-7-14-4-26 8-36M150 95c10 1 17-4 21-14M147 107c-11-1-17-7-19-18' stroke='%2379AE79'/%3E%3Cpath d='M158 81c-2-10 2-17 12-20 2 9-2 16-12 20ZM128 89c-8-5-10-12-6-21 8 5 10 12 6 21Z' fill='%23A9D1A1' stroke='%2379AE79'/%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+}
+[data-palette="pastel"]:not([data-theme="dark"]) .wb-greet,
+[data-palette="pastel"]:not([data-theme="dark"]) .wb-stat-val { color: #30264A; }
+[data-palette="pastel"]:not([data-theme="dark"]) .wb-sub,
+[data-palette="pastel"]:not([data-theme="dark"]) .wb-stat-lbl { color: #66587D; }
+[data-palette="pastel"]:not([data-theme="dark"]) .wb-pill {
+  color: #594879;
+  background: rgba(255,255,255,0.60);
+  border: 1px solid rgba(140,117,207,0.12);
+}
+[data-palette="pastel"]:not([data-theme="dark"]) .wb-divider { background: rgba(113,86,181,0.22); }
+@media (max-width: 600px) {
+  [data-palette="pastel"]:not([data-theme="dark"]) .welcome-band::after { right: -18px; width: 112px; opacity: .24; }
+}
+
+/* The shared light sidebar defaults above have higher specificity than the
+   palette base block. Reassert the pastel sidebar on this exact mode pair so
+   switching palettes or light/dark mode cannot leak the paper sidebar back in. */
+[data-palette="pastel"]:not([data-theme="dark"]) {
+  --lis-sb-bg: linear-gradient(180deg, #967FD5 0%, #816BC6 100%);
+  --lis-sb-bg-brand: rgba(91, 69, 157, 0.16);
+  --lis-sb-search-bg: rgba(255,255,255,0.14);
+  --lis-sb-sep: rgba(255,255,255,0.18);
+  --lis-sb-text: rgba(255,255,255,0.88);
+  --lis-sb-text-hover: #FFFFFF;
+  --lis-sb-text-active: #7156B5;
+  --lis-sb-caption: #211A35;
+  --lis-sb-hover-bg: rgba(255,255,255,0.13);
+  --lis-sb-hover-border: rgba(255,255,255,0.72);
+  --lis-sb-active-bg: #FFFFFF;
+  --lis-sb-active-border: #FFFFFF;
+  --lis-sb-active-glow: rgba(255,255,255,0.22);
+  --lis-sb-icon-idle: rgba(255,255,255,0.80);
+  --lis-sb-icon-hover: #FFFFFF;
+  --lis-sb-icon-active: #8C75CF;
+  --lis-sb-col-icon-bg: rgba(255,255,255,0.10);
+  --lis-sb-col-icon-hover: rgba(255,255,255,0.18);
+  --lis-sb-col-icon-active: rgba(255,255,255,0.22);
+}
+
+/* Palette-aware form focus treatment */
+[data-palette="pastel"] .field-input:focus,
+[data-palette="pastel"] .ph-filter-field select:focus,
+[data-palette="pastel"] .ph-filter-search:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--lis-primary-xlight);
+}
+
+/* Shared page cards can opt into the four pastel metric surfaces. */
+[data-palette="pastel"] .metric-purple { background: var(--lis-card-purple); }
+[data-palette="pastel"] .metric-pink { background: var(--lis-card-pink); }
+[data-palette="pastel"] .metric-yellow { background: var(--lis-card-yellow); }
+[data-palette="pastel"] .metric-blue { background: var(--lis-card-blue); }
+[data-palette="pastel"] .metric-violet { color: #8C75CF; background: var(--lis-card-purple); }
+[data-palette="pastel"] .metric-teal { color: #8C75CF; background: var(--lis-card-purple); }
+[data-palette="pastel"] .metric-green { color: #65B995; background: #E4F3EC; }
+
+
+/* Pastel sidebar active/hover states override legacy brand-specific rules. */
+[data-palette="pastel"]:not([data-theme="dark"]) .pc-sidebar.lis-sidebar .nav-item a.active,
+[data-palette="pastel"]:not([data-theme="dark"]) .pc-sidebar.lis-sidebar .nav-item a.active:visited {
+  background: #FFFFFF !important;
+  color: #7156B5 !important;
+  box-shadow: 0 2px 8px rgba(140,117,207,0.18) !important;
+}
+[data-palette="pastel"]:not([data-theme="dark"]) .pc-sidebar.lis-sidebar .nav-item a.active:hover {
+  background: #FFFFFF !important;
+  color: #7156B5 !important;
+  box-shadow: 0 3px 10px rgba(140,117,207,0.22) !important;
+}
+[data-palette="pastel"] .pc-sidebar.lis-sidebar .nav-item a.active::before {
+  background: #8C75CF !important;
+  box-shadow: 0 0 8px rgba(140,117,207,0.24) !important;
+}

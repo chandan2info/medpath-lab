@@ -11,11 +11,12 @@ import { PatientFlowService } from '../../core/services/patient-flow.service';
 import { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';
 import { PaymentMode } from '../../shared/models/lis.models';
 import { WorkflowStepperComponent, WorkflowStep } from '../../shared/components/workflow-stepper/workflow-stepper.component';
+import { PatientCardComponent } from '../../shared/components/patient-card/patient-card.component';
 
 @Component({
   selector: 'app-billing',
   standalone: true,
-  imports: [RouterLink, NgClass, FormsModule, DatePipe, TitleCasePipe, WorkflowStepperComponent],
+  imports: [RouterLink, NgClass, FormsModule, DatePipe, TitleCasePipe, WorkflowStepperComponent, PatientCardComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './billing.component.html',
   styleUrl: './billing.component.css',
@@ -142,15 +143,7 @@ export class BillingComponent implements OnInit {
     if (this.discountPct() > 0 && !this.discountReason()) return;
     this.saving.set(true);
     try {
-      this.flow.setDiscount(this.subtotal() > 0 ? (this.discAmt() / this.subtotal()) * 100 : 0);
-      const orderId = this.flow.ensureWorkflowOrder();
-      this.workflowStore.recordInvoice({
-        id: this.invoiceId,
-        orderId,
-        total: this.grandTotal(),
-        amountReceived: this.advance(),
-        paymentMode: this.payMode()
-      });
+      this.saveInvoice();
       this.saving.set(false);
       this.showReceipt.set(true);
     } catch (error) {
@@ -160,7 +153,27 @@ export class BillingComponent implements OnInit {
   }
 
   proceedToSample(): void {
-    this.router.navigate(['/dashboard/collection']);
+    if (this.discountPct() > 0 && !this.discountReason()) return;
+    this.saving.set(true);
+    try {
+      this.saveInvoice();
+      this.router.navigate(['/dashboard/collection']);
+    } catch (error) {
+      this.saving.set(false);
+      window.alert(error instanceof Error ? error.message : 'Unable to save invoice.');
+    }
+  }
+
+  private saveInvoice(): void {
+    this.flow.setDiscount(this.subtotal() > 0 ? (this.discAmt() / this.subtotal()) * 100 : 0);
+    const orderId = this.flow.ensureWorkflowOrder();
+    this.workflowStore.recordInvoice({
+      id: this.invoiceId,
+      orderId,
+      total: this.grandTotal(),
+      amountReceived: this.advance(),
+      paymentMode: this.payMode()
+    });
   }
 
   get patientInitials(): string {

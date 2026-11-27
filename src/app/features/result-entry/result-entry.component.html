@@ -1,45 +1,91 @@
 <div class="result-page">
-  <header class="page-header">
-    <div class="page-header__left">
-      <div class="page-header__title-row">
-        <div class="page-header__icon" aria-hidden="true"><i class="ti ti-clipboard-list"></i></div>
-        <div>
+  @if (isQueueView()) {
+    <section class="result-queue-top-card" aria-label="Result Entry page heading">
+      <div class="result-queue-top-card__title">
+        <div class="result-queue-top-card__icon" aria-hidden="true"><i class="ti ti-clipboard-list"></i></div>
+        <div class="result-queue-top-card__copy">
           <h1 class="page-title">Result Entry</h1>
           <nav aria-label="Breadcrumb"><ol class="breadcrumb">
             <li><a routerLink="/dashboard/home">Home</a></li>
-            <li><a routerLink="/dashboard/tracking">Tracking</a></li>
-            <li aria-current="page">{{ patient()?.firstName }} {{ patient()?.lastName }} — {{ sampleLabel() }}</li>
+            <li aria-current="page">Result Entry</li>
           </ol></nav>
         </div>
       </div>
-    </div>
-    <div class="save-state" [class.save-state--dirty]="demoSavedState() === 'unsaved'" aria-live="polite">
-      <i class="ti" [ngClass]="demoSavedState() === 'unsaved' ? 'ti-cloud-upload' : 'ti-info-circle'"></i>
-      {{ demoSavedState() === 'unsaved' ? 'Demo changes not saved' : 'UI preview · mock data only' }}
-    </div>
-  </header>
+      <div class="result-queue-top-card__hint"><i class="ti ti-info-circle" aria-hidden="true"></i><span>Select an eligible sample to enter results</span></div>
+    </section>
 
-  @if (patient(); as p) {
-    <section class="patient-summary patient-summary--result" aria-label="Patient information">
-      <div class="pat-avatar" aria-hidden="true">{{ patientInitials() }}</div>
-      <div class="patient-main">
-        <div class="patient-name-line">
-          <strong>{{ p.firstName }} {{ p.lastName }}</strong>
-          <span class="patient-id">{{ p.id }}</span>
-        </div>
-        <div class="patient-meta">
-          <span><i class="ti ti-user" aria-hidden="true"></i>{{ p.gender | titlecase }}</span>
-          <span><i class="ti ti-cake" aria-hidden="true"></i>{{ patientAge() }}</span>
-          <span><i class="ti ti-calendar" aria-hidden="true"></i>DOB {{ p.dob ? (p.dob | date:'dd MMM yyyy') : '—' }}</span>
-          <span><i class="ti ti-phone" aria-hidden="true"></i>{{ p.mobile || '—' }}</span>
-        </div>
+    <section class="result-queue-kpis" aria-label="Result entry queue summary">
+      <div class="queue-kpi queue-kpi--ready" aria-label="Ready for entry">
+        <i aria-hidden="true" class="ti ti-clipboard-check"></i><span><strong>{{ queueCounts().ready }}</strong><small>Ready for entry</small></span>
       </div>
-      <div class="patient-visit-meta">
-        <span><i class="ti ti-walk" aria-hidden="true"></i><small>Visit</small><strong>{{ visitTypeLabel() | titlecase }}</strong></span>
-        <span><i class="ti ti-clipboard-heart" aria-hidden="true"></i><small>Fasting</small><strong>{{ fastingLabel() | titlecase }}</strong></span>
-        <span><i class="ti ti-stethoscope" aria-hidden="true"></i><small>Referred by</small><strong>{{ p.refDoctor || 'Self / Walk-in' }}</strong></span>
+      <div class="queue-kpi queue-kpi--draft" aria-label="Drafts in progress">
+        <i aria-hidden="true" class="ti ti-pencil"></i><span><strong>{{ queueCounts().draft }}</strong><small>Drafts in progress</small></span>
+      </div>
+      <div class="queue-kpi queue-kpi--validation" aria-label="Awaiting validation">
+        <i aria-hidden="true" class="ti ti-shield-check"></i><span><strong>{{ queueCounts().validation }}</strong><small>Awaiting validation</small></span>
+      </div>
+      <div class="queue-kpi queue-kpi--muted" aria-label="Not ready yet">
+        <i aria-hidden="true" class="ti ti-hourglass"></i><span><strong>{{ queueCounts().notReady }}</strong><small>Not ready yet</small></span>
       </div>
     </section>
+
+    <section class="result-queue-panel panel">
+      <div class="result-queue-toolbar">
+        <div>
+          <h2>Sample work queue</h2>
+          <p>Choose a patient and sample. Only ready or critical samples can be opened for result entry.</p>
+        </div>
+        <label class="result-queue-search"><i class="ti ti-search"></i><input type="search" placeholder="Search patient, ID, order or test..." [value]="queueSearch()" (input)="setQueueSearch($any($event.target).value)" aria-label="Search result entry queue">@if (queueSearch()) { <button type="button" (click)="setQueueSearch('')" aria-label="Clear search"><i class="ti ti-x"></i></button> }</label>
+      </div>
+      <div class="result-queue-filters" role="group" aria-label="Filter result entry queue">
+        <button type="button" [class.filter-chip--active]="queueFilter() === 'ALL'" (click)="setQueueFilter('ALL')">All <span>{{ queueCounts().all }}</span></button>
+        <button type="button" [class.filter-chip--active]="queueFilter() === 'READY'" (click)="setQueueFilter('READY')">Ready for entry <span>{{ queueCounts().ready }}</span></button>
+        <button type="button" [class.filter-chip--active]="queueFilter() === 'DRAFT'" (click)="setQueueFilter('DRAFT')">Drafts <span>{{ queueCounts().draft }}</span></button>
+        <button type="button" [class.filter-chip--active]="queueFilter() === 'VALIDATION'" (click)="setQueueFilter('VALIDATION')">Awaiting validation <span>{{ queueCounts().validation }}</span></button>
+        <button type="button" [class.filter-chip--active]="queueFilter() === 'NOT_READY'" (click)="setQueueFilter('NOT_READY')">Not ready <span>{{ queueCounts().notReady }}</span></button>
+      </div>
+      <div class="result-queue-table-wrap">
+        <table class="result-queue-table">
+          <thead><tr><th>Patient</th><th>Order / Sample ID</th><th>Ordered tests</th><th>Collected</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody>
+            @for (row of queueRows(); track row.sample.id) {
+              <tr>
+                <td><div class="queue-patient"><span class="queue-avatar">{{ queueInitials(row.sample) }}</span><span><strong>{{ row.sample.patientName }}</strong><small>{{ row.sample.patientId }} · {{ row.sample.gender || '—' | titlecase }}</small></span></div></td>
+                <td><strong class="queue-order-id">{{ row.sample.id }}</strong><small class="queue-subline">{{ row.sample.priority | titlecase }} priority</small></td>
+                <td><div class="queue-test-tags" [attr.aria-label]="row.sample.tests.length + ' ordered tests'">@for (test of row.sample.tests.slice(0, 4); track test) { <span>{{ test }}</span> }@if (row.sample.tests.length > 4) { <span class="queue-test-tags__more" tabindex="0" [attr.aria-label]="'Remaining tests: ' + row.sample.tests.slice(4).join(', ')">+{{ row.sample.tests.length - 4 }} more<span class="queue-test-tooltip" role="tooltip">{{ row.sample.tests.slice(4).join(', ') }}</span></span> }</div></td>
+                <td>{{ row.sample.collectedAt || '—' }}</td>
+                <td><span class="queue-status" [class.queue-status--ready]="row.state === 'READY'" [class.queue-status--draft]="row.state === 'DRAFT'" [class.queue-status--validation]="row.state === 'VALIDATION'" [class.queue-status--waiting]="row.state === 'NOT_READY'">{{ row.state === 'READY' ? 'Ready for entry' : row.state === 'DRAFT' ? 'Draft in progress' : row.state === 'VALIDATION' ? 'Awaiting validation' : (row.sample.status | titlecase) }}</span></td>
+                <td><button type="button" class="queue-enter-button" [disabled]="row.state === 'NOT_READY' || row.state === 'VALIDATION'" (click)="openQueueSample(row.sample)"><i class="ti" [ngClass]="row.state === 'DRAFT' ? 'ti-player-play' : 'ti-writing'"></i>{{ row.state === 'DRAFT' ? 'Resume' : row.state === 'VALIDATION' ? 'Submitted' : row.state === 'NOT_READY' ? 'Unavailable' : 'Enter results' }}</button></td>
+              </tr>
+            } @empty {
+              <tr><td colspan="6"><div class="result-queue-empty"><i class="ti ti-inbox"></i><strong>No matching samples</strong><span>Try another filter or search term.</span></div></td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <footer class="result-queue-footer"><span><i class="ti ti-info-circle"></i> Result entry is enabled only after the sample is marked Ready or Critical in Sample Tracking.</span><a routerLink="/dashboard/tracking">Open Sample Tracking <i class="ti ti-arrow-up-right"></i></a></footer>
+    </section>
+  } @else {
+
+  <section class="result-top-card lis-card" aria-label="Result entry">
+    <div class="result-top-layout">
+      <div class="result-top-heading">
+        <h1 class="page-title">Result Entry</h1>
+        <nav aria-label="Breadcrumb"><ol class="breadcrumb">
+          <li><a routerLink="/dashboard/home">Home</a></li>
+          <li><a routerLink="/dashboard/tracking">Tracking</a></li>
+          <li aria-current="page">{{ patient()?.firstName }} {{ patient()?.lastName }} — {{ sampleLabel() }}</li>
+        </ol></nav>
+      </div>
+      <div class="save-state" [class.save-state--dirty]="demoSavedState() === 'unsaved'" aria-live="polite">
+        <i class="ti" [ngClass]="demoSavedState() === 'unsaved' ? 'ti-cloud-upload' : 'ti-info-circle'"></i>
+        {{ demoSavedState() === 'unsaved' ? 'Demo changes not saved' : 'UI preview · mock data only' }}
+      </div>
+    </div>
+  </section>
+
+  @if (patient(); as p) {
+    <lis-patient-card [patient]="$any(p)" />
   }
 
   @if (showDemoNotice()) {
@@ -61,14 +107,15 @@
         </div>
       }
       @if (!leftCollapsed()) {
-        <label class="search-box"><i class="ti ti-search"></i><input type="search" placeholder="Search tests..." [value]="testSearch()" (input)="updateSearch($any($event.target).value)" aria-label="Search ordered tests">@if (testSearch()) { <button type="button" class="search-clear" (click)="updateSearch('')" aria-label="Clear test search"><i class="ti ti-x"></i></button> }</label>
+        <label class="search-box lis-search-control" [class.is-invalid]="testSearch().trim().length > 0 && visibleTests().length === 0"><i class="ti ti-search"></i><input type="search" placeholder="Search tests..." [value]="testSearch()" (input)="updateSearch($any($event.target).value)" aria-label="Search ordered tests">@if (testSearch()) { <button type="button" class="search-clear" (click)="updateSearch('')" aria-label="Clear test search"><i class="ti ti-x"></i></button> }</label>
         <div class="filter-row" role="group" aria-label="Filter ordered tests">
           @for (item of [{key:'ALL',label:'All',count:testCount()},{key:'PENDING',label:'Pending',count:pendingTests()},{key:'IN_PROGRESS',label:'In Progress',count:inProgressTests()},{key:'COMPLETED',label:'Completed',count:completedTests()}]; track item.key) {
             <button type="button" class="filter-chip" [class.filter-chip--active]="filter() === item.key" (click)="setFilter($any(item.key))">{{ item.label }} <span>{{ item.count }}</span></button>
           }
         </div>
         <div class="test-list" aria-label="Ordered test list">
-          @for (test of visibleTests(); track test.id) {
+          <span class="sr-only" role="status" aria-live="polite">{{ visibleTests().length }} matching tests</span>
+        @for (test of visibleTests(); track test.id) {
             <button type="button" class="test-item" [class.test-item--selected]="selectedTestId() === test.id" (click)="selectTest(test.id)" [attr.aria-current]="selectedTestId() === test.id ? 'true' : null">
               <span class="test-state" [class.test-state--complete]="effectiveTestStatus(test) === 'COMPLETED'" [class.test-state--progress]="effectiveTestStatus(test) === 'IN_PROGRESS'">
                 <i class="ti" [ngClass]="test.status === 'COMPLETED' ? 'ti-check' : test.status === 'IN_PROGRESS' ? 'ti-circle-dot' : 'ti-circle'"></i>
@@ -77,7 +124,7 @@
               <span class="test-status" [class.test-status--complete]="test.status === 'COMPLETED'" [class.test-status--progress]="test.status === 'IN_PROGRESS'">{{ testStatusLabel(effectiveTestStatus(test)) }}</span>
             </button>
           } @empty {
-            <div class="empty-state"><i class="ti ti-search-off"></i><strong>No matching tests</strong><span>Change the search or status filter</span></div>
+            <div class="empty-state" role="status" aria-live="polite"><i class="ti ti-search-off"></i><strong>No matching tests</strong><span>Change the search or status filter</span></div>
           }
         </div>
       }
@@ -87,7 +134,7 @@
         <div class="test-card-heading">
           <div class="test-title">
             <i class="ti ti-flask-2"></i>
-            <div><h2>{{ selectedTest().shortName }}</h2><small>Renal function assessment · {{ totalCount() }} parameters</small></div>
+            <div><h2>{{ selectedTest().shortName }}</h2><small>{{ assessmentTitle() }} · {{ totalCount() }} parameters</small></div>
           </div>
           <div class="test-heading-actions">
             <span class="entry-progress">{{ enteredCount() }} / {{ totalCount() }} parameters</span>
@@ -122,7 +169,7 @@
             </tbody>
           </table>
         </div>
-        <footer class="test-footer"><span><i class="ti ti-info-circle"></i> Reference ranges are for adults and may vary based on age, gender and lab policy.</span></footer>
+        <footer class="test-footer"><span><i class="ti ti-info-circle"></i> Demo intervals use adult sex profiles and pediatric age bands 1–12 where available. Unconfigured ages or parameters are marked unavailable; confirm all intervals against lab policy.</span></footer>
       </section>
     </main>
   </div>
@@ -145,9 +192,10 @@
     <div class="modal-backdrop" (click)="closeNotification()">
       <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="notification-title" (click)="$event.stopPropagation()">
         <header><div><h2 id="notification-title">Record Critical Notification</h2><p>Demo interaction — no notification will be sent</p></div><button type="button" class="icon-button" (click)="closeNotification()" aria-label="Close dialog"><i class="ti ti-x"></i></button></header>
-        <div class="dialog-content"><label for="notification-recipient">Referring physician / recipient</label><input id="notification-recipient" [value]="notificationDraft()?.recipient || ''" (input)="updateRecipient($any($event.target).value)" /><p>Critical result: {{ activeParameter()?.name || criticalParameters()[0]?.name }} · {{ activeParameter()?.value || criticalParameters()[0]?.value }}</p></div>
+        <div class="dialog-content"><label for="notification-recipient">Referring physician / recipient</label><input id="notification-recipient" [value]="notificationDraft()?.recipient || ''" (input)="updateRecipient($any($event.target).value)" /><p>Critical result: {{ activeParameter()?.name || criticalParameters()[0].name }} · {{ activeParameter()?.value || criticalParameters()[0].value }}</p></div>
         <footer><button type="button" class="secondary-button" (click)="closeNotification()">Cancel</button><button type="button" class="primary-action" (click)="confirmNotificationDemo()">Record in preview</button></footer>
       </section>
     </div>
+  }
   }
 </div>

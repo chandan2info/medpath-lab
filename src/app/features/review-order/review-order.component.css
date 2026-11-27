@@ -799,3 +799,367 @@
     font-weight: 800;
   }
 }
+
+
+/* Responsive card layout — Review Order.
+   Preserve the existing visual system; only adjust sizing, wrapping and stacking. */
+.page-heading-copy,
+.section-head,
+.section-head > div,
+.section-actions,
+.test-copy,
+.specimen-info,
+.order-total-inline,
+.review-actions {
+  min-width: 0;
+}
+
+@media (max-width: 1100px) and (min-width: 761px) {
+  :host {
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
+  .page-header {
+    align-items: flex-start;
+  }
+
+  .page-header > lis-workflow-stepper {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .priority-alert-row {
+    grid-template-columns: minmax(0, 1fr) 48px;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .priority-alert-row .priority-card {
+    height: auto;
+    min-height: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .priority-alert-row .priority-label {
+    flex: 0 0 auto;
+    min-width: 0;
+  }
+
+  .priority-alert-row .priority-options {
+    width: 100%;
+  }
+
+  .review-columns {
+    grid-template-columns: minmax(0, 1fr);
+    flex: none;
+    min-height: 0;
+  }
+
+  .selected-panel,
+  .specimen-panel {
+    height: auto;
+    min-height: 0;
+  }
+
+  .selected-test-list,
+  .specimen-list {
+    flex: 0 1 auto;
+    max-height: 380px;
+    min-height: 0;
+  }
+
+  .order-bottom-bar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .review-actions {
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 760px) {
+  .page-header {
+    align-items: flex-start;
+  }
+
+  .page-heading-copy {
+    flex: 1 1 100%;
+  }
+
+  .page-header > lis-workflow-stepper {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .patient-card {
+    min-width: 0;
+  }
+
+  .priority-alert-row {
+    grid-template-columns: minmax(0, 1fr) 44px;
+    align-items: start;
+  }
+
+  .priority-alert-row .priority-card {
+    min-width: 0;
+  }
+
+  .priority-options button {
+    min-width: 0;
+    flex-direction: column;
+    gap: 2px;
+    text-align: center;
+  }
+
+  .priority-options button span,
+  .priority-options button small {
+    overflow-wrap: anywhere;
+  }
+
+  .section-head {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .section-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .review-test-row {
+    grid-template-columns: 28px minmax(0, 1fr) auto 20px;
+    min-width: 0;
+  }
+
+  .test-copy strong,
+  .test-copy small,
+  .test-spec,
+  .specimen-info strong,
+  .specimen-info small {
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  .specimen-row {
+    min-width: 0;
+  }
+
+  .order-bottom-bar {
+    min-width: 0;
+  }
+
+  .order-total-inline {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+  }
+
+  .order-total-inline > div {
+    min-width: 0;
+    padding: 7px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 7px;
+  }
+
+  .order-total-inline > div:last-child {
+    border-right: 1px solid var(--border-color);
+  }
+
+  .order-total-inline .grand-total {
+    grid-column: 1 / -1;
+  }
+
+  .review-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .review-actions .back-action {
+    justify-content: center;
+    min-height: 34px;
+  }
+
+  .continue-btn {
+    width: 100%;
+    min-width: 0;
+    white-space: normal;
+    text-align: center;
+  }
+}
+
+@media (max-width: 380px) {
+  .priority-alert-row {
+    grid-template-columns: minmax(0, 1fr) 40px;
+    gap: 5px;
+  }
+
+  .priority-alert-row .priority-options {
+    gap: 4px;
+  }
+
+  .priority-alert-row .priority-options button {
+    padding-inline: 2px;
+  }
+
+  .review-test-row {
+    grid-template-columns: 25px minmax(0, 1fr) auto 18px;
+    gap: 4px;
+    padding-inline: 4px;
+  }
+
+  .test-type-icon,
+  .tube-icon {
+    width: 25px;
+    height: 25px;
+  }
+
+  .test-values strong {
+    font-size: 11px;
+  }
+
+  .order-total-inline {
+    gap: 6px;
+  }
+
+  .order-total-inline > div {
+    padding: 6px;
+  }
+
+  .alert-popover {
+    width: calc(100vw - 64px);
+  }
+}
+
+/* Alert panel final positioning: keep the launcher at the right edge and
+   render its panel to the left without crossing the priority/specimen layout. */
+.priority-alert-row .alert-popover-host {
+  position: relative;
+  inset: auto;
+  transform: none;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+.priority-alert-row .alert-popover {
+  position: fixed;
+  right: 84px;
+  left: auto;
+  top: calc(var(--header-height, 56px) + 14px);
+  bottom: auto;
+  transform: none;
+  width: min(410px, calc(100vw - 112px));
+  max-width: calc(100vw - 32px);
+  max-height: min(560px, calc(100dvh - var(--header-height, 56px) - 32px));
+  box-sizing: border-box;
+  overflow: hidden;
+  z-index: 2000;
+  background: var(--card-bg, var(--body-bg));
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .32);
+}
+
+.priority-alert-row .alert-popover-head,
+.priority-alert-row .alert-filters {
+  flex: 0 0 auto;
+}
+
+.priority-alert-row .alert-list {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+@media (max-width: 760px) {
+  .priority-alert-row .alert-popover {
+    right: 68px;
+    top: auto;
+    bottom: 110px;
+    width: min(390px, calc(100vw - 88px));
+    max-width: calc(100vw - 24px);
+    max-height: min(65vh, 520px);
+  }
+}
+
+@media (max-width: 480px) {
+  .priority-alert-row .alert-popover {
+    right: 58px;
+    bottom: 104px;
+    width: calc(100vw - 78px);
+    max-width: calc(100vw - 20px);
+  }
+}
+
+/* Final alert launcher/panel layout.
+   The launcher remains beside Order Priority. The panel opens above it,
+   aligned to the right edge of the viewport, never to the left of its host. */
+.priority-alert-row .alert-popover-host {
+  position: relative;
+  inset: auto;
+  transform: none;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+.priority-alert-row .alert-popover {
+  position: fixed;
+  inset: auto 16px auto auto;
+  top: calc(var(--header-height, 56px) + 12px);
+  transform: none;
+  width: min(410px, calc(100vw - 32px));
+  max-width: calc(100vw - 32px);
+  max-height: min(560px, calc(100dvh - var(--header-height, 56px) - 24px));
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  overflow: hidden;
+  z-index: 2000;
+  background: var(--card-bg, var(--body-bg));
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .32);
+}
+
+.priority-alert-row .alert-popover-head,
+.priority-alert-row .alert-filters {
+  flex: 0 0 auto;
+}
+
+.priority-alert-row .alert-list {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+@media (max-width: 760px) {
+  .priority-alert-row .alert-popover {
+    inset: auto 12px 88px auto;
+    width: min(390px, calc(100vw - 24px));
+    max-width: calc(100vw - 24px);
+    max-height: min(65vh, 520px);
+  }
+}
+
+@media (max-width: 480px) {
+  .priority-alert-row .alert-popover {
+    inset: auto 10px 80px auto;
+    width: calc(100vw - 20px);
+    max-width: calc(100vw - 20px);
+  }
+}
