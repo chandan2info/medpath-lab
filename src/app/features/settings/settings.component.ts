@@ -84,6 +84,27 @@ import { PdfPreferencesService } from '../../core/services/pdf-preferences.servi
         </div>
       </div>
 
+      <div class="cursor-shape-row">
+        <div class="cursor-color-copy">
+          <span class="theme-label">Cursor shape</span>
+          <span class="theme-desc">Choose the pointer style used across MedPath.</span>
+        </div>
+        <div class="cursor-shape-options" role="radiogroup" aria-label="Cursor shape">
+          <button type="button" class="cursor-shape-option" [class.selected]="cursor.shape() === 'classic'"
+            role="radio" [attr.aria-checked]="cursor.shape() === 'classic'" (click)="cursor.setShape('classic')">
+            <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 3 L5 25 L11 19 L16 29 L21 26 L16 16 L25 16 Z" [attr.fill]="cursor.color()" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+            <span>Classic</span>
+            @if (cursor.shape() === 'classic') { <i class="ti ti-circle-check-filled" aria-hidden="true"></i> }
+          </button>
+          <button type="button" class="cursor-shape-option" [class.selected]="cursor.shape() === 'soft-pointer'"
+            role="radio" [attr.aria-checked]="cursor.shape() === 'soft-pointer'" (click)="cursor.setShape('soft-pointer')">
+            <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 3.5 C4 1.4 6.5 .2 8.2 1.6 L28 17.4 C31.4 20.1 29.5 25.6 25.2 25.6 H18.7 C16.3 25.6 14.1 26.7 12.6 28.6 L8.6 29.5 C5.9 32 .8 30.7 .6 27.9 Z" [attr.fill]="cursor.color()" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+            <span>Soft Pointer</span>
+            @if (cursor.shape() === 'soft-pointer') { <i class="ti ti-circle-check-filled" aria-hidden="true"></i> }
+          </button>
+        </div>
+      </div>
+
       <div class="cursor-color-row">
         <div class="cursor-color-copy">
           <span class="theme-label">Cursor color</span>
