@@ -84,6 +84,39 @@ import { PdfPreferencesService } from '../../core/services/pdf-preferences.servi
         </div>
       </div>
 
+      <div class="cursor-shape-row">
+        <div class="cursor-color-copy">
+          <span class="theme-label">Cursor shape</span>
+          <span class="theme-desc">Choose the pointer style used across MedPath.</span>
+        </div>
+        <div class="cursor-shape-options" role="radiogroup" aria-label="Cursor shape">
+          <button type="button" class="cursor-shape-option" [class.selected]="cursor.shape() === 'classic'"
+            role="radio" [attr.aria-checked]="cursor.shape() === 'classic'" (click)="cursor.setShape('classic')">
+            <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 3 L5 25 L11 19 L16 29 L21 26 L16 16 L25 16 Z" [attr.fill]="cursor.shape() === 'classic' ? cursor.color() : 'var(--text-secondary)'" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+            <span>Classic</span>
+            @if (cursor.shape() === 'classic') { <i class="ti ti-circle-check-filled" aria-hidden="true"></i> }
+          </button>
+          <button type="button" class="cursor-shape-option" [class.selected]="cursor.shape() === 'soft-pointer'"
+            role="radio" [attr.aria-checked]="cursor.shape() === 'soft-pointer'" (click)="cursor.setShape('soft-pointer')">
+            <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 3.5 C4 1.4 6.5 .2 8.2 1.6 L28 17.4 C31.4 20.1 29.5 25.6 25.2 25.6 H18.7 C16.3 25.6 14.1 26.7 12.6 28.6 L8.6 29.5 C5.9 32 .8 30.7 .6 27.9 Z" [attr.fill]="cursor.shape() === 'soft-pointer' ? cursor.color() : 'var(--text-secondary)'" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+            <span>Soft Pointer</span>
+            @if (cursor.shape() === 'soft-pointer') { <i class="ti ti-circle-check-filled" aria-hidden="true"></i> }
+          </button>
+          <button type="button" class="cursor-shape-option" [class.selected]="cursor.shape() === 'rounded'"
+            role="radio" [attr.aria-checked]="cursor.shape() === 'rounded'" (click)="cursor.setShape('rounded')">
+            <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 3.5 Q6 1.5 8 3 L27 17 Q31 20 26 23 L19 23 Q17 23 15 26 L12 30 Q9 33 8 28 Z" [attr.fill]="cursor.shape() === 'rounded' ? cursor.color() : 'var(--text-secondary)'" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+            <span>Rounded</span>
+            @if (cursor.shape() === 'rounded') { <i class="ti ti-circle-check-filled" aria-hidden="true"></i> }
+          </button>
+          <button type="button" class="cursor-shape-option" [class.selected]="cursor.shape() === 'compact'"
+            role="radio" [attr.aria-checked]="cursor.shape() === 'compact'" (click)="cursor.setShape('compact')">
+            <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 3 L5 25 L10 20 L14 28 L18 26 L14 18 L23 18 Z" [attr.fill]="cursor.shape() === 'compact' ? cursor.color() : 'var(--text-secondary)'" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+            <span>Compact</span>
+            @if (cursor.shape() === 'compact') { <i class="ti ti-circle-check-filled" aria-hidden="true"></i> }
+          </button>
+        </div>
+      </div>
+
       <div class="cursor-color-row">
         <div class="cursor-color-copy">
           <span class="theme-label">Cursor color</span>
@@ -187,6 +220,42 @@ import { PdfPreferencesService } from '../../core/services/pdf-preferences.servi
     .theme-label { font-size:13px; font-weight:600; color:var(--text-primary); }
     .theme-desc { font-size:11.5px; color:var(--text-secondary); }
     .theme-check { position:absolute; top:8px; right:8px; font-size:16px; color:var(--primary-deeper); }
+    .cursor-shape-row {
+      display:flex; flex-direction:column; align-items:flex-start; gap:12px;
+      margin-top:var(--space-5); padding-top:var(--space-5); border-top:1px solid var(--border);
+    }
+    .cursor-shape-options {
+      display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px;
+      width:100%; max-width:620px;
+    }
+    .cursor-shape-option {
+      position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:9px; min-width:0; min-height:112px; padding:12px;
+      border:1px solid var(--border); border-radius:12px;
+      background:var(--bg-surface-alt); color:var(--text-secondary);
+      font:inherit; font-size:12px; font-weight:600; line-height:1.3;
+      cursor:pointer; transition:border-color .2s ease,background .2s ease,box-shadow .2s ease,transform .2s ease;
+    }
+    .cursor-shape-option svg {
+      display:block; width:38px; height:38px; max-width:38px; max-height:38px;
+      flex:0 0 38px; overflow:visible;
+    }
+    .cursor-shape-option span { display:block; white-space:nowrap; }
+    .cursor-shape-option:hover { border-color:var(--primary-light); transform:translateY(-1px); }
+    .cursor-shape-option.selected {
+      border-color:var(--primary-deeper); background:var(--primary-xlight);
+      color:var(--text-primary);
+      box-shadow:0 0 0 2px color-mix(in srgb,var(--primary-deeper) 12%,transparent);
+    }
+    .cursor-shape-option i {
+      position:absolute; top:8px; right:8px; color:var(--primary-deeper); font-size:15px;
+    }
+    .cursor-shape-option:focus-visible { outline:2px solid var(--primary-deeper); outline-offset:3px; }
+    @media(max-width:560px) {
+      .cursor-shape-options { grid-template-columns:repeat(2,minmax(0,1fr)); max-width:100%; }
+      .cursor-shape-option { min-height:104px; padding:10px 6px; }
+      .cursor-shape-option svg { width:38px; height:38px; flex-basis:38px; }
+    }
     .mode-row,.cursor-enable-row,.cursor-color-row {
       display:flex; align-items:center; justify-content:space-between; gap:var(--space-4);
       margin-top:var(--space-5); padding-top:var(--space-5); border-top:1px solid var(--border);
@@ -266,7 +335,7 @@ import { PdfPreferencesService } from '../../core/services/pdf-preferences.servi
     @media(max-width:560px) {
       .settings-card { padding:16px; }
       .theme-grid { grid-template-columns:minmax(0,1fr); }
-      .cursor-enable-row,.cursor-color-row { align-items:flex-start; flex-direction:column; }
+      .cursor-enable-row,.cursor-color-row,.cursor-shape-row { align-items:flex-start; flex-direction:column; }
       .color-picker-control { flex-wrap:wrap; }
     }
   `]

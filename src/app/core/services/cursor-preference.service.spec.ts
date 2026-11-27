@@ -4,6 +4,7 @@ import { CursorPreferenceService } from './cursor-preference.service';
 describe('CursorPreferenceService', () => {
   const storageKey = 'medpath.customCursor.enabled';
   const colorKey = 'medpath.customCursor.color';
+  const shapeKey = 'medpath.customCursor.shape';
 
   beforeEach(() => {
     document.documentElement.classList.remove('cursor-custom-enabled');
@@ -75,6 +76,43 @@ describe('CursorPreferenceService', () => {
     expect(service.color()).toBe('#2563eb');
     expect(Storage.prototype.setItem).toHaveBeenCalledWith(colorKey, '#2563eb');
     expect(document.querySelector('[data-medpath-cursor-color]')?.textContent).toContain('%232563eb');
+  });
+
+  it('defaults to the classic cursor shape and persists a selected soft pointer shape', () => {
+    const service = TestBed.inject(CursorPreferenceService);
+    expect(service.shape()).toBe('classic');
+    service.setShape('soft-pointer');
+    expect(service.shape()).toBe('soft-pointer');
+    expect(Storage.prototype.setItem).toHaveBeenCalledWith(shapeKey, 'soft-pointer');
+    expect(document.querySelector('[data-medpath-cursor-color]')?.textContent).toContain('M4 3.5');
+  });
+
+  it('supports and persists the rounded cursor shape', () => {
+    const service = TestBed.inject(CursorPreferenceService);
+    service.setShape('rounded');
+    expect(service.shape()).toBe('rounded');
+    expect(Storage.prototype.setItem).toHaveBeenCalledWith(shapeKey, 'rounded');
+    expect(document.querySelector('[data-medpath-cursor-color]')?.textContent).toContain('M6%203.5');
+  });
+
+  it('supports the compact cursor shape', () => {
+    const service = TestBed.inject(CursorPreferenceService);
+    service.setShape('compact');
+    expect(service.shape()).toBe('compact');
+    expect(document.querySelector('[data-medpath-cursor-color]')?.textContent).toContain('M5%203');
+  });
+
+  it('restores a selected cursor shape from local storage', () => {
+    (Storage.prototype.getItem as jasmine.Spy).and.callFake((key: string) => key === shapeKey ? 'soft-pointer' : null);
+    const service = TestBed.inject(CursorPreferenceService);
+    expect(service.shape()).toBe('soft-pointer');
+    expect(document.querySelector('[data-medpath-cursor-color]')?.textContent).toContain('M4 3.5');
+  });
+
+  it('synchronizes cursor shape changes received from another browser tab', () => {
+    const service = TestBed.inject(CursorPreferenceService);
+    window.dispatchEvent(new StorageEvent('storage', { key: shapeKey, newValue: 'soft-pointer' }));
+    expect(service.shape()).toBe('soft-pointer');
   });
 
   it('ignores invalid cursor colors', () => {
