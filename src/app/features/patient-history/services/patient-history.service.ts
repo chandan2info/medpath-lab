@@ -7,7 +7,7 @@ export interface HistoryVisitRecord {
   refDoctor: string; amount: number; keyFinding: string; hasCritical: boolean;
   resultStatus: 'Completed' | 'Pending'; paymentStatus: 'Paid' | 'Partial' | 'Unpaid';
   reports: { name: string; status: 'Generated' | 'Dispatched' | 'Pending'; reportId?: string }[];
-  results: { parameter: string; value: number; unit: string; reference: string; date: string }[];
+  results: { parameter: string; value: number; unit: string; reference: string; flag: 'high'|'low'|'critical'|'normal'|'unavailable'; date: string }[];
   orderId: string; sampleId: string | null; reportId: string | null; invoiceRecordId: string | null;
 }
 export interface HistoryPatientRecord {
@@ -53,12 +53,19 @@ export class PatientHistoryService {
           const [testId, ...parameterIdParts] = parameterKey.split('.');
           const parameterId = parameterIdParts.join('.');
           const testName = this.flow.allTests.find(test => test.id === testId)?.name ?? testId;
-          const fallbackParameterName = parameterId.replace(/[-_]/g, ' ').replace(/\b[a-z]/g, letter => letter.toUpperCase());
+          const fallbackParameterName = parameterId.replace(/[-_]/g, ' ').replace(/\\b[a-z]/g, letter => letter.toUpperCase());
+          const details = result?.parameterDetails?.[parameterKey];
+          const parsedValue = Number(String(raw).replace(/,/g, '').trim());
           return {
             parameter: result?.parameterLabels?.[parameterKey] || (parameterId ? `${testName} · ${fallbackParameterName}` : testName),
-            value: Number(raw), unit: '', reference: 'Not recorded', date: date.toLocaleDateString('en-IN')
+            value: parsedValue,
+            unit: details?.unit || 'Not recorded',
+            reference: details?.range || 'Not recorded',
+            flag: details?.flag ?? 'unavailable' as const,
+            date: date.toLocaleDateString('en-IN')
           };
         }).filter(row => Number.isFinite(row.value));
+        const hasCritical = resultRows.some(row => row.flag === 'critical');
         patient.visits.push({
           date: date.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }),
           time: date.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' }),
@@ -73,7 +80,7 @@ export class PatientHistoryService {
             : sample?.status === 'collected' ? 'Sample collected — awaiting lab receipt'
             : sample ? 'Sample status: ' + sample.status.replace(/-/g, ' ')
             : 'Order created — sample not yet collected',
-          hasCritical: false, resultStatus: report || result?.status === 'validated' ? 'Completed' : 'Pending',
+          hasCritical, resultStatus: report || result?.status === 'validated' ? 'Completed' : 'Pending',
           paymentStatus: invoice?.status === 'paid' ? 'Paid' : invoice?.status === 'partial' ? 'Partial' : 'Unpaid',
           reports: report
             ? [{ name: tests.join(', '), status: report.status === 'dispatched' ? 'Dispatched' : 'Generated', reportId: report.id }]
