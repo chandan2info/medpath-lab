@@ -14,7 +14,6 @@ import { PatientFlowService } from '../../core/services/patient-flow.service';
 import { SampleTrackingService } from '../../core/services/sample-tracking.service';
 import { ResultFlag, Sample } from '../../shared/models/lis.models';
 import { PatientCardComponent } from '../../shared/components/patient-card/patient-card.component';
-import { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';
 import { ResultEntryDataService, MockOrderedTest, MockParameter, NoteDraft, NotificationDraft, TestFilter, TestStatus, flagFromValue } from '../../core/services/result-entry-data.service';
 
 const EMPTY_ORDERED_TEST: MockOrderedTest = {
@@ -36,7 +35,6 @@ export class ResultEntryComponent implements OnInit {
   protected readonly flow = inject(PatientFlowService);
   private readonly sampleSvc = inject(SampleTrackingService);
   private readonly resultData = inject(ResultEntryDataService);
-  private readonly workflowStore = inject(LabWorkflowMockService);
 
   readonly isQueueView = computed(() => !this.sampleId());
   readonly queueSearch = signal('');
@@ -265,22 +263,10 @@ export class ResultEntryComponent implements OnInit {
     const request=submit?this.resultData.submitForValidation(record):this.resultData.saveDraft(record);
     request.subscribe({
       next:()=>{
-        const values = Object.fromEntries(this.tests().flatMap(test => test.parameters.map(parameter => [`${test.id}.${parameter.id}`, parameter.value])));
-        try {
-          const parameterLabels = Object.fromEntries(this.tests().flatMap(test => test.parameters.map(parameter => [`${test.id}.${parameter.id}`, parameter.name])));
-          const parameterDetails = Object.fromEntries(this.tests().flatMap(test => test.parameters.map(parameter => [`${test.id}.${parameter.id}`, {
-            unit: parameter.unit, range: parameter.range, flag: parameter.flag, method: parameter.method,
-          }])));
-          this.workflowStore.saveResults(sampleId, values, parameterLabels, parameterDetails);
-          if (submit) {
-            this.workflowStore.submitResults(sampleId);
-          }
-          this.demoSavedState.set('idle');
-        } catch (error) {
+        this.demoSavedState.set('idle');{
           this.demoSavedState.set('unsaved');
           this.demoNoticeMessage.set(error instanceof Error ? error.message : 'Unable to update workflow status.');
           this.showDemoNotice.set(true);
-        }
       },
       error:()=>{this.demoSavedState.set('unsaved');this.demoNoticeMessage.set('Unable to save results. Please retry.');this.showDemoNotice.set(true);}
     });

@@ -29,6 +29,11 @@ export interface MockLabSample {
   tracking?: { mobile?: string; refDoctor?: string; visitType?: 'walk-in'|'appointment'|'home-visit'; etaLabel: string; tubes: Array<{id:string;color:string;label:string;tests:string[]}>; rejectionReason?: string };
   trackingStatus?: 'pending'|'received'|'processing'|'ready'|'critical'|'rejected'|'dispatched';
 }
+export interface MockResultEntryParameter { id:string; name:string; method:string; value:string; unit:string; range:string; flag:'normal'|'high'|'low'|'critical'|'unavailable'; isCalculated?:boolean; note?:string; previousValue?:string; criticalLow?:number; criticalHigh?:number; }
+export interface MockResultEntryTest { id:string; code:string; name:string; shortName:string; status:'PENDING'|'IN_PROGRESS'|'COMPLETED'; parameters:MockResultEntryParameter[]; }
+export interface MockResultNotification { parameterId:string; parameterName:string; value:string; unit:string; recipient:string; channel:string; recordedAt:string; }
+export interface MockResultEntryData { tests:MockResultEntryTest[]; notifications:MockResultNotification[]; }
+
 export interface MockResultRecord {
   id: string; sampleId: string; status: MockResultStatus; values: Record<string,string>; parameterLabels?: Record<string,string>;
   parameterDetails?: Record<string,{ unit:string; range:string; flag:'normal'|'high'|'low'|'critical'|'unavailable'; method:string }>;
@@ -202,6 +207,32 @@ export class LabWorkflowMockService {
     const updated = { ...sample, status, trackingStatus };
     this.persist({ ...current, samples: current.samples.map(s => s.id === sampleId ? updated : s) });
     return updated;
+  }
+
+  saveResultEntry(sampleId: string, entryData: MockResultEntryData): MockResultRecord {
+    const current = this.state();
+    if (!current.samples.some(sample => sample.id === sampleId)) throw new Error('Sample not found.');
+    const existing = current.results.find(result => result.sampleId === sampleId);
+    const values: Record<string,string> = {};
+    const parameterLabels: Record<string,string> = {};
+    const parameterDetails: NonNullable<MockResultRecord['parameterDetails']> = {};
+    for (const test of entryData.tests) for (const parameter of test.parameters) {
+      const key = `${test.id}.${parameter.id}`;
+      values[key] = parameter.value; parameterLabels[key] = parameter.name;
+      parameterDetails[key] = { unit: parameter.unit, range: parameter.range, flag: parameter.flag, method: parameter.method };
+    }
+    const result: MockResultRecord = {
+      id: existing?.id ?? this.id('RES'), sampleId,
+      status: existing?.status === 'awaiting-validation' || existing?.status === 'validated' ? existing.status : 'draft',
+      values, parameterLabels, parameterDetails, entryData, updatedAt: new Date().toISOString(),
+      reviewer: existing?.reviewer, reviewedAt: existing?.reviewedAt, reviewNote: existing?.reviewNote
+    };
+    this.persist({
+      ...current, results: [result, ...current.results.filter(item => item.sampleId !== sampleId)],
+      samples: current.samples.map(sample => sample.id === sampleId && sample.status !== 'validated'
+        ? { ...sample, status: result.status === 'awaiting-validation' ? 'awaiting-validation' : 'results-entered', trackingStatus: 'ready' } : sample)
+    });
+    return result;
   }
 
   saveResults(sampleId: string, values: Record<string,string>, parameterLabels: Record<string,string> = {}, parameterDetails: MockResultRecord['parameterDetails'] = {}): MockResultRecord {

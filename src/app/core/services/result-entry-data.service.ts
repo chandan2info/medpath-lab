@@ -1,36 +1,16 @@
 import { Injectable, inject } from '@angular/core';
-import { MockStorageService } from '../data-access/mock-storage.service';
 import { Observable, of } from 'rxjs';
 import { LabTest, ResultFlag, Sample } from '../../shared/models/lis.models';
+import { LabWorkflowMockService, MockResultEntryData } from './lab-workflow-mock.service';
+import { MockStorageService } from '../data-access/mock-storage.service';
 
 export type TestStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
 export type TestFilter = 'ALL' | TestStatus;
 export type WorkflowStatus = 'COMPLETED' | 'PENDING';
-export interface MockParameter {
-  id: string;
-  name: string;
-  method: string;
-  value: string;
-  unit: string;
-  range: string;
-  flag: ResultFlag;
-  isCalculated?: boolean;
-  note?: string;
-  previousValue?: string;
-  /** Lab-configured critical limits; distinct from the ordinary reference range. */
-  criticalLow?: number;
-  criticalHigh?: number;
-}
-export interface MockOrderedTest {
-  id: string;
-  code: string;
-  name: string;
-  shortName: string;
-  status: TestStatus;
-  parameters: MockParameter[];
-}
-export interface NoteDraft { parameterId: string; text: string; }
-export interface NotificationDraft { parameterId: string; recipient: string; channel: string; }
+export interface MockParameter { id:string; name:string; method:string; value:string; unit:string; range:string; flag:ResultFlag; isCalculated?:boolean; note?:string; previousValue?:string; criticalLow?:number; criticalHigh?:number; }
+export interface MockOrderedTest { id:string; code:string; name:string; shortName:string; status:TestStatus; parameters:MockParameter[]; }
+export interface NoteDraft { parameterId:string; text:string; }
+export interface NotificationDraft { parameterId:string; recipient:string; channel:string; }
 
 const PARAMETER_TEMPLATES: Record<string, Array<Omit<MockParameter, 'value' | 'flag'>>> = {
   KFT: [
@@ -144,103 +124,58 @@ export const createDemoTests = (testIds:string[],catalogue:LabTest[],gender?:str
   });
 };
 
+
 export interface ResultEntryRecord {
-  sampleId: string;
-  tests: MockOrderedTest[];
-  workflowStatus: 'DRAFT' | 'SUBMITTED_FOR_VALIDATION';
-  updatedAt: string;
-  notifications?: Array<{ parameterId: string; parameterName: string; value: string; unit: string; recipient: string; channel: string; recordedAt: string }>;
+  sampleId:string; tests:MockOrderedTest[]; workflowStatus:'DRAFT'|'SUBMITTED_FOR_VALIDATION'; updatedAt:string;
+  notifications?:Array<{parameterId:string;parameterName:string;value:string;unit:string;recipient:string;channel:string;recordedAt:string}>;
 }
 
-/**
- * Result-entry data boundary.
- * The current implementation is a local mock repository. When the LIS API
- * is ready, replace these methods with HttpClient calls while keeping the
- * component contract and result-entry view model unchanged.
- */
-@Injectable({ providedIn: 'root' })
+@Injectable({providedIn:'root'})
 export class ResultEntryDataService {
-  private readonly storagePrefix = 'medpath.result-entry.v1';
-  private readonly storage = inject(MockStorageService);
+  private readonly repository=inject(LabWorkflowMockService);
+  private readonly legacyStorage=inject(MockStorageService);
+  private readonly storagePrefix='medpath.result-entry.v1';
 
-  loadForSample(sample: Sample, catalogue: LabTest[]): Observable<ResultEntryRecord> {
-    const saved = this.read(sample.id);
-    const configuredTests = createDemoTests(sample.tests, catalogue, sample.gender, sample.dob, sample.collectedAt);
-    if (saved) {
-      // Existing browser drafts may predate critical-limit configuration.
-      // Rehydrate threshold metadata without overwriting the user's entered values.
-      const tests = saved.tests.map(test => {
-        const configured = configuredTests.find(item => item.id === test.id);
-        return {
-          ...test,
-          parameters: test.parameters.map(parameter => {
-            const defaults = configured?.parameters.find(item => item.id === parameter.id);
-            return {
-              ...parameter,
-              method: defaults?.method ?? parameter.method,
-              unit: defaults?.unit ?? parameter.unit,
-              range: defaults?.range ?? parameter.range,
-              flag: defaults ? flagForProfile(parameter.value, defaults.range, defaults.criticalLow, defaults.criticalHigh) : parameter.flag,
-              criticalLow: parameter.criticalLow ?? defaults?.criticalLow,
-              criticalHigh: parameter.criticalHigh ?? defaults?.criticalHigh,
-            };
-          }),
-        };
-      });
-      return of({ ...saved, tests });
+  loadForSample(sample:Sample,catalogue:LabTest[]):Observable<ResultEntryRecord>{
+    let saved=this.fromCanonical(sample.id);
+    if(!saved){
+      const legacy=this.legacyStorage.read<ResultEntryRecord|null>(this.storagePrefix+':'+sample.id,null,
+        (value):value is ResultEntryRecord=>!!value&&typeof value==='object'&&(value as ResultEntryRecord).sampleId===sample.id&&Array.isArray((value as ResultEntryRecord).tests));
+      if(legacy){saved=legacy;this.persistCanonical(legacy);}
     }
-    return of({
-      sampleId: sample.id,
-      tests: configuredTests,
-      workflowStatus: 'DRAFT',
-      updatedAt: new Date().toISOString(),
-    });
+    const configured=createDemoTests(sample.tests,catalogue,sample.gender,sample.dob,sample.collectedAt);
+    if(!saved)return of({sampleId:sample.id,tests:configured,workflowStatus:'DRAFT',updatedAt:new Date().toISOString(),notifications:[]});
+    const tests=saved.tests.map(test=>{const defaults=configured.find(item=>item.id===test.id);return {...test,parameters:test.parameters.map(parameter=>{
+      const fallback=defaults?.parameters.find(item=>item.id===parameter.id);
+      return {...parameter,method:fallback?.method??parameter.method,unit:fallback?.unit??parameter.unit,range:fallback?.range??parameter.range,
+        flag:fallback?flagForProfile(parameter.value,fallback.range,fallback.criticalLow,fallback.criticalHigh):parameter.flag,
+        criticalLow:parameter.criticalLow??fallback?.criticalLow,criticalHigh:parameter.criticalHigh??fallback?.criticalHigh};
+    })};});
+    return of({...saved,tests});
   }
 
-  getSavedRecord(sampleId: string): ResultEntryRecord | null {
-    return this.read(sampleId);
+  getSavedRecord(sampleId:string):ResultEntryRecord|null{return this.fromCanonical(sampleId);}
+  saveDraft(record:ResultEntryRecord):Observable<ResultEntryRecord>{
+    const next={...record,notifications:record.notifications??[],workflowStatus:'DRAFT' as const,updatedAt:new Date().toISOString()};
+    this.persistCanonical(next);return of(next);
   }
-
-  saveDraft(record: ResultEntryRecord): Observable<ResultEntryRecord> {
-    const existing = this.read(record.sampleId);
-    const next = { ...existing, ...record, notifications: existing?.notifications ?? [], workflowStatus: 'DRAFT' as const, updatedAt: new Date().toISOString() };
-    this.write(next);
-    return of(next);
+  submitForValidation(record:ResultEntryRecord):Observable<ResultEntryRecord>{
+    const next={...record,notifications:record.notifications??[],workflowStatus:'SUBMITTED_FOR_VALIDATION' as const,updatedAt:new Date().toISOString()};
+    this.persistCanonical(next);this.repository.submitResults(record.sampleId);return of(next);
   }
-
-  submitForValidation(record: ResultEntryRecord): Observable<ResultEntryRecord> {
-    const existing = this.read(record.sampleId);
-    const next = { ...existing, ...record, notifications: existing?.notifications ?? [], workflowStatus: 'SUBMITTED_FOR_VALIDATION' as const, updatedAt: new Date().toISOString() };
-    this.write(next);
-    return of(next);
+  recordNotification(record:ResultEntryRecord,notification:{parameterId:string;parameterName:string;value:string;unit:string;recipient:string;channel:string}):Observable<ResultEntryRecord>{
+    const current=this.fromCanonical(record.sampleId);
+    const next={...record,notifications:[...(current?.notifications??[]),{...notification,recordedAt:new Date().toISOString()}],updatedAt:new Date().toISOString()};
+    this.persistCanonical(next);return of(next);
   }
-
-  recordNotification(record: ResultEntryRecord, notification: { parameterId: string; parameterName: string; value: string; unit: string; recipient: string; channel: string }): Observable<ResultEntryRecord> {
-    const current = this.read(record.sampleId);
-    const next: ResultEntryRecord = {
-      ...current,
-      ...record,
-      notifications: [...(current?.notifications ?? []), { ...notification, recordedAt: new Date().toISOString() }],
-      updatedAt: new Date().toISOString(),
-    };
-    this.write(next);
-    return of(next);
+  private fromCanonical(sampleId:string):ResultEntryRecord|null{
+    const result=this.repository.results().find(item=>item.sampleId===sampleId);
+    if(!result?.entryData)return null;
+    return {sampleId,tests:result.entryData.tests as MockOrderedTest[],
+      workflowStatus:result.status==='awaiting-validation'||result.status==='validated'?'SUBMITTED_FOR_VALIDATION':'DRAFT',
+      updatedAt:result.updatedAt,notifications:result.entryData.notifications??[]};
   }
-
-  private read(sampleId: string): ResultEntryRecord | null {
-    const key = this.storagePrefix + ':' + sampleId;
-    const parsed = this.storage.read<ResultEntryRecord | null>(
-      key,
-      null,
-      (value): value is ResultEntryRecord => !!value
-        && typeof value === 'object'
-        && (value as ResultEntryRecord).sampleId === sampleId
-        && Array.isArray((value as ResultEntryRecord).tests),
-    );
-    return parsed;
-  }
-
-  private write(record: ResultEntryRecord): void {
-    this.storage.write(this.storagePrefix + ':' + record.sampleId, record);
+  private persistCanonical(record:ResultEntryRecord):void{
+    this.repository.saveResultEntry(record.sampleId,{tests:record.tests,notifications:record.notifications??[]} as MockResultEntryData);
   }
 }
