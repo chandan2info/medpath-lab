@@ -12,6 +12,7 @@ import { map } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
 import { SampleTrackingService } from '../../core/services/sample-tracking.service';
+import { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';
 import { ResultFlag, Sample } from '../../shared/models/lis.models';
 import { PatientCardComponent } from '../../shared/components/patient-card/patient-card.component';
 import { ResultEntryDataService, MockOrderedTest, MockParameter, NoteDraft, NotificationDraft, TestFilter, TestStatus, flagFromValue } from '../../core/services/result-entry-data.service';
@@ -35,6 +36,7 @@ export class ResultEntryComponent implements OnInit {
   protected readonly flow = inject(PatientFlowService);
   private readonly sampleSvc = inject(SampleTrackingService);
   private readonly resultData = inject(ResultEntryDataService);
+  private readonly workflowStore = inject(LabWorkflowMockService);
 
   readonly isQueueView = computed(() => !this.sampleId());
   readonly queueSearch = signal('');
