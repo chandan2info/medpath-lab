@@ -81,8 +81,7 @@
         <i class="ti ti-bell" aria-hidden="true"></i>
         @if (activeAlerts().length) { <span class="notif-dot" aria-hidden="true"></span> }
       </button>
-      @if (alertsOpen()) {
-        <section class="topbar-alert-popover" role="dialog" aria-label="Lab alerts and notices">
+      <section #alertsPopover popover="manual" class="topbar-alert-popover" role="dialog" aria-label="Lab alerts and notices">
           <header class="topbar-alert-popover__header">
             <div><i class="ti ti-bell-ringing" aria-hidden="true"></i><strong>Lab alerts</strong><span>{{ activeAlerts().length }}</span></div>
             <button type="button" aria-label="Close alerts" data-popover-close (click)="closeAlerts()"><i class="ti ti-x" aria-hidden="true"></i></button>
@@ -99,7 +98,6 @@
           </div>
           <p class="topbar-alert-note">Demo alerts from local sample data.</p>
         </section>
-      }
     </div>
 
     <a routerLink="/dashboard/registration" class="lis-topbar-cta" aria-label="Register new patient">

@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, ChangeDetectionStrategy, HostListener } from '@angular/core';
+import { Component, inject, signal, computed, ChangeDetectionStrategy, HostListener, ElementRef, ViewChild } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { SidebarService }    from '../../../core/services/sidebar.service';
@@ -35,6 +35,7 @@ export class TopbarComponent {
   readonly searchOpen = signal(false);
   readonly highlightedSearchIndex = signal(0);
   readonly alertsOpen = signal(false);
+  @ViewChild('alertsPopover') private alertsPopover?: ElementRef<HTMLElement>;
   readonly activeAlerts = this.dashboard.alerts;
   readonly searchResults = computed<SearchResult[]>(() => {
     const query = this.searchQuery().trim().toLowerCase();
@@ -105,8 +106,26 @@ export class TopbarComponent {
     }
   }
 
-  toggleAlerts(): void { this.alertsOpen.update(open => !open); }
-  closeAlerts(): void { this.alertsOpen.set(false); }
+  toggleAlerts(): void {
+    const popover = this.alertsPopover?.nativeElement as (HTMLElement & { showPopover?: () => void; hidePopover?: () => void }) | undefined;
+    if (!popover) return;
+    if (this.alertsOpen()) {
+      this.closeAlerts();
+      return;
+    }
+    try {
+      popover.showPopover?.();
+      this.alertsOpen.set(true);
+    } catch {
+      this.alertsOpen.set(false);
+    }
+  }
+
+  closeAlerts(): void {
+    const popover = this.alertsPopover?.nativeElement as (HTMLElement & { hidePopover?: () => void }) | undefined;
+    if (popover?.matches(':popover-open')) popover.hidePopover?.();
+    this.alertsOpen.set(false);
+  }
 
   @HostListener('document:click', ['$event'])
   closePopoversOutside(event: MouseEvent): void {

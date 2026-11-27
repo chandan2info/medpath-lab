@@ -106,7 +106,44 @@
 .topbar-search-empty { padding:14px 12px; color:var(--text-secondary); font-size:12px; }
 
 .topbar-alerts { position:relative; flex:0 0 34px; }
-.topbar-alert-popover { position:absolute; z-index:1200; top:calc(100% + 12px); right:-12px; width:min(390px,calc(100vw - 24px)); max-height:min(560px,calc(100vh - 90px)); overflow:hidden; display:flex; flex-direction:column; border:1px solid var(--border-color); border-radius:14px; color:var(--text-primary); background:var(--card-bg,var(--bg-surface)); box-shadow:0 18px 48px rgba(38,28,61,.2); white-space:normal; }
+/* Native Popover API promotes alerts to the browser top layer. This escapes
+   transformed/overflow-clipped dashboard containers on every route. */
+.topbar-alert-popover[popover] {
+  position: fixed;
+  inset: auto 16px auto auto;
+  top: calc(var(--header-height, 56px) + 12px);
+  z-index: 2000;
+  width: min(390px, calc(100vw - 32px));
+  max-width: calc(100vw - 32px);
+  max-height: min(560px, calc(100dvh - var(--header-height, 56px) - 24px));
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  flex-direction: column;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  color: var(--text-primary);
+  background: var(--card-bg, var(--bg-surface));
+  box-shadow: 0 18px 48px rgba(38, 28, 61, .2);
+  white-space: normal;
+}
+.topbar-alert-popover[popover]:not(:popover-open) { display: none; }
+.topbar-alert-popover[popover]:popover-open { display: flex; }
+.topbar-alert-popover__header { flex: 0 0 auto; }
+.topbar-alert-list { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.topbar-alert-note { flex: 0 0 auto; }
+
+@media (max-width: 480px) {
+  .topbar-alert-popover[popover] {
+    top: calc(var(--header-height, 56px) + 8px);
+    right: 12px;
+    width: calc(100vw - 24px);
+    max-width: calc(100vw - 24px);
+    max-height: calc(100dvh - var(--header-height, 56px) - 16px);
+  }
+}
 .topbar-alert-popover__header { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:13px 14px; border-bottom:1px solid var(--border-color); }
 .topbar-alert-popover__header>div { display:flex; align-items:center; gap:8px; }
 .topbar-alert-popover__header>div>i { color:var(--primary); }
