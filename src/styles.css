@@ -6702,6 +6702,68 @@ button:disabled.is-loading {
   --rpt-ref-text:       #B5A9C4;
 }
 
+/* Pastel light theme: soft illustrated lab banner, built from CSS shapes so it
+   stays crisp at every size and does not depend on an external image request. */
+[data-palette="pastel"]:not([data-theme="dark"]) .welcome-band {
+  background:
+    radial-gradient(ellipse at 77% 115%, rgba(185,151,234,0.25) 0 22%, transparent 22.5%),
+    radial-gradient(ellipse at 94% 15%, rgba(208,189,244,0.45) 0 24%, transparent 24.5%),
+    linear-gradient(112deg, #F0E2FB 0%, #E8D9F8 54%, #DCCBF3 100%);
+  border: 1px solid rgba(140,117,207,0.12);
+  box-shadow: 0 8px 22px rgba(140,117,207,0.10);
+}
+[data-palette="pastel"]:not([data-theme="dark"]) .welcome-band::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  width: 156px;
+  height: 118px;
+  right: 24%;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: .52;
+  background: no-repeat center / contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 190 140'%3E%3Cg fill='none' stroke='%238C75CF' stroke-linecap='round' stroke-linejoin='round' stroke-width='4'%3E%3Crect x='85' y='12' width='72' height='112' rx='11' fill='%23F8F1FF'/%3E%3Cpath d='M103 35h36M103 53h27M103 71h35M103 89h22'/%3E%3Cpath d='M101 35l5 5 9-11M101 71l5 5 9-11' stroke='%23A47BE0'/%3E%3Cpath d='M30 31h26v7H30zM36 38v49a10 10 0 0010 10 10 10 0 0010-10V38M27 87h32' fill='%23DCCBFA'/%3E%3Cpath d='M64 69h24M71 69v40a12 12 0 0024 0V69M67 105h32' fill='%23E9D5FF'/%3E%3Cpath d='M144 116c-7-14-4-26 8-36M150 95c10 1 17-4 21-14M147 107c-11-1-17-7-19-18' stroke='%2379AE79'/%3E%3Cpath d='M158 81c-2-10 2-17 12-20 2 9-2 16-12 20ZM128 89c-8-5-10-12-6-21 8 5 10 12 6 21Z' fill='%23A9D1A1' stroke='%2379AE79'/%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+}
+[data-palette="pastel"]:not([data-theme="dark"]) .wb-greet,
+[data-palette="pastel"]:not([data-theme="dark"]) .wb-stat-val { color: #30264A; }
+[data-palette="pastel"]:not([data-theme="dark"]) .wb-sub,
+[data-palette="pastel"]:not([data-theme="dark"]) .wb-stat-lbl { color: #66587D; }
+[data-palette="pastel"]:not([data-theme="dark"]) .wb-pill {
+  color: #594879;
+  background: rgba(255,255,255,0.60);
+  border: 1px solid rgba(140,117,207,0.12);
+}
+[data-palette="pastel"]:not([data-theme="dark"]) .wb-divider { background: rgba(113,86,181,0.22); }
+@media (max-width: 600px) {
+  [data-palette="pastel"]:not([data-theme="dark"]) .welcome-band::after { right: -18px; width: 112px; opacity: .24; }
+}
+
+/* The shared light sidebar defaults above have higher specificity than the
+   palette base block. Reassert the pastel sidebar on this exact mode pair so
+   switching palettes or light/dark mode cannot leak the paper sidebar back in. */
+[data-palette="pastel"]:not([data-theme="dark"]) {
+  --lis-sb-bg: linear-gradient(180deg, #967FD5 0%, #816BC6 100%);
+  --lis-sb-bg-brand: rgba(91, 69, 157, 0.16);
+  --lis-sb-search-bg: rgba(255,255,255,0.14);
+  --lis-sb-sep: rgba(255,255,255,0.18);
+  --lis-sb-text: rgba(255,255,255,0.88);
+  --lis-sb-text-hover: #FFFFFF;
+  --lis-sb-text-active: #7156B5;
+  --lis-sb-caption: rgba(255,255,255,0.70);
+  --lis-sb-hover-bg: rgba(255,255,255,0.13);
+  --lis-sb-hover-border: rgba(255,255,255,0.72);
+  --lis-sb-active-bg: #FFFFFF;
+  --lis-sb-active-border: #FFFFFF;
+  --lis-sb-active-glow: rgba(255,255,255,0.22);
+  --lis-sb-icon-idle: rgba(255,255,255,0.80);
+  --lis-sb-icon-hover: #FFFFFF;
+  --lis-sb-icon-active: #8C75CF;
+  --lis-sb-col-icon-bg: rgba(255,255,255,0.10);
+  --lis-sb-col-icon-hover: rgba(255,255,255,0.18);
+  --lis-sb-col-icon-active: rgba(255,255,255,0.22);
+}
+
 /* Palette-aware form focus treatment */
 [data-palette="pastel"] .field-input:focus,
 [data-palette="pastel"] .ph-filter-field select:focus,
