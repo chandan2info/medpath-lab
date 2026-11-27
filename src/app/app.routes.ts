@@ -51,10 +51,16 @@ export const routes: Routes = [
         title: 'Review Order — MedPath LIS',
       },
       {
-        path: 'billing',
+        path: 'billing/new',
         loadComponent: () =>
           import('./features/billing/billing.component').then(m => m.BillingComponent),
-        title: 'Billing — MedPath LIS',
+        title: 'New Invoice — MedPath LIS',
+      },
+      {
+        path: 'billing',
+        loadComponent: () =>
+          import('./features/billing-dashboard/billing-dashboard.component').then(m => m.BillingDashboardComponent),
+        title: 'Billing Overview — MedPath LIS',
       },
       {
         path: 'collection',
