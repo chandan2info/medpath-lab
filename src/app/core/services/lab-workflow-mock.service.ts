@@ -26,6 +26,8 @@ export interface MockLabSample {
   fastingStatus?: 'fasting'|'non-fasting'|'post-meal'|'unknown';
   collectedAt: string; collector: string; checklist: string[]; notes: string;
   specimenGroups: Array<{tubeType:string;sampleType:string;testIds:string[]}>;
+  tracking?: { mobile?: string; refDoctor?: string; visitType?: 'walk-in'|'appointment'|'home-visit'; etaLabel: string; tubes: Array<{id:string;color:string;label:string;tests:string[]}>; rejectionReason?: string };
+  trackingStatus?: 'pending'|'received'|'processing'|'ready'|'critical'|'rejected'|'dispatched';
 }
 export interface MockResultRecord {
   id: string; sampleId: string; status: MockResultStatus; values: Record<string,string>; parameterLabels?: Record<string,string>;
@@ -162,12 +164,26 @@ export class LabWorkflowMockService {
     if (current.samples.some(s => s.orderId === input.orderId)) {
       return current.samples.find(s => s.orderId === input.orderId)!;
     }
-    const sample: MockLabSample = { ...input, id: input.id ?? this.id('SMP'), status: 'collected' };
+    const sample: MockLabSample = { ...input, id: input.id ?? this.id('SMP'), status: 'collected', trackingStatus: input.trackingStatus ?? 'pending' };
     this.persist({
       ...current, samples: [sample, ...current.samples],
       visits: current.visits.map(v => v.id === sample.visitId ? { ...v, status: 'in-lab' } : v)
     });
     return sample;
+  }
+
+  importTrackingSample(sample: MockLabSample): void {
+    if (this.state().samples.some(item => item.id === sample.id)) return;
+    const current = this.state();
+    this.persist({ ...current, samples: [sample, ...current.samples] });
+  }
+
+  updateSampleTrackingDetails(sampleId: string, details: Partial<NonNullable<MockLabSample['tracking']>> & { trackingStatus?: MockLabSample['trackingStatus'] }): void {
+    const current = this.state();
+    if (!current.samples.some(item => item.id === sampleId)) throw new Error('Sample not found.');
+    this.persist({ ...current, samples: current.samples.map(item => item.id === sampleId
+      ? { ...item, tracking: { ...item.tracking, ...details }, trackingStatus: details.trackingStatus ?? item.trackingStatus }
+      : item) });
   }
 
   updateSampleStatus(sampleId: string, status: MockSampleStatus): MockLabSample {
@@ -182,7 +198,8 @@ export class LabWorkflowMockService {
     if (sample.status !== status && !allowed[sample.status].includes(status)) {
       throw new Error(`Invalid sample transition: ${sample.status} → ${status}.`);
     }
-    const updated = { ...sample, status };
+    const trackingStatus = status === 'received' ? 'received' : status === 'processing' ? 'processing' : status === 'rejected' ? 'rejected' : status === 'collected' ? 'pending' : sample.trackingStatus;
+    const updated = { ...sample, status, trackingStatus };
     this.persist({ ...current, samples: current.samples.map(s => s.id === sampleId ? updated : s) });
     return updated;
   }
@@ -199,7 +216,7 @@ export class LabWorkflowMockService {
       ...current,
       results: [result, ...current.results.filter(r => r.sampleId !== sampleId)],
       samples: current.samples.map(sample => sample.id === sampleId && sample.status !== 'validated'
-        ? { ...sample, status: 'results-entered' } : sample)
+        ? { ...sample, status: 'results-entered', trackingStatus: 'ready' } : sample)
     });
     return result;
   }
@@ -213,7 +230,7 @@ export class LabWorkflowMockService {
     const sample = current.samples.find(s => s.id === sampleId);
     this.persist({
       ...current, results: [updated, ...current.results.filter(r => r.sampleId !== sampleId)],
-      samples: current.samples.map(s => s.id === sampleId ? { ...s, status: 'awaiting-validation' } : s)
+      samples: current.samples.map(s => s.id === sampleId ? { ...s, status: 'awaiting-validation', trackingStatus: 'ready' } : s)
     });
     return updated;
   }
@@ -228,7 +245,7 @@ export class LabWorkflowMockService {
     };
     this.persist({
       ...current, results: [updated, ...current.results.filter(r => r.sampleId !== sampleId)],
-      samples: current.samples.map(s => s.id === sampleId ? { ...s, status: approved ? 'validated' : 'rejected' } : s)
+      samples: current.samples.map(s => s.id === sampleId ? { ...s, status: approved ? 'validated' : 'rejected', trackingStatus: approved ? 'ready' : 'rejected' } : s)
     });
     return updated;
   }

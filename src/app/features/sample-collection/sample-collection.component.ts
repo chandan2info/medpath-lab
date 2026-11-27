@@ -336,40 +336,15 @@ export class SampleCollectionComponent {
     if (!visitId) throw new Error('Active visit is missing. Please return to Patient Workflow.');
     const collectedDate = new Date(this.collectionDateTime());
     const sample = this.sampleTracking.createFromCollection({
-      patientId: patient.id,
-      patientName: `${patient.firstName} ${patient.lastName}`.trim(),
-      dob: patient.dob,
-      gender: patient.gender.toLowerCase() as 'male' | 'female' | 'other',
-      refDoctor: patient.refDoctor,
-      mobile: patient.mobile,
-      visitType: patient.visitType.toLowerCase().replace(/\s+/g, '-') as 'walk-in' | 'appointment' | 'home-visit',
-      fastingStatus: this.toFastingStatus(this.patientCondition()),
-      tests: orderedTests.map(test => test.id),
-      priority: this.flow.priority(),
-      status: 'pending',
-      collectedAt: collectedDate.toISOString(),
-      etaLabel: 'Pending',
-      tubes: this.currentPatientTubes().map(tube => ({
-        id: tube.id,
-        color: tube.color,
-        label: tube.label,
-        tests: [...tube.tests],
-      })),
-    });
-    this.workflowStore.createSample({
-      id: sample.id,
-      orderId,
-      visitId,
-      patientId: patient.id,
-      patientName: `${patient.firstName} ${patient.lastName}`.trim(),
-      gender: patient.gender.toLowerCase() as 'male' | 'female' | 'other',
-      dob: patient.dob,
-      testIds: orderedTests.map(test => test.id),
-      priority: this.flow.priority(),
-      collectedAt: collectedDate.toISOString(),
-      collector: this.collectorName().trim(),
-      checklist: CHECKLIST_ITEMS.map(item => item.id),
-      fastingStatus: this.toFastingStatus(this.patientCondition()),
+      patientId: patient.id, patientName: `${patient.firstName} ${patient.lastName}`.trim(),
+      dob: patient.dob, gender: patient.gender.toLowerCase() as 'male' | 'female' | 'other',
+      refDoctor: patient.refDoctor, mobile: patient.mobile,
+      visitType: patient.visitType.toLowerCase().replace(/\\s+/g, '-') as 'walk-in' | 'appointment' | 'home-visit',
+      fastingStatus: this.toFastingStatus(this.patientCondition()), tests: orderedTests.map(test => test.id),
+      priority: this.flow.priority(), status: 'pending', collectedAt: collectedDate.toISOString(),
+      etaLabel: 'Pending', tubes: this.currentPatientTubes().map(tube => ({ ...tube, tests: [...tube.tests] })),
+    }, {
+      orderId, visitId, collector: this.collectorName().trim(), checklist: CHECKLIST_ITEMS.map(item => item.id),
       notes: this.notes().trim(),
       specimenGroups: orderedTests.reduce((groups, test) => {
         const key = test.tubeType;
@@ -377,7 +352,7 @@ export class SampleCollectionComponent {
         if (group) group.testIds.push(test.id);
         else groups.push({ tubeType: key, sampleType: test.sampleType, testIds: [test.id] });
         return groups;
-      }, [] as Array<{tubeType:string;sampleType:string;testIds:string[]}>)
+      }, [] as Array<{tubeType:string;sampleType:string;testIds:string[]}>),
     });
     this.createdSampleId.set(sample.id);
     this.collectedAt.set(
