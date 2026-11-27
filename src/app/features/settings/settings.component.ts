@@ -266,7 +266,7 @@ import { PdfPreferencesService } from '../../core/services/pdf-preferences.servi
     @media(max-width:560px) {
       .settings-card { padding:16px; }
       .theme-grid { grid-template-columns:minmax(0,1fr); }
-      .cursor-enable-row,.cursor-color-row { align-items:flex-start; flex-direction:column; }
+      .cursor-enable-row,.cursor-color-row,.cursor-shape-row { align-items:flex-start; flex-direction:column; }
       .color-picker-control { flex-wrap:wrap; }
     }
   `]
