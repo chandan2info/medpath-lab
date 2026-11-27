@@ -1,6 +1,10 @@
 /* MedPath LIS — unified, responsive application header. */
 .lis-topbar {
-  background: var(--lis-sb-bg, var(--bg-surface)) !important;
+  background: linear-gradient(
+    110deg,
+    var(--lis-sb-bg-brand, var(--lis-sb-bg, var(--bg-surface))),
+    var(--lis-sb-bg, var(--bg-surface))
+  ) !important;
   border-bottom: 1px solid var(--lis-sb-sep, var(--border-color));
   box-shadow: none !important;
 }
