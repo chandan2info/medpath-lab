@@ -8,7 +8,7 @@ import { Router, RouterLink } from '@angular/router';
 import { NgClass, DatePipe, TitleCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
-import { BillingService } from './services/billing.service';
+import { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';
 import { PaymentMode } from '../../shared/models/lis.models';
 import { WorkflowStepperComponent, WorkflowStep } from '../../shared/components/workflow-stepper/workflow-stepper.component';
 import { PatientCardComponent } from '../../shared/components/patient-card/patient-card.component';
@@ -24,7 +24,7 @@ import { PatientCardComponent } from '../../shared/components/patient-card/patie
 export class BillingComponent implements OnInit {
   protected readonly flow   = inject(PatientFlowService);
   private   readonly router = inject(Router);
-  private readonly billingService = inject(BillingService);
+  private readonly workflowStore = inject(LabWorkflowMockService);
 
   protected readonly payModes: { id: PaymentMode; icon: string; label: string }[] = [
     { id: 'cash',   icon: 'cash',        label: 'Cash'   },
@@ -73,7 +73,7 @@ export class BillingComponent implements OnInit {
     } else {
       const orderId = this.flow.activeOrderId();
       const existingInvoice = orderId
-        ? this.billingService.invoices().find(invoice => invoice.orderId === orderId)
+        ? this.workflowStore.invoices().find(invoice => invoice.orderId === orderId)
         : undefined;
       if (existingInvoice) {
         this.invoiceId = existingInvoice.id;
@@ -167,7 +167,7 @@ export class BillingComponent implements OnInit {
   private saveInvoice(): void {
     this.flow.setDiscount(this.subtotal() > 0 ? (this.discAmt() / this.subtotal()) * 100 : 0);
     const orderId = this.flow.ensureWorkflowOrder();
-    this.billingService.recordInvoice({
+    this.workflowStore.recordInvoice({
       id: this.invoiceId,
       orderId,
       total: this.grandTotal(),

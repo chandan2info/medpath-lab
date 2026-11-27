@@ -1,5 +1,6 @@
 import { Injectable, computed, inject } from '@angular/core';
 import { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';
+import { SampleTrackingService } from '../../core/services/sample-tracking.service';
 
 /**
  * Result-validation data boundary.
@@ -10,6 +11,7 @@ import { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.se
 @Injectable({ providedIn: 'root' })
 export class ResultValidationDataService {
   private readonly repository = inject(LabWorkflowMockService);
+  private readonly sampleTracking = inject(SampleTrackingService);
 
   readonly visits = computed(() => this.repository.visits());
   readonly orders = computed(() => this.repository.orders());
@@ -19,10 +21,12 @@ export class ResultValidationDataService {
 
   approve(sampleId: string, reviewer: string, note = ''): void {
     this.repository.reviewResults(sampleId, reviewer, true, note);
+    this.sampleTracking.updateStatus(sampleId, 'ready');
   }
 
   returnForCorrection(sampleId: string, reviewer: string, note: string): void {
     this.repository.reviewResults(sampleId, reviewer, false, note);
+    this.sampleTracking.updateStatus(sampleId, 'pending');
   }
 
   generateReport(sampleId: string) {
