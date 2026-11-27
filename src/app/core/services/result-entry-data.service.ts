@@ -243,3 +243,4 @@ export class ResultEntryDataService {
   private write(record: ResultEntryRecord): void {
     this.storage.write(this.storagePrefix + ':' + record.sampleId, record);
   }
+}
