@@ -91,6 +91,13 @@ describe('ReportsDataService workflow integration', () => {
     expect(reports.getReportDetail(report.id)?.rows).toEqual([jasmine.objectContaining({
       name: 'Haemoglobin', result: '12.5', unit: 'g/dL', ref: '12.0 – 15.0', flag: 'normal', method: 'Automated hematology analyzer (demo)',
     })]);
+    expect(reports.getReportDetail(report.id)?.testNames).toEqual(['CBC — Complete blood count']);
+  });
+
+  it('exposes composite report tests as individual names for the compact preview header', () => {
+    expect(reports.getReportDetail('RPT-2406-038')?.testNames).toEqual([
+      'Complete Blood Count (CBC)', 'ESR',
+    ]);
   });
 
   it('reconstructs supported profile metadata for a legacy report with values only', () => {

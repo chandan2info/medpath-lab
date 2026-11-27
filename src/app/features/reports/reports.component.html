@@ -172,14 +172,29 @@
         <div class="rpt-panel rpt-panel--mid">
         <div class="rpt-test-scroll">
         <div class="rpt-title-band">
-          <div class="rpt-title-text">
-            <i class="ti ti-droplet" aria-hidden="true"></i>
-            {{ selectedDetail()?.testTitle }}
+          <div class="rpt-test-heading">
+            <div class="rpt-test-heading__title">
+              <i class="ti ti-droplet" aria-hidden="true"></i>
+              <span class="rpt-title-text">Ordered tests</span>
+              <span class="rpt-test-count">{{ selectedTestNames().length }} {{ selectedTestNames().length === 1 ? 'test' : 'tests' }}</span>
+            </div>
+            <div class="rpt-test-list" aria-label="Tests included in this report">
+              @for (testName of selectedTestNames(); track $index) {
+                <span class="rpt-test-chip" [class.rpt-test-chip--overflow]="!testListExpanded() && !showPdfPreview() && $index >= 3" [attr.aria-hidden]="!testListExpanded() && !showPdfPreview() && $index >= 3 ? 'true' : null">{{ testName }}</span>
+              }
+              @if (hiddenTestCount() > 0 && !showPdfPreview()) {
+                <button type="button" class="rpt-test-list-toggle" [attr.aria-expanded]="testListExpanded()" (click)="toggleTestList()">
+                  {{ testListExpanded() ? 'Show less' : '+' + hiddenTestCount() + ' more' }}
+                </button>
+              }
+            </div>
           </div>
-          <div class="lis-mono rpt-sid-chip">{{ selectedDetail()?.sampleId }}</div>
-          <button type="button" class="rpt-expand-btn" (click)="togglePreviewExpanded()" [attr.aria-label]="previewExpanded() ? 'Exit expanded preview' : 'Expand report preview'" [attr.title]="previewExpanded() ? 'Exit expanded preview' : 'Expand report preview'">
-            <i class="ti" [class.ti-arrows-minimize]="previewExpanded()" [class.ti-arrows-maximize]="!previewExpanded()" aria-hidden="true"></i>
-          </button>
+          <div class="rpt-title-actions">
+            <div class="rpt-sid-chip"><span>Sample ID</span><strong class="lis-mono">{{ selectedDetail()?.sampleId }}</strong></div>
+            <button type="button" class="rpt-expand-btn" (click)="togglePreviewExpanded()" [attr.aria-label]="previewExpanded() ? 'Exit expanded preview' : 'Expand report preview'" [attr.title]="previewExpanded() ? 'Exit expanded preview' : 'Expand report preview'">
+              <i class="ti" [class.ti-arrows-minimize]="previewExpanded()" [class.ti-arrows-maximize]="!previewExpanded()" aria-hidden="true"></i>
+            </button>
+          </div>
         </div>
 
         <div class="rpt-note">

@@ -255,8 +255,9 @@ The pastel lavender palette and light/dark separation appeared consistent in ins
 
 | ID | Module / screen | Category | Severity | Scenario / expected / actual | Status / evidence |
 |---|---|---|---|---|---|
-| V-01 | Sample Collection, 390×844 lifecycle stepper | UI | Low | At mobile width, long step labels break mid-word (e.g. “Registered”, “Collection”), making the progress sequence harder to scan. Expected labels remain readable or wrap at word boundaries. | Fixed in `workflow-stepper.component.css` with word-boundary wrapping and a compact mobile label size. Source reviewed; final build pending. |
+| V-01 | Sample Collection, 390×844 lifecycle stepper | UI | Low | At mobile width, long step labels break mid-word (e.g. “Registered”, “Collection”), making the progress sequence harder to scan. Expected labels remain readable or wrap at word boundaries. | Fixed in `workflow-stepper.component.css` with word-boundary wrapping and a compact mobile label size. Build passed; post-fix mobile screenshot not captured. |
 | V-02 | Sample Tracking detail panel | UI | Low | For the newly collected synthetic sample, the Collected field rendered a raw ISO timestamp (`2026-11-27T06:32:00.000Z`) and wrapped it across lines. Expected a readable local date/time consistent with other sample rows. | Fixed in template/component with localized date/time formatting. Live app displayed `27 Nov 2026, 12:02 pm` for the synthetic sample. |
+| V-03 | Reports, ordered-test header | UI | Low | Long joined test names rendered as an oversized heading, wrapped across several lines, and displaced the sample ID. Expected a concise heading with readable test details and a stable sample identifier position. | Fixed with an ordered-test count, compact test chips, a show-more disclosure, and a separate sample-ID block. Live desktop preview checked at 1440×900. |
 
 ### Phase 3 — Component interaction findings (partial)
 
@@ -290,8 +291,11 @@ The following audit UI findings were implemented without changing API/backend in
 - Barcode Preview opens a label dialog populated from the selected synthetic sample tube and patient.
 - Topbar search now returns local patient, sample, and test matches; keyboard navigation and Enter select a result, and `Cmd/Ctrl+K` focuses search. Destination pages consume the search query and show the matching sample, patient, or test.
 - Collection hour/minute controls are bound through Angular forms so selected values update the displayed draft time consistently.
+- The Reports test section now uses a short heading and count, displays three compact test chips by default, and reveals additional names through “+N more”. Sample ID and preview expand control occupy a separate aligned area. The expanded test list is included in PDF preview and print.
 
 Live UI verification: alert list opened; barcode preview opened and closed; sample/test/patient result navigation was checked; sample timestamp rendered in localized form; collection time was changed in the picker draft and canceled. V-01 was fixed at the stylesheet level but not re-captured at mobile width after the change. The development build passed and `git diff --check` passed. Unit tests passed (16/16) after allowing Karma to bind its local test port. No commit, push, or PR was created.
+
+Reports header follow-up: checked the updated preview live at 1440×900 with one-test and seeded two-test reports. A five-test synthetic component fixture verifies the collapsed chip count, “+N more” disclosure, and “Show less” state. Development build passed; unit tests passed (18/18); `git diff --check` passed. Mobile layout was not separately re-captured.
 
 ### Current phase status
 

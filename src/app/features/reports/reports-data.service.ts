@@ -30,6 +30,7 @@ export interface ReportDetail {
   referredBy: string;
   reportedOn: string;
   testTitle: string;
+  testNames: string[];
   sampleId: string;
   note: string;
   specimen: string;
@@ -55,7 +56,7 @@ const REPORT_DETAILS: Record<string, ReportDetail> = {
   'RPT-2406-041': {
     patientAgeSex: '61 years / Male', collectedOn: '23 Jun 2026 · 9:20 AM',
     referredBy: 'Dr. Suresh Menon', reportedOn: '23 Jun 2026 · 11:05 AM',
-    testTitle: 'Kidney Function Test (KFT)', sampleId: 'SMP-2406-087',
+    testTitle: 'Kidney Function Test (KFT)', testNames: ['Kidney Function Test (KFT)'], sampleId: 'SMP-2406-087',
     note: 'Critical value — Serum Potassium (K⁺) is significantly elevated. Referring physician has been notified.',
     specimen: 'Serum (Red top SST)', fasting: 'Non-fasting', groupTitle: 'Biochemistry — Renal profile',
     rows: [
@@ -71,7 +72,7 @@ const REPORT_DETAILS: Record<string, ReportDetail> = {
   'RPT-2406-040': {
     patientAgeSex: '34 years / Female', collectedOn: '23 Jun 2026 · 8:45 AM',
     referredBy: 'Dr. Kavita Rao', reportedOn: '23 Jun 2026 · 10:30 AM',
-    testTitle: 'Thyroid Profile', sampleId: 'SMP-2406-086',
+    testTitle: 'Thyroid Profile', testNames: ['Thyroid Profile'], sampleId: 'SMP-2406-086',
     note: 'Thyroid profile results are within the supplied reference ranges.',
     specimen: 'Serum', fasting: 'Not required', groupTitle: 'Immunoassay — Thyroid profile',
     rows: [
@@ -84,7 +85,7 @@ const REPORT_DETAILS: Record<string, ReportDetail> = {
   'RPT-2406-039': {
     patientAgeSex: '45 years / Male', collectedOn: '23 Jun 2026 · 9:05 AM',
     referredBy: 'Dr. Amit Verma', reportedOn: '23 Jun 2026 · 10:15 AM',
-    testTitle: 'Blood Glucose', sampleId: 'SMP-2406-085',
+    testTitle: 'Blood Glucose', testNames: ['Blood Glucose'], sampleId: 'SMP-2406-085',
     note: 'Fasting glucose result is above the supplied reference range.',
     specimen: 'Fluoride plasma', fasting: 'Fasting', groupTitle: 'Biochemistry — Glucose',
     rows: [
@@ -95,7 +96,7 @@ const REPORT_DETAILS: Record<string, ReportDetail> = {
   'RPT-2406-038': {
     patientAgeSex: '29 years / Female', collectedOn: '23 Jun 2026 · 8:30 AM',
     referredBy: 'Dr. Neha Shah', reportedOn: '23 Jun 2026 · 11:20 AM',
-    testTitle: 'Complete Blood Count (CBC) + ESR', sampleId: 'SMP-2406-084',
+    testTitle: 'Complete Blood Count (CBC) + ESR', testNames: ['Complete Blood Count (CBC)', 'ESR'], sampleId: 'SMP-2406-084',
     note: 'Haemoglobin is slightly below the supplied reference range.',
     specimen: 'EDTA whole blood', fasting: 'Not required', groupTitle: 'Haematology — CBC + ESR',
     rows: [
@@ -109,7 +110,7 @@ const REPORT_DETAILS: Record<string, ReportDetail> = {
   'RPT-2406-037': {
     patientAgeSex: '52 years / Male', collectedOn: '23 Jun 2026 · 9:15 AM',
     referredBy: 'Dr. Suresh Menon', reportedOn: '23 Jun 2026 · 10:45 AM',
-    testTitle: 'HbA1c', sampleId: 'SMP-2406-083',
+    testTitle: 'HbA1c', testNames: ['HbA1c'], sampleId: 'SMP-2406-083',
     note: 'HbA1c is above the supplied reference range.',
     specimen: 'EDTA whole blood', fasting: 'Not required', groupTitle: 'Biochemistry — Glycated haemoglobin',
     rows: [
@@ -121,7 +122,7 @@ const REPORT_DETAILS: Record<string, ReportDetail> = {
   'RPT-2406-033': {
     patientAgeSex: '40 years / Female', collectedOn: '22 Jun 2026 · 9:10 AM',
     referredBy: 'Dr. Kavita Rao', reportedOn: '22 Jun 2026 · 11:00 AM',
-    testTitle: 'Liver Function Test (LFT)', sampleId: 'SMP-2406-079',
+    testTitle: 'Liver Function Test (LFT)', testNames: ['Liver Function Test (LFT)'], sampleId: 'SMP-2406-079',
     note: 'Liver function results are within the supplied reference ranges.',
     specimen: 'Serum', fasting: 'Not required', groupTitle: 'Biochemistry — Hepatic profile',
     rows: [
@@ -135,7 +136,7 @@ const REPORT_DETAILS: Record<string, ReportDetail> = {
   'RPT-2406-030': {
     patientAgeSex: '58 years / Male', collectedOn: '22 Jun 2026 · 8:55 AM',
     referredBy: 'Dr. Amit Verma', reportedOn: '22 Jun 2026 · 10:50 AM',
-    testTitle: 'Lipid Profile', sampleId: 'SMP-2406-076',
+    testTitle: 'Lipid Profile', testNames: ['Lipid Profile'], sampleId: 'SMP-2406-076',
     note: 'Total cholesterol and LDL cholesterol are above the supplied reference ranges.',
     specimen: 'Serum', fasting: 'Fasting', groupTitle: 'Biochemistry — Lipid profile',
     rows: [
@@ -249,6 +250,7 @@ export class ReportsDataService {
       referredBy: joined.visit.refDoctor || 'Not recorded',
       reportedOn: dateTime(joined.report.generatedAt),
       testTitle: testDetails.map(test => test?.name).filter(Boolean).join(' + ') || 'Not available',
+      testNames: joined.order.testIds.map(id => this.patientFlow.allTests.find(test => test.id === id)?.name ?? id),
       sampleId: joined.sample.id,
       note: 'Illustrative demo values and reference intervals only. Verify against the laboratory validated method and patient-specific reference intervals before clinical use.',
       specimen: joined.sample.specimenGroups.map(group => group.sampleType).filter(Boolean).join(', ') || 'Not available',
