@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { MockStorageService } from '../data-access/mock-storage.service';
 import { Observable, of } from 'rxjs';
 import { LabTest, ResultFlag, Sample } from '../../shared/models/lis.models';
 
@@ -114,16 +115,16 @@ const cbcTemplatesFor = (gender?: string, dob?: string, collectedAt?: string, re
 const DEMO_VALUES: Record<string,string[]> = {KFT:['2.4','48','6.8','138','5.2','32'],LFT:['0.8','0.2','28','32','92','7.1','4.2','2.9'],CBC:CBC_VALUES,HBA:['6.2','131'],GLU:['96'],ESR:['12'],LIP:['182','145','48','112','29','3.8'],TSH:['2.4'],FT3:['3.1','1.2','2.4'],VTD:['28'],UCR:['85'],CRP:['3.2'],FER:['86'],B12:['420'],URI:['Pale yellow','Clear','1.020','6.0','Nil','Nil','Nil','Nil','1–2','0–1','Few','Nil']};
 const DEMO_FLAGS: Record<string,ResultFlag[]> = {KFT:['high','high','critical','normal','normal','low'],HBA:['high','normal'],VTD:['low']};
 export function flagFromValue(value:string,range:string,criticalLow?:number,criticalHigh?:number):ResultFlag {
-  if(!value.trim()) return 'normal';
+  if(!value.trim()) return 'unavailable';
   const numeric=Number(value);
-  if(!Number.isFinite(numeric)) return 'normal';
+  if(!Number.isFinite(numeric)) return 'unavailable';
   // Critical limits take precedence over ordinary high/low reference flags.
   if((criticalLow!==undefined && numeric<=criticalLow)||(criticalHigh!==undefined && numeric>=criticalHigh)) return 'critical';
   const bounds=range.match(/[0-9.]+/g)?.map(Number)??[];
-  if(!bounds.length) return 'normal';
+  if(!bounds.length) return 'unavailable';
   if(/[≥>]=?/.test(range)) return numeric<bounds[0]?'low':'normal';
   if(/[≤<]=?/.test(range)) return numeric>bounds[0]?'high':'normal';
-  if(bounds.length<2) return 'normal';
+  if(bounds.length<2) return 'unavailable';
   if(numeric<bounds[0]) return 'low';
   if(numeric>bounds[1]) return 'high';
   return 'normal';
@@ -160,6 +161,7 @@ export interface ResultEntryRecord {
 @Injectable({ providedIn: 'root' })
 export class ResultEntryDataService {
   private readonly storagePrefix = 'medpath.result-entry.v1';
+  private readonly storage = inject(MockStorageService);
 
   loadForSample(sample: Sample, catalogue: LabTest[]): Observable<ResultEntryRecord> {
     const saved = this.read(sample.id);
@@ -226,16 +228,18 @@ export class ResultEntryDataService {
   }
 
   private read(sampleId: string): ResultEntryRecord | null {
-    try {
-      const raw = localStorage.getItem(this.storagePrefix + ':' + sampleId);
-      if (!raw) return null;
-      const parsed = JSON.parse(raw) as ResultEntryRecord;
-      return parsed?.sampleId === sampleId && Array.isArray(parsed.tests) ? parsed : null;
-    } catch { return null; }
+    const key = this.storagePrefix + ':' + sampleId;
+    const parsed = this.storage.read<ResultEntryRecord | null>(
+      key,
+      null,
+      (value): value is ResultEntryRecord => !!value
+        && typeof value === 'object'
+        && (value as ResultEntryRecord).sampleId === sampleId
+        && Array.isArray((value as ResultEntryRecord).tests),
+    );
+    return parsed;
   }
 
   private write(record: ResultEntryRecord): void {
-    try { localStorage.setItem(this.storagePrefix + ':' + record.sampleId, JSON.stringify(record)); }
-    catch { /* The in-memory UI remains usable when storage is unavailable. */ }
+    this.storage.write(this.storagePrefix + ':' + record.sampleId, record);
   }
-}
