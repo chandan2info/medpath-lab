@@ -269,10 +269,6 @@
     font-size: 0;
   }
   .lis-topbar .lis-topbar-cta i { font-size: 16px; }
-  .lis-topbar .topbar-avatar-btn { padding: 2px; }
-  .lis-topbar .avatar-name,
-  .lis-topbar .avatar-role,
-  .lis-topbar .avatar-chevron { display: none; }
   .lis-topbar .topbar-search { flex: 1 1 70px; }
 }
 
