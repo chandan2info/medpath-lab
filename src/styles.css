@@ -4163,7 +4163,7 @@
   --lis-sb-text:            rgba(180,192,225,0.72);
   --lis-sb-text-hover:      rgba(225,233,255,0.97);
   --lis-sb-text-active:     #ffffff;
-  --lis-sb-caption:         rgba(140,158,210,0.38);
+  --lis-sb-caption:         #9AABCE;
 
   /* ── Hover: frosted left-panel reveal ── */
   --lis-sb-hover-bg:        rgba(99,102,241,0.10);
@@ -4201,7 +4201,7 @@
   --lis-sb-text:            #4B587E;
   --lis-sb-text-hover:      #181D3D;
   --lis-sb-text-active:     #0F1020;
-  --lis-sb-caption:         #9BA3C7;
+  --lis-sb-caption:         #687491;
 
   --lis-sb-hover-bg:        rgba(99,102,241,0.11);
   --lis-sb-hover-border:    #5457E5;
@@ -4228,7 +4228,7 @@
   --lis-sb-text:            rgba(180,192,225,0.72);
   --lis-sb-text-hover:      rgba(225,233,255,0.97);
   --lis-sb-text-active:     #ffffff;
-  --lis-sb-caption:         rgba(140,158,210,0.38);
+  --lis-sb-caption:         #9AABCE;
   --lis-sb-hover-bg:        rgba(99,102,241,0.10);
   --lis-sb-hover-border:    #6366F1;
   --lis-sb-active-bg:       rgba(61,201,168,0.13);
@@ -4283,7 +4283,7 @@
   --lis-sb-text:            rgba(180,205,225,0.72);
   --lis-sb-text-hover:      rgba(225,242,255,0.97);
   --lis-sb-text-active:     #ffffff;
-  --lis-sb-caption:         rgba(140,180,210,0.38);
+  --lis-sb-caption:         #9BB6CE;
   --lis-sb-hover-bg:        rgba(37,99,235,0.14);
   --lis-sb-hover-border:    #2563EB;
   --lis-sb-active-bg:       rgba(14,165,233,0.16);
@@ -4304,7 +4304,7 @@
   --lis-sb-text:            #3E5C7A;
   --lis-sb-text-hover:      #14283D;
   --lis-sb-text-active:     #0B1622;
-  --lis-sb-caption:         #8FA9C2;
+  --lis-sb-caption:         #5C748D;
   --lis-sb-hover-bg:        rgba(37,99,235,0.11);
   --lis-sb-hover-border:    #2563EB;
   --lis-sb-active-bg:       rgba(14,165,233,0.14);
@@ -4372,7 +4372,7 @@
   --lis-sb-text:            rgba(225,200,190,0.72);
   --lis-sb-text-hover:      rgba(255,240,235,0.97);
   --lis-sb-text-active:     #ffffff;
-  --lis-sb-caption:         rgba(210,170,155,0.38);
+  --lis-sb-caption:         #C5A093;
   --lis-sb-hover-bg:        rgba(249,115,22,0.14);
   --lis-sb-hover-border:    #F97316;
   --lis-sb-active-bg:       rgba(251,113,133,0.16);
@@ -4393,7 +4393,7 @@
   --lis-sb-text:            #7A5048;
   --lis-sb-text-hover:      #3D211C;
   --lis-sb-text-active:     #1C1412;
-  --lis-sb-caption:         #C2998D;
+  --lis-sb-caption:         #8C5B50;
   --lis-sb-hover-bg:        rgba(249,115,22,0.11);
   --lis-sb-hover-border:    #F97316;
   --lis-sb-active-bg:       rgba(251,113,133,0.14);
@@ -4461,7 +4461,7 @@
   --lis-sb-text:            rgba(205,190,225,0.72);
   --lis-sb-text-hover:      rgba(244,240,255,0.97);
   --lis-sb-text-active:     #ffffff;
-  --lis-sb-caption:         rgba(175,155,210,0.38);
+  --lis-sb-caption:         #B9A8CF;
   --lis-sb-hover-bg:        rgba(192,38,211,0.14);
   --lis-sb-hover-border:    #C026D3;
   --lis-sb-active-bg:       rgba(139,92,246,0.16);
@@ -4482,7 +4482,7 @@
   --lis-sb-text:            #6B5286;
   --lis-sb-text-hover:      #2A1B3D;
   --lis-sb-text-active:     #16131F;
-  --lis-sb-caption:         #B79BD1;
+  --lis-sb-caption:         #795C96;
   --lis-sb-hover-bg:        rgba(192,38,211,0.11);
   --lis-sb-hover-border:    #C026D3;
   --lis-sb-active-bg:       rgba(139,92,246,0.14);
@@ -5824,7 +5824,11 @@
    ─────────────────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
   .pc-topbar .topbar-search {
-    display: none !important;
+    display: flex !important;
+    flex: 1 1 90px;
+    min-width: 0;
+    width: auto;
+    max-width: none;
   }
 
   .pc-topbar .topbar-actions {
@@ -5879,21 +5883,26 @@
   }
 
   .pc-topbar app-user-chip[variant="topbar"] {
-    flex: 0 0 36px;
-    width: 36px;
-    min-width: 36px;
+    flex: 0 0 52px;
+    width: 52px;
+    min-width: 52px;
   }
 
-  .pc-topbar app-user-chip[variant="topbar"] .chip-text,
-  .pc-topbar app-user-chip[variant="topbar"] .chip-chevron {
+  .pc-topbar app-user-chip[variant="topbar"] .chip-text {
     display: none !important;
   }
 
+  .pc-topbar app-user-chip[variant="topbar"] .chip-chevron {
+    display: inline-flex !important;
+    margin-left: 0;
+  }
+
   .pc-topbar app-user-chip[variant="topbar"] .chip-trigger {
-    width: 36px;
-    min-width: 36px;
-    justify-content: center;
-    padding: 2px;
+    width: 52px;
+    min-width: 52px;
+    justify-content: space-between;
+    gap: 4px;
+    padding: 2px 5px 2px 2px;
   }
 }
 
@@ -6673,7 +6682,7 @@ button:disabled.is-loading {
   --lis-sb-text:            rgba(220,210,235,0.78);
   --lis-sb-text-hover:      #FFFFFF;
   --lis-sb-text-active:     #F7F1FC;
-  --lis-sb-caption:         rgba(194,182,208,0.52);
+  --lis-sb-caption:         #C2B6D0;
   --lis-sb-hover-bg:        rgba(183,164,234,0.12);
   --lis-sb-hover-border:    #B7A4EA;
   --lis-sb-active-bg:       rgba(183,164,234,0.18);
@@ -6750,7 +6759,7 @@ button:disabled.is-loading {
   --lis-sb-text: rgba(255,255,255,0.88);
   --lis-sb-text-hover: #FFFFFF;
   --lis-sb-text-active: #7156B5;
-  --lis-sb-caption: rgba(255,255,255,0.70);
+  --lis-sb-caption: #211A35;
   --lis-sb-hover-bg: rgba(255,255,255,0.13);
   --lis-sb-hover-border: rgba(255,255,255,0.72);
   --lis-sb-active-bg: #FFFFFF;
