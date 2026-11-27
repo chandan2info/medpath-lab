@@ -105,7 +105,10 @@
   .wfs-timeline--dense .wfs-label {
     max-width: 100%;
     white-space: normal;
-    overflow-wrap: anywhere;
+    overflow-wrap: normal;
+    word-break: normal;
+    hyphens: none;
+    font-size: 8px;
     line-height: 1.25;
   }
 

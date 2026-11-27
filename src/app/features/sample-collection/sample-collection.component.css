@@ -175,6 +175,26 @@
 .empty-copy  { font-size: 12px; max-width: 380px; margin: 0 0 8px; }
 .empty-state .lis-btn { margin-top: 4px; }
 
+.label-preview-backdrop { position:fixed; inset:0; z-index:var(--z-modal,400); display:grid; place-items:center; padding:18px; background:rgba(31,24,44,.56); backdrop-filter:blur(3px); }
+.label-preview-dialog { width:min(460px,100%); overflow:hidden; border:1px solid var(--border-color); border-radius:14px; color:var(--text-primary); background:var(--card-bg); box-shadow:0 20px 60px rgba(28,20,43,.28); }
+.label-preview-dialog__header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:16px 18px; border-bottom:1px solid var(--border-color); }
+.label-preview-dialog__header h2 { margin:0; font-size:15px; }
+.label-preview-dialog__header p { margin:4px 0 0; color:var(--text-secondary); font-size:11px; }
+.label-preview-dialog__header button { display:grid; place-items:center; width:30px; height:30px; flex:0 0 30px; border:0; border-radius:8px; color:var(--text-secondary); background:transparent; cursor:pointer; }
+.label-preview-dialog__header button:hover { color:var(--text-primary); background:var(--body-bg); }
+.label-preview-sheet { display:grid; gap:14px; margin:20px auto; width:min(290px,calc(100% - 36px)); padding:16px; border:1px dashed var(--border-color); border-left:5px solid var(--tube-color); border-radius:8px; background:var(--body-bg); }
+.label-preview-sheet__brand { display:flex; align-items:center; gap:7px; font-size:11px; }
+.label-preview-sheet__brand i { color:var(--primary); font-size:15px; }
+.label-preview-sheet__specimen { display:grid; gap:4px; }
+.label-preview-sheet__specimen span,.label-preview-sheet__patient span { color:var(--text-secondary); font-size:9px; }
+.label-preview-sheet__specimen strong,.label-preview-sheet__patient strong { font-size:11px; line-height:1.35; }
+.label-preview-sheet__barcode { display:grid; justify-items:center; gap:5px; padding:9px 4px; border-block:1px solid var(--border-color); }
+.label-preview-sheet__barcode .bc-bars { max-width:100%; }
+.label-preview-sheet__barcode strong { font-size:11px; letter-spacing:.04em; }
+.label-preview-sheet__patient { display:grid; gap:3px; }
+.label-preview-dialog__footer { display:flex; justify-content:flex-end; gap:8px; padding:12px 16px; border-top:1px solid var(--border-color); }
+@media(max-width:480px) { .label-preview-backdrop { padding:12px; } .label-preview-dialog__header { padding:14px; } .label-preview-sheet { margin:16px auto; } }
+
 
 /* ── Sample Collection workstation layout refresh ─────────────────────
    Compact title + lifecycle row, patient identity strip, specimen list

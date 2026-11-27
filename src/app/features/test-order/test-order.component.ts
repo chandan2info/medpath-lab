@@ -1,6 +1,7 @@
 // Test selection page. Each catalogue tab switches the content shown in the list.
 import { Component, ChangeDetectionStrategy, signal, computed, inject, OnInit, ElementRef, ViewChild, HostListener } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TitleCasePipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
@@ -21,6 +22,7 @@ type CatalogueView = 'catalogue' | 'packages' | 'recent' | 'favorites';
 export class TestOrderComponent implements OnInit {
   protected readonly flow = inject(PatientFlowService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   @ViewChild('searchInput') searchInputRef?: ElementRef<HTMLInputElement>;
 
   protected readonly workflowSteps: WorkflowStep[] = [
@@ -41,6 +43,17 @@ export class TestOrderComponent implements OnInit {
   draftsOpen = signal(false);
   autoSaveState = signal<'idle' | 'saved' | 'error'>('idle');
   highlightedIndex = signal(-1);
+
+  constructor() {
+    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe(params => {
+      const search = params.get('search');
+      if (search) {
+        this.activeView.set('catalogue');
+        this.activeCategory.set('All');
+        this.testQuery.set(search);
+      }
+    });
+  }
 
   filteredTests = computed(() => {
     const q = this.testQuery().trim().toLowerCase();

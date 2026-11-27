@@ -32,7 +32,7 @@
     <i class="ti ti-search" aria-hidden="true"></i>
     <input type="text" placeholder="Search by patient name or sample ID…"
       [value]="searchQ()"
-      (input)="searchQ.set($any($event.target).value)"
+      (input)="updateSearch($any($event.target).value)"
       aria-label="Search samples"
       [attr.aria-invalid]="searchQ().trim().length > 0 && sortedSamples().length === 0" />
     @if (searchQ()) {
@@ -45,7 +45,7 @@
     @for (f of filterOpts; track f.value) {
       <button type="button" class="filter-pill"
         [class.filter-pill--active]="activeFilter() === f.value"
-        (click)="activeFilter.set(f.value)"
+        (click)="setActiveFilter(f.value)"
         [attr.aria-pressed]="activeFilter() === f.value">{{ f.label }}</button>
     }
   </div>
@@ -183,7 +183,7 @@
         </div>
         <div class="det-cell">
           <span class="det-cell-lbl">Collected</span>
-          <span class="det-cell-val">{{ selectedSample()!.collectedAt }}</span>
+          <span class="det-cell-val">{{ formatCollectedAt(selectedSample()!.collectedAt) }}</span>
         </div>
         <div class="det-cell">
           <span class="det-cell-lbl">Priority</span>

@@ -17,6 +17,7 @@
 import { Component, signal, computed, inject, ChangeDetectionStrategy, HostListener, ElementRef } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { DatePipe, TitleCasePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
 import { Priority } from '../../shared/models/lis.models';
 import { SampleTrackingService } from '../../core/services/sample-tracking.service';
@@ -80,7 +81,7 @@ const TIMELINE_STEPS: WorkflowStep[] = [
 @Component({
   selector: 'app-sample-collection',
   standalone: true,
-  imports: [RouterLink, DatePipe, TitleCasePipe, WorkflowStepperComponent, PatientCardComponent],
+  imports: [RouterLink, DatePipe, TitleCasePipe, FormsModule, WorkflowStepperComponent, PatientCardComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './sample-collection.component.html',
   styleUrl: './sample-collection.component.css',
@@ -103,6 +104,7 @@ export class SampleCollectionComponent {
   private readonly sampleTracking = inject(SampleTrackingService);
   private readonly workflowStore = inject(LabWorkflowMockService);
   readonly createdSampleId = signal<string | null>(null);
+  readonly previewTube = signal<{ id: string; color: string; label: string; tests: string[] } | null>(null);
   private readonly initialCollectionDateTime = this.toDateTimeLocal(new Date());
   collectionDatePart = signal(this.initialCollectionDateTime.slice(0, 10));
   collectionTimePart = signal(this.initialCollectionDateTime.slice(11, 16));
@@ -261,6 +263,12 @@ export class SampleCollectionComponent {
     this.datePickerPosition.set({ top, left, width, maxHeight });
   }
 
+  openTubePreview(tube: { id: string; color: string; label: string; tests: string[] }): void {
+    this.previewTube.set(tube);
+  }
+
+  closeTubePreview(): void { this.previewTube.set(null); }
+
   cancelDatePicker(): void {
     const current = this.collectionDateTime();
     this.collectionDatePart.set(current.slice(0, 10));
@@ -396,6 +404,11 @@ export class SampleCollectionComponent {
 
   @HostListener('document:keydown', ['$event'])
   onKeydown(e: KeyboardEvent): void {
+    if (e.key === 'Escape' && this.previewTube()) {
+      e.preventDefault();
+      this.closeTubePreview();
+      return;
+    }
     if (e.key === 'Escape' && this.datePickerOpen()) {
       e.preventDefault();
       this.cancelDatePicker();
