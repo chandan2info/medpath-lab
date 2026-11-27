@@ -21,7 +21,7 @@
   </button>
 
   <!-- Search -->
-  <div class="topbar-search lis-search lis-search-control" role="search">
+  <div class="topbar-search search-wrap lis-search lis-search-control" role="search">
     <label for="lis-search" class="sr-only">Search patient, sample ID, test</label>
     <i class="ti ti-search search-icon" aria-hidden="true"></i>
     <input
@@ -30,10 +30,31 @@
       placeholder="Search patient, sample ID, test…"
       autocomplete="off"
       [value]="searchQuery()"
-      (input)="searchQuery.set($any($event.target).value)"
+      (input)="setSearchQuery($any($event.target).value)"
+      (keydown)="handleSearchKeydown($event)"
+      [attr.aria-expanded]="searchOpen()"
+      aria-controls="topbar-search-results"
+      aria-autocomplete="list"
       aria-label="Search patient, sample ID, or test"
     />
     <kbd class="search-kbd" aria-hidden="true">⌘K</kbd>
+    @if (searchOpen()) {
+      <div class="search-suggestions topbar-search-results" id="topbar-search-results" role="listbox" aria-label="Search results">
+        @for (result of searchResults(); track result.kind + result.id; let i = $index) {
+          <button type="button" role="option" class="topbar-search-result"
+            [class.topbar-search-result--active]="highlightedSearchIndex() === i"
+            [attr.aria-selected]="highlightedSearchIndex() === i"
+            (mouseenter)="highlightedSearchIndex.set(i)"
+            (click)="chooseSearchResult(result)">
+            <span class="topbar-search-result__icon" aria-hidden="true"><i class="ti" [ngClass]="result.kind === 'Patient' ? 'ti-user' : result.kind === 'Sample' ? 'ti-test-pipe' : 'ti-microscope'"></i></span>
+            <span class="topbar-search-result__copy"><strong>{{ result.title }}</strong><small>{{ result.subtitle }}</small></span>
+            <span class="topbar-search-result__kind">{{ result.kind }}</span>
+          </button>
+        } @empty {
+          <div class="topbar-search-empty" role="status">No local matches for “{{ searchQuery() }}”.</div>
+        }
+      </div>
+    }
   </div>
 
   <div class="topbar-spacer" aria-hidden="true"></div>
@@ -53,10 +74,33 @@
       }
     </button>
 
-    <button type="button" class="topbar-icon-btn notification-btn" aria-label="Alerts (4 unread)">
-      <i class="ti ti-bell" aria-hidden="true"></i>
-      <span class="notif-dot" aria-hidden="true"></span>
-    </button>
+    <div class="topbar-alerts">
+      <button type="button" class="topbar-icon-btn notification-btn" (click)="toggleAlerts()"
+        [attr.aria-expanded]="alertsOpen()" aria-haspopup="dialog"
+        [attr.aria-label]="'Alerts (' + activeAlerts().length + ' active)'">
+        <i class="ti ti-bell" aria-hidden="true"></i>
+        @if (activeAlerts().length) { <span class="notif-dot" aria-hidden="true"></span> }
+      </button>
+      @if (alertsOpen()) {
+        <section class="topbar-alert-popover" role="dialog" aria-label="Lab alerts and notices">
+          <header class="topbar-alert-popover__header">
+            <div><i class="ti ti-bell-ringing" aria-hidden="true"></i><strong>Lab alerts</strong><span>{{ activeAlerts().length }}</span></div>
+            <button type="button" aria-label="Close alerts" data-popover-close (click)="closeAlerts()"><i class="ti ti-x" aria-hidden="true"></i></button>
+          </header>
+          <div class="topbar-alert-list" role="list">
+            @for (alert of activeAlerts(); track alert.id) {
+              <article class="topbar-alert-item" [class.topbar-alert-item--red]="alert.level === 'red'" [class.topbar-alert-item--amber]="alert.level === 'amber'" [class.topbar-alert-item--teal]="alert.level === 'teal'" role="listitem">
+                <span class="topbar-alert-item__dot" aria-hidden="true"></span>
+                <div><strong>{{ alert.text }}</strong><small>{{ alert.time }}</small>
+                  @if (alert.actionLabel && alert.actionRoute) { <a [routerLink]="alert.actionRoute" (click)="closeAlerts()">{{ alert.actionLabel }} <i class="ti ti-arrow-up-right" aria-hidden="true"></i></a> }
+                </div>
+              </article>
+            }
+          </div>
+          <p class="topbar-alert-note">Demo alerts from local sample data.</p>
+        </section>
+      }
+    </div>
 
     <a routerLink="/dashboard/registration" class="lis-topbar-cta" aria-label="Register new patient">
       <i class="ti ti-plus" aria-hidden="true"></i>

@@ -1,12 +1,14 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { LabWorkflowMockService } from '../../core/services/lab-workflow-mock.service';
 import { PatientFlowService } from '../../core/services/patient-flow.service';
+import { createDemoTests, flagFromValue } from '../../core/services/result-entry-data.service';
 
 export type ReportStatus = 'pending' | 'generated' | 'dispatched';
 export type ResultFlag = 'high' | 'low' | 'critical' | 'normal' | 'unavailable';
 
 export interface ResultRow {
   name: string;
+  method?: string;
   result: string;
   unit: string;
   ref: string;
@@ -28,6 +30,7 @@ export interface ReportDetail {
   referredBy: string;
   reportedOn: string;
   testTitle: string;
+  testNames: string[];
   sampleId: string;
   note: string;
   specimen: string;
@@ -53,7 +56,7 @@ const REPORT_DETAILS: Record<string, ReportDetail> = {
   'RPT-2406-041': {
     patientAgeSex: '61 years / Male', collectedOn: '23 Jun 2026 · 9:20 AM',
     referredBy: 'Dr. Suresh Menon', reportedOn: '23 Jun 2026 · 11:05 AM',
-    testTitle: 'Kidney Function Test (KFT)', sampleId: 'SMP-2406-087',
+    testTitle: 'Kidney Function Test (KFT)', testNames: ['Kidney Function Test (KFT)'], sampleId: 'SMP-2406-087',
     note: 'Critical value — Serum Potassium (K⁺) is significantly elevated. Referring physician has been notified.',
     specimen: 'Serum (Red top SST)', fasting: 'Non-fasting', groupTitle: 'Biochemistry — Renal profile',
     rows: [
@@ -69,7 +72,7 @@ const REPORT_DETAILS: Record<string, ReportDetail> = {
   'RPT-2406-040': {
     patientAgeSex: '34 years / Female', collectedOn: '23 Jun 2026 · 8:45 AM',
     referredBy: 'Dr. Kavita Rao', reportedOn: '23 Jun 2026 · 10:30 AM',
-    testTitle: 'Thyroid Profile', sampleId: 'SMP-2406-086',
+    testTitle: 'Thyroid Profile', testNames: ['Thyroid Profile'], sampleId: 'SMP-2406-086',
     note: 'Thyroid profile results are within the supplied reference ranges.',
     specimen: 'Serum', fasting: 'Not required', groupTitle: 'Immunoassay — Thyroid profile',
     rows: [
@@ -82,7 +85,7 @@ const REPORT_DETAILS: Record<string, ReportDetail> = {
   'RPT-2406-039': {
     patientAgeSex: '45 years / Male', collectedOn: '23 Jun 2026 · 9:05 AM',
     referredBy: 'Dr. Amit Verma', reportedOn: '23 Jun 2026 · 10:15 AM',
-    testTitle: 'Blood Glucose', sampleId: 'SMP-2406-085',
+    testTitle: 'Blood Glucose', testNames: ['Blood Glucose'], sampleId: 'SMP-2406-085',
     note: 'Fasting glucose result is above the supplied reference range.',
     specimen: 'Fluoride plasma', fasting: 'Fasting', groupTitle: 'Biochemistry — Glucose',
     rows: [
@@ -93,7 +96,7 @@ const REPORT_DETAILS: Record<string, ReportDetail> = {
   'RPT-2406-038': {
     patientAgeSex: '29 years / Female', collectedOn: '23 Jun 2026 · 8:30 AM',
     referredBy: 'Dr. Neha Shah', reportedOn: '23 Jun 2026 · 11:20 AM',
-    testTitle: 'Complete Blood Count (CBC) + ESR', sampleId: 'SMP-2406-084',
+    testTitle: 'Complete Blood Count (CBC) + ESR', testNames: ['Complete Blood Count (CBC)', 'ESR'], sampleId: 'SMP-2406-084',
     note: 'Haemoglobin is slightly below the supplied reference range.',
     specimen: 'EDTA whole blood', fasting: 'Not required', groupTitle: 'Haematology — CBC + ESR',
     rows: [
@@ -107,7 +110,7 @@ const REPORT_DETAILS: Record<string, ReportDetail> = {
   'RPT-2406-037': {
     patientAgeSex: '52 years / Male', collectedOn: '23 Jun 2026 · 9:15 AM',
     referredBy: 'Dr. Suresh Menon', reportedOn: '23 Jun 2026 · 10:45 AM',
-    testTitle: 'HbA1c', sampleId: 'SMP-2406-083',
+    testTitle: 'HbA1c', testNames: ['HbA1c'], sampleId: 'SMP-2406-083',
     note: 'HbA1c is above the supplied reference range.',
     specimen: 'EDTA whole blood', fasting: 'Not required', groupTitle: 'Biochemistry — Glycated haemoglobin',
     rows: [
@@ -119,7 +122,7 @@ const REPORT_DETAILS: Record<string, ReportDetail> = {
   'RPT-2406-033': {
     patientAgeSex: '40 years / Female', collectedOn: '22 Jun 2026 · 9:10 AM',
     referredBy: 'Dr. Kavita Rao', reportedOn: '22 Jun 2026 · 11:00 AM',
-    testTitle: 'Liver Function Test (LFT)', sampleId: 'SMP-2406-079',
+    testTitle: 'Liver Function Test (LFT)', testNames: ['Liver Function Test (LFT)'], sampleId: 'SMP-2406-079',
     note: 'Liver function results are within the supplied reference ranges.',
     specimen: 'Serum', fasting: 'Not required', groupTitle: 'Biochemistry — Hepatic profile',
     rows: [
@@ -133,7 +136,7 @@ const REPORT_DETAILS: Record<string, ReportDetail> = {
   'RPT-2406-030': {
     patientAgeSex: '58 years / Male', collectedOn: '22 Jun 2026 · 8:55 AM',
     referredBy: 'Dr. Amit Verma', reportedOn: '22 Jun 2026 · 10:50 AM',
-    testTitle: 'Lipid Profile', sampleId: 'SMP-2406-076',
+    testTitle: 'Lipid Profile', testNames: ['Lipid Profile'], sampleId: 'SMP-2406-076',
     note: 'Total cholesterol and LDL cholesterol are above the supplied reference ranges.',
     specimen: 'Serum', fasting: 'Fasting', groupTitle: 'Biochemistry — Lipid profile',
     rows: [
@@ -160,12 +163,15 @@ export class ReportsDataService {
   private readonly illustrativeReports = signal<ReportRow[]>(REPORTS.map(report => ({ ...report })));
 
   readonly reports = computed(() => {
-    const rows = new Map(this.illustrativeReports().map(report => [report.id, report]));
-    for (const report of this.workflowStore.reports()) {
-      const joined = this.joinWorkflowReport(report.id);
-      if (joined) rows.set(report.id, this.workflowRow(joined));
-    }
-    return [...rows.values()];
+    const illustrative = this.illustrativeReports();
+    const workflowReports = this.workflowStore.reports()
+      .map(report => this.joinWorkflowReport(report.id))
+      .filter((joined): joined is NonNullable<ReturnType<ReportsDataService['joinWorkflowReport']>> => !!joined)
+      .map(joined => this.workflowRow(joined));
+    const workflowIds = new Set(workflowReports.map(report => report.id));
+    // Keep newly generated, live workflow reports visible ahead of the seeded
+    // illustrative queue so creating a report does not appear to do nothing.
+    return [...workflowReports, ...illustrative.filter(report => !workflowIds.has(report.id))];
   });
 
   getReportDetail(reportId: string): ReportDetail | null {
@@ -209,13 +215,32 @@ export class ReportsDataService {
 
   private workflowDetail(joined: NonNullable<ReturnType<ReportsDataService['joinWorkflowReport']>>): ReportDetail {
     const testDetails = joined.order.testIds.map(id => this.patientFlow.allTests.find(test => test.id === id));
-    const rows: ResultRow[] = Object.entries(joined.result.values).map(([key, value]) => ({
+    const recordedAge = Number.parseInt(joined.visit.ageYears ?? '', 10);
+    const profileTests = createDemoTests(
+      joined.order.testIds,
+      this.patientFlow.allTests,
+      joined.sample.gender ?? joined.visit.gender?.toLowerCase(),
+      joined.sample.dob,
+      joined.sample.collectedAt,
+      Number.isFinite(recordedAge) ? recordedAge : undefined,
+    );
+    const profileParameters = new Map<string, (typeof profileTests)[number]['parameters'][number]>(profileTests.flatMap(test => test.parameters.map(parameter => [`${test.id}.${parameter.id}`, parameter] as [string, typeof parameter])));
+    const rows: ResultRow[] = Object.entries(joined.result.values).map(([key, value]) => {
+      const storedDetails = joined.result.parameterDetails?.[key];
+      const configuredDetails = profileParameters.get(key);
+      const details = storedDetails ?? configuredDetails;
+      const rawRange = details?.range?.trim() ?? '';
+      const range = /^(configured range|as per lab reference)$/i.test(rawRange) ? '' : rawRange;
+      const hasNumericRange = /[0-9]/.test(range);
+      return ({
       name: joined.result.parameterLabels?.[key] || key,
+      method: details?.method,
       result: value || 'Not available',
-      unit: 'Not available',
-      ref: 'Not available',
-      flag: 'unavailable',
-    }));
+      unit: details?.unit || 'Not available',
+      ref: range || 'Not available',
+      flag: storedDetails?.flag ?? (hasNumericRange ? flagFromValue(value, range, configuredDetails?.criticalLow, configuredDetails?.criticalHigh) : 'unavailable'),
+    });
+    });
     const dateTime = (value: string) => new Date(value).toLocaleString('en-GB', {
       day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
     });
@@ -225,10 +250,13 @@ export class ReportsDataService {
       referredBy: joined.visit.refDoctor || 'Not recorded',
       reportedOn: dateTime(joined.report.generatedAt),
       testTitle: testDetails.map(test => test?.name).filter(Boolean).join(' + ') || 'Not available',
+      testNames: joined.order.testIds.map(id => this.patientFlow.allTests.find(test => test.id === id)?.name ?? id),
       sampleId: joined.sample.id,
-      note: 'Generated from validated mock workflow results. Clinical interpretation is not available in the stored mock data.',
+      note: 'Illustrative demo values and reference intervals only. Verify against the laboratory validated method and patient-specific reference intervals before clinical use.',
       specimen: joined.sample.specimenGroups.map(group => group.sampleType).filter(Boolean).join(', ') || 'Not available',
-      fasting: 'Not available',
+      fasting: joined.sample.fastingStatus === 'fasting' ? 'Fasting'
+        : joined.sample.fastingStatus === 'non-fasting' ? 'Non-fasting'
+        : joined.sample.fastingStatus === 'post-meal' ? 'Post-meal' : 'Not recorded',
       groupTitle: [...new Set(testDetails.map(test => test?.category).filter(Boolean))].join(' · ') || 'Not available',
       rows,
       authorisedBy: joined.result.reviewer || 'Not available',

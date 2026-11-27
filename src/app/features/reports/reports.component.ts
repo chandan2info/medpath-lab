@@ -23,6 +23,7 @@ export class ReportsComponent {
   reports = this.reportsData.reports;
   selected = signal<ReportRow | null>(this.reports()[0] ?? null);
   previewExpanded = signal(false);
+  testListExpanded = signal(false);
   showDispatchConfirm = signal(false);
   showPdfPreview = signal(false);
   pdfZoom = signal(85);
@@ -39,6 +40,8 @@ export class ReportsComponent {
     const id = this.selected()?.id;
     return id ? this.reportsData.getReportDetail(id) : null;
   });
+  selectedTestNames = computed(() => this.selectedDetail()?.testNames ?? []);
+  hiddenTestCount = computed(() => Math.max(0, this.selectedTestNames().length - 3));
 
   filteredReports = computed(() => {
     const q = this.query().trim().toLowerCase();
@@ -90,9 +93,14 @@ export class ReportsComponent {
     this.previewExpanded.update(expanded => !expanded);
   }
 
+  toggleTestList(): void {
+    this.testListExpanded.update(expanded => !expanded);
+  }
+
   selectReport(report: ReportRow): void {
     this.selected.set(report);
     this.previewExpanded.set(false);
+    this.testListExpanded.set(false);
   }
 
   markAsDispatched(): void {
@@ -126,12 +134,16 @@ export class ReportsComponent {
     const first = this.pagedReports()[0] ?? null;
     this.selected.set(first);
     this.previewExpanded.set(false);
+    this.testListExpanded.set(false);
   }
 
   goToPage(p: number): void {
     this.page.set(Math.min(Math.max(1, p), this.totalPages()));
     const first = this.pagedReports()[0];
-    if (first) this.selected.set(first);
+    if (first) {
+      this.selected.set(first);
+      this.testListExpanded.set(false);
+    }
   }
 
   prevPage(): void { this.goToPage(this.currentPage() - 1); }

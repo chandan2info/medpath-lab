@@ -7,6 +7,8 @@
 //  Sample Collection.)
 // ─────────────────────────────────────────────
 import { Component, signal, computed, ChangeDetectionStrategy, inject, ElementRef } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { StatusPillComponent } from '../../shared/components/status-pill/status-pill.component';
 import { Sample, SampleStatus } from '../../shared/models/lis.models';
@@ -44,6 +46,7 @@ const FILTER_OPTS: { label: string; value: SampleStatus | 'all' | 'stat-priority
 export class SampleTrackingComponent {
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly svc = inject(SampleTrackingService);
+  private readonly route = inject(ActivatedRoute);
 
   protected readonly filterOpts  = FILTER_OPTS;
 
@@ -53,9 +56,45 @@ export class SampleTrackingComponent {
   actionError = signal('');
 
   constructor() {
-    // Default the detail panel to the first row once the queue loads.
-    const first = this.svc.samples()[0];
-    if (first) this.selectedSample.set(first);
+    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe(params => {
+      const search = params.get('search')?.trim() ?? '';
+      this.searchQ.set(search);
+      const exactMatch = search
+        ? this.svc.samples().find(sample => sample.id.toLowerCase() === search.toLowerCase())
+        : undefined;
+      const first = this.svc.samples()[0];
+      this.selectedSample.set(exactMatch ?? (search ? null : first ?? null));
+      this.syncSelectionToVisibleRows();
+    });
+  }
+
+  formatCollectedAt(value: string): string {
+    const date = new Date(value);
+    if (!Number.isNaN(date.getTime())) {
+      return new Intl.DateTimeFormat('en-IN', {
+        day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+      }).format(date);
+    }
+    return value;
+  }
+
+  /** Keep selection and available actions within the currently visible rows. */
+  private syncSelectionToVisibleRows(): void {
+    const visible = this.sortedSamples();
+    const selectedId = this.selectedSample()?.id;
+    if (selectedId && visible.some(sample => sample.id === selectedId)) return;
+    this.selectedSample.set(visible[0] ?? null);
+    this.actionError.set('');
+  }
+
+  updateSearch(value: string): void {
+    this.searchQ.set(value);
+    this.syncSelectionToVisibleRows();
+  }
+
+  setActiveFilter(filter: SampleStatus | 'all' | 'stat-priority'): void {
+    this.activeFilter.set(filter);
+    this.syncSelectionToVisibleRows();
   }
 
   /** Total samples in the queue, unfiltered — shown next to the filtered count so
@@ -133,6 +172,7 @@ export class SampleTrackingComponent {
   clearFilters(): void {
     this.searchQ.set('');
     this.activeFilter.set('all');
+    this.syncSelectionToVisibleRows();
   }
 
   /** Drives a one-time 360° spin on the search clear (×) button when clicked
@@ -140,7 +180,7 @@ export class SampleTrackingComponent {
   clearSpin = signal(false);
 
   clearSearch(): void {
-    this.searchQ.set('');
+    this.updateSearch('');
     this.clearSpin.set(true);
     setTimeout(() => this.clearSpin.set(false), 350);
   }

@@ -54,6 +54,11 @@ test('synthetic patient lifecycle flows from registration through history and re
   await page.goto('/dashboard/tracking');
   await page.getByRole('textbox', { name: 'Search samples' }).fill(marker);
   await page.getByRole('row').filter({ hasText: marker }).click();
+  await page.getByRole('textbox', { name: 'Search samples' }).fill('No matching synthetic patient');
+  await expect(page.getByRole('row').filter({ hasText: 'No samples match' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Receive sample' })).toHaveCount(0);
+  await page.getByRole('textbox', { name: 'Search samples' }).fill(marker);
+  await expect(page.locator('.det-name')).toContainText(`${firstName} ${lastName}`);
   await page.getByRole('button', { name: 'Receive sample' }).click();
   await page.getByRole('button', { name: 'Start processing' }).click();
   await page.getByRole('button', { name: 'Mark ready for result entry' }).click();
@@ -97,8 +102,10 @@ test('synthetic patient lifecycle flows from registration through history and re
   const reportId = reportIdentity?.match(/RPT-[\w-]+/)?.[0];
   expect(reportId).toBeTruthy();
   const resultRow = page.locator('.rpt-tbl tbody tr').first();
-  await expect(resultRow.locator('td').nth(2)).toHaveText('Not available');
-  await expect(resultRow.locator('td').nth(3)).toHaveText('Not available');
+  await expect(resultRow.locator('td').nth(0)).toContainText('Haemoglobin');
+  await expect(resultRow.locator('td').nth(1)).toHaveText('70');
+  await expect(resultRow.locator('td').nth(2)).toHaveText('g/dL');
+  await expect(resultRow.locator('td').nth(3)).toHaveText('Age-specific interval not configured');
   await expect(resultRow.locator('td').nth(4)).toHaveText('Unavailable');
   await page.getByRole('button', { name: 'Mark dispatched' }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Mark as dispatched' }).click();
