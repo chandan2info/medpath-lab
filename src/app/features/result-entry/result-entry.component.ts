@@ -258,16 +258,12 @@ export class ResultEntryComponent implements OnInit {
   }
 
   private persistResults(submit=false):void {
-    const sampleId=this.sample()?.id;if(!sampleId)return;
+    const sampleId=this.sample()?.id;
+    if(!sampleId)return;
     const record={sampleId,tests:this.tests(),workflowStatus:'DRAFT' as const,updatedAt:new Date().toISOString()};
     const request=submit?this.resultData.submitForValidation(record):this.resultData.saveDraft(record);
     request.subscribe({
-      next:()=>{
-        this.demoSavedState.set('idle');{
-          this.demoSavedState.set('unsaved');
-          this.demoNoticeMessage.set(error instanceof Error ? error.message : 'Unable to update workflow status.');
-          this.showDemoNotice.set(true);
-      },
+      next:()=>{this.demoSavedState.set('idle');},
       error:()=>{this.demoSavedState.set('unsaved');this.demoNoticeMessage.set('Unable to save results. Please retry.');this.showDemoNotice.set(true);}
     });
   }

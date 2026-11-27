@@ -37,7 +37,7 @@ export interface MockResultEntryData { tests:MockResultEntryTest[]; notification
 export interface MockResultRecord {
   id: string; sampleId: string; status: MockResultStatus; values: Record<string,string>; parameterLabels?: Record<string,string>;
   parameterDetails?: Record<string,{ unit:string; range:string; flag:'normal'|'high'|'low'|'critical'|'unavailable'; method:string }>;
-  updatedAt: string; reviewer?: string; reviewedAt?: string; reviewNote?: string;
+  updatedAt: string; reviewer?: string; reviewedAt?: string; reviewNote?: string; entryData?: MockResultEntryData;
 }
 export interface MockReport {
   id: string; sampleId: string; resultId: string; status: MockReportStatus;
