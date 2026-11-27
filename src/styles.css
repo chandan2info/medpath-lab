@@ -6715,3 +6715,6 @@ button:disabled.is-loading {
 [data-palette="pastel"] .metric-pink { background: var(--lis-card-pink); }
 [data-palette="pastel"] .metric-yellow { background: var(--lis-card-yellow); }
 [data-palette="pastel"] .metric-blue { background: var(--lis-card-blue); }
+[data-palette="pastel"] .metric-violet { color: #8C75CF; background: var(--lis-card-purple); }
+[data-palette="pastel"] .metric-teal { color: #8C75CF; background: var(--lis-card-purple); }
+[data-palette="pastel"] .metric-green { color: #65B995; background: #E4F3EC; }
