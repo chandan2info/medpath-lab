@@ -2164,7 +2164,7 @@
 .collect-panel .collection-datetime-popover__fields input {
   width: 100%;
   min-width: 0;
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 .collect-panel .collection-datetime-popover__actions {
@@ -2408,7 +2408,7 @@
   color: var(--text-primary);
   font: inherit;
   font-size: 12px;
-  color-scheme: dark;
+  color-scheme: light;
 }
 .collect-panel .collection-time-picker__unit select:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--lis-primary, #1D9E75) 55%, transparent);
@@ -2619,13 +2619,13 @@
 .collect-panel .collection-datetime-control { position: relative; z-index: 40; }
 .collect-panel .collection-datetime-popover {
   width: min(430px, calc(100vw - 32px)); max-width: 430px; padding: 10px;
-  border: 1px solid #52647b; border-radius: 12px; background: #172337;
-  box-shadow: 0 18px 42px rgb(0 0 0 / 48%);
+  border: 1px solid var(--border-color); border-radius: 12px; background: var(--card-bg);
+  box-shadow: var(--shadow-editor, 0 18px 42px rgb(15 23 42 / 18%));
 }
 .collect-panel .collection-datetime-popover__selected-date {
   display: flex; align-items: center; gap: 10px; min-height: 38px;
   margin: -2px -2px 8px; padding: 0 10px; border: 1px solid var(--border-color);
-  border-radius: 9px 9px 0 0; background: color-mix(in srgb, var(--body-bg) 78%, #52647b);
+  border-radius: 9px 9px 0 0; background: var(--body-bg);
   color: var(--text-primary); font-size: 13px;
 }
 .collect-panel .collection-datetime-popover__selected-date i { color: var(--lis-primary, #1D9E75); font-size: 16px; }
@@ -2682,10 +2682,10 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   z-index: 1200;
-  background: #172337;
-  border: 1px solid #52647b;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
-  box-shadow: 0 18px 42px rgb(0 0 0 / 48%);
+  box-shadow: var(--shadow-editor, 0 18px 42px rgb(15 23 42 / 18%));
 }
 .collect-panel .collection-datetime-popover__selected-date {
   box-sizing: border-box;
@@ -2798,7 +2798,8 @@
   gap: 8px;
   margin: 8px -10px -10px;
   padding: 8px 10px 10px;
-  background: #172337;
+  border-top: 1px solid var(--border-color);
+  background: var(--card-bg);
 }
 .collect-panel .collection-datetime-popover__actions .lis-btn {
   min-width: 0;
@@ -3596,6 +3597,41 @@
   background-repeat: no-repeat !important;
   background-position: right 12px center !important;
   background-size: 12px 12px !important;
+}
+
+/* Keep calendar and native select surfaces paired with the active palette.
+   The dark attribute is independent from the selected color palette. */
+.collect-panel .collection-datetime-popover,
+.collect-panel .collection-datetime-popover__fields input,
+.collect-panel .collection-time-picker__unit select {
+  color-scheme: light;
+}
+
+.collect-panel .collection-datetime-popover {
+  background: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.collect-panel .collection-datetime-popover__selected-date,
+.collect-panel .collection-calendar__time,
+.collect-panel .collection-calendar__header button,
+.collect-panel .collection-time-picker__unit select,
+.collect-panel .collection-time-picker__period {
+  background-color: var(--body-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.collect-panel .collection-datetime-popover__selected-date i,
+.collect-panel .collection-calendar__time-toggle > i:first-child {
+  color: var(--lis-primary);
+}
+
+:host-context(html[data-theme="dark"]) .collect-panel .collection-datetime-popover,
+:host-context(html[data-theme="dark"]) .collect-panel .collection-datetime-popover__fields input,
+:host-context(html[data-theme="dark"]) .collect-panel .collection-time-picker__unit select {
+  color-scheme: dark;
 }
 
 /* Center the date/time popover footer action labels. The shared lis-btn
