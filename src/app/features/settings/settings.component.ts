@@ -169,7 +169,7 @@ import { PdfPreferencesService } from '../../core/services/pdf-preferences.servi
     .settings-card-icon { font-size:22px; color:var(--primary-deeper); flex-shrink:0; margin-top:2px; }
     .settings-card-title { font-size:15px; font-weight:600; color:var(--text-primary); margin:0 0 2px; }
     .settings-card-sub { font-size:13px; color:var(--text-secondary); margin:0; max-width:520px; }
-    .theme-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+    .theme-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; }
     .theme-option {
       min-width:0; position:relative; display:flex; align-items:center; gap:var(--space-3); text-align:left;
       padding:var(--space-3) var(--space-4); border:1.5px solid var(--border); border-radius:var(--radius-md);
